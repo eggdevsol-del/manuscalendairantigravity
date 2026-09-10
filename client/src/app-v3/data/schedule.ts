@@ -13,6 +13,7 @@ export type WorkDay = {
   start: string;
   end: string;
   type: string;
+  breaks?: { start: string; end: string; [key: string]: unknown }[];
   [key: string]: unknown;
 };
 /** Both historic formats remain readable; unknown per-day properties survive edits. */
@@ -32,6 +33,15 @@ export function readSchedule(raw: string | null | undefined): WorkDay[] {
       start: entry?.start || entry?.startTime || "09:00",
       end: entry?.end || entry?.endTime || "17:00",
       type: entry?.type || "work",
+      ...(Array.isArray(entry?.breaks)
+        ? {
+            breaks: entry.breaks.map((pause: any) => ({
+              ...pause,
+              start: pause.start || pause.startTime || "",
+              end: pause.end || pause.endTime || "",
+            })),
+          }
+        : {}),
     };
   });
 }

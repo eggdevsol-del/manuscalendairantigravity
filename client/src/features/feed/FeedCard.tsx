@@ -1,7 +1,20 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import { Heart, MessageCircle, Share2, Bookmark, MapPin, Play, Volume2, VolumeX } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Bookmark,
+  MapPin,
+  Play,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useVideoPool, setGlobalMuted, getGlobalMuted } from "@/hooks/useVideoPool";
+import {
+  useVideoPool,
+  setGlobalMuted,
+  getGlobalMuted,
+} from "@/hooks/useVideoPool";
 
 export interface FeedCardData {
   id: number;
@@ -11,7 +24,7 @@ export interface FeedCardData {
   artistCity: string | null;
   artistSlug: string | null;
   keywords: string[];
-  tags?: string[];           // post-level tags from Instagram hashtags
+  tags?: string[]; // post-level tags from Instagram hashtags
   imageUrl: string;
   description: string | null;
   createdAt: string | null;
@@ -37,7 +50,17 @@ interface FeedCardProps {
 // Video playback is now managed by the centralized useVideoPool hook.
 // See client/src/hooks/useVideoPool.ts for the pool manager.
 
-export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTagTap, compact, focusMode, index = 999 }: FeedCardProps) {
+export function FeedCard({
+  card,
+  onLike,
+  onShare,
+  onArtistTap,
+  onImageTap,
+  onTagTap,
+  compact,
+  focusMode,
+  index = 999,
+}: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
   const [likeCount, setLikeCount] = useState(card.likeCount);
   const [showHeart, setShowHeart] = useState(false);
@@ -49,10 +72,7 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
   const eagerLoad = index < 10;
 
   // Pool-managed video for both standard and focus modes
-  const videoPool = useVideoPool(
-    isVideo ? card.videoUrl! : "",
-    card.imageUrl
-  );
+  const videoPool = useVideoPool(isVideo ? card.videoUrl! : "", card.imageUrl);
 
   // Mute when scrolling out of view
   useEffect(() => {
@@ -72,8 +92,8 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
   }, []);
 
   const handleLike = useCallback(() => {
-    setLiked((prev) => !prev);
-    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
+    setLiked(prev => !prev);
+    setLikeCount(prev => (liked ? prev - 1 : prev + 1));
     onLike(card.id);
   }, [liked, card.id, onLike]);
 
@@ -124,24 +144,51 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
       <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
         {/* Full-bleed media */}
         {isVideo ? (
-          <div className="feed-card-focus-image" style={{ position: "relative", width: "100%", height: "100%" }}>
+          <div
+            className="feed-card-focus-image"
+            style={{ position: "relative", width: "100%", height: "100%" }}
+          >
             {/* Dedicated video container: React leaves its DOM children untouched */}
             <div
               ref={videoPool.containerRef}
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
             />
             {/* Poster shown while pool hasn't assigned a video yet */}
             {!videoPool.isInView && (
               <img
                 src={card.imageUrl}
                 alt={card.description || "Portfolio piece"}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
               />
             )}
             {/* Play icon overlay when not in view */}
             {!videoPool.isInView && (
-              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-                <Play size={48} color="rgba(255,255,255,0.7)" fill="rgba(255,255,255,0.7)" />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <Play
+                  size={48}
+                  color="rgba(255,255,255,0.7)"
+                  fill="rgba(255,255,255,0.7)"
+                />
               </div>
             )}
             {/* Mute/unmute toggle */}
@@ -182,7 +229,10 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
           <div className="feed-card-focus-actions">
             <button
               className={`feed-card-focus-action-btn ${liked ? "feed-card-liked" : ""}`}
-              onClick={(e) => { e.stopPropagation(); handleLike(); }}
+              onClick={e => {
+                e.stopPropagation();
+                handleLike();
+              }}
             >
               <Heart
                 size={22}
@@ -192,7 +242,10 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
             </button>
             <button
               className="feed-card-focus-action-btn"
-              onClick={(e) => { e.stopPropagation(); handleShare(); }}
+              onClick={e => {
+                e.stopPropagation();
+                handleShare();
+              }}
             >
               <Share2 size={20} color="#fff" />
             </button>
@@ -207,30 +260,41 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
           {card.description && (
             <div
               className={`feed-card-focus-desc ${descExpanded ? "expanded" : ""}`}
-              onClick={(e) => { e.stopPropagation(); setDescExpanded(!descExpanded); }}
+              onClick={e => {
+                e.stopPropagation();
+                setDescExpanded(!descExpanded);
+              }}
             >
-              <span className="feed-card-focus-desc-name">{card.artistName}</span>{" "}
+              <span className="feed-card-focus-desc-name">
+                {card.artistName}
+              </span>{" "}
               {card.description}
             </div>
           )}
 
           {/* Tags (only visible when expanded) */}
-          {descExpanded && (() => {
-            const allTags = [...new Set([...card.keywords, ...(card.tags || [])])];
-            return allTags.length > 0 ? (
-              <div className="feed-card-focus-tags">
-                {allTags.slice(0, 6).map((tag, i) => (
-                  <span
-                    key={i}
-                    className="feed-card-focus-tag feed-card-tag-tappable"
-                    onClick={(e) => { e.stopPropagation(); onTagTap?.(tag); }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            ) : null;
-          })()}
+          {descExpanded &&
+            (() => {
+              const allTags = Array.from(
+                new Set([...card.keywords, ...(card.tags || [])])
+              );
+              return allTags.length > 0 ? (
+                <div className="feed-card-focus-tags">
+                  {allTags.slice(0, 6).map((tag, i) => (
+                    <span
+                      key={i}
+                      className="feed-card-focus-tag feed-card-tag-tappable"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onTagTap?.(tag);
+                      }}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              ) : null;
+            })()}
         </div>
 
         {/* Double-tap heart animation */}
@@ -292,7 +356,12 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
             {/* Dedicated video container: React leaves its DOM children untouched */}
             <div
               ref={videoPool.containerRef}
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+              }}
             />
             {/* Poster shown while pool hasn't assigned a video yet */}
             {!videoPool.isInView && (
@@ -304,9 +373,24 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
               />
             )}
             {/* Video badge */}
-            <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.5)", borderRadius: 6, padding: "3px 8px", display: "flex", alignItems: "center", gap: 4, pointerEvents: "none" }}>
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                background: "rgba(0,0,0,0.5)",
+                borderRadius: 6,
+                padding: "3px 8px",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                pointerEvents: "none",
+              }}
+            >
               <Play size={10} color="white" fill="white" />
-              <span style={{ color: "white", fontSize: 10, fontWeight: 600 }}>REEL</span>
+              <span style={{ color: "white", fontSize: 10, fontWeight: 600 }}>
+                REEL
+              </span>
             </div>
             {/* Mute/unmute toggle */}
             {videoPool.isInView && (
@@ -358,14 +442,20 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
               className={liked ? "" : "text-foreground/70"}
             />
           </button>
-          <button className="feed-card-action-btn feed-card-action-disabled" disabled>
+          <button
+            className="feed-card-action-btn feed-card-action-disabled"
+            disabled
+          >
             <MessageCircle size={24} className="text-muted-foreground" />
           </button>
           <button className="feed-card-action-btn" onClick={handleShare}>
             <Share2 size={22} className="text-foreground/70" />
           </button>
         </div>
-        <button className="feed-card-action-btn feed-card-action-disabled" disabled>
+        <button
+          className="feed-card-action-btn feed-card-action-disabled"
+          disabled
+        >
           <Bookmark size={24} className="text-muted-foreground" />
         </button>
       </div>
@@ -387,7 +477,9 @@ export function FeedCard({ card, onLike, onShare, onArtistTap, onImageTap, onTag
 
       {/* Style tags */}
       {(() => {
-        const allTags = [...new Set([...card.keywords, ...(card.tags || [])])];
+        const allTags = Array.from(
+          new Set([...card.keywords, ...(card.tags || [])])
+        );
         return allTags.length > 0 ? (
           <div className="feed-card-tags">
             {allTags.slice(0, 6).map((tag, i) => (

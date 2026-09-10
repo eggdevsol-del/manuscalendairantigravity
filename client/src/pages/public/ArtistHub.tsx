@@ -1,7 +1,15 @@
 import React from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Instagram, Facebook, ArrowRight, CalendarDays, Link as LinkIcon, CalendarPlus } from "lucide-react";
+import {
+  Loader2,
+  Instagram,
+  Facebook,
+  ArrowRight,
+  CalendarDays,
+  Link as LinkIcon,
+  CalendarPlus,
+} from "lucide-react";
 import { motion, Variants } from "framer-motion";
 import { UserAvatar } from "@/components/ui/ssot";
 
@@ -10,11 +18,14 @@ export default function ArtistHub() {
   const [, setLocation] = useLocation();
   const slug = params?.slug;
 
-  const { data: artist, isLoading, error } = trpc.funnel.getArtistBySlug.useQuery(
+  const {
+    data: artist,
+    isLoading,
+    error,
+  } = trpc.funnel.getArtistBySlug.useQuery(
     { slug: slug || "" },
     { enabled: !!slug, retry: false }
   );
-
 
   if (isLoading) {
     return (
@@ -28,8 +39,10 @@ export default function ArtistHub() {
     return (
       <div className="app-document min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Artist Not Found</h1>
-        <p className="text-muted-foreground mb-6">The link you followed may be broken or the artist no longer exists.</p>
-        <button 
+        <p className="text-muted-foreground mb-6">
+          The link you followed may be broken or the artist no longer exists.
+        </p>
+        <button
           onClick={() => setLocation("/")}
           className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
         >
@@ -41,22 +54,22 @@ export default function ArtistHub() {
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 300, damping: 24 }
-    }
+      transition: { type: "spring", stiffness: 300, damping: 24 },
+    },
   };
 
   return (
@@ -66,22 +79,26 @@ export default function ArtistHub() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-gradient-to-b from-[var(--color-status-info-bg)] via-purple-500/5 to-transparent blur-[120px] rounded-full opacity-60 mix-blend-screen" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[var(--color-status-info-bg)] blur-[150px] rounded-full mix-blend-screen" />
         <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-primary/10 blur-[120px] rounded-full mix-blend-screen" />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-16 flex flex-col items-center">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
           className="relative mb-6 group"
         >
           <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 shadow-[0_0_40px_rgba(var(--primary-rgb),0.3)]">
-            <UserAvatar name={artist.displayName} avatar={artist.profileImage} size="2xl" ring />
+            <UserAvatar
+              name={artist.displayName}
+              avatar={artist.profileImage}
+              size="2xl"
+              ring
+            />
           </div>
         </motion.div>
 
-        <motion.h1 
+        <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -89,9 +106,9 @@ export default function ArtistHub() {
         >
           {artist.displayName}
         </motion.h1>
-        
+
         {(artist.city || artist.bio) && (
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -103,14 +120,14 @@ export default function ArtistHub() {
 
         {/* Social Links Row */}
         {(artist.instagramUsername || artist.facebookName) && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
             className="flex items-center gap-4 mb-10"
           >
             {artist.instagramUsername && (
-              <a 
+              <a
                 href={`https://instagram.com/${artist.instagramUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -120,7 +137,7 @@ export default function ArtistHub() {
               </a>
             )}
             {artist.facebookName && (
-              <a 
+              <a
                 href={`https://facebook.com/${artist.facebookName}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -129,7 +146,7 @@ export default function ArtistHub() {
                 <Facebook className="w-4 h-4 text-muted-foreground group-hover:text-[var(--color-status-info-text)] transition-colors" />
               </a>
             )}
-            <button 
+            <button
               onClick={() => {
                 navigator.clipboard.writeText(window.location.href);
               }}
@@ -140,7 +157,7 @@ export default function ArtistHub() {
           </motion.div>
         )}
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -159,8 +176,12 @@ export default function ArtistHub() {
                   <CalendarPlus className="w-5 h-5 text-[var(--color-status-info-text)]" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-base font-bold text-white tracking-wide">Book Consult</span>
-                  <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">Start a new project</span>
+                  <span className="text-base font-bold text-white tracking-wide">
+                    Book Consult
+                  </span>
+                  <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
+                    Start a new project
+                  </span>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-white group-hover:translate-x-1 transition-all" />
@@ -180,8 +201,12 @@ export default function ArtistHub() {
                     <CalendarDays className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex flex-col items-start">
-                    <span className="text-base font-bold text-white tracking-wide">Upcoming Seminars</span>
-                    <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">Live & Virtual Events</span>
+                    <span className="text-base font-bold text-white tracking-wide">
+                      Upcoming Seminars
+                    </span>
+                    <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
+                      Live & Virtual Events
+                    </span>
                   </div>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-muted-foreground group-hover:translate-x-1 transition-all" />
@@ -191,7 +216,7 @@ export default function ArtistHub() {
         </motion.div>
 
         {/* Footer branding */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
@@ -202,7 +227,6 @@ export default function ArtistHub() {
           </span>
         </motion.div>
       </div>
-
     </div>
   );
 }

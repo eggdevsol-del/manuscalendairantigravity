@@ -119,19 +119,19 @@ export function Money() {
               <h2>
                 {"availableAmountCents" in b &&
                 typeof b.availableAmountCents === "number"
-                  ? money(b.availableAmountCents)
+                  ? money(b.availableAmountCents, b.currency)
                   : "Connect payouts"}
               </h2>
               <p>Available balance</p>
               <dl className="v3-facts">
                 <div>
                   <dt>Pending</dt>
-                  <dd>{money(b.pendingAmountCents)}</dd>
+                  <dd>{money(b.pendingAmountCents, b.currency)}</dd>
                 </div>
                 {b.nextPayoutAmountCents !== null && (
                   <div>
                     <dt>Next payout</dt>
-                    <dd>{money(b.nextPayoutAmountCents)}</dd>
+                    <dd>{money(b.nextPayoutAmountCents, b.currency)}</dd>
                   </div>
                 )}
                 {b.nextPayoutArrivalDate && (
@@ -195,10 +195,7 @@ export function Money() {
                 </strong>
                 <span>{entry.createdAt && bookingDate(entry.createdAt)}</span>
               </span>
-              <strong>
-                {entry.type === "refund" ? "−" : ""}
-                {money(entry.amountCents)}
-              </strong>
+              <strong>{money(entry.amountCents)}</strong>
             </summary>
             <dl className="v3-facts">
               <div>

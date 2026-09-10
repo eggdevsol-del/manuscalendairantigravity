@@ -1,0 +1,446 @@
+[
+  {
+    "test": "today-phone",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "today-tablet",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "calendar-phone",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "calendar-tablet",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "client-bookings",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "client-profile",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "supplier-home",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "supplier-settings",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "supplier-orders",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "supplies-directory",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "supply-orders",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "guide-artist",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "guide-supplier",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "forms-sign",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "forms.signForm"
+    ]
+  },
+  {
+    "test": "lead",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "funnel.updateLeadStatus",
+      "conversations.markAsRead"
+    ]
+  },
+  {
+    "test": "shop",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "events-public",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "events-artist",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "discover",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "account-removal",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "public-start",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "funnel.submitPublicBooking"
+    ]
+  },
+  {
+    "test": "artist-hub",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "studio-public",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "payment-return",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "payment-paid",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "payment-review",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "deposit-link",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "balance-link",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "refund",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "payouts.refundTransaction"
+    ]
+  },
+  {
+    "test": "forms",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "travel",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "data-import",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "instagram",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "login",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "signup-supplier",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "recovery",
+    "errors": [],
+    "overflow": false,
+    "mutations": []
+  },
+  {
+    "test": "purchases",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "bank",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "artistSettings.updatePayoutSchedule"
+    ]
+  },
+  {
+    "test": "plans",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "studio",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "studio-invite",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "studios.inviteArtist"
+    ]
+  },
+  {
+    "test": "artist-profile",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "artistSettings.upsert"
+    ]
+  },
+  {
+    "test": "booking-link",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "funnel.updateFunnelSettings"
+    ]
+  },
+  {
+    "test": "proposal",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "conversations.getOrCreate",
+      "sessionPlans.create",
+      "conversations.markAsRead"
+    ]
+  },
+  {
+    "test": "client",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "clientProfile.addClientNote"
+    ]
+  },
+  {
+    "test": "reschedule",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "appointments.reschedule"
+    ]
+  },
+  {
+    "test": "thread",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "conversations.markAsRead",
+      "messages.send"
+    ]
+  },
+  {
+    "test": "settings",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "artistSettings.upsert"
+    ]
+  },
+  {
+    "test": "hours",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "artistSettings.upsert"
+    ]
+  },
+  {
+    "test": "product",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "storefront.createProduct"
+    ]
+  },
+  {
+    "test": "notifications",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "notifications.create"
+    ]
+  },
+  {
+    "test": "deposit",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken"
+    ]
+  },
+  {
+    "test": "public-request",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "funnel.submitPublicBooking"
+    ]
+  },
+  {
+    "test": "public-existing",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "funnel.submitPublicBooking"
+    ]
+  },
+  {
+    "test": "public-error",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "funnel.submitPublicBooking"
+    ]
+  },
+  {
+    "test": "product-error",
+    "errors": [],
+    "overflow": false,
+    "mutations": [
+      "auth.refreshToken",
+      "storefront.createProduct"
+    ]
+  }
+]

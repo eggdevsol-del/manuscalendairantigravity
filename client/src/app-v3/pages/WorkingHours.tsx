@@ -35,12 +35,32 @@ export default function WorkingHours() {
   const [edit, setEdit] = useState<number | null>(null);
   const [draft, setDraft] = useState<Service | null>(null);
   const [error, setError] = useState("");
+  const [scheduleUnreadable, setScheduleUnreadable] = useState(false);
   const [servicesUnreadable, setServicesUnreadable] = useState(false);
   const initialized = useRef(false);
   useEffect(() => {
     if (!query.data || initialized.current) return;
     initialized.current = true;
-    setDays(readSchedule(query.data.workSchedule));
+    try {
+      const parsed = JSON.parse(query.data.workSchedule || "{}");
+      if (!parsed || typeof parsed !== "object") throw new Error();
+      const entries = Array.isArray(parsed) ? parsed : Object.values(parsed);
+      if (
+        entries.some(
+          (day: any) =>
+            !day ||
+            typeof day !== "object" ||
+            (day.breaks !== undefined && !Array.isArray(day.breaks))
+        )
+      )
+        throw new Error();
+      setDays(readSchedule(query.data.workSchedule));
+    } catch {
+      setScheduleUnreadable(true);
+      setError(
+        "Your saved schedule could not be read. It has not been changed."
+      );
+    }
     try {
       const parsed = JSON.parse(query.data.services || "[]");
       if (!Array.isArray(parsed)) throw new Error("Invalid services");
@@ -59,11 +79,33 @@ export default function WorkingHours() {
     );
   };
   function saveHours() {
-    for (const day of days)
+    if (scheduleUnreadable) return;
+    for (const day of days) {
       if (day.enabled && (!day.start || !day.end || day.end <= day.start)) {
         setError(`Choose an end time after the start on ${day.day}.`);
         return;
       }
+      const pauses = [...(day.breaks || [])].sort((a, b) =>
+        a.start.localeCompare(b.start)
+      );
+      if (
+        day.enabled &&
+        pauses.some(
+          (pause, i) =>
+            !pause.start ||
+            !pause.end ||
+            pause.start < day.start ||
+            pause.end > day.end ||
+            pause.end <= pause.start ||
+            (i > 0 && pause.start < pauses[i - 1].end)
+        )
+      ) {
+        setError(
+          `Choose non-overlapping breaks within ${day.day}’s working hours.`
+        );
+        return;
+      }
+    }
     setError("");
     save.mutate({ workSchedule: writeSchedule(days) });
   }
@@ -71,9 +113,14 @@ export default function WorkingHours() {
     if (servicesUnreadable) return;
     if (
       !draft?.name.trim() ||
+      !Number.isInteger(draft.duration) ||
       draft.duration <= 0 ||
+      draft.duration > 1440 ||
+      !Number.isFinite(draft.price) ||
       draft.price < 0 ||
-      draft.sittings < 1
+      !Number.isInteger(draft.sittings) ||
+      draft.sittings < 1 ||
+      draft.sittings > 52
     ) {
       setError(
         "Enter a name, positive duration and valid price and session count."
@@ -122,7 +169,11 @@ export default function WorkingHours() {
               </p>
               <div className="v3-stack">
                 {days.map((d, i) => (
-                  <section key={d.day} className="v3-hours-row">
+                  <fieldset
+                    key={d.day}
+                    className="v3-hours-row"
+                    disabled={save.isPending || scheduleUnreadable}
+                  >
                     <label className="v3-inline">
                       <input
                         type="checkbox"
@@ -178,10 +229,90 @@ export default function WorkingHours() {
                     ) : (
                       <span className="v3-muted">Day off</span>
                     )}
-                  </section>
+                    {d.enabled && d.type === "work" && (
+                      <div className="v3-hours-breaks v3-form">
+                        {(d.breaks || []).map((pause, index) => (
+                          <div className="v3-inline" key={index}>
+                            <label>
+                              Break start
+                              <input
+                                aria-label={`${d.day} break ${index + 1} start`}
+                                type="time"
+                                value={pause.start}
+                                onChange={e =>
+                                  updateDay(i, {
+                                    breaks: d.breaks?.map((p, n) =>
+                                      n === index
+                                        ? {
+                                            ...p,
+                                            start: e.target.value,
+                                            startTime: e.target.value,
+                                          }
+                                        : p
+                                    ),
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              Break end
+                              <input
+                                aria-label={`${d.day} break ${index + 1} end`}
+                                type="time"
+                                value={pause.end}
+                                onChange={e =>
+                                  updateDay(i, {
+                                    breaks: d.breaks?.map((p, n) =>
+                                      n === index
+                                        ? {
+                                            ...p,
+                                            end: e.target.value,
+                                            endTime: e.target.value,
+                                          }
+                                        : p
+                                    ),
+                                  })
+                                }
+                              />
+                            </label>
+                            <Action
+                              tone="quiet"
+                              aria-label={`Remove ${d.day} break ${index + 1}`}
+                              onClick={() =>
+                                updateDay(i, {
+                                  breaks: d.breaks?.filter(
+                                    (_, n) => n !== index
+                                  ),
+                                })
+                              }
+                            >
+                              <Trash2 size={18} />
+                            </Action>
+                          </div>
+                        ))}
+                        <Action
+                          tone="quiet"
+                          disabled={save.isPending || scheduleUnreadable}
+                          onClick={() =>
+                            updateDay(i, {
+                              breaks: [
+                                ...(d.breaks || []),
+                                { start: "12:00", end: "13:00" },
+                              ],
+                            })
+                          }
+                        >
+                          Add {d.day} break
+                        </Action>
+                      </div>
+                    )}
+                  </fieldset>
                 ))}
               </div>
-              <Action disabled={save.isPending} onClick={saveHours}>
+              <Action
+                disabled={save.isPending || scheduleUnreadable}
+                onClick={saveHours}
+              >
                 {save.isPending ? "Saving…" : "Save availability"}
               </Action>
             </>

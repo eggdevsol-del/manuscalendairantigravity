@@ -1,21 +1,33 @@
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Banknote, Clock, AlertCircle, ChevronRight, Unlink } from "lucide-react";
+import {
+  Loader2,
+  Banknote,
+  Clock,
+  AlertCircle,
+  ChevronRight,
+  Unlink,
+} from "lucide-react";
 import { Button } from "@/components/ui";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
-const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
+const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"] as const;
 
-export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void }) {
+export function PayoutDashboard({
+  onDisconnect,
+}: {
+  onDisconnect?: () => void;
+}) {
   const [, setLocation] = useLocation();
-  const { data, isLoading, refetch } = trpc.artistSettings.getPayoutSchedule.useQuery();
+  const { data, isLoading, refetch } =
+    trpc.artistSettings.getPayoutSchedule.useQuery();
   const updateSchedule = trpc.artistSettings.updatePayoutSchedule.useMutation();
   const disconnectStripe = trpc.artistSettings.disconnectStripe.useMutation();
   const [editing, setEditing] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const [interval, setInterval] = useState<string>("daily");
-  const [anchor, setAnchor] = useState<string>("monday");
+  const [anchor, setAnchor] = useState<(typeof DAYS)[number]>("monday");
 
   if (isLoading) {
     return (
@@ -29,7 +41,9 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
   if (!data) {
     return (
       <div className="text-center p-6">
-        <p className="text-sm text-muted-foreground">No payout information available.</p>
+        <p className="text-sm text-muted-foreground">
+          No payout information available.
+        </p>
       </div>
     );
   }
@@ -51,7 +65,8 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
 
   const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-  const selectClass = "w-full px-4 py-3 rounded-[12px] bg-secondary/50 border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 appearance-none";
+  const selectClass =
+    "w-full px-4 py-3 rounded-[12px] bg-secondary/50 border border-border text-foreground text-sm focus:outline-none focus:border-primary/50 appearance-none";
 
   return (
     <div className="space-y-5">
@@ -60,8 +75,13 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
         <div className="bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)] rounded-xl p-3 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-[var(--color-status-warning-text)] shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs text-[var(--color-status-warning-text)] font-semibold">ID Verification Pending</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Your identity document is being reviewed. Payouts will be enabled once verified (usually within minutes).</p>
+            <p className="text-xs text-[var(--color-status-warning-text)] font-semibold">
+              ID Verification Pending
+            </p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Your identity document is being reviewed. Payouts will be enabled
+              once verified (usually within minutes).
+            </p>
           </div>
         </div>
       )}
@@ -69,12 +89,22 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
       {/* Status Card */}
       <div className="bg-secondary/50 border border-border rounded-2xl p-4 space-y-4">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${data.payoutsEnabled ? "bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)]" : "bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)]"}`}>
-            <Banknote className={`w-5 h-5 ${data.payoutsEnabled ? "text-[var(--color-status-success-text)]" : "text-[var(--color-status-warning-text)]"}`} />
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center ${data.payoutsEnabled ? "bg-[var(--color-status-success-bg)] border border-[var(--color-status-success-border)]" : "bg-[var(--color-status-warning-bg)] border border-[var(--color-status-warning-border)]"}`}
+          >
+            <Banknote
+              className={`w-5 h-5 ${data.payoutsEnabled ? "text-[var(--color-status-success-text)]" : "text-[var(--color-status-warning-text)]"}`}
+            />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">{data.payoutsEnabled ? "Payouts Active" : "Payouts Pending"}</h3>
-            <p className="text-xs text-muted-foreground">{data.payoutsEnabled ? "Deposits are paid out automatically" : "Waiting for ID verification"}</p>
+            <h3 className="font-bold text-foreground">
+              {data.payoutsEnabled ? "Payouts Active" : "Payouts Pending"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {data.payoutsEnabled
+                ? "Deposits are paid out automatically"
+                : "Waiting for ID verification"}
+            </p>
           </div>
         </div>
 
@@ -92,11 +122,15 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground mb-1">Available</p>
-            <p className="text-lg font-bold text-[var(--color-status-success-text)]">{formatCents(data.availableBalance)}</p>
+            <p className="text-lg font-bold text-[var(--color-status-success-text)]">
+              {formatCents(data.availableBalance)}
+            </p>
           </div>
           <div className="bg-secondary/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground mb-1">Pending</p>
-            <p className="text-lg font-bold text-foreground">{formatCents(data.pendingBalance)}</p>
+            <p className="text-lg font-bold text-foreground">
+              {formatCents(data.pendingBalance)}
+            </p>
           </div>
         </div>
       </div>
@@ -107,13 +141,26 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-muted-foreground" />
             <div>
-              <h3 className="font-semibold text-foreground text-sm">Payout Schedule</h3>
+              <h3 className="font-semibold text-foreground text-sm">
+                Payout Schedule
+              </h3>
               <p className="text-xs text-muted-foreground capitalize">
-                {data.interval}{data.interval === "weekly" ? ` (${data.weeklyAnchor})` : ""} — {data.delayDays}-day delay
+                {data.interval}
+                {data.interval === "weekly"
+                  ? ` (${data.weeklyAnchor})`
+                  : ""} — {data.delayDays}-day delay
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => { setInterval(data.interval); setEditing(!editing); }} className="text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setInterval(data.interval);
+              setEditing(!editing);
+            }}
+            className="text-xs"
+          >
             {editing ? "Cancel" : "Change"}
           </Button>
         </div>
@@ -121,8 +168,14 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
         {editing && (
           <div className="space-y-3 pt-2 border-t border-border">
             <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">Frequency</label>
-              <select className={selectClass} value={interval} onChange={e => setInterval(e.target.value)}>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Frequency
+              </label>
+              <select
+                className={selectClass}
+                value={interval}
+                onChange={e => setInterval(e.target.value)}
+              >
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly (1st of month)</option>
@@ -130,22 +183,45 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
             </div>
             {interval === "weekly" && (
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Day</label>
-                <select className={selectClass} value={anchor} onChange={e => setAnchor(e.target.value)}>
-                  {DAYS.map(d => <option key={d} value={d} className="capitalize">{d.charAt(0).toUpperCase() + d.slice(1)}</option>)}
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                  Day
+                </label>
+                <select
+                  className={selectClass}
+                  value={anchor}
+                  onChange={e => setAnchor(e.target.value as typeof anchor)}
+                >
+                  {DAYS.map(d => (
+                    <option key={d} value={d} className="capitalize">
+                      {d.charAt(0).toUpperCase() + d.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
-            <Button onClick={handleSaveSchedule} disabled={updateSchedule.isPending} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-              {updateSchedule.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Schedule"}
+            <Button
+              onClick={handleSaveSchedule}
+              disabled={updateSchedule.isPending}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {updateSchedule.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                "Save Schedule"
+              )}
             </Button>
           </div>
         )}
       </div>
 
       {/* Payout History Link */}
-      <button onClick={() => setLocation("/payout-history")} className="w-full flex items-center justify-between bg-secondary/50 border border-border rounded-2xl p-4 hover:bg-secondary/50 transition-colors">
-        <span className="text-sm font-medium text-foreground">Payout History</span>
+      <button
+        onClick={() => setLocation("/payout-history")}
+        className="w-full flex items-center justify-between bg-secondary/50 border border-border rounded-2xl p-4 hover:bg-secondary/50 transition-colors"
+      >
+        <span className="text-sm font-medium text-foreground">
+          Payout History
+        </span>
         <ChevronRight className="w-4 h-4 text-muted-foreground" />
       </button>
 
@@ -161,10 +237,20 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
           </button>
         ) : (
           <div className="bg-[var(--color-status-danger-bg)] border border-[var(--color-status-danger-border)] rounded-xl p-4 space-y-3">
-            <p className="text-xs text-[var(--color-status-danger-text)] font-semibold">Are you sure?</p>
-            <p className="text-[10px] text-muted-foreground">This will disconnect your bank account. You'll need to go through setup again to receive payouts.</p>
+            <p className="text-xs text-[var(--color-status-danger-text)] font-semibold">
+              Are you sure?
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              This will disconnect your bank account. You'll need to go through
+              setup again to receive payouts.
+            </p>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setConfirmDisconnect(false)} className="flex-1 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDisconnect(false)}
+                className="flex-1 text-xs"
+              >
                 Cancel
               </Button>
               <Button
@@ -181,7 +267,11 @@ export function PayoutDashboard({ onDisconnect }: { onDisconnect?: () => void })
                 }}
                 className="flex-1 text-xs bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger)]"
               >
-                {disconnectStripe.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Disconnect"}
+                {disconnectStripe.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  "Disconnect"
+                )}
               </Button>
             </div>
           </div>

@@ -6,10 +6,10 @@ export function instant(value: string | Date): Date {
     /[zZ]$|[+-]\d{2}:\d{2}$/.test(normalized) ? normalized : normalized + "Z"
   );
 }
-export function money(cents: number) {
+export function money(cents: number, currency = "AUD") {
   return new Intl.NumberFormat("en-AU", {
     style: "currency",
-    currency: "AUD",
+    currency,
     currencyDisplay: "narrowSymbol",
   }).format(cents / 100);
 }

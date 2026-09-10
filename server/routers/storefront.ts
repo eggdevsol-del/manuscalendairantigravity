@@ -317,7 +317,10 @@ export const storefrontRouter = router({
           artist?.name ||
           "Artist",
         products,
-        seminars,
+        seminars: seminars.map(event => ({
+          ...event,
+          locationUrl: event.type === "virtual" ? null : event.locationUrl,
+        })),
       };
     }),
 
@@ -369,7 +372,10 @@ export const storefrontRouter = router({
           "Artist",
         artistSlug: settings.publicSlug || "",
         products,
-        seminars,
+        seminars: seminars.map(event => ({
+          ...event,
+          locationUrl: event.type === "virtual" ? null : event.locationUrl,
+        })),
       };
     }),
 
@@ -576,6 +582,15 @@ export const storefrontRouter = router({
           "Item",
         quantity: item.quantity,
         priceCents: item.priceAtPurchaseCents,
+        eventAccess:
+          ["paid", "fulfilled"].includes(order.status) && item.seminar
+            ? {
+                title: item.seminar.title,
+                date: item.seminar.date,
+                locationUrl: item.seminar.locationUrl,
+                type: item.seminar.type,
+              }
+            : null,
       })),
     }));
   }),
@@ -601,7 +616,25 @@ export const storefrontRouter = router({
           code: "NOT_FOUND",
           message: "Order confirmation is not available for this checkout.",
         });
+      const items = ["paid", "fulfilled"].includes(order.status)
+        ? await db.query.orderItems.findMany({
+            where: eq(schema.orderItems.orderId, order.id),
+            with: { seminar: true },
+          })
+        : [];
       return {
+        eventAccess: items.flatMap(item =>
+          item.seminar
+            ? [
+                {
+                  title: item.seminar.title,
+                  date: item.seminar.date,
+                  locationUrl: item.seminar.locationUrl,
+                  type: item.seminar.type,
+                },
+              ]
+            : []
+        ),
         id: order.id,
         status: order.status,
         currency: order.currency,
@@ -753,7 +786,12 @@ export const storefrontRouter = router({
       });
 
       // Filter to upcoming only
-      return seminars.filter(s => new Date(s.date) > now);
+      return seminars
+        .filter(s => new Date(s.date) > now)
+        .map(s => ({
+          ...s,
+          locationUrl: s.type === "virtual" ? null : s.locationUrl,
+        }));
     }),
 
   /**
@@ -823,7 +861,11 @@ export const storefrontRouter = router({
           .update(schema.orders)
           .set({ stripeCheckoutSessionId: session.sessionId })
           .where(eq(schema.orders.id, orderId));
-        return { ...session, orderId };
+        return {
+          ...session,
+          orderId,
+          totalCents: seminar.priceCents + fees.platformFeeCents,
+        };
       })
     ),
 });

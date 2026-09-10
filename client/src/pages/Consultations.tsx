@@ -174,10 +174,7 @@ export default function Consultations() {
                           {consultation.subject}
                         </h3>
                         <p className="text-sm text-muted-foreground mt-0.5">
-                          with{" "}
-                          {consultation.artist?.name ||
-                            consultation.artist?.email ||
-                            "Artist"}
+                          with {consultation.artist?.name || "Artist"}
                         </p>
                       </div>
                       <div

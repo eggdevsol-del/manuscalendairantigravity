@@ -3,7 +3,7 @@ import { useCart } from "./CartContext";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { Button } from "@/components/ui";
+import { Action as Button } from "@/app-v3/design/primitives";
 import { calculateTransactionFees } from "@shared/fees";
 import {
   OrderConfirmation,
@@ -64,7 +64,7 @@ export function StorefrontCheckoutFAB({
     if (identity) setIsCartOpen(true);
   }, []);
   const pay = async () => {
-    if (!method) return;
+    if (!method || checkout.isPending || cancel.isPending) return;
     try {
       const result = await checkout.mutateAsync({
         items: items.map(item => ({
@@ -104,6 +104,7 @@ export function StorefrontCheckoutFAB({
     <SheetShell
       isOpen={isCartOpen}
       onClose={() => {
+        if (checkout.isPending || cancel.isPending) return;
         setIsCartOpen(false);
         onClose();
       }}
@@ -118,16 +119,13 @@ export function StorefrontCheckoutFAB({
       className="h-[90dvh] max-h-[90dvh]"
     >
       {step === "review" && (
-        <div className="max-w-xl mx-auto space-y-5 pb-6">
+        <div className="v3-stack">
           {!items.length ? (
             <p className="text-center py-8">Your cart is empty.</p>
           ) : (
             <>
               {items.map(item => (
-                <article
-                  key={item.cartItemId}
-                  className="rounded-2xl border p-4 space-y-3"
-                >
+                <article key={item.cartItemId} className="v3-panel v3-stack">
                   <div className="flex justify-between gap-3">
                     <h3 className="font-semibold">
                       {item.title}
@@ -143,7 +141,8 @@ export function StorefrontCheckoutFAB({
                   </div>
                   <div className="flex items-center gap-3">
                     <Button
-                      variant="outline"
+                      tone="secondary"
+                      disabled={checkout.isPending}
                       aria-label={`Decrease ${item.title}`}
                       onClick={() => updateQuantity(item.cartItemId, -1)}
                     >
@@ -151,15 +150,18 @@ export function StorefrontCheckoutFAB({
                     </Button>
                     <span>{item.quantity}</span>
                     <Button
-                      variant="outline"
+                      tone="secondary"
                       aria-label={`Increase ${item.title}`}
-                      disabled={item.quantity >= item.maxInventory}
+                      disabled={
+                        checkout.isPending || item.quantity >= item.maxInventory
+                      }
                       onClick={() => updateQuantity(item.cartItemId, 1)}
                     >
                       +
                     </Button>
                     <Button
-                      variant="ghost"
+                      tone="quiet"
+                      disabled={checkout.isPending}
                       onClick={() => removeItem(item.cartItemId)}
                     >
                       Remove
@@ -171,6 +173,7 @@ export function StorefrontCheckoutFAB({
                 <span className="font-medium">Delivery method</span>
                 <select
                   className="w-full rounded-xl border bg-background p-3"
+                  disabled={checkout.isPending}
                   value={method || ""}
                   onChange={e => setChoice(e.target.value as typeof choice)}
                 >

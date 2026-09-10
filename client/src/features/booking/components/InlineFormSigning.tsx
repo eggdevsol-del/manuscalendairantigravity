@@ -1,323 +1,215 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { tokens } from "@/ui/tokens";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Check } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
-import { SignaturePad } from "@/components/ui/SignaturePad";
-import { toast } from "sonner";
-import { useBottomNav } from "@/contexts/BottomNavContext";
+import { Action, Panel, Status } from "@/app-v3/design/primitives";
+import { SignatureCapture } from "@/app-v3/design/SignatureCapture";
 
-interface InlineFormSigningProps {
-  pendingForms: any[];
+type Form = {
+  id: number;
+  title: string | null;
+  content: string | null;
+  formType: string;
+  status?: string;
+};
+interface Props {
+  pendingForms: Form[];
+  initialForm?: Form;
   onSuccess?: () => void;
   onClose?: () => void;
-  initialForm?: any;
 }
-
 export function InlineFormSigning({
   pendingForms,
+  initialForm,
   onSuccess,
   onClose,
-  initialForm,
-}: InlineFormSigningProps) {
-  const fab = tokens.fab;
-  const card = tokens.card;
-  const [activeForm, setActiveForm] = useState<any>(
-    initialForm || pendingForms[0]
+}: Props) {
+  const [completed, setCompleted] = useState<number[]>([]);
+  const queue = [initialForm, ...pendingForms]
+    .filter((form): form is Form => !!form)
+    .filter(
+      (form, index, all) =>
+        form.status !== "signed" &&
+        !completed.includes(form.id) &&
+        all.findIndex(other => other.id === form.id) === index
+    );
+  const form = queue[0];
+  return form ? (
+    <SignForm
+      key={form.id}
+      form={form}
+      remaining={queue.length}
+      onClose={onClose}
+      onSigned={() => {
+        setCompleted(previous => [...previous, form.id]);
+        onSuccess?.();
+        if (queue.length === 1) onClose?.();
+      }}
+    />
+  ) : (
+    <Status tone="success">All forms reviewed and signed</Status>
   );
-  const [isSigningPhysical, setIsSigningPhysical] = useState(false);
+}
+function SignForm({
+  form,
+  remaining,
+  onSigned,
+  onClose,
+}: {
+  form: Form;
+  remaining: number;
+  onSigned: () => void;
+  onClose?: () => void;
+}) {
+  const [step, setStep] = useState<"review" | "signature">("review");
+  const [answers, setAnswers] = useState<Record<string, "yes" | "no">>({});
   const [photoPermission, setPhotoPermission] = useState(false);
-  const [checkedItems, setCheckedItems] = useState<
-    Record<number, "yes" | "no">
-  >({});
-
-  const { data: user } = trpc.auth.me.useQuery();
-  const updateProfileMutation = trpc.auth.updateProfile.useMutation();
-  const utils = trpc.useContext();
-
-  const signFormMutation = trpc.forms.signForm.useMutation({
-    onSuccess: () => {
-      utils.clientProfile.getConsentForms.invalidate();
-      utils.clientProfile.getHistory.invalidate();
-      utils.forms.getPendingForms.invalidate();
-
-      toast.success("Form signed successfully");
-      onSuccess?.();
-
-      // Check if there are more forms to sign
-      const currentIndex = pendingForms.findIndex(f => f.id === activeForm.id);
-      const nextForm = pendingForms[currentIndex + 1];
-
-      if (nextForm) {
-        setActiveForm(nextForm);
-        setPhotoPermission(false);
-        setIsSigningPhysical(false);
-        setCheckedItems({});
-      } else {
-        setActiveForm(null);
-        onClose?.();
-      }
-    },
-    onError: err => toast.error("Failed to sign form: " + err.message),
-  });
-
-  const handleSign = async (signature: string) => {
+  const [acknowledged, setAcknowledged] = useState(false);
+  const profile = trpc.auth.me.useQuery();
+  const sign = trpc.forms.signForm.useMutation();
+  const utils = trpc.useUtils();
+  const questions =
+    form.formType === "medical_release"
+      ? Array.from((form.content || "").matchAll(/^(\d+)\.\s(.*)/gm)).map(
+          match => ({ id: match[1], label: match[2] })
+        )
+      : [];
+  const answered = questions.every(question => !!answers[question.id]);
+  async function submit(signature: string) {
+    if (!acknowledged || !answered || sign.isPending) return;
     try {
-      if (!user?.savedSignature) {
-        await updateProfileMutation.mutateAsync({
-          savedSignature: signature,
-        } as any);
-      }
-      await signFormMutation.mutateAsync({
-        formId: activeForm.id,
+      await sign.mutateAsync({
+        formId: form.id,
         signature,
-        answers: checkedItems,
+        answers,
         photoPermission,
       });
-    } catch (err: any) {
-      toast.error("Failed to sign: " + err.message);
-    }
-  };
-
-  if (!activeForm) return null;
-
+      [0, 600, 1500].forEach(delay =>
+        setTimeout(() => {
+          void utils.forms.invalidate();
+          void utils.clientProfile.invalidate();
+          void utils.projects.invalidate();
+          void utils.dashboard.invalidate();
+        }, delay)
+      );
+      onSigned();
+    } catch {}
+  }
   return (
-    <div className="flex flex-col w-full h-full pt-2 pb-6 px-1">
-      <motion.div variants={fab.animation.item} className={fab.itemRow}>
-        <button
-          onClick={() => {
-            if (isSigningPhysical) {
-              setIsSigningPhysical(false);
-              setCheckedItems({});
-            } else {
-              setActiveForm(null);
-              onClose?.();
-            }
-          }}
-          className={fab.itemButton}
-        >
-          <ArrowLeft className={fab.itemIconSize} />
-        </button>
-        <span
-          className={cn(
-            fab.itemLabel,
-            "uppercase tracking-widest font-bold flex-1 truncate pr-2"
-          )}
-        >
-          {activeForm.title}
-        </span>
-      </motion.div>
-
-      <div className="flex flex-col flex-1 mt-4 px-1 gap-4 overflow-hidden">
-        {!isSigningPhysical ? (
-          <motion.div
-            variants={fab.animation.item}
-            className="flex flex-col flex-1 min-h-0"
-          >
-            <ScrollArea
-              className={cn(
-                card.base,
-                card.bg,
-                "flex-1 overflow-auto rounded-[16px] p-4 border-border"
-              )}
-            >
-              {activeForm.formType === "medical_release" ? (
-                <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                  {activeForm.content
-                    .split("\n")
-                    .map((line: string, index: number) => {
-                      const match = line.match(/^(\d+)\.\s(.*)/);
-                      if (match) {
-                        const itemNumber = parseInt(match[1]);
-                        const itemText = match[2];
-                        return (
-                          <div
-                            key={index}
-                            className={cn(
-                              card.base,
-                              card.bg,
-                              "flex flex-col gap-3 p-3 rounded-[16px] border border-border"
-                            )}
-                          >
-                            <label className="text-sm font-medium leading-normal text-foreground/90">
-                              {itemText}
-                            </label>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() =>
-                                  setCheckedItems(prev => ({
-                                    ...prev,
-                                    [itemNumber]: "yes",
-                                  }))
-                                }
-                                className={cn(
-                                  "flex-1 py-2 rounded-[16px] text-sm font-bold uppercase tracking-widest border transition-all",
-                                  checkedItems[itemNumber] === "yes"
-                                    ? "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border-[var(--color-status-warning-border)]"
-                                    : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
-                                )}
-                              >
-                                Yes
-                              </button>
-                              <button
-                                onClick={() =>
-                                  setCheckedItems(prev => ({
-                                    ...prev,
-                                    [itemNumber]: "no",
-                                  }))
-                                }
-                                className={cn(
-                                  "flex-1 py-2 rounded-[16px] text-sm font-bold uppercase tracking-widest border transition-all",
-                                  checkedItems[itemNumber] === "no"
-                                    ? "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border-[var(--color-status-success-border)]"
-                                    : "bg-transparent text-muted-foreground border-border hover:border-border hover:bg-secondary/50"
-                                )}
-                              >
-                                No
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      }
-                      // Standard text rendering for non-numbered medical lines
-                      return (
-                        <p
-                          key={index}
-                          className={
-                            line.startsWith("**")
-                              ? "font-bold text-foreground mb-2 text-xs"
-                              : ""
-                          }
-                        >
-                          {line.replace(/\*\*/g, "")}
-                        </p>
-                      );
-                    })}
-                </div>
-              ) : (
-                <div className="prose prose-invert prose-sm max-w-none text-muted-foreground leading-relaxed whitespace-pre-wrap text-sm">
-                  {activeForm.content}
-                </div>
-              )}
-            </ScrollArea>
-
-            {(() => {
-              const isMedical = activeForm.formType === "medical_release";
-              // Count how many numbered items exist in the string
-              const requiredChecksCount = isMedical
-                ? (activeForm.content.match(/^\d+\.\s/gm) || []).length
-                : 0;
-              const currentChecksCount = Object.values(checkedItems).filter(
-                v => v === "yes" || v === "no"
-              ).length;
-              const proceedDisabled =
-                isMedical && currentChecksCount < requiredChecksCount;
-
-              return (
-                <button
-                  onClick={() => setIsSigningPhysical(true)}
-                  disabled={proceedDisabled}
-                  className="w-full mt-3 py-3 rounded-[16px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-                >
-                  {proceedDisabled
-                    ? `Please Review (${currentChecksCount}/${requiredChecksCount})`
-                    : "Proceed to Signature"}
-                </button>
-              );
-            })()}
-          </motion.div>
-        ) : (
-          <motion.div
-            variants={fab.animation.item}
-            className="flex flex-col flex-1 min-h-0 gap-4"
-          >
-            <div
-              className={cn(
-                card.base,
-                card.bg,
-                "p-4 flex flex-col items-center justify-center gap-4 rounded-[16px] flex-1 overflow-hidden"
-              )}
-            >
-              {activeForm.formType === "procedure_consent" && (
-                <label className="flex gap-3 items-start text-sm leading-relaxed p-3 border rounded-xl">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={photoPermission}
-                    onChange={e => setPhotoPermission(e.target.checked)}
-                  />
-                  <span>
-                    I allow my artist to publish photos of this tattoo.{" "}
-                    <strong>Optional</strong> — leaving this unchecked does not
-                    affect my booking.
-                  </span>
-                </label>
-              )}
-              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground text-center">
-                {user?.savedSignature
-                  ? "Use Saved Signature or Draw New"
-                  : "Physical Signature Required"}
-              </p>
-
-              {user?.savedSignature ? (
-                <div className="w-full space-y-3 flex flex-col items-center">
-                  <div className="bg-secondary/50 rounded-[16px] border border-border p-4 flex justify-center w-full">
-                    <img
-                      src={user.savedSignature}
-                      alt="Saved Signature"
-                      className="h-16 w-auto invert dark:invert-0 grayscale opacity-90"
-                    />
-                  </div>
-                  <button
-                    onClick={() => handleSign(user.savedSignature!)}
-                    disabled={signFormMutation.isPending}
-                    className="w-full py-2.5 rounded-[16px] text-sm font-bold uppercase tracking-wider transition-all active:scale-95 bg-primary text-primary-foreground flex items-center justify-center gap-2"
+    <div className="v3-stack">
+      <h2>{form.title || "Your form"}</h2>
+      <p className="v3-muted">
+        {remaining} form{remaining === 1 ? "" : "s"} remaining
+      </p>
+      {step === "review" ? (
+        <>
+          <Panel>
+            <div style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+              {(form.content || "").split("\n").map((line, index) => {
+                const match =
+                  form.formType === "medical_release"
+                    ? /^(\d+)\.\s(.*)/.exec(line)
+                    : null;
+                return match ? (
+                  <fieldset
+                    key={index}
+                    className="v3-form"
+                    disabled={sign.isPending}
                   >
-                    {signFormMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                    Sign with Saved Signature
-                  </button>
-
-                  <div className="relative flex py-1 items-center w-full">
-                    <div className="flex-grow border-t border-border"></div>
-                    <span className="flex-shrink-0 mx-4 text-muted-foreground text-[9px] uppercase tracking-widest font-bold">
-                      Or
-                    </span>
-                    <div className="flex-grow border-t border-border"></div>
-                  </div>
-
-                  <div className="w-full min-h-[140px] flex-1">
-                    <SignaturePad
-                      onSave={handleSign}
-                      className="w-full rounded-[16px] h-full"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full flex-1">
-                  <SignaturePad
-                    onSave={handleSign}
-                    className="w-full rounded-[16px] h-full"
-                  />
-                </div>
-              )}
-
-              {signFormMutation.isPending && !user?.savedSignature && (
-                <div className="flex items-center gap-2 text-primary text-sm font-bold uppercase tracking-widest animate-pulse">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  Saving Signature...
-                </div>
-              )}
+                    <legend>{match[2]}</legend>
+                    <div className="v3-inline">
+                      {(["yes", "no"] as const).map(answer => (
+                        <label key={answer} className="v3-inline">
+                          <input
+                            type="radio"
+                            name={`medical-${form.id}-${match[1]}`}
+                            value={answer}
+                            checked={answers[match[1]] === answer}
+                            onChange={() =>
+                              setAnswers(current => ({
+                                ...current,
+                                [match[1]]: answer,
+                              }))
+                            }
+                          />
+                          {answer === "yes" ? "Yes" : "No"}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                ) : (
+                  <div key={index}>{line || "\u00a0"}</div>
+                );
+              })}
             </div>
-          </motion.div>
-        )}
-      </div>
+          </Panel>
+          <Action disabled={!answered} onClick={() => setStep("signature")}>
+            {answered
+              ? "Continue to signature"
+              : "Answer every medical question to continue"}
+          </Action>
+          {onClose && (
+            <Action tone="quiet" onClick={onClose}>
+              Finish later
+            </Action>
+          )}
+        </>
+      ) : (
+        <>
+          <Action
+            tone="quiet"
+            disabled={sign.isPending}
+            onClick={() => setStep("review")}
+          >
+            Review form again
+          </Action>
+          {form.formType === "procedure_consent" && (
+            <label className="v3-inline">
+              <input
+                type="checkbox"
+                checked={photoPermission}
+                disabled={sign.isPending}
+                onChange={event => setPhotoPermission(event.target.checked)}
+              />
+              <span>
+                I allow my artist to publish photos of this tattoo. Optional;
+                leaving this unchecked does not affect my booking.
+              </span>
+            </label>
+          )}
+          <label className="v3-inline">
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              disabled={sign.isPending}
+              onChange={event => setAcknowledged(event.target.checked)}
+            />
+            <span>
+              I have read this form and my answers are accurate. I agree to sign
+              this version.
+            </span>
+          </label>
+          {profile.data?.savedSignature && (
+            <Panel>
+              <img
+                className="v3-saved-signature"
+                src={profile.data.savedSignature}
+                alt="Your saved signature"
+              />
+              <Action
+                disabled={!acknowledged || sign.isPending}
+                onClick={() => submit(profile.data!.savedSignature!)}
+              >
+                Sign with saved signature
+              </Action>
+            </Panel>
+          )}
+          <SignatureCapture
+            disabled={!acknowledged || sign.isPending}
+            onSave={submit}
+          />
+          {sign.isPending && <p role="status">Recording your signed form…</p>}
+          {sign.error && <p role="alert">{sign.error.message}</p>}
+        </>
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ function fixture() {
           bookingId: 1,
           amountCents: 10000,
           platformFeeCents: 200,
+          artistFeeCents: 100,
           transactionType: "deposit",
           paymentMethod: "card",
         }),
@@ -60,6 +61,19 @@ describe("cumulative refund reconciliation", () => {
       [-10000, 0],
       [0, -200],
     ]);
+    expect(f.update).toHaveBeenCalledTimes(1);
+  });
+  it("records confirmed artist-fee reversals once even when fee notification arrives later", async () => {
+    const f = fixture();
+    await reconcileChargeRefund(f.db, charge(10200), 0);
+    expect(f.rows[0].artistFeeCents).toBe(0);
+    await reconcileChargeRefund(f.db, charge(10200), 150);
+    expect(f.rows[1]).toMatchObject({ amountCents: 0, artistFeeCents: -50 });
+    await reconcileChargeRefund(f.db, charge(10200), 300);
+    expect(f.rows[2]).toMatchObject({ amountCents: 0, artistFeeCents: -50 });
+    await reconcileChargeRefund(f.db, charge(10200), 150);
+    await reconcileChargeRefund(f.db, charge(10200), 300);
+    expect(f.rows).toHaveLength(3);
     expect(f.update).toHaveBeenCalledTimes(1);
   });
   it("ignores repeated and out-of-order cumulative totals", async () => {

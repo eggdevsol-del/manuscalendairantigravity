@@ -13,8 +13,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTour } from "./TooltipTourProvider";
 import "./tooltipTour.css";
 
-const PADDING = 8;  // padding around the spotlight hole
-const RADIUS = 12;  // corner radius of the spotlight hole
+const PADDING = 8; // padding around the spotlight hole
+const RADIUS = 12; // corner radius of the spotlight hole
 
 interface Rect {
   top: number;
@@ -24,7 +24,8 @@ interface Rect {
 }
 
 export function TooltipOverlay() {
-  const { activeTour, currentStep, getTarget, nextStep, skipTour } = useTooltipTour();
+  const { activeTour, currentStep, getTarget, nextStep, skipTour } =
+    useTooltipTour();
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
   const [viewportSize, setViewportSize] = useState({
     w: document.documentElement.clientWidth,
@@ -97,7 +98,7 @@ export function TooltipOverlay() {
     };
   }, [scrollAndMeasure, measureTarget]);
 
-  if (!activeTour) return null;
+  if (!activeTour || activeTour.id.startsWith("v3-")) return null;
 
   const step = activeTour.steps[currentStep];
   if (!step) return null;
@@ -118,13 +119,19 @@ export function TooltipOverlay() {
   if (targetRect) {
     // Horizontal: center on target, clamp to viewport
     const idealLeft = targetRect.left + targetRect.width / 2 - bubbleWidth / 2;
-    const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, viewportSize.w - bubbleWidth - MARGIN));
+    const clampedLeft = Math.max(
+      MARGIN,
+      Math.min(idealLeft, viewportSize.w - bubbleWidth - MARGIN)
+    );
 
     if (position === "bottom") {
       const top = targetRect.top + targetRect.height + 14;
       // If bubble would go below viewport (accounting for nav bar), flip to top
       if (top + 180 > viewportSize.h - BOTTOM_SAFE) {
-        const bottomVal = Math.max(MARGIN, viewportSize.h - targetRect.top + 14);
+        const bottomVal = Math.max(
+          MARGIN,
+          viewportSize.h - targetRect.top + 14
+        );
         tooltipStyle = {
           bottom: Math.min(bottomVal, viewportSize.h - MARGIN),
           left: clampedLeft,
@@ -151,13 +158,19 @@ export function TooltipOverlay() {
           top: Math.max(MARGIN, targetRect.top + targetRect.height + 14),
           left: clampedLeft,
           width: bubbleWidth,
-          maxHeight: viewportSize.h - (targetRect.top + targetRect.height + 14) - BOTTOM_SAFE,
+          maxHeight:
+            viewportSize.h -
+            (targetRect.top + targetRect.height + 14) -
+            BOTTOM_SAFE,
           overflowY: "auto",
         };
         arrowClass = "tooltip-tour-arrow-top";
       } else {
         tooltipStyle = {
-          bottom: Math.min(Math.max(MARGIN, bottomVal), viewportSize.h - MARGIN),
+          bottom: Math.min(
+            Math.max(MARGIN, bottomVal),
+            viewportSize.h - MARGIN
+          ),
           left: clampedLeft,
           width: bubbleWidth,
           maxHeight: targetRect.top - MARGIN * 2,
@@ -243,7 +256,9 @@ export function TooltipOverlay() {
         >
           <div className="tooltip-tour-bubble-inner">
             {/* Arrow */}
-            {targetRect && <div className={`tooltip-tour-arrow ${arrowClass}`} />}
+            {targetRect && (
+              <div className={`tooltip-tour-arrow ${arrowClass}`} />
+            )}
 
             <p className="tooltip-tour-title">{step.title}</p>
             <p className="tooltip-tour-body">{step.body}</p>

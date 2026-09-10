@@ -1,3 +1,7 @@
+import {
+  validateSupplierItem,
+  resolveSupplierShipping,
+} from "../domain/supplierCheckout";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 /**
  * Supplier Orders Router
@@ -91,12 +95,18 @@ export const supplierOrdersRouter = router({
         items: z
           .array(
             z.object({
-              productId: z.number(),
-              variantId: z.number(),
-              quantity: z.number().min(1),
+              productId: z.number().int().positive(),
+              variantId: z.number().int().positive(),
+              quantity: z.number().int().min(1).max(10000),
             })
           )
-          .min(1),
+          .min(1)
+          .max(100)
+          .refine(
+            items =>
+              new Set(items.map(item => item.variantId)).size === items.length,
+            "Combine duplicate variants into one order line."
+          ),
         shippingRateName: z.string().optional(),
       })
     )
@@ -153,6 +163,12 @@ export const supplierOrdersRouter = router({
         const variant = variants.find(v => v.id === item.variantId);
         if (!variant) throw new Error(`Variant ${item.variantId} not found`);
 
+        validateSupplierItem(
+          input.supplierId,
+          item.productId,
+          item.quantity,
+          variant
+        );
         if (variant.inventoryCount < item.quantity) {
           throw new Error(
             `"${variant.product.title}" is out of stock or insufficient quantity.`
@@ -187,29 +203,17 @@ export const supplierOrdersRouter = router({
       const fees = calculateTransactionFees(subtotalArtistCents, tier);
 
       // 6. Resolve shipping (in supplier currency → convert)
-      let shippingSupplierCents = 0;
-      if (input.shippingRateName) {
-        const zones = await db.query.supplierShippingZones.findMany({
-          where: eq(schema.supplierShippingZones.supplierId, input.supplierId),
-          with: { rates: true },
-        });
-
-        for (const zone of zones) {
-          const countryCodes = JSON.parse(zone.countryCodes || "[]");
-          if (
-            countryCodes.includes(artistCountry) ||
-            countryCodes.includes("*")
-          ) {
-            const matchingRate = zone.rates.find(
-              r => r.name === input.shippingRateName
-            );
-            if (matchingRate) {
-              shippingSupplierCents = matchingRate.priceCents;
-              break;
-            }
-          }
-        }
-      }
+      const zones = await db.query.supplierShippingZones.findMany({
+        where: eq(schema.supplierShippingZones.supplierId, input.supplierId),
+        with: { rates: true },
+      });
+      const shippingSupplierCents = resolveSupplierShipping(
+        zones,
+        artistCountry,
+        supplierCurrency,
+        subtotalSupplierCents,
+        input.shippingRateName
+      );
 
       const shippingArtistCents = Math.round(
         shippingSupplierCents * exchangeRate

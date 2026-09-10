@@ -1,5 +1,5 @@
-import Purchases from "@/features/storefront/Purchases";
-import WaitlistPage from "@/features/bookings/WaitlistPage";
+import Purchases from "@/app-v3/pages/Purchases";
+import WaitlistPage from "@/app-v3/pages/Waitlist";
 import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
 import { Redirect, Route, Switch } from "wouter";
@@ -7,7 +7,7 @@ import BottomNav from "@/app-v3/design/Navigation";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
-import ClientHome from "@/features/client-home/ClientHome";
+import ClientHome from "@/app-v3/pages/Discover";
 import Conversations from "@/app-v3/pages/Inbox";
 import Chat from "@/app-v3/pages/Inbox";
 import BookingsPage from "@/app-v3/pages/ClientBookings";

@@ -1,4 +1,4 @@
-import Purchases from "@/features/storefront/Purchases";
+import Purchases from "@/app-v3/pages/Purchases";
 import React from "react";
 import { Redirect, Route, Switch, useLocation } from "wouter";
 import BottomNav from "@/app-v3/design/Navigation";

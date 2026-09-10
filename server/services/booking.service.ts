@@ -4,6 +4,13 @@ import { TRPCError } from "@trpc/server";
 export interface WorkDay {
   day: string;
   enabled: boolean;
+  type?: string;
+  breaks?: {
+    start?: string;
+    end?: string;
+    startTime?: string;
+    endTime?: string;
+  }[];
   start?: string;
   startTime?: string;
   end?: string;
@@ -50,7 +57,15 @@ export function parseTime(
     hour = parseInt(parts[0], 10);
     minute = parseInt(parts[1], 10);
 
-    if (isNaN(hour) || isNaN(minute)) return null;
+    if (
+      isNaN(hour) ||
+      isNaN(minute) ||
+      minute < 0 ||
+      minute > 59 ||
+      hour < 0 ||
+      hour > (isAM || isPM ? 12 : 23)
+    )
+      return null;
 
     if (isPM && hour < 12) hour += 12;
     if (isAM && hour === 12) hour = 0;
@@ -102,26 +117,42 @@ export function parseWorkSchedule(scheduleJson: string | any): WorkDay[] {
 /**
  * Finds the maximum consecutive minutes available in the work schedule.
  */
+/** Continuous bookable intervals in local minutes. Design/personal days never produce tattoo slots. */
+export function workingWindows(day: WorkDay): { start: number; end: number }[] {
+  if (!day.enabled || (day.type && day.type !== "work")) return [];
+  const minutes = (value?: string) => {
+    const parsed = parseTime(value || "");
+    return parsed ? parsed.hour * 60 + parsed.minute : null;
+  };
+  const start = minutes(day.start || day.startTime),
+    end = minutes(day.end || day.endTime);
+  if (start === null || end === null || end <= start) return [];
+  let windows = [{ start, end }];
+  if (day.breaks !== undefined && !Array.isArray(day.breaks)) return [];
+  for (const pause of day.breaks || []) {
+    const a = minutes(pause?.start || pause?.startTime),
+      b = minutes(pause?.end || pause?.endTime);
+    if (a === null || b === null || b <= a) return [];
+    windows = windows.flatMap(window =>
+      a >= window.end || b <= window.start
+        ? [window]
+        : [
+            ...(a > window.start ? [{ start: window.start, end: a }] : []),
+            ...(b < window.end ? [{ start: b, end: window.end }] : []),
+          ]
+    );
+  }
+  return windows;
+}
 export function getMaxDailyMinutes(workSchedule: WorkDay[]): number {
-  return workSchedule.reduce((max, day) => {
-    if (!day.enabled) return max;
-    const startStr = day.start || day.startTime;
-    const endStr = day.end || day.endTime;
-
-    if (!startStr || !endStr) return max;
-
-    const s = parseTime(startStr);
-    const e = parseTime(endStr);
-
-    if (!s || !e) return max;
-
-    let startMins = s.hour * 60 + s.minute;
-    let endMins = e.hour * 60 + e.minute;
-
-    if (endMins < startMins) endMins += 24 * 60; // Overnight
-
-    return Math.max(max, endMins - startMins);
-  }, 0);
+  return workSchedule.reduce(
+    (max, day) =>
+      Math.max(
+        max,
+        ...workingWindows(day).map(window => window.end - window.start)
+      ),
+    0
+  );
 }
 
 /**
@@ -189,8 +220,11 @@ export function findNextAvailableSlot(
         const endTotal = e.hour * 60 + e.minute;
 
         if (
-          currentTotal >= startTotal &&
-          currentTotal + durationMinutes <= endTotal
+          workingWindows(schedule).some(
+            window =>
+              currentTotal >= window.start &&
+              currentTotal + durationMinutes <= window.end
+          )
         ) {
           // Check appointments
           const potentialEnd = new Date(
@@ -298,8 +332,11 @@ export function findNextAvailableSlotOptimized(
         const endTotal = e.hour * 60 + e.minute;
 
         if (
-          currentTotal >= startTotal &&
-          currentTotal + durationMinutes <= endTotal
+          workingWindows(schedule).some(
+            window =>
+              currentTotal >= window.start &&
+              currentTotal + durationMinutes <= window.end
+          )
         ) {
           // Check appointments
           const potentialEnd = new Date(
@@ -383,6 +420,18 @@ export function validateAppointmentForWorkHours(
     return { valid: false, reason: `End time extends past closing.` };
   }
 
+  if (
+    !workingWindows(schedule).some(
+      window =>
+        currentTotal >= window.start &&
+        currentTotal + durationMinutes <= window.end
+    )
+  ) {
+    return {
+      valid: false,
+      reason: "This time overlaps a break or a non-tattooing day.",
+    };
+  }
   return { valid: true };
 }
 

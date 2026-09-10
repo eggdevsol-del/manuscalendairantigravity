@@ -484,6 +484,7 @@ export async function createPaymentRequestCheckoutSession(opts: {
   stripeConnectAccountId?: string;
   tier: string;
   token: string;
+  previousSessionId?: string;
 }): Promise<{
   url: string | null;
   clientSecret: string | null;
@@ -537,7 +538,9 @@ export async function createPaymentRequestCheckoutSession(opts: {
     };
   }
 
-  const session = await stripe.checkout.sessions.create(sessionConfig);
+  const session = await stripe.checkout.sessions.create(sessionConfig, {
+    idempotencyKey: `payment-request:${opts.requestId}:${opts.previousSessionId || "initial"}:${opts.clientTotalCents}`,
+  });
   return {
     url: session.url,
     clientSecret: session.client_secret,
@@ -1116,12 +1119,10 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 ),
               });
               for (const member of members)
-                await db
-                  .insert(notificationOutbox)
-                  .values({
-                    eventType: "studio_cancel_pro_renewal",
-                    payloadJson: JSON.stringify({ userId: member.userId }),
-                  });
+                await db.insert(notificationOutbox).values({
+                  eventType: "studio_cancel_pro_renewal",
+                  payloadJson: JSON.stringify({ userId: member.userId }),
+                });
             }
             console.log(
               `[Stripe] Upgraded Studio ${studioId} to Active Subscription ${subscriptionId}`
@@ -1708,7 +1709,24 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         }
 
         case "charge.refunded": {
-          await reconcileChargeRefund(db, event.data.object as Stripe.Charge);
+          const charge = event.data.object as Stripe.Charge;
+          const feeId =
+            typeof charge.application_fee === "string"
+              ? charge.application_fee
+              : charge.application_fee?.id;
+          const fee = feeId
+            ? await stripe.applicationFees.retrieve(feeId)
+            : null;
+          await reconcileChargeRefund(db, charge, fee?.amount_refunded || 0);
+          break;
+        }
+
+        case "application_fee.refunded": {
+          const fee = event.data.object as Stripe.ApplicationFee;
+          const chargeId =
+            typeof fee.charge === "string" ? fee.charge : fee.charge.id;
+          const charge = await stripe.charges.retrieve(chargeId);
+          await reconcileChargeRefund(db, charge, fee.amount_refunded);
           break;
         }
 

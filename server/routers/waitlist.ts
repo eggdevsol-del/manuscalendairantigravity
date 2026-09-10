@@ -1,3 +1,4 @@
+import { PAYMENT_TIERS, roundCents } from "../../shared/fees";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
 import { and, eq, desc, lt, gt, ne } from "drizzle-orm";
@@ -138,6 +139,23 @@ export const waitlistRouter = router({
           throw new TRPCError({
             code: "CONFLICT",
             message: "This entry cannot receive another offer.",
+          });
+        const settings = await db.query.artistSettings.findFirst({
+          where: eq(schema.artistSettings.userId, ctx.user.id),
+        });
+        const tier = await effectivePaymentTier(settings);
+        if (
+          !PAYMENT_TIERS[tier].depositCustomisable &&
+          input.depositCents !==
+            roundCents(
+              (input.estimateCents *
+                PAYMENT_TIERS[tier].defaultDepositPercent) /
+                100
+            )
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Free plan deposits must be 25% of the session estimate.",
           });
         const start = new Date(input.startsAt),
           end = new Date(+start + input.durationMinutes * 60000),

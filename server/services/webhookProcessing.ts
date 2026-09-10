@@ -42,7 +42,15 @@ export async function processWebhookOnce(
 ) {
   return withDatabaseTransaction(async db => {
     // Serialise events for the same Stripe resource (including cumulative refunds).
-    const resourceId = (event.data.object as { id: string }).id;
+    const feeCharge =
+      event.type === "application_fee.refunded"
+        ? (event.data.object as Stripe.ApplicationFee).charge
+        : null;
+    const resourceId = feeCharge
+      ? typeof feeCharge === "string"
+        ? feeCharge
+        : feeCharge.id
+      : (event.data.object as { id: string }).id;
     const resourceKey = `resource:${resourceId}`;
     await db
       .insert(stripeWebhookEvents)

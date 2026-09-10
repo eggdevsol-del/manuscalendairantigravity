@@ -45,35 +45,43 @@ class ErrorBoundary extends Component<Props, State> {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            padding: "48px 24px",
+            padding:
+              "calc(var(--app-safe-top, 0px) + 32px) 24px calc(var(--app-safe-bottom, 0px) + 32px)",
+            background: "var(--v3-paper, #faf9f6)",
+            color: "var(--v3-ink, #242522)",
             textAlign: "center",
             minHeight: "200px",
             gap: "16px",
           }}
         >
-          <div style={{ fontSize: "32px" }}>😵</div>
           <h3
-            style={{ fontSize: "16px", fontWeight: 700, color: "#e8e6f0" }}
+            style={{
+              fontSize: "16px",
+              fontWeight: 700,
+              color: "var(--v3-ink, #242522)",
+            }}
           >
             Something went wrong
           </h3>
           <p
             style={{
               fontSize: "13px",
-              color: "#9896a8",
+              color: "var(--v3-muted, #666860)",
               maxWidth: "320px",
             }}
           >
-            This error has been logged automatically.
+            This part of the page couldn’t load. Try again, or reload the app if
+            the problem continues.
           </p>
           <button
             onClick={this.handleRetry}
             style={{
-              padding: "8px 20px",
+              padding: "12px 20px",
+              minHeight: "44px",
               borderRadius: "8px",
-              border: "1px solid rgba(120,100,255,0.3)",
-              background: "rgba(124,106,255,0.15)",
-              color: "#9b8aff",
+              border: "1px solid var(--v3-line, #d9d8d1)",
+              background: "var(--v3-gold, #cfb878)",
+              color: "var(--v3-ink, #242522)",
               fontWeight: 600,
               fontSize: "13px",
               cursor: "pointer",

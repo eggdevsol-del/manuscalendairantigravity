@@ -1,11 +1,14 @@
-import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
-import Purchases from "@/features/storefront/Purchases";
-import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
-import WaitlistPage from "@/features/bookings/WaitlistPage";
+import Products from "@/app-v3/pages/Products";
+import Events from "@/app-v3/pages/Events";
+import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
+import Studio from "@/app-v3/pages/Studio";
+import Purchases from "@/app-v3/pages/Purchases";
+import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
+import WaitlistPage from "@/app-v3/pages/Waitlist";
 import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
 import BusinessPage, { Money as MoneyPage } from "@/app-v3/pages/Business";
-import { SuppliesPage } from "@/features/workspace/BusinessPage";
+import SuppliesPage from "@/app-v3/pages/Supplies";
 import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/app-v3/design/Navigation";
 
@@ -16,16 +19,18 @@ import Conversations from "@/app-v3/pages/Inbox";
 import Chat from "@/app-v3/pages/Inbox";
 import Calendar from "@/app-v3/pages/Calendar";
 import Settings from "@/app-v3/pages/Settings";
-import ArtistProfileTab from "@/pages/ArtistProfileTab";
+import ArtistProfileTab from "@/app-v3/pages/ArtistProfile";
 import WorkHours from "@/app-v3/pages/WorkingHours";
 import Clients from "@/app-v3/pages/Clients";
-import BankPayoutsPage from "@/pages/BankPayoutsPage";
-import PayoutHistory from "@/pages/PayoutHistory";
-import NotificationsManagement from "@/pages/NotificationsManagement";
-import Subscriptions from "@/pages/Subscriptions";
-import LeadDetail from "@/pages/LeadDetail";
-import Reconciliation from "@/pages/admin/Reconciliation";
-import ErrorDashboard from "@/pages/admin/ErrorDashboard";
+import BankPayoutsPage from "@/app-v3/pages/Bank";
+import PayoutHistory from "@/app-v3/pages/PayoutHistory";
+import NotificationsManagement from "@/app-v3/pages/Notifications";
+import Subscriptions from "@/app-v3/pages/Plans";
+import LeadDetail from "@/app-v3/pages/Lead";
+import {
+  Operations as Reconciliation,
+  ErrorReports as ErrorDashboard,
+} from "@/app-v3/pages/Operations";
 import NotFound from "@/pages/NotFound";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { ArrivalToast } from "@/components/ArrivalToast";
@@ -35,11 +40,10 @@ export default function ArtistShell() {
     <div className="artist-workspace min-h-screen">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/studio">
-            <StudioDashboardSettings
-              onBack={() => window.location.assign("/settings")}
-            />
-          </Route>
+          <Route path="/products" component={Products} />
+          <Route path="/artist-events" component={Events} />
+          <Route path="/store-orders" component={StoreOrders} />
+          <Route path="/studio" component={Studio} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
             <Redirect to="/dashboard" />

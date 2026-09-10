@@ -7,7 +7,12 @@ import { effectivePaymentTier } from "../services/paymentEntitlements";
  */
 
 import { z } from "zod";
-import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
+import {
+  router,
+  publicProcedure,
+  protectedProcedure,
+  artistProcedure,
+} from "../_core/trpc";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
@@ -1199,6 +1204,36 @@ export const funnelRouter = router({
    * Get leads for artist dashboard
    * PROTECTED - requires authentication
    */
+  getLead: artistProcedure
+    .input(z.object({ leadId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable.");
+      const lead = await db.query.leads.findFirst({
+        where: and(
+          eq(schema.leads.id, input.leadId),
+          eq(schema.leads.artistId, ctx.user.id)
+        ),
+      });
+      if (!lead) throw new Error("This request could not be found.");
+      const list = (value: string | null): string[] => {
+        try {
+          const parsed: unknown = JSON.parse(value || "[]");
+          return Array.isArray(parsed)
+            ? parsed.filter((item): item is string => typeof item === "string")
+            : [];
+        } catch {
+          return [];
+        }
+      };
+      return {
+        ...lead,
+        stylePreferences: list(lead.stylePreferences),
+        referenceImages: list(lead.referenceImages),
+        bodyPlacementImages: list(lead.bodyPlacementImages),
+        preferredMonths: list(lead.preferredMonths),
+      };
+    }),
   getLeads: protectedProcedure
     .input(
       z.object({
@@ -1800,7 +1835,13 @@ export const funnelRouter = router({
         where: eq(schema.users.id, request.clientId),
       });
 
+      const { calculateTransactionFees } = await import("../domain/fees");
+      const fees = calculateTransactionFees(
+        request.amountCents,
+        await effectivePaymentTier(artistSettings)
+      );
       return {
+        fees,
         requestId: request.id,
         amountCents: request.amountCents,
         status: request.status,
@@ -1872,6 +1913,43 @@ export const funnelRouter = router({
       const tier = await effectivePaymentTier(artistSettings);
       const fees = calculateTransactionFees(request.amountCents, tier);
 
+      if (
+        appointment.status === "cancelled" ||
+        request.amountCents >
+          Math.max(
+            0,
+            (appointment.totalExpectedAmountCents ??
+              (appointment.price || 0) * 100) -
+              (appointment.totalPaidAmountCents || 0)
+          )
+      )
+        return { error: "booking_changed" };
+      if (
+        !artistSettings?.stripeConnectAccountId ||
+        artistSettings.stripeConnectOnboardingComplete !== 1
+      )
+        return { error: "artist_payment_setup_required" };
+      if (request.stripeCheckoutSessionId) {
+        const { stripe } = await import("../services/stripe");
+        if (!request.stripeCheckoutSessionId.startsWith("cs_"))
+          return { error: "existing_payment_needs_review" };
+        const existing = await stripe.checkout.sessions.retrieve(
+          request.stripeCheckoutSessionId
+        );
+        if (existing.status === "complete")
+          return { error: "payment_confirming" };
+        if (
+          existing.status === "open" &&
+          existing.amount_total === fees.clientTotalCents
+        )
+          return {
+            clientSecret: existing.client_secret,
+            url: existing.url,
+            fees,
+          };
+        if (existing.status === "open")
+          await stripe.checkout.sessions.expire(existing.id);
+      }
       // Create Stripe Checkout Session
       const { createPaymentRequestCheckoutSession } =
         await import("../services/stripe");
@@ -1895,6 +1973,7 @@ export const funnelRouter = router({
           artistSettings?.stripeConnectAccountId || undefined,
         tier,
         token: input.token,
+        previousSessionId: request.stripeCheckoutSessionId || undefined,
       });
 
       // Update payment request with checkout session ID
@@ -1906,6 +1985,7 @@ export const funnelRouter = router({
       }
 
       return {
+        fees,
         clientSecret: session.clientSecret,
         url: session.url,
       };

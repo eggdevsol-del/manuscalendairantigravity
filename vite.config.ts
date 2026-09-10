@@ -11,7 +11,6 @@ const plugins = [
   react(),
   tailwindcss(),
   // jsxLocPlugin(),
-  vitePluginManusRuntime(),
   VitePWA({
     strategies: "injectManifest",
     srcDir: "src",
@@ -51,6 +50,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       ...plugins,
+      ...(mode === "development" ? [vitePluginManusRuntime()] : []),
       {
         name: "html-transform",
         transformIndexHtml(html) {

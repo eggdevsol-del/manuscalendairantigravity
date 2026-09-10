@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import {
   Package,
   ShoppingBag,
@@ -23,7 +24,7 @@ import {
   Status,
   Tabs,
 } from "../design/primitives";
-import { ShopifySyncTier } from "@/features/merchant/ShopifySyncTier";
+import { ShopifyCatalogue as ShopifySyncTier } from "./Integrations";
 export default function SupplierToday() {
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
   const stats = trpc.merchantAuth.getDashboardStats.useQuery();
@@ -85,6 +86,7 @@ export default function SupplierToday() {
   );
 }
 export function SupplierOrders() {
+  const { user } = useAuth();
   const [tab, setTab] = useState<"To fulfil" | "Fulfilled" | "All">(
     "To fulfil"
   );
@@ -106,7 +108,12 @@ export function SupplierOrders() {
   );
   const order = query.data?.find(o => o.id === selected);
   return (
-    <Screen title="Orders" subtitle="From paid to delivered" wide>
+    <Screen
+      title="Orders"
+      subtitle="From paid to delivered"
+      wide
+      back={user?.role === "merchant" ? undefined : "/artist-profile"}
+    >
       <Tabs
         items={["To fulfil", "Fulfilled", "All"] as const}
         value={tab}
@@ -130,7 +137,7 @@ export function SupplierOrders() {
             <Row
               key={o.id}
               title={`Order #${o.id}`}
-              detail={`${o.buyerName || o.buyerEmail || "Customer"} · ${money(o.totalAmountCents)}`}
+              detail={`${o.buyerName || o.buyerEmail || "Customer"} · ${money(o.totalAmountCents, o.currency)}`}
               onClick={() => setSelected(o.id)}
               trailing={
                 <Status tone={o.status === "fulfilled" ? "success" : "neutral"}>
@@ -167,7 +174,10 @@ export function SupplierOrders() {
                     title={`${i.quantity} × ${i.productName || i.product?.title || "Item"}`}
                     trailing={
                       <strong>
-                        {money(i.priceAtPurchaseCents * i.quantity)}
+                        {money(
+                          i.priceAtPurchaseCents * i.quantity,
+                          order.currency
+                        )}
                       </strong>
                     }
                   />
@@ -175,7 +185,11 @@ export function SupplierOrders() {
               </Section>
               <Row
                 title="Total"
-                trailing={<strong>{money(order.totalAmountCents)}</strong>}
+                trailing={
+                  <strong>
+                    {money(order.totalAmountCents, order.currency)}
+                  </strong>
+                }
               />
               <Section title={statusLabel(order.fulfillmentMethod)}>
                 <p>{order.buyerName || order.buyerEmail}</p>

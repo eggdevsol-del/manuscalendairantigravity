@@ -1,4 +1,6 @@
 import React, { Suspense } from "react";
+import { GuideOverlay } from "@/app-v3/pages/Guides";
+import { Feedback, Screen } from "@/app-v3/design/primitives";
 import { ActionPanel } from "@/components/ActionPanel";
 import { Toaster, TooltipProvider } from "@/components/ui";
 import { UIDebugProvider } from "@/_core/contexts/UIDebugContext";
@@ -18,24 +20,24 @@ import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 import PublicArtistProfile from "@/app-v3/pages/PublicArtist";
 
-import MagicLink from "./pages/MagicLink";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import SetPassword from "./pages/SetPassword";
-import PasswordRecovery from "./pages/PasswordRecovery";
-import CompleteProfile from "./pages/CompleteProfile";
-import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
-import { PublicFunnel } from "./pages/funnel";
+import {
+  Login,
+  Signup,
+  PasswordRecovery,
+  PasswordRecovery as SetPassword,
+  MagicLink,
+  CompleteProfile,
+} from "@/app-v3/pages/Identity";
+
+import PublicStudioFunnel from "./app-v3/pages/PublicStudio";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import { BalanceSheet } from "./pages/funnel/BalanceSheet";
-import { PaymentRequestSheet } from "./pages/funnel/PaymentRequestSheet";
-import PublicStorefront from "./pages/public/PublicStorefront";
-import PublicEvents from "./pages/public/PublicEvents";
-import ArtistHub from "./pages/public/ArtistHub";
+import { PaymentRequestPage as PaymentRequestSheet } from "./app-v3/pages/PaymentLinks";
+import { PublicStorefront, PublicEvents } from "./app-v3/pages/PublicCommerce";
 
-import ArtistShell from "./shells/ArtistShell";
-import ClientShell from "./shells/ClientShell";
-import MerchantShell from "./shells/MerchantShell";
+const ArtistShell = React.lazy(() => import("./shells/ArtistShell"));
+const ClientShell = React.lazy(() => import("./shells/ClientShell"));
+const MerchantShell = React.lazy(() => import("./shells/MerchantShell"));
 
 function getRedirectUrlForRole(role: string, path: string = "") {
   const { hostname, port, protocol } = window.location;
@@ -92,19 +94,32 @@ function GuardedShell() {
   const isArtist = userRole === "artist" || userRole === "admin";
   const isMerchant = userRole === "merchant";
 
-  if (isArtist) {
-    return <ArtistShell />;
-  } else if (isMerchant) {
-    return <MerchantShell />;
-  } else {
-    return <ClientShell />;
-  }
+  return (
+    <Suspense
+      fallback={
+        <Screen title="Opening your workspace">
+          <Feedback loading />
+        </Screen>
+      }
+    >
+      {isArtist ? (
+        <ArtistShell />
+      ) : isMerchant ? (
+        <MerchantShell />
+      ) : (
+        <ClientShell />
+      )}
+    </Suspense>
+  );
 }
 
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
   "business",
+  "products",
+  "artist-events",
+  "store-orders",
   "supplies",
   "money",
   "artist-profile",
@@ -151,7 +166,7 @@ function CatchAllRoute() {
 
   // For client users (or unauthenticated), route unknown slugs to public pages
   const isClient = !user || user.role === "client";
-  if (isClient && firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
+  if (firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
     // /shop/:slug → PublicStorefront
     if (firstSegment === "shop" && segments.length >= 2) {
       return <PublicStorefront />;
@@ -162,7 +177,7 @@ function CatchAllRoute() {
     }
     // /:slug (single segment, not a known route) → ArtistHub
     if (segments.length === 1) {
-      return <ArtistHub />;
+      return <PublicArtistProfile hub />;
     }
   }
 
@@ -191,9 +206,11 @@ function Router() {
 
   // Initialize OneSignal
   React.useEffect(() => {
-    import("@/lib/onesignal").then(({ initializeOneSignal }) => {
-      initializeOneSignal();
-    });
+    void import("@/lib/onesignal")
+      .then(({ initializeOneSignal }) => initializeOneSignal())
+      .catch(error =>
+        console.error("[OneSignal] Initialization failed", error)
+      );
   }, []);
 
   // Initialize OneSignal user & request push permissions
@@ -229,8 +246,12 @@ function Router() {
         {/* Public funnel - no auth required */}
         <Route path="/shop/:slug" component={PublicStorefront} />
         <Route path="/events/:slug" component={PublicEvents} />
+        <Route path="/shop/:slug" component={PublicStorefront} />
+        <Route path="/events/:slug" component={PublicEvents} />
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
-        <Route path="/start/:slug" component={PublicFunnel} />
+        <Route path="/start/:slug">
+          <PublicArtistProfile />
+        </Route>
         <Route path="/book/:slug">
           <PublicArtistProfile />
         </Route>
@@ -284,6 +305,7 @@ function App() {
                 <UpdateBanner />
                 <AuthOnlyBanners />
                 <TooltipOverlay />
+                <GuideOverlay />
                 <ActionPanel />
                 <ErrorBoundary boundary="app-root">
                   <Router />

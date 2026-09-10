@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui";
+import { Action as Button } from "@/app-v3/design/primitives";
 export type OrderIdentity = { orderId: number; sessionId: string };
 export function returnedOrder(): OrderIdentity | null {
   const params = new URLSearchParams(window.location.search);
@@ -19,9 +19,14 @@ export function OrderConfirmation({
   identity: OrderIdentity;
   onConfirmed?: () => void;
 }) {
+  const [timedOut, setTimedOut] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), 60000);
+    return () => clearTimeout(timer);
+  }, [identity.orderId, identity.sessionId]);
   const query = trpc.storefront.getOrderStatus.useQuery(identity, {
     refetchInterval: query =>
-      query.state.status === "error"
+      timedOut || query.state.status === "error"
         ? false
         : query.state.data?.status && query.state.data.status !== "pending"
           ? false
@@ -34,7 +39,7 @@ export function OrderConfirmation({
     if (confirmed) onConfirmed?.();
   }, [confirmed]);
   return (
-    <div className="space-y-4 py-6 text-center" role="status">
+    <div className="v3-stack" role="status">
       <h2 className="text-2xl font-semibold">
         {confirmed
           ? "Order confirmed"
@@ -53,8 +58,29 @@ export function OrderConfirmation({
               ? "We could not retrieve this order. Retry confirmation before starting another payment."
               : "We are waiting for payment confirmation. You can safely check this page again."}
       </p>
-      {query.error && (
-        <Button variant="outline" onClick={() => void query.refetch()}>
+      {confirmed &&
+        query.data?.eventAccess?.map((event, index) => (
+          <div key={index}>
+            <strong>{event.title}</strong>
+            {event.locationUrl &&
+              (/^https:\/\//i.test(event.locationUrl) ? (
+                <a
+                  className="v3-action v3-action-secondary"
+                  href={event.locationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {event.type === "virtual"
+                    ? "Open event link"
+                    : "View event location"}
+                </a>
+              ) : (
+                <p>{event.locationUrl}</p>
+              ))}
+          </div>
+        ))}
+      {(query.error || (!confirmed && timedOut)) && (
+        <Button tone="secondary" onClick={() => void query.refetch()}>
           Retry confirmation
         </Button>
       )}

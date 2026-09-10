@@ -453,6 +453,9 @@ export const artistSettingsRouter = router({
 
     if (!settings?.stripeConnectAccountId) {
       return {
+        statusAvailable: true,
+        currentlyDue: [] as string[],
+        pendingVerification: false,
         connected: false,
         accountId: null,
         accountType: "standard" as const,
@@ -595,11 +598,29 @@ export const artistSettingsRouter = router({
    */
   updatePayoutSchedule: artistProcedure
     .input(
-      z.object({
-        interval: z.enum(["daily", "weekly", "monthly", "manual"]),
-        weeklyAnchor: z.string().optional(),
-        monthlyAnchor: z.number().optional(),
-      })
+      z
+        .object({
+          interval: z.enum(["daily", "weekly", "monthly", "manual"]),
+          weeklyAnchor: z
+            .enum([
+              "monday",
+              "tuesday",
+              "wednesday",
+              "thursday",
+              "friday",
+              "saturday",
+              "sunday",
+            ])
+            .optional(),
+          monthlyAnchor: z.number().int().min(1).max(31).optional(),
+        })
+        .refine(input => input.interval !== "weekly" || !!input.weeklyAnchor, {
+          message: "Choose a weekly payout day.",
+        })
+        .refine(
+          input => input.interval !== "monthly" || !!input.monthlyAnchor,
+          { message: "Choose a monthly payout day." }
+        )
     )
     .mutation(async ({ ctx, input }) => {
       const settings = await db.getArtistSettings(ctx.user.id);

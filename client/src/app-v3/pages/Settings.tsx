@@ -21,17 +21,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
 import { APP_VERSION } from "@/lib/version";
 import { forceUpdate } from "@/lib/pwa";
-import { PageShell } from "@/components/ui/ssot";
-import { FunnelSettings } from "@/components/FunnelSettings";
-import { RegulationSettings } from "@/components/settings/RegulationSettings";
-import { ConsultationSettings } from "@/components/settings/ConsultationSettings";
-import { DataImportSettings } from "@/components/settings/DataImportSettings";
-import { TravelSettings } from "@/components/settings/TravelSettings";
-import { DangerZoneSettings } from "@/components/settings/DangerZoneSettings";
+import { BookingLink } from "./ArtistProfile";
+import Forms from "./Forms";
+import { AccountRemoval, Consultations } from "./AccountControls";
+import DataImport from "./DataImport";
+import Travel from "./Travel";
 import Notifications from "./Notifications";
-import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
-import { InstagramImportSettings } from "@/components/settings/InstagramImportSettings";
-import { HowTosSettings } from "@/components/settings/HowTosSettings";
+import { InstagramImport } from "./Integrations";
+import Guides from "./Guides";
 import {
   Action,
   Avatar,
@@ -42,7 +39,7 @@ import {
 } from "../design/primitives";
 import { AccountEditor, BusinessEditor } from "./SettingsEditors";
 
-/** Route-backed settings. Specialist editors remain explicit migration entries. */
+/** Route-backed settings preserve deep links and browser navigation. */
 export default function Settings() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -59,24 +56,15 @@ export default function Settings() {
   if (section === "notifications") return <Notifications />;
   if (section === "business" && artist) return <BusinessEditor />;
   if (section === "work-hours" && artist) return <Redirect to="/work-hours" />;
-  const panels: Record<string, React.ReactNode> = {
-    "booking-link": artist ? <FunnelSettings onBack={back} /> : null,
-    regulation: artist ? <RegulationSettings onBack={back} /> : null,
-    consultations: artist ? <ConsultationSettings onBack={back} /> : null,
-    "data-import": artist ? <DataImportSettings onBack={back} /> : null,
-    travel: artist ? (
-      <TravelSettings
-        onBack={back}
-        onNavigateToClients={() => go("/clients")}
-      />
-    ) : null,
-    studio: artist ? <StudioDashboardSettings onBack={back} /> : null,
-    instagram: artist ? <InstagramImportSettings onBack={back} /> : null,
-    "how-tos": <HowTosSettings onBack={back} />,
-    "danger-zone": <DangerZoneSettings onBack={back} />,
-  };
-  if (section && panels[section])
-    return <PageShell>{panels[section]}</PageShell>;
+  if (section === "studio" && artist) return <Redirect to="/studio" />;
+  if (section === "booking-link" && artist) return <BookingLink />;
+  if (section === "regulation" && artist) return <Forms />;
+  if (section === "travel" && artist) return <Travel />;
+  if (section === "data-import" && artist) return <DataImport />;
+  if (section === "instagram" && artist) return <InstagramImport />;
+  if (section === "how-tos") return <Guides />;
+  if (section === "consultations" && artist) return <Consultations />;
+  if (section === "danger-zone") return <AccountRemoval />;
   if (section === "portfolio") return <Redirect to="/artist-profile" />;
   const groups = [
     {
@@ -90,7 +78,9 @@ export default function Settings() {
         },
         {
           title: "Notifications",
-          detail: "Reminders and message preferences",
+          detail: artist
+            ? "Device alerts and saved message templates"
+            : "Device alerts for updates and messages",
           icon: Bell,
           href: settingsPath + "?section=notifications",
         },

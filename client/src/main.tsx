@@ -12,12 +12,13 @@ import "./index.css";
 import "./features/workspace/workspace.css";
 import "./app-v3/design/system.css";
 import { registerServiceWorker } from "./lib/pwa";
-import { initializeOneSignal } from "./lib/onesignal";
+import { initializeAnalytics } from "./lib/analytics";
 import { initGlobalErrorListeners } from "./lib/errorReporter";
 import { APP_VERSION, compareVersions } from "./lib/version";
 
 // Initialize global error listeners before anything else
 initGlobalErrorListeners();
+initializeAnalytics();
 
 const queryClient = new QueryClient();
 
@@ -159,10 +160,7 @@ if (import.meta.env.PROD) {
   registerServiceWorker();
 }
 
-// Initialize OneSignal for push notifications
-initializeOneSignal().catch(err => {
-  console.error("[OneSignal] Failed to initialize:", err);
-});
+// OneSignal is initialized by App after its providers mount.
 
 // Configure Status Bar for Native/PWA
 if (Capacitor.isNativePlatform()) {

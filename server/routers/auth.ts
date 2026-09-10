@@ -5,6 +5,7 @@ import { authRouter as coreAuthRouter } from "../_core/auth-router";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { assertAccountBillingClosed } from "../services/accountBilling";
 
 export const authRouter = router({
   ...coreAuthRouter._def.procedures,
@@ -174,12 +175,18 @@ export const authRouter = router({
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
     }
 
+    await assertAccountBillingClosed(ctx.user.id);
+
     // Explicit deletions if cascaded foreign keys aren't strictly enforced in Drizzle.
     const { eq } = await import("drizzle-orm");
     const schema = await import("../../drizzle/schema");
 
     // Clear session cookies via empty response logic handles by client-side logout
     await database.delete(schema.users).where(eq(schema.users.id, ctx.user.id));
+    ctx.res.clearCookie(COOKIE_NAME, {
+      ...getSessionCookieOptions(ctx.req),
+      maxAge: -1,
+    });
 
     return { success: true };
   }),

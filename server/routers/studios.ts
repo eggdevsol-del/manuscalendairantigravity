@@ -6,6 +6,7 @@ import {
   studios,
   notificationOutbox,
   studioMembers,
+  artistSettings,
   users,
   conversations,
   messages,
@@ -325,15 +326,18 @@ export const studiosRouter = router({
           name: users.name,
           avatar: users.avatar,
           bio: users.bio,
+          publicSlug: artistSettings.publicSlug,
         })
         .from(studioMembers)
         .innerJoin(users, eq(users.id, studioMembers.userId))
+        .innerJoin(artistSettings, eq(artistSettings.userId, users.id))
         .where(
           and(
             eq(studioMembers.studioId, studio.id),
-            eq(studioMembers.status, "active")
-            // Assuming we only want to list people taking bookings
-            // For now, list everyone active
+            eq(studioMembers.status, "active"),
+            inArray(users.role, ["artist", "admin"]),
+            eq(artistSettings.funnelEnabled, 1),
+            sql`${artistSettings.publicSlug} IS NOT NULL AND ${artistSettings.publicSlug} <> ''`
           )
         );
 
@@ -667,12 +671,10 @@ export const studiosRouter = router({
             .update(studioMembers)
             .set({ status: "active" })
             .where(eq(studioMembers.id, input.inviteId));
-          await db
-            .insert(notificationOutbox)
-            .values({
-              eventType: "studio_cancel_pro_renewal",
-              payloadJson: JSON.stringify({ userId: ctx.user.id }),
-            });
+          await db.insert(notificationOutbox).values({
+            eventType: "studio_cancel_pro_renewal",
+            payloadJson: JSON.stringify({ userId: ctx.user.id }),
+          });
         } else {
           await db
             .update(studioMembers)

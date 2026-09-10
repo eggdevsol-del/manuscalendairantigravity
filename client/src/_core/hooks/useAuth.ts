@@ -1,8 +1,11 @@
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { setErrorUser } from "@/lib/errorReporter";
+
+const refreshedUsers = new Set<string>();
+let sessionGeneration = 0;
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -27,9 +30,10 @@ export function useAuth(options?: UseAuthOptions) {
 
   // Silent token refresh — extends session on each app load
   const refreshTokenMutation = trpc.auth.refreshToken.useMutation();
-  const hasRefreshed = useRef(false);
 
   const logout = useCallback(async () => {
+    sessionGeneration++;
+    refreshedUsers.clear();
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
@@ -45,6 +49,7 @@ export function useAuth(options?: UseAuthOptions) {
       await utils.auth.me.invalidate();
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
+      localStorage.removeItem("manus-runtime-user-info");
       // Also clear session storage just in case
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
@@ -92,22 +97,31 @@ export function useAuth(options?: UseAuthOptions) {
     logoutMutation.isPending,
   ]);
 
-  // Silent token refresh — re-mint JWT once per mount when session is valid
+  // One refresh per signed-in user per app load, shared by all hook consumers.
   useEffect(() => {
-    if (!meQuery.data || hasRefreshed.current) return;
-    hasRefreshed.current = true;
+    if (!meQuery.data || refreshedUsers.has(meQuery.data.id)) return;
+    refreshedUsers.add(meQuery.data.id);
+    const generation = sessionGeneration;
+    const token =
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
 
     refreshTokenMutation.mutate(undefined, {
-      onSuccess: (result) => {
-        if (result.token) {
-          if (localStorage.getItem('authToken')) {
-            localStorage.setItem('authToken', result.token);
-          } else if (sessionStorage.getItem('authToken')) {
-            sessionStorage.setItem('authToken', result.token);
+      onSuccess: result => {
+        if (
+          result.token &&
+          generation === sessionGeneration &&
+          token ===
+            (localStorage.getItem("authToken") ||
+              sessionStorage.getItem("authToken"))
+        ) {
+          if (localStorage.getItem("authToken")) {
+            localStorage.setItem("authToken", result.token);
+          } else if (sessionStorage.getItem("authToken")) {
+            sessionStorage.setItem("authToken", result.token);
           }
         }
       },
-      onError: () => {},  // Silent failure — old token still works until expiry
+      onError: () => {}, // Silent failure — old token still works until expiry
     });
   }, [meQuery.data]);
 

@@ -1,64 +1,73 @@
-# Fresh frontend implementation
+# Tattoi fresh frontend — 3.0.0
 
-Branch: `codex/tattoi-fresh-frontend`. Base: 2.15.0.
+Branch: `codex/tattoi-fresh-frontend`. This branch contains a new presentation layer in `client/src/app-v3`, built around the approved paper, ink and gold concepts. It retains the existing database, authenticated domain services and custom Stripe Elements checkout. It is not a new backend or a native SwiftUI rewrite.
 
-The approved scope is a fresh presentation layer based on the two concept images, using existing authenticated domain services where correct. This is not a backend rewrite. The branch must not be described as complete while old presentation modules remain on primary or nested user paths.
+## Implemented experience
 
-## Acceptance contract
+- Artist: Today, Inbox, Calendar and Clients; Business in the tablet rail and profile menu. Booking proposals, session workspaces, notes, forms, files, rescheduling and payment reviews remain connected to the domain APIs.
+- Client: artist profile → booking request → optional password creation. Bookings are the primary destination. Public booking, studio, payment, shop and event links work without navigating discovery.
+- Supplier: dashboard, products and variants, orders and fulfilment, business settings, Stripe setup and Shopify catalogue connection.
+- Specialist pages: working hours and breaks, services, travel, CSV import, consent templates, consultation requests, artist profile and portfolio, booking links, supplies, purchases, waitlist, bank payouts, refund history, Free/Pro/Studio plans, studio invitations and shared calendar.
+- Identity: login, role-specific signup, recovery, magic link, profile completion and account deletion. Deletion checks outstanding artist/studio subscriptions against Stripe before removing access.
+- Guides: contextual, non-modal walkthroughs for 18 artist, 6 supplier and 3 client workflows. Closing a guide does not mark it viewed. Guides explain actions; they do not perform them for the user.
+- Operations: payment reconciliation, failed notification retries, error reports, not-found and recovery screens.
 
-- Paper/ink/gold design defined by `client/src/app-v3/design`.
-- Four artist destinations: Today, Inbox, Calendar, Clients. Business via profile and tablet sidebar.
-- Booking is a workspace: Overview, Messages, Files, clear session readiness, payment details and management.
-- Client entry prioritises their artist and next action, preserving request submission before password creation.
-- Tablet selection keeps context beside details; mobile uses one clear full-width flow.
-- Every mutation retains pending/error/success behaviour. No decorative buttons, fabricated customer data or invented payment status.
-- Headers and overlays handle safe areas once. No duplicated mobile and desktop component mounts.
-- Existing checkout, compliance and access contracts must be verified before replacing their presentation.
+## Design contract
 
-## Route inventory and migration status
+`client/src/app-v3/design/system.css` is the token source. `Screen`, `Panel`, `Action`, `Row` and the shared portal-based `SheetShell` own the page and overlay layouts. Phone screens use one column; larger screens retain lists and context beside details. Safe areas are applied once, including payment sheets and guidance. Route changes mount one destination, and reduced-motion preferences are respected. Pinch zoom is enabled.
 
-The current app exposes public identity/intake/payment pages, three authenticated role shells, and local-state subpages. Migration is incomplete until every item below has a verified new presentation and relevant interaction coverage.
+The shared `DotsCheckout` remains the custom payment UI for deposits, balances, payment requests, subscriptions, stores, supplies and events. Payment return URLs and client callbacks do not establish that a payment succeeded; the page waits for server confirmation.
 
-| Area            | Routes / nested flows                                                                                                       | Status                                                                                                       |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Artist day      | /dashboard, setup checklist, attention tasks, arrival                                                                       | New page implemented; setup/task interactions need broader coverage                                          |
-| Inbox           | /conversations, /chat/:id, leads, proposals, attachments, booking wizard                                                    | New list/thread implemented; legacy proposal editor and attachments need final parity audit                  |
-| Calendar        | /calendar, phone day, tablet week, inspector, create/reschedule/cancel                                                      | New day/week/inspector implemented; proposal and reschedule fixtures pass                                    |
-| Clients         | /clients, add, detail, history, forms, notes                                                                                | New master/detail and notes implemented; fixture interactions pass                                           |
-| Booking         | /projects/:id, overview/messages/files, forms, deposit, balance                                                             | New workspace and checkout review implemented; custom Stripe form retained; signing and webhook tests remain |
-| Client home     | /bookings, upcoming/past, pending plans, waitlist                                                                           | New page implemented; deposit review fixture passes                                                          |
-| Business        | /business, /money, /supplies, /supply-orders, /payout-history                                                               | New hub and Money implemented; supplies and payout history remain                                            |
-| Profile         | /artist-profile, gallery, services, storefront, events, link sharing                                                        | Pending                                                                                                      |
-| Schedule        | /work-hours, availability, breaks, design days, travel                                                                      | New hours/services implemented; services fixture passes; breaks/travel remain                                |
-| Settings        | profile, business, services, travel, import, forms, consultation, studio, notification, Instagram, guides, account deletion | New root/account/business/notifications implemented; specialist editors remain                               |
-| Billing         | /bank-payouts, /subscriptions, custom checkout                                                                              | Pending                                                                                                      |
-| Studio          | /studio, roster, invitations, shared schedule, compliance                                                                   | Pending                                                                                                      |
-| Supplier        | /dashboard, /merchant/products, /merchant/orders, /settings                                                                 | New dashboard/orders/products/business/payments implemented; Shopify specialist remains                      |
-| Client account  | /profile, /settings, /purchases, /discover                                                                                  | New profile/details/forms implemented; purchases/discovery remain                                            |
-| Public          | /book/:slug, /start/:slug, /studio/:slug, /shop/:slug, /events/:slug, /:slug                                                | New /book/:slug intake and claim flow implemented; other routes remain                                       |
-| Public payments | /deposit/:token, /balance/:id, /pay/:token                                                                                  | Pending                                                                                                      |
-| Identity        | login, signup, magic link, password setup/recovery, complete profile                                                        | Pending                                                                                                      |
-| Operations      | /admin/operations, /admin/errors, not found, error recovery                                                                 | Pending                                                                                                      |
+## Correctness changes
 
-## Release rule
+- Public and consultation queries return only the necessary participant fields; lead access is artist-scoped. Public studio links use published artist slugs.
+- Schedule suggestions subtract breaks and skip non-bookable days while preserving unknown existing schedule fields.
+- Supplier checkout validates stock, product/variant ownership, currency and delivery eligibility on the server.
+- Payment request retries reuse an open checkout; event registration resumes its current checkout or expires it before switching events.
+- Refund review uses the original Stripe charge and refuses ambiguous historical allocations. Webhooks alone update the ledger. Cumulative refunds and confirmed application-fee reversals are idempotent, including fee notifications that arrive later.
+- Event admission links are returned only after recorded payment. Public virtual event listings do not expose admission URLs.
+- Signature strokes survive device resizing; medical answers and photo consent are explicit. Signing a form does not implicitly replace the account's saved signature.
+- Authentication refresh runs once per signed-in user per app load, rather than on every hook mount. Delayed token responses cannot overwrite a changed or logged-out session.
+- Production HTML excludes the development inspection runtime (approximately 348 kB removed). Build version comes from `package.json`.
 
-Keep the currently deployed 2.15.0 unchanged while this branch is being built. Test fixture screenshots prove layout only. Report real deployment/device/payment checks separately.
+## Test scope and verification
 
-## Verified development checkpoint — 10 September 2026
+The automated suite includes ownership/privacy, booking availability, payment state, custom checkout contracts, inventory, imports, refunds, fee reversals, account billing and form signing. Browser fixtures block external requests and cover realistic read/write responses, error retention, single route mounts, safe-area geometry and overflow. They are not live payment or delivery tests.
 
-- TypeScript passes; production client and service-worker build passes.
-- 130 tests pass across 35 test files.
-- Thirteen isolated browser interaction checks pass: proposal review/send, client notes, reschedule, single message composer/send, business settings, services, supplier product creation, notification template creation, client deposit review, public request submission, existing-client sign-in prompt, public submission failure and supplier product-save failure.
-- The interaction checks inject safe-area values and check headers/overflow. They use synthetic responses and do not prove live payments, delivery or physical-device behaviour.
-- Production build still reports existing analytics placeholders, missing noise asset and large-bundle warnings. These remain release work.
-- Design tokens now have one source in app-v3/design/system.css; legacy semantic names alias these tokens.
-- Security fixes cover notification-template ownership, client profile credential/signature disclosure and artist-scoped client records.
+Run:
 
-## Findings requiring completion
+```sh
+pnpm check
+pnpm test
+pnpm build
+AUDIT_URL=http://127.0.0.1:5176 node scripts/ui-audit/fresh-interactions.mjs
+pnpm ios:sync
+pnpm ios:build
+```
 
-- Existing notificationMode and quiet-hours preferences have no discovered delivery consumer. The new template page accurately describes templates as saved wording, not scheduled sends. A complete automation workflow still needs implementation and delivery tests.
-- New booking composer now applies service session counts and uses the existing availability service for weekly, fortnightly, monthly and consecutive-day suggestions. Suggestions/review/send pass the browser fixture.
-- The /book/:slug profile and intake have a fresh implementation. Tests verify request submission before account creation, existing-account password wording and draft retention on errors. Other public routes, specialist settings, studio, artist profile/storefront, supplies/purchases, identity and operations remain release blockers.
-- New checkout preserves DotsCheckout (custom Stripe Elements), verifies server confirmation and refreshes dependent reads at 0/600/1500 ms. Live test-mode payment verification is still outstanding.
+The browser script requires Playwright/Chromium; `PLAYWRIGHT_PATH` and `AUDIT_BROWSER` can point to installed copies. Serve the production build with Vite preview on port 5176 before running it. It saves screenshots and `results.json` to `AUDIT_OUTPUT` (defaults to a temporary folder).
 
-The current development branch is not a release candidate. It has not replaced the deployed app.
+In the authorized Railway test environment, run `pnpm deploy:check`, `pnpm deploy:test-flows` and `pnpm deploy:test-all-roles`. The latter two require Stripe test mode and roll back their database fixtures. Verify a real Stripe test-mode payment and webhook confirmation separately.
+
+## Boundaries for testing
+
+- Instagram import still copies media to the existing R2 setup. This release does not claim API-free native Instagram streaming or automatic access to expired Instagram media URLs.
+- Saved notification templates are reusable wording, not a new campaign scheduler. Legacy automatic/quiet-hours settings without a delivery consumer are not presented as working controls.
+- Studio supports the existing membership, billing and shared-calendar contracts. Chair rental, commission payroll and a new compliance vault are not invented features in this branch.
+- Xcode simulator compilation is separate from physical iPhone/iPad validation, signing, TestFlight and App Store submission.
+- Do not infer successful deployment, payment delivery or physical-device testing from a successful local build. Record actual release evidence below.
+
+## Release evidence
+
+Local checks and deployment evidence are updated as each gate completes. The previous deployed release was 2.15.0 (`a7a422e`); the new release must be verified by `/api/version` and Railway's active deployment commit before testing in the installed PWA.
+
+### Local verification — 10 September 2026
+
+- TypeScript: passed.
+- Automated suite: 166 tests passed in 42 files.
+- Production build: client, service worker, bundled server and migration assets passed. A large main JavaScript chunk warning remains; the build succeeds.
+- Production browser fixtures: 56 checks passed at 440×956, 820×1180 and 1180×820, with injected top/bottom safe areas. Loaded-page screenshots were inspected. These are browser dimensions, not a claim of physical-device testing.
+- Xcode 26.6: unsigned iOS simulator build passed. No device provisioning or App Store submission was performed.
+- Railway baseline database checks passed on the previous release; its configuration check reported missing `RESEND_API_KEY` and `EMAIL_FROM`. New-deployment verification is recorded separately.
+
+See `browser-results.json` for the fixture results. The screenshots in `screenshots/` contain synthetic data only.

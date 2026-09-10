@@ -47,19 +47,27 @@ const sizes = [
   "Half sleeve",
 ];
 type Attachment = { file: File; preview: string; url?: string };
-export default function PublicArtist() {
-  const [, params] = useRoute("/book/:slug");
+export default function PublicArtist({ hub = false }: { hub?: boolean }) {
+  const [, bookingParams] = useRoute("/book/:slug");
+  const [, startParams] = useRoute("/start/:slug");
+  const [, hubParams] = useRoute("/:slug");
+  const params = bookingParams || startParams || hubParams;
   const profile = trpc.feed.getPublicArtistProfile.useQuery(
     { slug: params?.slug || "" },
     { enabled: !!params?.slug, retry: false }
   );
-  const [open, setOpen] = useState(true);
+  const links = trpc.funnel.getArtistBySlug.useQuery(
+    { slug: params?.slug || "" },
+    { enabled: !!params?.slug, retry: false }
+  );
+  const [open, setOpen] = useState(!hub);
   useEffect(() => {
     activateWaitingSWForPublicPage();
   }, []);
   const artist = profile.data;
   return (
     <Screen
+      publicView
       title={artist?.displayName || "Your artist"}
       subtitle="Tell your artist what you have in mind"
       action={
@@ -93,25 +101,66 @@ export default function PublicArtist() {
           {!!artist.keywords.length && (
             <p className="v3-muted">{artist.keywords.join(" · ")}</p>
           )}
-          <Action onClick={() => setOpen(true)}>Request a booking</Action>
+          <Action
+            disabled={artist.bookingEnabled === false}
+            onClick={() => setOpen(true)}
+          >
+            {artist.bookingEnabled === false
+              ? "Bookings are currently closed"
+              : "Request a booking"}
+          </Action>
+          {(links.data?.hasProducts || links.data?.hasSeminars) && (
+            <div className="v3-inline">
+              {links.data.hasProducts && (
+                <ActionLink
+                  href={`/shop/${encodeURIComponent(params?.slug || "")}`}
+                >
+                  Shop
+                </ActionLink>
+              )}
+              {links.data.hasSeminars && (
+                <ActionLink
+                  href={`/events/${encodeURIComponent(params?.slug || "")}`}
+                >
+                  Events
+                </ActionLink>
+              )}
+            </div>
+          )}
           {!!artist.portfolio.length && (
             <Section title="Selected work">
               <div className="v3-file-grid">
                 {artist.portfolio.map(item => (
-                  <a
-                    key={item.id}
-                    href={item.imageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      src={item.imageUrl}
-                      alt={
-                        item.description || "Tattoo by " + artist.displayName
-                      }
-                      loading="lazy"
-                    />
-                  </a>
+                  <div key={item.id}>
+                    {item.mediaType === "video" && item.videoUrl ? (
+                      <video
+                        className="v3-media-full"
+                        src={item.videoUrl}
+                        poster={item.imageUrl}
+                        controls
+                        playsInline
+                        preload="none"
+                        aria-label={
+                          item.description || "Tattoo by " + artist.displayName
+                        }
+                      />
+                    ) : (
+                      <a
+                        href={item.imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={item.imageUrl}
+                          alt={
+                            item.description ||
+                            "Tattoo by " + artist.displayName
+                          }
+                          loading="lazy"
+                        />
+                      </a>
+                    )}
+                  </div>
                 ))}
               </div>
             </Section>
@@ -121,7 +170,7 @@ export default function PublicArtist() {
             artistId={artist.id}
             artistName={artist.displayName}
             slug={artist.slug || params?.slug || ""}
-            open={open}
+            open={open && artist.bookingEnabled !== false}
             onClose={() => setOpen(false)}
           />
         </>

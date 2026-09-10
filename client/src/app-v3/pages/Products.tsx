@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Plus, Package } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -31,7 +32,10 @@ type Draft = {
 };
 export default function Products() {
   const query = trpc.storefront.getProducts.useQuery();
-  const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
+  const { user } = useAuth();
+  const profile = trpc.merchantAuth.getMerchantProfile.useQuery(undefined, {
+    enabled: user?.role === "merchant",
+  });
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"All" | "Published" | "Hidden">("All");
   const [selected, setSelected] = useState<Product | "new" | null>(null);
@@ -49,6 +53,7 @@ export default function Products() {
   return (
     <Screen
       title="Products"
+      back={user?.role === "merchant" ? undefined : "/artist-profile"}
       subtitle="Your catalogue and availability"
       action={
         <Action onClick={() => setSelected("new")}>

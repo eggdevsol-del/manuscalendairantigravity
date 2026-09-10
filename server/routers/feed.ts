@@ -55,6 +55,7 @@ export const feedRouter = router({
       } = schema;
       const conditions = [
         isNotNull(settings.publicSlug),
+        eq(p.availabilityState, "available"),
         eq(u.hasCompletedOnboarding, 1),
       ];
       if (input.cursor) conditions.push(lt(p.id, input.cursor));
@@ -70,7 +71,9 @@ export const feedRouter = router({
           artistId: p.artistId,
           artistName: sql<string>`COALESCE(${settings.displayName}, ${u.name}, 'Artist')`,
           artistAvatar: u.avatar,
-          artistCity: u.city,
+          artistCity: sql<
+            string | null
+          >`CASE WHEN ${settings.showCity} = 1 THEN ${u.city} ELSE NULL END`,
           artistSlug: settings.publicSlug,
           keywords: settings.keywords,
           imageUrl: p.imageUrl,
@@ -390,7 +393,12 @@ export const feedRouter = router({
           cdnUrl: schema.portfolios.cdnUrl,
         })
         .from(schema.portfolios)
-        .where(eq(schema.portfolios.artistId, settings.userId))
+        .where(
+          and(
+            eq(schema.portfolios.artistId, settings.userId),
+            eq(schema.portfolios.availabilityState, "available")
+          )
+        )
         .orderBy(
           asc(schema.portfolios.sortOrder),
           desc(schema.portfolios.publishedAt),
@@ -413,6 +421,7 @@ export const feedRouter = router({
         city: settings.showCity ? user.city : null,
         bio: user.bio,
         showCity: !!settings.showCity,
+        bookingEnabled: !!settings.funnelEnabled,
         keywords: keywordsArray,
         portfolio: portfolioItems.map(p => ({
           id: p.id,

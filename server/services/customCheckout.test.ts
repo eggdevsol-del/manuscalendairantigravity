@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   stripe,
   createArtistCheckoutSession,
+  createPaymentRequestCheckoutSession,
   createStudioCheckoutSession,
   createStorefrontCheckoutSession,
 } from "./stripe";
@@ -61,6 +62,51 @@ describe("Custom checkout server contract", () => {
       );
     }
   );
+  it("keeps payment requests custom and reuses the same idempotency key for retries", async () => {
+    const create = vi
+      .spyOn(stripe.checkout.sessions, "create")
+      .mockResolvedValue({
+        id: "cs_request",
+        client_secret: "secret",
+        url: null,
+      } as any);
+    const input = {
+      requestId: 3,
+      appointmentId: 8,
+      amountCents: 10000,
+      platformFeeCents: 300,
+      artistFeeCents: 200,
+      clientTotalCents: 10300,
+      clientEmail: "client@example.invalid",
+      artistName: "Artist",
+      stripeConnectAccountId: "acct_artist",
+      tier: "free",
+      token: "request-token",
+    };
+    await createPaymentRequestCheckoutSession(input);
+    await createPaymentRequestCheckoutSession(input);
+    expect(create.mock.calls[0][0]).toMatchObject({
+      ui_mode: "custom",
+      mode: "payment",
+      metadata: {
+        type: "payment_request",
+        requestId: "3",
+        appointmentId: "8",
+        baseAmountCents: "10000",
+      },
+      payment_intent_data: {
+        application_fee_amount: 500,
+        transfer_data: { destination: "acct_artist" },
+      },
+    });
+    expect(create.mock.calls[0][0]).not.toHaveProperty("success_url");
+    expect(create.mock.calls[0][1]).toEqual(create.mock.calls[1][1]);
+    await createPaymentRequestCheckoutSession({
+      ...input,
+      previousSessionId: "cs_expired",
+    });
+    expect(create.mock.calls[2][1]).not.toEqual(create.mock.calls[0][1]);
+  });
   it("keeps delivery, Connect fees and stock reservation metadata in custom store checkout", async () => {
     const create = vi
       .spyOn(stripe.checkout.sessions, "create")

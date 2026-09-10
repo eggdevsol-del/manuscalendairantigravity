@@ -7,7 +7,14 @@
  * - Target element refs registry
  * - Completion persistence (localStorage + future DB sync)
  */
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 
 export interface TourStep {
   targetId: string;
@@ -66,7 +73,11 @@ function setCompletedTours(tours: string[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(tours));
 }
 
-export function TooltipTourProvider({ children }: { children: React.ReactNode }) {
+export function TooltipTourProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [activeTour, setActiveTour] = useState<TourDefinition | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedTours, setCompleted] = useState<string[]>(getCompletedTours);
@@ -88,9 +99,12 @@ export function TooltipTourProvider({ children }: { children: React.ReactNode })
     return targets.current.get(id) || null;
   }, []);
 
-  const isTourCompleted = useCallback((tourId: string) => {
-    return completedTours.includes(tourId);
-  }, [completedTours]);
+  const isTourCompleted = useCallback(
+    (tourId: string) => {
+      return completedTours.includes(tourId);
+    },
+    [completedTours]
+  );
 
   const markComplete = useCallback((tourId: string) => {
     setCompleted(prev => {
@@ -107,9 +121,6 @@ export function TooltipTourProvider({ children }: { children: React.ReactNode })
   }, []);
 
   const skipTour = useCallback(() => {
-    if (activeTour) {
-      markComplete(activeTour.id);
-    }
     setActiveTour(null);
     setCurrentStep(0);
   }, [activeTour, markComplete]);
@@ -171,6 +182,7 @@ export function TooltipTourProvider({ children }: { children: React.ReactNode })
 
 export function useTooltipTour() {
   const ctx = useContext(TooltipTourContext);
-  if (!ctx) throw new Error("useTooltipTour must be used within TooltipTourProvider");
+  if (!ctx)
+    throw new Error("useTooltipTour must be used within TooltipTourProvider");
   return ctx;
 }

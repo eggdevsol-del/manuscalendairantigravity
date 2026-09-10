@@ -11,6 +11,7 @@ export function Screen({
   action,
   children,
   wide = false,
+  publicView = false,
 }: {
   title: string;
   subtitle?: ReactNode;
@@ -18,10 +19,13 @@ export function Screen({
   action?: ReactNode;
   children: ReactNode;
   wide?: boolean;
+  publicView?: boolean;
 }) {
   const { user } = useAuth();
   return (
-    <div className={`v3-screen ${wide ? "v3-screen-wide" : ""}`}>
+    <div
+      className={`v3-screen v3-screen-${publicView ? "public" : user?.role || "public"} ${wide ? "v3-screen-wide" : ""}`}
+    >
       <header className={back ? "v3-header v3-header-with-back" : "v3-header"}>
         <div className="v3-masthead">
           {back ? (

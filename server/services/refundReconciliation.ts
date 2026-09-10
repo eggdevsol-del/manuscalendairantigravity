@@ -14,7 +14,8 @@ import type { getDb } from "./core";
 /** Called inside the webhook transaction, which serializes cumulative charge events. */
 export async function reconcileChargeRefund(
   db: NonNullable<Awaited<ReturnType<typeof getDb>>>,
-  charge: Stripe.Charge
+  charge: Stripe.Charge,
+  applicationFeeRefundedCents = 0
 ) {
   const paymentId =
     typeof charge.payment_intent === "string"
@@ -59,7 +60,27 @@ export async function reconcileChargeRefund(
     0,
     (charge.amount_refunded || 0) - totalBaseRefund - previousFees
   );
-  if (delta > 0 || feeDelta > 0) {
+  // Stripe confirms the combined application-fee refund separately from the client refund.
+  // Attribute that actual refund proportionally between the two original fee components.
+  const originalArtistFee = original.artistFeeCents || 0;
+  const combinedFee = original.platformFeeCents + originalArtistFee;
+  const artistFeeReversed =
+    combinedFee > 0
+      ? Math.min(
+          originalArtistFee,
+          Math.round(
+            (Math.min(combinedFee, applicationFeeRefundedCents) *
+              originalArtistFee) /
+              combinedFee
+          )
+        )
+      : 0;
+  const previousArtistFees = priorRefunds.reduce(
+    (sum, row) => sum - (row.artistFeeCents || 0),
+    0
+  );
+  const artistFeeDelta = Math.max(0, artistFeeReversed - previousArtistFees);
+  if (delta > 0 || feeDelta > 0 || artistFeeDelta > 0) {
     const plan = await db.query.sessionPlans.findFirst({
       where: eq(sessionPlans.stripeSessionId, paymentId),
     });
@@ -154,7 +175,7 @@ export async function reconcileChargeRefund(
       transactionType: "refund",
       amountCents: -delta || 0,
       platformFeeCents: -feeDelta || 0,
-      artistFeeCents: 0,
+      artistFeeCents: -artistFeeDelta || 0,
       stripePaymentId: paymentId,
       paymentMethod: original.paymentMethod,
       metadata: JSON.stringify({

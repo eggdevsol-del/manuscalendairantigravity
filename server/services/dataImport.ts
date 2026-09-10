@@ -55,9 +55,10 @@ export async function processImport(
         });
         continue;
       }
-      const mapped = services.find(
-        s => s.id === input.serviceMap[row.serviceName]
-      );
+      const mappedKey = input.serviceMap[row.serviceName];
+      const mapped = mappedKey
+        ? services.find(s => String(s.id || s.name) === mappedKey)
+        : undefined;
       let start = "",
         end = "";
       if (input.mode === "appointments") {
@@ -200,16 +201,14 @@ export async function processImport(
           };
         const clientId = existing?.id || `usr_imp_${randomUUID()}`;
         if (!existing)
-          await db
-            .insert(schema.users)
-            .values({
-              id: clientId,
-              name: row.name,
-              email: email || null,
-              phone: phone || null,
-              role: "client",
-              loginMethod: "imported",
-            });
+          await db.insert(schema.users).values({
+            id: clientId,
+            name: row.name,
+            email: email || null,
+            phone: phone || null,
+            role: "client",
+            loginMethod: "imported",
+          });
         let conversationId = conversation?.id;
         if (!conversationId) {
           const [created] = await db
@@ -219,24 +218,22 @@ export async function processImport(
         }
         if (input.mode === "appointments") {
           const cents = Math.round((row.price ?? mapped?.price ?? 0) * 100);
-          const [created] = await db
-            .insert(schema.appointments)
-            .values({
-              artistId,
-              clientId,
-              conversationId,
-              title: mapped?.name || row.serviceName || "Imported appointment",
-              serviceName:
-                mapped?.name || row.serviceName || "Imported appointment",
-              startTime: start,
-              endTime: end,
-              timeZone: getBusinessTimezone(),
-              status: "confirmed",
-              price: Math.round(cents / 100),
-              totalExpectedAmountCents: cents,
-              totalPaidAmountCents: 0,
-              remainingBalanceCents: cents,
-            });
+          const [created] = await db.insert(schema.appointments).values({
+            artistId,
+            clientId,
+            conversationId,
+            title: mapped?.name || row.serviceName || "Imported appointment",
+            serviceName:
+              mapped?.name || row.serviceName || "Imported appointment",
+            startTime: start,
+            endTime: end,
+            timeZone: getBusinessTimezone(),
+            status: "confirmed",
+            price: Math.round(cents / 100),
+            totalExpectedAmountCents: cents,
+            totalPaidAmountCents: 0,
+            remainingBalanceCents: cents,
+          });
           await generateRequiredForms(created.insertId, db);
         }
         return {

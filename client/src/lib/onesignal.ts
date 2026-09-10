@@ -6,6 +6,7 @@ import { Capacitor } from "@capacitor/core";
 const ONESIGNAL_APP_ID = import.meta.env.VITE_ONESIGNAL_APP_ID;
 
 let isInitialized = false;
+let initialization: Promise<void> | null = null;
 
 // Access the native OneSignal plugin if on Capacitor
 const getNativeOneSignal = () => {
@@ -16,7 +17,15 @@ const getNativeOneSignal = () => {
   return (window as any).cordova?.plugins?.OneSignal;
 };
 
-export async function initializeOneSignal() {
+export function initializeOneSignal(): Promise<void> {
+  if (isInitialized || !ONESIGNAL_APP_ID) return Promise.resolve();
+  if (!initialization)
+    initialization = initializeOnce().finally(() => {
+      initialization = null;
+    });
+  return initialization;
+}
+async function initializeOnce() {
   if (isInitialized || !ONESIGNAL_APP_ID) {
     if (!ONESIGNAL_APP_ID) console.warn("[OneSignal] Missing App ID");
     return;
@@ -77,6 +86,7 @@ async function initWebOneSignal() {
     console.log("[OneSignal] CRM Web SDK initialized successfully.");
   } catch (error) {
     console.warn("[OneSignal] Web SDK initialization warning/timeout:", error);
+    throw error;
   }
 }
 
@@ -143,6 +153,9 @@ export async function getSubscriptionId(): Promise<string | null> {
 }
 
 export async function setExternalUserId(userId: string) {
+  if (!ONESIGNAL_APP_ID) return;
+  await initializeOneSignal();
+  if (!isInitialized) return;
   try {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();
@@ -165,6 +178,7 @@ export async function setExternalUserId(userId: string) {
 }
 
 export async function removeExternalUserId() {
+  if (!ONESIGNAL_APP_ID || !isInitialized) return;
   try {
     if (Capacitor.isNativePlatform()) {
       const NativeOneSignal = getNativeOneSignal();

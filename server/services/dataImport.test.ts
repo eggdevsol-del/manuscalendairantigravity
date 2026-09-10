@@ -2,6 +2,7 @@
 import { beforeEach, describe, it, expect, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   candidates: [] as any[],
+  services: [] as any[],
   conversation: null as any,
   appointment: null as any,
   conflicts: [] as any[],
@@ -13,7 +14,9 @@ vi.mock("./appointmentService", () => ({ generateRequiredForms: mocks.forms }));
 vi.mock("./core", () => {
   const database = {
     query: {
-      artistSettings: { findFirst: async () => ({ services: "[]" }) },
+      artistSettings: {
+        findFirst: async () => ({ services: JSON.stringify(mocks.services) }),
+      },
       conversations: { findFirst: async () => mocks.conversation },
       appointments: { findFirst: async () => mocks.appointment },
     },
@@ -50,6 +53,7 @@ const row = (changes: any = {}) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.candidates = [];
+  mocks.services = [];
   mocks.conversation = null;
   mocks.appointment = null;
   mocks.conflicts = [];
@@ -137,6 +141,29 @@ describe("duplicate-aware imports", () => {
     expect(mocks.insert.mock.calls[2][0]).toMatchObject({
       totalExpectedAmountCents: 10025,
       totalPaidAmountCents: 0,
+    });
+  });
+  it("does not map an unknown imported service to a legacy service without an id", async () => {
+    mocks.services = [{ name: "Full day", price: 900, duration: 480 }];
+    const result = await processImport(
+      "artist-a",
+      {
+        mode: "appointments",
+        serviceMap: {},
+        rows: [
+          row({
+            date: "2026-10-09",
+            startTime: "10:00",
+            serviceName: "Unknown",
+            price: 100.25,
+          }),
+        ],
+      },
+      true
+    );
+    expect(result[0].status).toBe("imported");
+    expect(mocks.insert.mock.calls[2][0]).toMatchObject({
+      totalExpectedAmountCents: 10025,
     });
   });
   it("keeps row failures visible without aborting later rows", async () => {

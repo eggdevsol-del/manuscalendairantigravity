@@ -10,7 +10,13 @@ import {
   Label,
   Textarea,
 } from "@/components/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/safe-select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/safe-select";
 import { ModalShell } from "@/components/ui/overlays/modal-shell";
 import {
   LoadingState,
@@ -133,9 +139,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">
-                Loading consultations...
-              </p>
+              <p className="text-muted-foreground">Loading consultations...</p>
             </div>
           ) : consultations && consultations.length > 0 ? (
             consultations.map(consultation => (
@@ -159,10 +163,7 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
                         {consultation.subject}
                       </h3>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        with{" "}
-                        {consultation.artist?.name ||
-                          consultation.artist?.email ||
-                          "Artist"}
+                        with {consultation.artist?.name || "Artist"}
                       </p>
                     </div>
                     <div
@@ -193,8 +194,8 @@ export function ConsultationSettings({ onBack }: ConsultationSettingsProps) {
                       <span>
                         {consultation.createdAt
                           ? new Date(
-                            consultation.createdAt
-                          ).toLocaleDateString()
+                              consultation.createdAt
+                            ).toLocaleDateString()
                           : "N/A"}
                       </span>
                     </div>

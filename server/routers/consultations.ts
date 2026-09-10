@@ -34,8 +34,26 @@ export const consultationsRouter = router({
           const client = c.clientId ? await db.getUser(c.clientId) : null;
           return {
             ...c,
-            artist,
-            client,
+            artist: artist
+              ? {
+                  id: artist.id,
+                  name: artist.name,
+                  avatar: artist.avatar,
+                  city: artist.city,
+                  bio: artist.bio,
+                  role: artist.role,
+                }
+              : null,
+            client: client
+              ? {
+                  id: client.id,
+                  name: client.name,
+                  avatar: client.avatar,
+                  city: client.city,
+                  bio: client.bio,
+                  role: client.role,
+                }
+              : null,
           };
         })
       );
@@ -107,6 +125,19 @@ export const consultationsRouter = router({
         });
       }
 
+      if (input.conversationId !== undefined) {
+        const conversation = await db.getConversationById(input.conversationId);
+        if (
+          !conversation ||
+          conversation.artistId !== consultation.artistId ||
+          conversation.clientId !== consultation.clientId
+        )
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "The conversation must belong to this consultation’s artist and client.",
+          });
+      }
       const { id, ...updates } = input;
       return db.updateConsultation(id, updates);
     }),

@@ -1,3 +1,7 @@
+import {
+  DEFAULT_CONSENT_TEMPLATE,
+  DEFAULT_MEDICAL_TEMPLATE,
+} from "../../shared/formTemplates";
 import { router, protectedProcedure, artistProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import * as db from "../db";
@@ -20,8 +24,8 @@ export const formsRouter = router({
     });
 
     return {
-      consentTemplate: settings?.consentTemplate || "",
-      medicalTemplate: settings?.medicalTemplate || "",
+      consentTemplate: settings?.consentTemplate || DEFAULT_CONSENT_TEMPLATE,
+      medicalTemplate: settings?.medicalTemplate || DEFAULT_MEDICAL_TEMPLATE,
       form9Template: settings?.form9Template || "",
     };
   }),
@@ -39,12 +43,19 @@ export const formsRouter = router({
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
       await database
-        .update(artistSettings)
-        .set({
+        .insert(artistSettings)
+        .values({
+          userId: ctx.user.id,
+          workSchedule: "{}",
+          services: "[]",
           ...input,
-          updatedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
         })
-        .where(eq(artistSettings.userId, ctx.user.id));
+        .onDuplicateKeyUpdate({
+          set: {
+            ...input,
+            updatedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+          },
+        });
 
       return { success: true };
     }),
