@@ -2,25 +2,23 @@ import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSe
 import Purchases from "@/features/storefront/Purchases";
 import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
-import ProjectSummary from "@/features/bookings/ProjectSummary";
+import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
-import BusinessPage, {
-  MoneyPage,
-  SuppliesPage,
-} from "@/features/workspace/BusinessPage";
+import BusinessPage, { Money as MoneyPage } from "@/app-v3/pages/Business";
+import { SuppliesPage } from "@/features/workspace/BusinessPage";
 import { Redirect, Route, Switch } from "wouter";
-import BottomNav from "@/components/BottomNav";
+import BottomNav from "@/app-v3/design/Navigation";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
-import Dashboard from "@/pages/Dashboard";
-import Conversations from "@/pages/Conversations";
-import Chat from "@/pages/Chat";
-import Calendar from "@/pages/Calendar";
-import Settings from "@/pages/Settings";
+import Dashboard from "@/app-v3/pages/Today";
+import Conversations from "@/app-v3/pages/Inbox";
+import Chat from "@/app-v3/pages/Inbox";
+import Calendar from "@/app-v3/pages/Calendar";
+import Settings from "@/app-v3/pages/Settings";
 import ArtistProfileTab from "@/pages/ArtistProfileTab";
-import WorkHours from "@/pages/WorkHours";
-import Clients from "@/pages/Clients";
+import WorkHours from "@/app-v3/pages/WorkingHours";
+import Clients from "@/app-v3/pages/Clients";
 import BankPayoutsPage from "@/pages/BankPayoutsPage";
 import PayoutHistory from "@/pages/PayoutHistory";
 import NotificationsManagement from "@/pages/NotificationsManagement";

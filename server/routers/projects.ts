@@ -1,11 +1,96 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { and, eq, inArray, or, asc } from "drizzle-orm";
+import { and, eq, inArray, or, asc, desc } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
-import { requireConversationAccess } from "../services/access";
+import { requireConversationAccess, requireArtist } from "../services/access";
 import * as schema from "../../drizzle/schema";
 
 export const projectsRouter = router({
+  clientWorkspace: protectedProcedure
+    .input(z.object({ clientId: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      requireArtist(ctx.user);
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+      const relationships = await db
+        .select({ id: schema.conversations.id })
+        .from(schema.conversations)
+        .where(
+          and(
+            eq(schema.conversations.artistId, ctx.user.id),
+            eq(schema.conversations.clientId, input.clientId)
+          )
+        );
+      if (!relationships.length)
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This client is not in your client list.",
+        });
+      const [people, sessions, notes, forms] = await Promise.all([
+        db
+          .select({
+            id: schema.users.id,
+            name: schema.users.name,
+            email: schema.users.email,
+            phone: schema.users.phone,
+            avatar: schema.users.avatar,
+            birthday: schema.users.birthday,
+          })
+          .from(schema.users)
+          .where(eq(schema.users.id, input.clientId)),
+        db
+          .select({
+            id: schema.appointments.id,
+            title: schema.appointments.title,
+            startTime: schema.appointments.startTime,
+            endTime: schema.appointments.endTime,
+            timeZone: schema.appointments.timeZone,
+            status: schema.appointments.status,
+            conversationId: schema.appointments.conversationId,
+            paidCents: schema.appointments.totalPaidAmountCents,
+          })
+          .from(schema.appointments)
+          .where(
+            and(
+              eq(schema.appointments.artistId, ctx.user.id),
+              eq(schema.appointments.clientId, input.clientId)
+            )
+          )
+          .orderBy(desc(schema.appointments.startTime)),
+        db
+          .select()
+          .from(schema.clientNotes)
+          .where(
+            and(
+              eq(schema.clientNotes.artistId, ctx.user.id),
+              eq(schema.clientNotes.clientId, input.clientId)
+            )
+          )
+          .orderBy(desc(schema.clientNotes.createdAt)),
+        db
+          .select({
+            id: schema.consentForms.id,
+            title: schema.consentForms.title,
+            status: schema.consentForms.status,
+            appointmentId: schema.consentForms.appointmentId,
+          })
+          .from(schema.consentForms)
+          .where(
+            and(
+              eq(schema.consentForms.artistId, ctx.user.id),
+              eq(schema.consentForms.clientId, input.clientId)
+            )
+          ),
+      ]);
+      return {
+        client: people[0],
+        conversationId: relationships[0].id,
+        sessions,
+        notes,
+        forms,
+      };
+    }),
   summary: protectedProcedure
     .input(z.object({ conversationId: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
@@ -27,6 +112,8 @@ export const projectsRouter = router({
             endsAt: schema.appointments.endTime,
             status: schema.appointments.status,
             sessionPlanId: schema.appointments.sessionPlanId,
+            sessionIndex: schema.appointments.sessionIndex,
+            sessionTotal: schema.appointments.sessionTotal,
             price: schema.appointments.price,
             expected: schema.appointments.totalExpectedAmountCents,
             paid: schema.appointments.totalPaidAmountCents,

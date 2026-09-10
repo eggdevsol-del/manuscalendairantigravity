@@ -7,19 +7,25 @@ export function useChatData(conversationId: number) {
   const [availableServices, setAvailableServices] = useState<any[]>([]);
 
   // Queries
-  const { data: conversation, isLoading: convLoading } =
-    trpc.conversations.getById.useQuery(conversationId, {
-      enabled: !!user && conversationId > 0,
-    });
+  const {
+    data: conversation,
+    isLoading: convLoading,
+    error: conversationError,
+  } = trpc.conversations.getById.useQuery(conversationId, {
+    enabled: !!user && conversationId > 0,
+  });
 
-  const { data: messages, isLoading: messagesLoading } =
-    trpc.messages.list.useQuery(
-      { conversationId },
-      {
-        enabled: !!user && conversationId > 0,
-        refetchInterval: 3000,
-      }
-    );
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = trpc.messages.list.useQuery(
+    { conversationId },
+    {
+      enabled: !!user && conversationId > 0,
+      refetchInterval: 3000,
+    }
+  );
 
   const { data: quickActions } = trpc.quickActions.list.useQuery(undefined, {
     enabled: !!user && (user.role === "artist" || user.role === "admin"),
@@ -99,8 +105,10 @@ export function useChatData(conversationId: number) {
       authLoading,
       conversation,
       convLoading,
+      conversationError,
       messages,
       messagesLoading,
+      messagesError,
       quickActions,
       artistSettings: memoizedArtistSettings,
       consultationList,
@@ -114,11 +122,13 @@ export function useChatData(conversationId: number) {
     [
       user?.id,
       authLoading,
-      conversationKey,
+      conversation,
       convLoading,
-      messagesKey,
+      conversationError,
+      messages,
       messagesLoading,
-      quickActionsKey,
+      messagesError,
+      quickActions,
       memoizedArtistSettings,
       consultationData?.id,
       paramConsultationId,

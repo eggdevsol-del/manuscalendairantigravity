@@ -1,19 +1,19 @@
 import Purchases from "@/features/storefront/Purchases";
 import WaitlistPage from "@/features/bookings/WaitlistPage";
-import ProjectSummary from "@/features/bookings/ProjectSummary";
+import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
 import { Redirect, Route, Switch } from "wouter";
-import BottomNav from "@/components/BottomNav";
+import BottomNav from "@/app-v3/design/Navigation";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import ClientHome from "@/features/client-home/ClientHome";
-import Conversations from "@/pages/Conversations";
-import Chat from "@/pages/Chat";
-import BookingsPage from "@/features/bookings/BookingsPage";
-import Settings from "@/pages/Settings";
+import Conversations from "@/app-v3/pages/Inbox";
+import Chat from "@/app-v3/pages/Inbox";
+import BookingsPage from "@/app-v3/pages/ClientBookings";
+import Settings from "@/app-v3/pages/Settings";
 import NotFound from "@/pages/NotFound";
-import ClientProfilePage from "@/pages/profile/ClientProfilePage";
+import ClientProfilePage from "@/app-v3/pages/Profile";
 
 export default function ClientShell() {
   return (

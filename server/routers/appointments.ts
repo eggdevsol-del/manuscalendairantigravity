@@ -1339,6 +1339,7 @@ export const appointmentsRouter = router({
             return {
               id: a.id,
               startsAt: a.startTime.replace(" ", "T") + "Z",
+              timeZone: a.timeZone || "Australia/Brisbane",
               endsAt: a.endTime.replace(" ", "T") + "Z",
               durationMinutes,
               status: a.status,
@@ -1429,6 +1430,7 @@ export const appointmentsRouter = router({
             return {
               id: a.id,
               startsAt: a.startTime.replace(" ", "T") + "Z",
+              timeZone: a.timeZone || "Australia/Brisbane",
               endsAt: a.endTime.replace(" ", "T") + "Z",
               durationMinutes,
               status: a.status,

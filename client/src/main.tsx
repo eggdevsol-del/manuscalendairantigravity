@@ -10,6 +10,7 @@ import App from "./App";
 import { getLoginUrl, API_BASE_URL } from "./const";
 import "./index.css";
 import "./features/workspace/workspace.css";
+import "./app-v3/design/system.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeOneSignal } from "./lib/onesignal";
 import { initGlobalErrorListeners } from "./lib/errorReporter";

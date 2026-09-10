@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { artistProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { TRPCError } from "@trpc/server";
+
+async function requireOwnedTemplate(userId: string, id: number) {
+  const templates = await db.getNotificationTemplates(userId);
+  if (!templates.some(template => template.id === id)) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Template not found." });
+  }
+}
 
 export const notificationTemplatesRouter = router({
   list: artistProcedure.query(async ({ ctx }) => {
@@ -54,14 +62,16 @@ export const notificationTemplatesRouter = router({
         enabled: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { id, enabled, ...rest } = input;
+      await requireOwnedTemplate(ctx.user.id, id);
       return db.updateNotificationTemplate(id, {
         ...rest,
         ...(enabled !== undefined ? { enabled: enabled ? 1 : 0 } : {}),
       });
     }),
-  delete: artistProcedure.input(z.number()).mutation(async ({ input }) => {
+  delete: artistProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
+    await requireOwnedTemplate(ctx.user.id, input);
     return db.deleteNotificationTemplate(input);
   }),
 });

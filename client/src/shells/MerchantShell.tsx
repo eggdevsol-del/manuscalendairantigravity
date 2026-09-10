@@ -1,18 +1,20 @@
 import Purchases from "@/features/storefront/Purchases";
 import React from "react";
 import { Redirect, Route, Switch, useLocation } from "wouter";
-import BottomNav from "@/components/BottomNav";
+import BottomNav from "@/app-v3/design/Navigation";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
-import Dashboard from "@/pages/Dashboard";
-import { MerchantOrders } from "@/features/merchant/Orders";
-import { MerchantProducts } from "@/features/merchant/Products";
-import Conversations from "@/pages/Conversations";
-import Chat from "@/pages/Chat";
+import Dashboard, {
+  SupplierOrders as MerchantOrders,
+  SupplierSettings as MerchantSettings,
+} from "@/app-v3/pages/Supplier";
+
+import MerchantProducts from "@/app-v3/pages/Products";
+import Conversations from "@/app-v3/pages/Inbox";
+import Chat from "@/app-v3/pages/Inbox";
 import NotFound from "@/pages/NotFound";
-import Settings from "@/pages/Settings";
-import { MerchantSettings } from "@/features/merchant/Settings";
+import Settings from "@/app-v3/pages/Settings";
 
 export default function MerchantShell() {
   return (

@@ -10,25 +10,64 @@ import {
   orders,
   clientNotes,
   paymentRequests,
+  conversations,
 } from "../../drizzle/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
+
+async function requireProfileTarget(
+  user: { id: string; role: string },
+  requestedId?: string
+) {
+  const targetId = requestedId || user.id;
+  if (targetId === user.id) return targetId;
+  if (user.role !== "artist" && user.role !== "admin") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  const database = await db.getDb();
+  if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+  const relation = await database.query.conversations.findFirst({
+    where: and(
+      eq(conversations.artistId, user.id),
+      eq(conversations.clientId, targetId)
+    ),
+  });
+  if (!relation)
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "This client is not connected to your account.",
+    });
+  return targetId;
+}
 
 export const clientProfileRouter = router({
   getProfile: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const user = await db.getUser(targetId);
       if (!user) {
         throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
       }
-      return user;
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        avatar: user.avatar,
+        bio: user.bio,
+        birthday: user.birthday,
+        city: user.city,
+        country: user.country,
+        address: user.address,
+        gender: user.gender,
+        instagramUsername: user.instagramUsername,
+        role: user.role,
+        createdAt: user.createdAt,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        savedSignature: targetId === ctx.user.id ? user.savedSignature : null,
+      };
     }),
 
   updateBio: protectedProcedure
@@ -70,16 +109,14 @@ export const clientProfileRouter = router({
   getSpendSummary: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const appointments = await db.getClientCalendar(targetId);
 
       const validAppointments = appointments.filter(
-        a => a.status === "completed" || a.status === "confirmed"
+        a =>
+          (targetId === ctx.user.id || a.artistId === ctx.user.id) &&
+          (a.status === "completed" || a.status === "confirmed")
       );
 
       let totalSpend = 0;
@@ -103,18 +140,19 @@ export const clientProfileRouter = router({
   getHistory: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const database = await db.getDb();
       if (!database) return [];
 
       // Fetch both appointments and their logs
       const clientAppointments = await database.query.appointments.findMany({
-        where: eq(appointments.clientId, targetId),
+        where: and(
+          eq(appointments.clientId, targetId),
+          targetId !== ctx.user.id
+            ? eq(appointments.artistId, ctx.user.id)
+            : undefined
+        ),
         with: {
           logs: true,
         },
@@ -169,7 +207,10 @@ export const clientProfileRouter = router({
       const signedForms = await database.query.consentForms.findMany({
         where: and(
           eq(consentForms.clientId, targetId),
-          eq(consentForms.status, "signed")
+          eq(consentForms.status, "signed"),
+          targetId !== ctx.user.id
+            ? eq(consentForms.artistId, ctx.user.id)
+            : undefined
         ),
       });
 
@@ -187,11 +228,16 @@ export const clientProfileRouter = router({
       });
 
       const clientOrders = await database.query.orders.findMany({
-        where: eq(orders.clientId, targetId),
+        where: and(
+          eq(orders.clientId, targetId),
+          targetId !== ctx.user.id
+            ? eq(orders.artistId, ctx.user.id)
+            : undefined
+        ),
         with: {
           items: {
-            with: { product: true }
-          }
+            with: { product: true },
+          },
         },
         orderBy: desc(orders.createdAt),
       });
@@ -209,8 +255,8 @@ export const clientProfileRouter = router({
           items: order.items.map((i: any) => ({
             name: i.product?.title || "Deleted Product",
             quantity: i.quantity,
-            price: i.priceAtPurchaseCents / 100
-          }))
+            price: i.priceAtPurchaseCents / 100,
+          })),
         });
       });
 
@@ -222,19 +268,14 @@ export const clientProfileRouter = router({
   getUpcoming: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
-      const allAppointments = await db.getClientCalendar(
-        targetId
-      );
+      const allAppointments = await db.getClientCalendar(targetId);
       const now = new Date();
       return allAppointments
         .filter(
           a =>
+            (targetId === ctx.user.id || a.artistId === ctx.user.id) &&
             (a.status === "pending" || a.status === "confirmed") &&
             new Date(a.startTime) > now
         )
@@ -258,11 +299,7 @@ export const clientProfileRouter = router({
   getConsentForms: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const database = await db.getDb();
       if (!database) return [];
@@ -270,18 +307,21 @@ export const clientProfileRouter = router({
       return database
         .select()
         .from(consentForms)
-        .where(eq(consentForms.clientId, targetId))
+        .where(
+          and(
+            eq(consentForms.clientId, targetId),
+            targetId !== ctx.user.id
+              ? eq(consentForms.artistId, ctx.user.id)
+              : undefined
+          )
+        )
         .orderBy(desc(consentForms.createdAt));
     }),
 
   getBoards: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const database = await db.getDb();
       if (!database) return [];
@@ -368,11 +408,7 @@ export const clientProfileRouter = router({
   getPhotos: protectedProcedure
     .input(z.object({ clientId: z.string().optional() }).optional())
     .query(async ({ ctx, input }) => {
-      const targetId =
-        (ctx.user.role === "artist" || ctx.user.role === "admin") &&
-          input?.clientId
-          ? input.clientId
-          : ctx.user.id;
+      const targetId = await requireProfileTarget(ctx.user, input?.clientId);
 
       const conversations = await db.getConversationsForUser(
         targetId,
@@ -382,9 +418,10 @@ export const clientProfileRouter = router({
       const allPhotos: { id: number; url: string; createdAt: Date }[] = [];
 
       for (const conv of conversations) {
+        if (targetId !== ctx.user.id && conv.artistId !== ctx.user.id) continue;
         const msgs = await db.getMessages(conv.id, 50);
         msgs.forEach(m => {
-          if (m.senderId === ctx.user.id && m.messageType === "image") {
+          if (m.senderId === targetId && m.messageType === "image") {
             allPhotos.push({
               id: m.id,
               url: m.content,
@@ -401,14 +438,19 @@ export const clientProfileRouter = router({
     }),
 
   updateClientProfile: protectedProcedure
-    .input(z.object({
-      clientId: z.string(),
-      name: z.string().min(1),
-      phone: z.string().optional().or(z.literal(""))
-    }))
+    .input(
+      z.object({
+        clientId: z.string(),
+        name: z.string().min(1),
+        phone: z.string().optional().or(z.literal("")),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can update client profiles." });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can update client profiles.",
+        });
       }
 
       const database = await db.getDb();
@@ -420,17 +462,21 @@ export const clientProfileRouter = router({
         where: and(
           eq(conversations.artistId, ctx.user.id),
           eq(conversations.clientId, input.clientId)
-        )
+        ),
       });
 
       if (!conv && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "You don't have permission to modify this client." });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to modify this client.",
+        });
       }
 
-      await database.update(users)
+      await database
+        .update(users)
         .set({
           name: input.name,
-          phone: input.phone || null
+          phone: input.phone || null,
         })
         .where(eq(users.id, input.clientId));
 
@@ -460,6 +506,9 @@ export const clientProfileRouter = router({
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      if (ctx.user.role !== "artist" && ctx.user.role !== "admin")
+        throw new TRPCError({ code: "FORBIDDEN" });
+      await requireProfileTarget(ctx.user, input.clientId);
       const newNote = {
         id: crypto.randomUUID(),
         artistId: ctx.user.id,
@@ -492,20 +541,20 @@ export const clientProfileRouter = router({
    * getMyPaymentRequests — Returns pending payment requests for the logged-in client.
    * Used by the UpcomingWidget to show "Payment requested" banners.
    */
-  getMyPaymentRequests: protectedProcedure
-    .query(async ({ ctx }) => {
-      const database = await db.getDb();
-      if (!database) return [];
+  getMyPaymentRequests: protectedProcedure.query(async ({ ctx }) => {
+    const database = await db.getDb();
+    if (!database) return [];
 
-      const requests = await database.query.paymentRequests.findMany({
-        where: and(
-          eq(paymentRequests.clientId, ctx.user.id),
-          eq(paymentRequests.status, "pending"),
-        ),
-      });
+    const requests = await database.query.paymentRequests.findMany({
+      where: and(
+        eq(paymentRequests.clientId, ctx.user.id),
+        eq(paymentRequests.status, "pending")
+      ),
+    });
 
-      // Enrich with appointment info
-      const enriched = await Promise.all(requests.map(async (req) => {
+    // Enrich with appointment info
+    const enriched = await Promise.all(
+      requests.map(async req => {
         const appt = await database.query.appointments.findFirst({
           where: eq(appointments.id, req.appointmentId),
         });
@@ -522,10 +571,11 @@ export const clientProfileRouter = router({
           serviceName: appt?.serviceName || appt?.title || "Session",
           artistName: artist?.name || "Artist",
         };
-      }));
+      })
+    );
 
-      return enriched;
-    }),
+    return enriched;
+  }),
 });
 
 function getActionTitle(action: string) {
