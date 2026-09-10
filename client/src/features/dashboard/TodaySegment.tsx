@@ -26,7 +26,7 @@ import { DT, DType, DRadius, DSpace } from "./dashboardTokens";
 import { format, isPast } from "date-fns";
 import { utcToLocal } from "@shared/utils/timezone";
 import { ChevronDown, ChevronUp, Check, Mail, Smartphone, MessageSquare } from "lucide-react";
-import { useLocation, Link } from "wouter";
+import { useLocation } from "wouter";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 
 // ── Helpers ──────────────────────────────────────────────
@@ -73,9 +73,9 @@ function getSessionDuration(startTime: string, endTime: string): string {
 
 /** Exception pill — §5: first match wins. Healthy row shows nothing. */
 function getExceptionFlag(session: any): string | null {
-  if (session.paymentStatus === "pending_deposit") return "deposit outstanding";
+  if (session.paidCents === 0 && session.priceCents > 0) return "no deposit";
   if (session.status === "pending") return "unconfirmed";
-  if (session.status === "completed" && session.remainingCents > 0) return "balance outstanding";
+  if (isPast(new Date(ensureUTC(session.startTime))) && session.remainingCents > 0) return "overdue";
   return null;
 }
 
@@ -84,7 +84,7 @@ function getPaymentLabel(session: any): string {
   if (session.priceCents === 0) return "";
   if (session.paidCents >= session.priceCents) return "paid in full";
   if (session.paidCents > 0) return `${formatCents(session.paidCents)} of ${formatCents(session.priceCents)}`;
-  return "payment not recorded";
+  return "no deposit";
 }
 
 // ── Section Header ──────────────────────────────────────
@@ -186,7 +186,7 @@ function TodaySessionRow({ session }: { session: any }) {
       minHeight: 44,
     }}>
       {/* Left: time + duration */}
-      <div style={{ width: 70, flexShrink: 0 }}>
+      <div style={{ width: 60, flexShrink: 0 }}>
         <div style={{ fontSize: DType.rowTitle.fontSize, fontWeight: DType.rowTitle.fontWeight, color: DT.textPrimary }}>
           {time}
         </div>
@@ -205,7 +205,6 @@ function TodaySessionRow({ session }: { session: any }) {
         <div style={{ fontSize: DType.rowBodyLg.fontSize, fontWeight: DType.rowBodyLg.fontWeight, color: DT.textSecondary, marginTop: 2 }}>
           {serviceName}{paymentLabel ? ` · ${paymentLabel}` : ""}
         </div>
-        {session.conversationId && <Link href={`/projects/${session.conversationId}`} className="inline-flex min-h-11 items-center text-sm underline">Open project</Link>}
         {session.priceCents > 0 && (
           <div style={{ marginTop: 6 }}>
             <ProgressBar pct={session.priceCents > 0 ? Math.round((session.paidCents / session.priceCents) * 100) : 0} />
@@ -462,12 +461,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
   // Today's sessions from overview
   const todaySessions = useMemo(() => {
     if (!overview?.todayTimeline) return [];
-    return overview.todayTimeline.filter((s: any) => s.status !== "cancelled").map((s: any) => ({
-      ...s,
-      priceCents: s.totalExpectedAmountCents ?? Math.round((s.price || 0) * 100),
-      paidCents: s.totalPaidAmountCents ?? 0,
-      remainingCents: s.remainingBalanceCents ?? Math.max(0, (s.totalExpectedAmountCents ?? Math.round((s.price || 0) * 100)) - (s.totalPaidAmountCents ?? 0)),
-    }));
+    return overview.todayTimeline.filter((s: any) => s.status !== "cancelled");
   }, [overview]);
 
   // Task processing: separate needs-you from gone-cold, apply grouping

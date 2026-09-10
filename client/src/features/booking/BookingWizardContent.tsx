@@ -1,4 +1,3 @@
-import { InlineWorkflowGuide } from "@/features/guides/InlineWorkflowGuide";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Clock,
@@ -666,7 +665,6 @@ export function BookingWizardContent({
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      {isArtist && <InlineWorkflowGuide id="artist-enquiry" />}
       <EditBookingModal
         isOpen={showEditBookingModal}
         onClose={() => setShowEditBookingModal(false)}
@@ -1594,7 +1592,6 @@ export function BookingWizardContent({
         !showVoucherList &&
         !selectedAppointmentRaw && (
           <div className="flex flex-col gap-2 w-full">
-      {isArtist && <InlineWorkflowGuide id="artist-enquiry" />}
             <motion.div variants={fab.animation.item} className={fab.itemRow}>
               {step !== "service" && step !== "success" && (
                 <button onClick={goBack} className={fab.itemButton}>

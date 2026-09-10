@@ -25,6 +25,7 @@ export function MoneyStrip({ period = "30d", onTap }: MoneyStripProps) {
   const nextPayoutQuery = trpc.payouts.nextPayout.useQuery();
 
   const netCents = earningsQuery.data?.netCents ?? 0;
+  const outstandingCents = 0; // Derived from client groups; passed via props if needed
   const nextPayoutCents = nextPayoutQuery.data?.nextPayoutAmountCents ?? nextPayoutQuery.data?.pendingAmountCents ?? 0;
 
   const isLoading = earningsQuery.isLoading;
@@ -48,9 +49,7 @@ export function MoneyStrip({ period = "30d", onTap }: MoneyStripProps) {
       onMouseEnter={e => (e.currentTarget.style.background = DT.quietRow)}
       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
     >
-      {earningsQuery.error || nextPayoutQuery.error ? (
-        <span className="text-sm text-muted-foreground">Money summary unavailable. Open details to retry.</span>
-      ) : isLoading ? (
+      {isLoading ? (
         <span style={{ color: DT.textTertiary, fontSize: DType.rowBody.fontSize }}>Loading…</span>
       ) : (
         <>
@@ -64,7 +63,7 @@ export function MoneyStrip({ period = "30d", onTap }: MoneyStripProps) {
                 textTransform: "uppercase",
                 marginBottom: 2,
               }}>
-                EARNED · {period === "all" ? "ALL TIME" : period.toUpperCase()}
+                EARNED
               </div>
               <div style={{
                 fontSize: DType.rowTitle.fontSize,

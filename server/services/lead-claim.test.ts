@@ -120,7 +120,7 @@ describe("public booking account claim", () => {
       caller.claimLead({ leadToken: token(), password: "right-password" })
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
-  it("returns the specific project only after checking the existing password", async () => {
+  it("issues a session only after checking the existing password", async () => {
     mocks.compare.mockResolvedValue(true);
     mocks.update.mockReturnValue({
       set: () => ({ where: async () => undefined }),
@@ -131,7 +131,6 @@ describe("public booking account claim", () => {
       password: "right-password",
     });
     expect(mocks.compare).toHaveBeenCalledWith("right-password", "stored-hash");
-    expect(result.conversationId).toBe(9);
     expect(result.token).toBe("authenticated-session");
   });
 });

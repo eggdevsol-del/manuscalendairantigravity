@@ -864,7 +864,6 @@ export const authRouter = router({
           },
           token: authToken,
           isNewUser: false,
-          conversationId: lead.conversationId,
         };
       }
 
@@ -957,7 +956,6 @@ export const authRouter = router({
         },
         token: authToken,
         isNewUser: true,
-        conversationId: lead.conversationId,
       };
     }),
 });

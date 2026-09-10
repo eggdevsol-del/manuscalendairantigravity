@@ -1,20 +1,14 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { Link } from "wouter";
 import { Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { Button, Input, Label } from "@/components/ui";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { useGoogleAuthReady } from "@/lib/google-auth";
-import { finishSignIn, safeReturnPath } from "@/lib/auth-session";
+import { finishSignIn } from "@/lib/auth-session";
 import { trpc } from "@/lib/trpc";
 
 export default function Login() {
-  const { user, loading, isSessionChecked } = useAuth();
-  const [, navigate] = useLocation();
-  useEffect(() => {
-    if (isSessionChecked && !loading && user) navigate(safeReturnPath(new URLSearchParams(window.location.search).get("returnTo")) || (user.role === "client" ? "/bookings" : "/dashboard"));
-  }, [user, loading, isSessionChecked, navigate]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);

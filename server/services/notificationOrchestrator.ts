@@ -46,9 +46,9 @@ export class NotificationOrchestrator {
     // Notify the client to fill out their consent forms
     const clientPushPayload = {
       targetUserId: payload.clientId,
-      title: "Booking confirmed",
-      body: "Review your sessions and complete any outstanding forms before you arrive.",
-      url: payload.conversationId ? `/projects/${payload.conversationId}` : "/bookings",
+      title: "Booking Confirmed! 📝",
+      body: "Your appointment is locked in. Please tap here to sign your required consent forms before you arrive.",
+      url: "/profile?tab=forms",
       data: {
         type: "proposal_accepted",
         appointmentId: payload.appointmentId,
@@ -61,9 +61,9 @@ export class NotificationOrchestrator {
     if (payload.artistId) {
       const artistPushPayload = {
         targetUserId: payload.artistId,
-        title: "Your client accepted the proposal",
+        title: "Proposal Accepted! 🎉",
         body: "A client just accepted your project proposal and confirmed their booking.",
-        url: payload.conversationId ? `/projects/${payload.conversationId}` : "/dashboard",
+        url: `/chat/${payload.conversationId}`,
         data: {
           type: "proposal_accepted_artist",
           appointmentId: payload.appointmentId,

@@ -124,9 +124,9 @@ export default function ArtistProfileTab() {
       !tourStartedRef.current &&
       !editMode
     ) {
+      tourStartedRef.current = true;
       // Small delay so the DOM is painted and refs are registered
       const timer = setTimeout(() => {
-        tourStartedRef.current = true;
         const tour = {
           ...PROFILE_ONBOARDING_TOUR,
           steps: PROFILE_ONBOARDING_TOUR.steps.map((step, i) => ({

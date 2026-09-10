@@ -28,8 +28,6 @@ export default function PublicArtistProfile() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [claiming, setClaiming] = useState(false);
-  const [existingAccount, setExistingAccount] = useState(false);
-  const [projectId, setProjectId] = useState<number | null>(null);
 
   const { data: profile, isLoading, error } = trpc.feed.getPublicArtistProfile.useQuery(
     { slug: slug || "" },
@@ -51,9 +49,7 @@ export default function PublicArtistProfile() {
     }
   }, [profile]);
 
-  const handlePublicSubmitted = useCallback((token: string, email: string, context?: { existingUser: boolean; conversationId: number }) => {
-    setExistingAccount(!!context?.existingUser);
-    setProjectId(context?.conversationId || null);
+  const handlePublicSubmitted = useCallback((token: string, email: string) => {
     setShowBookingForm(false);
     setLeadToken(token);
     setLeadEmail(email);
@@ -78,15 +74,14 @@ export default function PublicArtistProfile() {
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
 
-      localStorage.removeItem("calendair_teaser_mode");
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
 
-      toast.success(result.isNewUser ? "Account created. Opening your project…" : "Signed in. Opening your project…");
+      toast.success("Account created! Signing you in...");
 
       // Hard reload to conversations page so auth context reinitialises
       setTimeout(() => {
-        window.location.href = result.conversationId ? `/projects/${result.conversationId}` : "/bookings";
+        window.location.href = "/conversations";
       }, 500);
     } catch (err: any) {
       console.error("[PublicBooking] claimLead failed:", err);
@@ -271,14 +266,14 @@ export default function PublicArtistProfile() {
                   color: "var(--foreground)",
                   margin: 0,
                 }}>
-                  Request sent
+                  Booking Submitted!
                 </h3>
                 <p style={{
                   fontSize: 13,
                   color: "var(--muted-foreground)",
                   marginTop: 6,
                 }}>
-                  {existingAccount ? "Your request is saved. Use your existing password to open your project." : "Your request is saved. Create a password to follow it—no app download needed."}
+                  Set a password to access your account
                 </p>
               </div>
 
@@ -322,7 +317,6 @@ export default function PublicArtistProfile() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min 8 characters"
-                    autoComplete={existingAccount ? "current-password" : "new-password"}
                     autoFocus
                     onKeyDown={(e) => e.key === "Enter" && handleSetPassword()}
                     style={{
@@ -357,7 +351,6 @@ export default function PublicArtistProfile() {
                 </div>
               </div>
 
-              {existingAccount && <div className="flex flex-wrap gap-3"><a href="/forgot-password" className="text-sm underline min-h-11 flex items-center">Forgot password?</a><a href={`/login?returnTo=${encodeURIComponent(projectId ? `/projects/${projectId}` : "/bookings")}`} className="text-sm underline min-h-11 flex items-center">Other sign-in options</a></div>}
               {/* Submit */}
               <button
                 onClick={handleSetPassword}
@@ -380,7 +373,7 @@ export default function PublicArtistProfile() {
                 }}
               >
                 {claiming && <Loader2 size={16} className="animate-spin" />}
-                {claiming ? "Opening your project…" : existingAccount ? "Sign in & open project" : "Create password & open project"}
+                {claiming ? "Creating account..." : "Set Password & Sign In"}
               </button>
             </motion.div>
           </motion.div>

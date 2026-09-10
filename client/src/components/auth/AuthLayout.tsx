@@ -47,23 +47,23 @@ export function AuthLayout({
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-6 lg:gap-24 items-center py-6 sm:py-12 lg:py-20">
         <section className="hidden lg:block space-y-6">
           <p className="text-xs tracking-widest uppercase text-muted-foreground">
-            More time for tattooing
+            Good tattoos begin with a connection
           </p>
           <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.06] max-w-lg">
-            Every booking.
+            Your next tattoo.
             <br />
-            <span className="text-muted-foreground">Everything together.</span>
+            <span className="text-muted-foreground">All in one place.</span>
           </h1>
           <p className="text-base sm:text-lg leading-relaxed text-muted-foreground max-w-md">
-            Plan the work with your artist. Keep every conversation, session
+            Find your artist. Shape your idea. Keep every conversation, session
             and payment together.
           </p>
           <div className="hidden lg:block border-t border-border pt-8 space-y-5">
             {[
               {
                 icon: Sparkles,
-                title: "Start with your idea",
-                text: "Send your artist a clear request with your references.",
+                title: "Find your people",
+                text: "Discover work and artists that feel right for you.",
               },
               {
                 icon: MessageCircle,

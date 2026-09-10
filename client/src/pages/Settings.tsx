@@ -252,7 +252,7 @@ export default function Settings() {
 
   return (
     <PageShell>
-      <PageHeader title={user?.role === "artist" || user?.role === "admin" ? "Business" : "Settings"} subtitle={`v${APP_VERSION}`} />
+      <PageHeader title="Settings" subtitle={`v${APP_VERSION}`} />
 
       {/* Scrollable list */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 pt-2 pb-32">

@@ -506,7 +506,7 @@ export function ChatInterface({
               </div>
             </div>
 
-            <Button variant="ghost" className="min-h-11 mr-2" onClick={() => setLocation(`/projects/${conversationId}`)}>Project</Button>
+            <Button variant="ghost" className="min-h-11 mr-2" onClick={() => setLocation(`/projects/${conversationId}`)}>Details</Button>
             {/* BOOK button (artist-only) */}
             {isArtist && (
               <button
