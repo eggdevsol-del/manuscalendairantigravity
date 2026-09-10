@@ -105,7 +105,28 @@ const plan = {
   platformFeeCents: 510,
   totalEstimateCents: 60000,
 };
-function response(name, role) {
+function response(name, role, test) {
+  if (name === "booking.checkAvailability")
+    return { dates: ["2026-09-14T00:00:00Z"], totalCost: 600 };
+  if (name === "feed.getPublicArtistProfile")
+    return {
+      id: artist.id,
+      slug: "ella",
+      displayName: artist.name,
+      avatar: null,
+      bio: "Fine-line tattoos in Brisbane",
+      showCity: true,
+      city: "Brisbane",
+      keywords: ["Fine Line"],
+      portfolio: [],
+    };
+  if (name === "funnel.submitPublicBooking")
+    return {
+      leadToken: "fixture-lead",
+      existingUser: test === "public-existing",
+      conversationId: 12,
+      success: true,
+    };
   if (name === "merchantAuth.getMerchantProfile")
     return {
       id: 1,
@@ -144,11 +165,13 @@ function response(name, role) {
     ];
   calls.add(name);
   if (name === "auth.me")
-    return role === "client"
-      ? client
-      : role === "merchant"
-        ? { ...artist, role: "merchant" }
-        : artist;
+    return role === "public"
+      ? null
+      : role === "client"
+        ? client
+        : role === "merchant"
+          ? { ...artist, role: "merchant" }
+          : artist;
   if (name === "projects.summary") return summary;
   if (name === "dashboard.getArtistOverview")
     return {
@@ -277,6 +300,10 @@ const cases = [
   ["product", 440, 956, "merchant", "/merchant/products"],
   ["notifications", 820, 1180, "artist", "/settings?section=notifications"],
   ["deposit", 440, 956, "client", "/bookings"],
+  ["public-request", 440, 956, "public", "/book/ella"],
+  ["public-existing", 820, 1180, "public", "/book/ella"],
+  ["public-error", 440, 956, "public", "/book/ella"],
+  ["product-error", 440, 956, "merchant", "/merchant/products"],
 ];
 for (const [test, width, height, role, path] of cases) {
   if (process.env.AUDIT_CASE && process.env.AUDIT_CASE !== test) continue;
@@ -301,7 +328,24 @@ for (const [test, width, height, role, path] of cases) {
       if (route.request().method() === "POST") mutations.push(...names);
       return route.fulfill({
         json: names.map(name => ({
-          result: { data: { json: response(name, role) } },
+          ...(test.endsWith("-error") &&
+          ["funnel.submitPublicBooking", "storefront.createProduct"].includes(
+            name
+          )
+            ? {
+                error: {
+                  json: {
+                    message: "Fixture save failed",
+                    code: -32603,
+                    data: {
+                      code: "INTERNAL_SERVER_ERROR",
+                      httpStatus: 500,
+                      path: name,
+                    },
+                  },
+                },
+              }
+            : { result: { data: { json: response(name, role, test) } } }),
         })),
       });
     }
@@ -318,12 +362,62 @@ for (const [test, width, height, role, path] of cases) {
   await page.addStyleTag({
     content: ":root{--app-safe-top:" + safeTop + "px;--app-safe-bottom:34px}",
   });
-  await page.getByRole("heading", { level: 1 }).waitFor();
+  await page.locator(".v3-header h1").waitFor();
   try {
-    const heading = await page.getByRole("heading", { level: 1 }).boundingBox();
+    if (test.startsWith("public-")) {
+      const dialog = page.getByRole("dialog");
+      await dialog
+        .getByRole("button", { name: "Send booking request", exact: true })
+        .waitFor();
+      if (await page.getByLabel("Create password", { exact: true }).count())
+        throw Error("Password shown before submitting the request");
+      await page
+        .getByLabel("What would you like tattooed?", { exact: true })
+        .fill("Botanical sleeve with fine line leaves.");
+      await page
+        .getByRole("checkbox", { name: "Fine Line", exact: true })
+        .check();
+      await page.getByLabel("First name", { exact: true }).fill("Mia");
+      await page.getByLabel("Last name", { exact: true }).fill("Chen");
+      await page
+        .getByLabel("Email", { exact: true })
+        .fill("fixture@example.invalid");
+      await page.getByLabel("Phone", { exact: true }).fill("0400000000");
+      await page
+        .getByLabel("Date of birth", { exact: true })
+        .fill("1995-01-01");
+      await page.getByLabel("Gender", { exact: true }).selectOption("female");
+      await page
+        .getByRole("button", { name: "Send booking request", exact: true })
+        .click();
+      if (test === "public-error") {
+        await page
+          .getByRole("alert")
+          .filter({ hasText: "Fixture save failed" })
+          .waitFor();
+        if (
+          (await page.getByLabel("Email", { exact: true }).inputValue()) !==
+          "fixture@example.invalid"
+        )
+          throw Error("Request details lost after failure");
+        if (await page.getByLabel("Create password", { exact: true }).count())
+          throw Error("Failed submission offered account creation");
+      } else
+        await page
+          .getByLabel(
+            test === "public-existing" ? "Your password" : "Create password",
+            { exact: true }
+          )
+          .waitFor();
+      if (!mutations.includes("funnel.submitPublicBooking"))
+        throw Error("Request did not submit");
+      if (mutations.includes("auth.claimLead"))
+        throw Error("Account claimed before the client chose credentials");
+    }
+    const heading = await page.locator(".v3-header h1").boundingBox();
     if (!heading || heading.y < safeTop)
       throw Error("Header overlaps the safe area");
-    if (test === "product") {
+    if (test === "product" || test === "product-error") {
       await page
         .getByRole("button", { name: "Add product", exact: true })
         .click();
@@ -335,7 +429,18 @@ for (const [test, width, height, role, path] of cases) {
       await page
         .getByRole("button", { name: "Save product", exact: true })
         .click();
-      await page.getByRole("dialog").waitFor({ state: "hidden" });
+      if (test === "product-error") {
+        await page
+          .getByRole("alert")
+          .filter({ hasText: "Fixture save failed" })
+          .waitFor();
+        if (
+          (await page
+            .getByLabel("Product name", { exact: true })
+            .inputValue()) !== "Example aftercare"
+        )
+          throw Error("Product draft lost after failure");
+      } else await page.getByRole("dialog").waitFor({ state: "hidden" });
       if (!mutations.includes("storefront.createProduct"))
         throw Error("Product did not save");
     }
@@ -382,6 +487,12 @@ for (const [test, width, height, role, path] of cases) {
       await page
         .getByLabel("Service", { exact: true })
         .selectOption("Full day");
+      await page
+        .getByRole("button", { name: "Find available dates", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Find available dates", exact: true })
+        .waitFor();
       await page.getByLabel("Date", { exact: true }).fill("2026-09-14");
       await page
         .getByRole("button", { name: "Review proposal", exact: true })

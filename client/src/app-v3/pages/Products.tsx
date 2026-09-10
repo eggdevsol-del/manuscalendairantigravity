@@ -35,6 +35,7 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"All" | "Published" | "Hidden">("All");
   const [selected, setSelected] = useState<Product | "new" | null>(null);
+  const [saving, setSaving] = useState(false);
   const currency = profile.data?.country === "NZ" ? "NZD" : "AUD";
   const price = (cents: number) =>
     new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(
@@ -116,7 +117,9 @@ export default function Products() {
       </ActionLink>
       <SheetShell
         isOpen={selected !== null}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          if (!saving) setSelected(null);
+        }}
         title={selected === "new" ? "Add product" : "Edit product"}
       >
         {selected && (
@@ -124,6 +127,7 @@ export default function Products() {
             key={selected === "new" ? "new" : selected.id}
             product={selected === "new" ? undefined : selected}
             currency={currency}
+            onBusy={setSaving}
             onSaved={() => {
               setSelected(null);
               void query.refetch();
@@ -138,10 +142,12 @@ function ProductEditor({
   product,
   currency,
   onSaved,
+  onBusy,
 }: {
   product?: Product;
   currency: string;
   onSaved: () => void;
+  onBusy: (busy: boolean) => void;
 }) {
   const [draft, setDraft] = useState<Draft>(() => ({
     title: product?.title || "",
@@ -204,6 +210,7 @@ function ProductEditor({
       isActive: draft.isActive,
       ...(draft.imageUrl ? { imageUrl: draft.imageUrl } : {}),
     };
+    onBusy(true);
     try {
       if (product)
         await update.mutateAsync({
@@ -224,6 +231,8 @@ function ProductEditor({
           ? e.message
           : "Couldn’t save this product. Your changes are still here."
       );
+    } finally {
+      onBusy(false);
     }
   }
   return (

@@ -852,6 +852,27 @@
   margin: 0;
   min-width: 0;
 }
+.v3-style-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.v3-form .v3-style-choices label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--v3-line);
+  border-radius: var(--v3-radius);
+  padding: 10px;
+  min-height: 44px;
+}
+.v3-form .v3-style-choices input {
+  width: 18px;
+  min-height: 18px;
+  height: 18px;
+}
 .v3-file-grid img {
   width: 100%;
   aspect-ratio: 1;

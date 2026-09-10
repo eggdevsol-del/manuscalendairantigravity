@@ -19,14 +19,20 @@ import { AccountEditor } from "./SettingsEditors";
 export default function Profile() {
   const { user } = useAuth();
   const search = useSearch();
+  const documentsOnly = new URLSearchParams(search).get("tab") === "forms";
   const forms = trpc.clientProfile.getConsentForms.useQuery();
   const [sign, setSign] = useState<number | null>(null);
   if (new URLSearchParams(search).get("edit") === "true")
     return <AccountEditor back="/profile" />;
   return (
     <Screen
-      title="Your profile"
-      subtitle="Your details and booking documents"
+      title={documentsOnly ? "Your consent forms" : "Your profile"}
+      subtitle={
+        documentsOnly
+          ? "Review the documents for your appointments"
+          : "Your details and booking documents"
+      }
+      back={documentsOnly ? "/profile" : undefined}
       action={
         <ActionLink href="/settings" tone="quiet">
           <Settings />
@@ -39,21 +45,23 @@ export default function Profile() {
         detail={user?.email}
         icon={<Avatar name={user?.name} src={user?.avatar} />}
       />
-      <Section title="Personal details">
-        <Row title="Phone" detail={user?.phone || "Not added"} />
-        <Row
-          title="Location"
-          detail={
-            [user?.city, user?.country].filter(Boolean).join(", ") ||
-            "Not added"
-          }
-        />
-        {user?.bio && <p>{user.bio}</p>}
-        <ActionLink href="/profile?edit=true">
-          <UserRound />
-          Edit your details
-        </ActionLink>
-      </Section>
+      {!documentsOnly && (
+        <Section title="Personal details">
+          <Row title="Phone" detail={user?.phone || "Not added"} />
+          <Row
+            title="Location"
+            detail={
+              [user?.city, user?.country].filter(Boolean).join(", ") ||
+              "Not added"
+            }
+          />
+          {user?.bio && <p>{user.bio}</p>}
+          <ActionLink href="/profile?edit=true">
+            <UserRound />
+            Edit your details
+          </ActionLink>
+        </Section>
+      )}
       <Section title="Your consent forms">
         <Feedback
           loading={forms.isLoading}

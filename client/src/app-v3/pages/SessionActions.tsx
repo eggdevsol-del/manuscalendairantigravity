@@ -33,6 +33,9 @@ export function SessionActions({
   const cancelAll = trpc.appointments.cancelProjectSessions.useMutation();
   const request = trpc.dashboard.requestPayment.useMutation();
   const [all, setAll] = useState(false);
+  const canFinish =
+    s.status === "completed" ||
+    (s.status === "confirmed" && instant(s.startsAt) <= new Date());
   const open = (next: typeof mode) => {
     setError("");
     setAll(false);
@@ -41,6 +44,11 @@ export function SessionActions({
     setMode(next);
   };
   async function save() {
+    if (busy) return;
+    if ((mode === "finish" || mode === "no-show") && !canFinish) {
+      setError("This action is available once the confirmed session starts.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -92,11 +100,13 @@ export function SessionActions({
     return null;
   return (
     <>
-      <Action onClick={() => open("finish")}>
-        {s.status === "completed"
-          ? "Request remaining balance"
-          : "Finish session"}
-      </Action>
+      {canFinish && (
+        <Action onClick={() => open("finish")}>
+          {s.status === "completed"
+            ? "Request remaining balance"
+            : "Finish session"}
+        </Action>
+      )}
       {s.status !== "completed" && (
         <>
           <Action tone="quiet" onClick={() => open("reschedule")}>
@@ -104,9 +114,11 @@ export function SessionActions({
           </Action>
           <details>
             <summary className="v3-row">More session options</summary>
-            <Action tone="quiet" onClick={() => open("no-show")}>
-              Mark no-show
-            </Action>
+            {canFinish && (
+              <Action tone="quiet" onClick={() => open("no-show")}>
+                Mark no-show
+              </Action>
+            )}
             <Action tone="danger" onClick={() => open("cancel")}>
               Cancel session
             </Action>

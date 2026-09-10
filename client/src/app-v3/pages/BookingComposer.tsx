@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { addDays, format, isSameDay } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -48,16 +48,25 @@ export function BookingComposer({
   const [client, setClient] = useState("");
   const [search, setSearch] = useState("");
   const [service, setService] = useState("");
-  const [sessions, setSessions] = useState<DraftSession[]>([
-    {
-      date: format(initialDate, "yyyy-MM-dd"),
-      time:
-        initialDate.getHours() === 0 ? "09:00" : format(initialDate, "HH:mm"),
-      duration: 60,
-      price: "",
-      deposit: "",
-    },
-  ]);
+  const [sessions, setSessions] = useState<DraftSession[]>(() => {
+    const start = new Date(initialDate);
+    if (start.getHours() === 0) start.setHours(9, 0, 0, 0);
+    if (isSameDay(start, new Date()) && start <= new Date())
+      start.setTime(Math.ceil((Date.now() + 60000) / 1800000) * 1800000);
+    return [
+      {
+        date: format(start, "yyyy-MM-dd"),
+        time: format(start, "HH:mm"),
+        duration: 60,
+        price: "",
+        deposit: "",
+      },
+    ];
+  });
+  const [frequency, setFrequency] = useState<
+    "weekly" | "biweekly" | "monthly" | "consecutive"
+  >("weekly");
+  const [findingDates, setFindingDates] = useState(false);
   const [step, setStep] = useState<"details" | "review">("details");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -76,6 +85,48 @@ export function BookingComposer({
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const tier = settings.data?.subscriptionTier?.toLowerCase();
   const fixedDeposit = !tier || tier === "free" || tier === "basic";
+  async function findDates() {
+    if (!user || !service || findingDates) return;
+    const startDate = new Date(sessions[0].date + "T" + sessions[0].time);
+    if (!Number.isFinite(startDate.getTime())) {
+      setError("Choose a valid starting date and time.");
+      return;
+    }
+    setFindingDates(true);
+    setError("");
+    try {
+      const result = await utils.booking.checkAvailability.fetch({
+        conversationId: conversationId || 0,
+        artistId: user.id,
+        serviceName: service,
+        serviceDuration: sessions[0].duration,
+        sittings: sessions.length,
+        price: Number(sessions[0].price) || 0,
+        frequency,
+        startDate,
+        timeZone: zone,
+      });
+      if (result.dates.length !== sessions.length)
+        throw new Error(
+          "Not enough available dates were found. Try a different starting date."
+        );
+      setSessions(current =>
+        current.map((s, i) => ({
+          ...s,
+          date: format(new Date(result.dates[i]), "yyyy-MM-dd"),
+          time: format(new Date(result.dates[i]), "HH:mm"),
+        }))
+      );
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Couldn’t check availability. Try again."
+      );
+    } finally {
+      setFindingDates(false);
+    }
+  }
   const update = (index: number, patch: Partial<DraftSession>) => {
     setError("");
     if (fixedDeposit && patch.price !== undefined) {
@@ -193,194 +244,246 @@ export function BookingComposer({
             if (!problem) setStep("review");
           }}
         >
-          {!conversationId && (
-            <Section title="Client">
-              {client ? (
-                <Row
-                  title={clientName}
-                  detail="Change client"
-                  onClick={() => setClient("")}
-                />
-              ) : (
-                <>
-                  <SearchField
-                    value={search}
-                    onChange={setSearch}
-                    label="Search clients"
+          <fieldset className="v3-form" disabled={findingDates || busy}>
+            {!conversationId && (
+              <Section title="Client">
+                {client ? (
+                  <Row
+                    title={clientName}
+                    detail="Change client"
+                    onClick={() => setClient("")}
                   />
-                  {clients.data
-                    ?.filter((c): c is NonNullable<typeof c> => !!c)
-                    .filter(c =>
-                      `${c.name} ${c.email}`
-                        .toLowerCase()
-                        .includes(search.toLowerCase())
-                    )
-                    .map(c => (
-                      <Row
-                        key={c.id}
-                        title={c.name || "Client"}
-                        detail={c.email}
-                        onClick={() => setClient(c.id)}
-                      />
-                    ))}
-                  {!clients.isLoading && !clients.data?.length && (
-                    <ActionLink href="/clients">
-                      Add your first client
-                    </ActionLink>
-                  )}
-                </>
-              )}
-            </Section>
-          )}
-          <label>
-            Service
-            <select
-              aria-label="Service"
-              value={service}
-              required
-              onChange={e => {
-                setService(e.target.value);
-                const svc = services.find(s => s.name === e.target.value);
-                if (svc) {
-                  const percentage = fixedDeposit
-                    ? 25
-                    : Number(settings.data?.depositPercentage ?? 25);
-                  setSessions(s =>
-                    s.map(v => ({
-                      ...v,
-                      duration: svc.duration || 60,
-                      price: String(svc.price || 0),
-                      deposit: String(
-                        Math.round((svc.price || 0) * percentage) / 100
-                      ),
-                    }))
-                  );
+                ) : (
+                  <>
+                    <SearchField
+                      value={search}
+                      onChange={setSearch}
+                      label="Search clients"
+                    />
+                    {clients.data
+                      ?.filter((c): c is NonNullable<typeof c> => !!c)
+                      .filter(c =>
+                        `${c.name} ${c.email}`
+                          .toLowerCase()
+                          .includes(search.toLowerCase())
+                      )
+                      .map(c => (
+                        <Row
+                          key={c.id}
+                          title={c.name || "Client"}
+                          detail={c.email}
+                          onClick={() => setClient(c.id)}
+                        />
+                      ))}
+                    {!clients.isLoading && !clients.data?.length && (
+                      <ActionLink href="/clients">
+                        Add your first client
+                      </ActionLink>
+                    )}
+                  </>
+                )}
+              </Section>
+            )}
+            <label>
+              Service
+              <select
+                aria-label="Service"
+                value={service}
+                required
+                onChange={e => {
+                  setService(e.target.value);
+                  const svc = services.find(s => s.name === e.target.value);
+                  if (svc) {
+                    const percentage = fixedDeposit
+                      ? 25
+                      : Number(settings.data?.depositPercentage ?? 25);
+                    setSessions(s =>
+                      Array.from(
+                        {
+                          length: Math.max(
+                            1,
+                            Math.min(52, Number(svc.sittings) || 1)
+                          ),
+                        },
+                        (_, i) => ({
+                          ...s[0],
+                          date: format(
+                            addDays(
+                              new Date(s[0].date + "T" + s[0].time),
+                              7 * i
+                            ),
+                            "yyyy-MM-dd"
+                          ),
+                          duration: svc.duration || 60,
+                          price: String(svc.price || 0),
+                          deposit: String(
+                            Math.round((svc.price || 0) * percentage) / 100
+                          ),
+                        })
+                      )
+                    );
+                  }
+                }}
+              >
+                <option value="">Choose a service</option>
+                {services.map((s, i) => (
+                  <option key={`${s.name}-${i}`} value={s.name}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {!settings.isLoading && !services.length && (
+              <ActionLink href="/settings?section=work-hours">
+                Set up your services
+              </ActionLink>
+            )}
+            {service && (
+              <Panel>
+                <div className="v3-form">
+                  <label>
+                    Space sessions
+                    <select
+                      aria-label="Space sessions"
+                      value={frequency}
+                      onChange={e =>
+                        setFrequency(e.target.value as typeof frequency)
+                      }
+                    >
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Every two weeks</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="consecutive">
+                        Consecutive working days
+                      </option>
+                    </select>
+                  </label>
+                  <Action
+                    tone="secondary"
+                    disabled={findingDates || busy}
+                    onClick={findDates}
+                  >
+                    {findingDates ? "Finding dates…" : "Find available dates"}
+                  </Action>
+                  <small>
+                    Uses your working hours and existing bookings, starting from
+                    the first date below. You can adjust each date before
+                    sending.
+                  </small>
+                </div>
+              </Panel>
+            )}
+            {sessions.map((s, i) => (
+              <Section
+                key={i}
+                title={`Session ${i + 1}`}
+                action={
+                  sessions.length > 1 ? (
+                    <Action
+                      tone="quiet"
+                      aria-label={`Remove session ${i + 1}`}
+                      onClick={() =>
+                        setSessions(rows => rows.filter((_, n) => n !== i))
+                      }
+                    >
+                      <Trash2 />
+                    </Action>
+                  ) : undefined
                 }
+              >
+                <div className="v3-form">
+                  <div className="v3-form-pair">
+                    <label>
+                      Date
+                      <input
+                        type="date"
+                        required
+                        value={s.date}
+                        onChange={e => update(i, { date: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Time
+                      <input
+                        type="time"
+                        required
+                        value={s.time}
+                        onChange={e => update(i, { time: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                  <label>
+                    Duration in minutes
+                    <input
+                      type="number"
+                      min={1}
+                      max={1440}
+                      required
+                      value={s.duration}
+                      onChange={e =>
+                        update(i, { duration: Number(e.target.value) })
+                      }
+                    />
+                  </label>
+                  <div className="v3-form-pair">
+                    <label>
+                      Session price · AUD
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        required
+                        value={s.price}
+                        onChange={e => update(i, { price: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Deposit · AUD
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        required
+                        value={s.deposit}
+                        readOnly={fixedDeposit}
+                        aria-describedby={
+                          fixedDeposit ? "booking-deposit-policy" : undefined
+                        }
+                        onChange={e => update(i, { deposit: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </Section>
+            ))}
+            <small>
+              Times in {zone.replaceAll("_", " ")}. Availability is checked when
+              the proposal is sent.
+            </small>
+            {fixedDeposit && (
+              <small id="booking-deposit-policy">
+                Your Free plan uses a 25% deposit for each session.
+              </small>
+            )}
+            <Action
+              tone="secondary"
+              disabled={sessions.length >= 52}
+              onClick={() => {
+                const last = sessions[sessions.length - 1];
+                const next = new Date(`${last.date}T${last.time}`);
+                next.setDate(next.getDate() + 7);
+                setSessions([
+                  ...sessions,
+                  { ...last, date: format(next, "yyyy-MM-dd") },
+                ]);
               }}
             >
-              <option value="">Choose a service</option>
-              {services.map((s, i) => (
-                <option key={`${s.name}-${i}`} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {!settings.isLoading && !services.length && (
-            <ActionLink href="/settings?section=work-hours">
-              Set up your services
-            </ActionLink>
-          )}
-          {sessions.map((s, i) => (
-            <Section
-              key={i}
-              title={`Session ${i + 1}`}
-              action={
-                sessions.length > 1 ? (
-                  <Action
-                    tone="quiet"
-                    aria-label={`Remove session ${i + 1}`}
-                    onClick={() =>
-                      setSessions(rows => rows.filter((_, n) => n !== i))
-                    }
-                  >
-                    <Trash2 />
-                  </Action>
-                ) : undefined
-              }
-            >
-              <div className="v3-form">
-                <div className="v3-form-pair">
-                  <label>
-                    Date
-                    <input
-                      type="date"
-                      required
-                      value={s.date}
-                      onChange={e => update(i, { date: e.target.value })}
-                    />
-                  </label>
-                  <label>
-                    Time
-                    <input
-                      type="time"
-                      required
-                      value={s.time}
-                      onChange={e => update(i, { time: e.target.value })}
-                    />
-                  </label>
-                </div>
-                <label>
-                  Duration in minutes
-                  <input
-                    type="number"
-                    min={1}
-                    max={1440}
-                    required
-                    value={s.duration}
-                    onChange={e =>
-                      update(i, { duration: Number(e.target.value) })
-                    }
-                  />
-                </label>
-                <div className="v3-form-pair">
-                  <label>
-                    Session price · AUD
-                    <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      required
-                      value={s.price}
-                      onChange={e => update(i, { price: e.target.value })}
-                    />
-                  </label>
-                  <label>
-                    Deposit · AUD
-                    <input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      required
-                      value={s.deposit}
-                      readOnly={fixedDeposit}
-                      aria-describedby={
-                        fixedDeposit ? "booking-deposit-policy" : undefined
-                      }
-                      onChange={e => update(i, { deposit: e.target.value })}
-                    />
-                  </label>
-                </div>
-              </div>
-            </Section>
-          ))}
-          <small>
-            Times in {zone.replaceAll("_", " ")}. Availability is checked when
-            the proposal is sent.
-          </small>
-          {fixedDeposit && (
-            <small id="booking-deposit-policy">
-              Your Free plan uses a 25% deposit for each session.
-            </small>
-          )}
-          <Action
-            tone="secondary"
-            disabled={sessions.length >= 52}
-            onClick={() => {
-              const last = sessions[sessions.length - 1];
-              const next = new Date(`${last.date}T${last.time}`);
-              next.setDate(next.getDate() + 7);
-              setSessions([
-                ...sessions,
-                { ...last, date: format(next, "yyyy-MM-dd") },
-              ]);
-            }}
-          >
-            <Plus />
-            Add another session
-          </Action>
-          {error && <p role="alert">{error}</p>}
-          <Action type="submit">Review proposal</Action>
+              <Plus />
+              Add another session
+            </Action>
+            {error && <p role="alert">{error}</p>}
+            <Action type="submit">Review proposal</Action>
+          </fieldset>
         </form>
       ) : (
         <>

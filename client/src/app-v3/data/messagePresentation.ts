@@ -27,3 +27,11 @@ export function mediaUrls(data: Record<string, any>): string[] {
       )
     : [];
 }
+export function messageText(content: string) {
+  const data = objectFromJson(content);
+  if (!Object.keys(data).length) return content;
+  for (const key of ["message", "text", "label", "title"]) {
+    if (typeof data[key] === "string" && data[key].trim()) return data[key];
+  }
+  return "Booking update";
+}

@@ -20,7 +20,11 @@ import {
   Row,
   Status,
 } from "../design/primitives";
-import { mediaUrls, objectFromJson } from "../data/messagePresentation";
+import {
+  mediaUrls,
+  objectFromJson,
+  messageText,
+} from "../data/messagePresentation";
 
 export function Thread({ id }: { id: number }) {
   const c = useChatController(id);
@@ -86,6 +90,10 @@ export function Thread({ id }: { id: number }) {
           const grid = objectFromJson(message.content);
           const urls = mediaUrls(grid);
           const own = message.senderId === c.user?.id;
+          const text =
+            message.messageType === "text"
+              ? message.content
+              : messageText(message.content);
           let body;
           if (
             metadata.type === "session_plan" ||
@@ -127,7 +135,7 @@ export function Thread({ id }: { id: number }) {
                     ? "Payment requested"
                     : "Rescheduled booking"}
                 </h3>
-                <p>{message.content}</p>
+                <p>{text}</p>
                 <ActionLink
                   href={`/projects/${id}${metadata.bookingId || metadata.appointmentId ? `?session=${metadata.bookingId || metadata.appointmentId}` : ""}`}
                 >
@@ -154,7 +162,10 @@ export function Thread({ id }: { id: number }) {
                 ))}
               </div>
             );
-          else if (message.messageType === "image")
+          else if (
+            message.messageType === "image" &&
+            /^https?:\/\//i.test(message.content)
+          )
             body = (
               <a href={message.content} target="_blank" rel="noreferrer">
                 <img
@@ -169,8 +180,15 @@ export function Thread({ id }: { id: number }) {
             message.messageType === "balance_paid" ||
             message.messageType === "session_plan_accepted"
           )
-            body = <Status tone="success">{message.content}</Status>;
-          else body = <p className="v3-message-text">{message.content}</p>;
+            body = <Status tone="success">{text}</Status>;
+          else
+            body = (
+              <p className="v3-message-text">
+                {message.messageType === "image"
+                  ? "This image is unavailable."
+                  : text}
+              </p>
+            );
           return (
             <article
               className={`v3-message ${own ? "is-own" : ""}`}

@@ -19,26 +19,26 @@ The approved scope is a fresh presentation layer based on the two concept images
 
 The current app exposes public identity/intake/payment pages, three authenticated role shells, and local-state subpages. Migration is incomplete until every item below has a verified new presentation and relevant interaction coverage.
 
-| Area | Routes / nested flows | Status |
-|---|---|---|
-| Artist day | /dashboard, setup checklist, attention tasks, arrival | New page implemented; setup/task interactions need broader coverage |
-| Inbox | /conversations, /chat/:id, leads, proposals, attachments, booking wizard | New list/thread implemented; legacy proposal editor and attachments need final parity audit |
-| Calendar | /calendar, phone day, tablet week, inspector, create/reschedule/cancel | New day/week/inspector implemented; proposal and reschedule fixtures pass |
-| Clients | /clients, add, detail, history, forms, notes | New master/detail and notes implemented; fixture interactions pass |
-| Booking | /projects/:id, overview/messages/files, forms, deposit, balance | New workspace and checkout review implemented; custom Stripe form retained; signing and webhook tests remain |
-| Client home | /bookings, upcoming/past, pending plans, waitlist | New page implemented; deposit review fixture passes |
-| Business | /business, /money, /supplies, /supply-orders, /payout-history | New hub and Money implemented; supplies and payout history remain |
-| Profile | /artist-profile, gallery, services, storefront, events, link sharing | Pending |
-| Schedule | /work-hours, availability, breaks, design days, travel | New hours/services implemented; services fixture passes; breaks/travel remain |
-| Settings | profile, business, services, travel, import, forms, consultation, studio, notification, Instagram, guides, account deletion | New root/account/business/notifications implemented; specialist editors remain |
-| Billing | /bank-payouts, /subscriptions, custom checkout | Pending |
-| Studio | /studio, roster, invitations, shared schedule, compliance | Pending |
-| Supplier | /dashboard, /merchant/products, /merchant/orders, /settings | New dashboard/orders/products/business/payments implemented; Shopify specialist remains |
-| Client account | /profile, /settings, /purchases, /discover | Pending |
-| Public | /book/:slug, /start/:slug, /studio/:slug, /shop/:slug, /events/:slug, /:slug | Pending |
-| Public payments | /deposit/:token, /balance/:id, /pay/:token | Pending |
-| Identity | login, signup, magic link, password setup/recovery, complete profile | Pending |
-| Operations | /admin/operations, /admin/errors, not found, error recovery | Pending |
+| Area            | Routes / nested flows                                                                                                       | Status                                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Artist day      | /dashboard, setup checklist, attention tasks, arrival                                                                       | New page implemented; setup/task interactions need broader coverage                                          |
+| Inbox           | /conversations, /chat/:id, leads, proposals, attachments, booking wizard                                                    | New list/thread implemented; legacy proposal editor and attachments need final parity audit                  |
+| Calendar        | /calendar, phone day, tablet week, inspector, create/reschedule/cancel                                                      | New day/week/inspector implemented; proposal and reschedule fixtures pass                                    |
+| Clients         | /clients, add, detail, history, forms, notes                                                                                | New master/detail and notes implemented; fixture interactions pass                                           |
+| Booking         | /projects/:id, overview/messages/files, forms, deposit, balance                                                             | New workspace and checkout review implemented; custom Stripe form retained; signing and webhook tests remain |
+| Client home     | /bookings, upcoming/past, pending plans, waitlist                                                                           | New page implemented; deposit review fixture passes                                                          |
+| Business        | /business, /money, /supplies, /supply-orders, /payout-history                                                               | New hub and Money implemented; supplies and payout history remain                                            |
+| Profile         | /artist-profile, gallery, services, storefront, events, link sharing                                                        | Pending                                                                                                      |
+| Schedule        | /work-hours, availability, breaks, design days, travel                                                                      | New hours/services implemented; services fixture passes; breaks/travel remain                                |
+| Settings        | profile, business, services, travel, import, forms, consultation, studio, notification, Instagram, guides, account deletion | New root/account/business/notifications implemented; specialist editors remain                               |
+| Billing         | /bank-payouts, /subscriptions, custom checkout                                                                              | Pending                                                                                                      |
+| Studio          | /studio, roster, invitations, shared schedule, compliance                                                                   | Pending                                                                                                      |
+| Supplier        | /dashboard, /merchant/products, /merchant/orders, /settings                                                                 | New dashboard/orders/products/business/payments implemented; Shopify specialist remains                      |
+| Client account  | /profile, /settings, /purchases, /discover                                                                                  | New profile/details/forms implemented; purchases/discovery remain                                            |
+| Public          | /book/:slug, /start/:slug, /studio/:slug, /shop/:slug, /events/:slug, /:slug                                                | New /book/:slug intake and claim flow implemented; other routes remain                                       |
+| Public payments | /deposit/:token, /balance/:id, /pay/:token                                                                                  | Pending                                                                                                      |
+| Identity        | login, signup, magic link, password setup/recovery, complete profile                                                        | Pending                                                                                                      |
+| Operations      | /admin/operations, /admin/errors, not found, error recovery                                                                 | Pending                                                                                                      |
 
 ## Release rule
 
@@ -48,7 +48,7 @@ Keep the currently deployed 2.15.0 unchanged while this branch is being built. T
 
 - TypeScript passes; production client and service-worker build passes.
 - 130 tests pass across 35 test files.
-- Nine isolated browser interaction checks pass: proposal review/send, client notes, reschedule, single message composer/send, business settings, services, supplier product creation, notification template creation and client deposit review.
+- Thirteen isolated browser interaction checks pass: proposal review/send, client notes, reschedule, single message composer/send, business settings, services, supplier product creation, notification template creation, client deposit review, public request submission, existing-client sign-in prompt, public submission failure and supplier product-save failure.
 - The interaction checks inject safe-area values and check headers/overflow. They use synthetic responses and do not prove live payments, delivery or physical-device behaviour.
 - Production build still reports existing analytics placeholders, missing noise asset and large-bundle warnings. These remain release work.
 - Design tokens now have one source in app-v3/design/system.css; legacy semantic names alias these tokens.
@@ -57,6 +57,8 @@ Keep the currently deployed 2.15.0 unchanged while this branch is being built. T
 ## Findings requiring completion
 
 - Existing notificationMode and quiet-hours preferences have no discovered delivery consumer. The new template page accurately describes templates as saved wording, not scheduled sends. A complete automation workflow still needs implementation and delivery tests.
-- New booking composer needs multi-session service defaults and availability suggestions before parity can be claimed.
-- Public booking/password creation, specialist settings, studio, profile/storefront, supplies/purchases, identity and operations remain release blockers.
+- New booking composer now applies service session counts and uses the existing availability service for weekly, fortnightly, monthly and consecutive-day suggestions. Suggestions/review/send pass the browser fixture.
+- The /book/:slug profile and intake have a fresh implementation. Tests verify request submission before account creation, existing-account password wording and draft retention on errors. Other public routes, specialist settings, studio, artist profile/storefront, supplies/purchases, identity and operations remain release blockers.
 - New checkout preserves DotsCheckout (custom Stripe Elements), verifies server confirmation and refreshes dependent reads at 0/600/1500 ms. Live test-mode payment verification is still outstanding.
+
+The current development branch is not a release candidate. It has not replaced the deployed app.

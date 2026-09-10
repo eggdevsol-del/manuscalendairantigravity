@@ -16,7 +16,7 @@ import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { PaymentRequestBanner } from "@/components/PaymentRequestBanner";
 import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
-import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
+import PublicArtistProfile from "@/app-v3/pages/PublicArtist";
 
 import MagicLink from "./pages/MagicLink";
 import Login from "./pages/Login";
