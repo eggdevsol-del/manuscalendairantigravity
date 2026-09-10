@@ -81,7 +81,7 @@ export function SetupChecklistWidget() {
       description: "Add a photo and phone number so clients can reach you.",
       isComplete: hasProfileComplete,
       icon: User,
-      onClick: () => setLocation("/settings"),
+      onClick: () => setLocation("/settings?section=profile"),
     },
     {
       id: "business",
@@ -89,7 +89,7 @@ export function SetupChecklistWidget() {
       description: "Tell clients where to find you.",
       isComplete: hasBusinessAddress,
       icon: MapPin,
-      onClick: () => setLocation("/settings"),
+      onClick: () => setLocation("/settings?section=business"),
     },
     {
       id: "hours",

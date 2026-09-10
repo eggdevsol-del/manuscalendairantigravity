@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 /**
  * TooltipOverlay — Renders spotlight + tooltip bubble
  * ────────────────────────────────────────────────────
@@ -8,7 +9,7 @@
  * Tooltip bubble styled to match the SSOT update banner:
  * bg-popover/95, backdrop-blur, border-border, shadow.
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTour } from "./TooltipTourProvider";
 import "./tooltipTour.css";
@@ -25,6 +26,13 @@ interface Rect {
 
 export function TooltipOverlay() {
   const { activeTour, currentStep, getTarget, nextStep, skipTour } = useTooltipTour();
+  const bubbleRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeTour) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const timer = setTimeout(() => bubbleRef.current?.focus(), 650);
+    return () => { clearTimeout(timer); if (previous?.isConnected) previous.focus(); };
+  }, [activeTour?.id, currentStep]);
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
   const [viewportSize, setViewportSize] = useState({
     w: document.documentElement.clientWidth,
@@ -105,80 +113,21 @@ export function TooltipOverlay() {
   const isLastStep = currentStep === activeTour.steps.length - 1;
   const position = step.position || "bottom";
 
-  // Compute tooltip position relative to target
-  // Ensure it stays fully within viewport with margin on all sides
-  const MARGIN = 20;
-  // Account for bottom nav bar (roughly 80px + safe area)
-  const BOTTOM_SAFE = 100;
-  let tooltipStyle: React.CSSProperties = {};
-  let arrowClass = "";
+  // Keep the guide in the opposite half from the spotlight. CSS resolves the
+  // actual safe-area values in Safari, including landscape and split view.
+  const useTop = targetRect && targetRect.top > viewportSize.h / 2;
+  const tooltipStyle: React.CSSProperties = {
+    left: "max(20px, var(--app-safe-left))",
+    right: "max(20px, var(--app-safe-right))",
+    marginInline: "auto",
+    width: "min(320px, calc(100vw - var(--app-safe-left) - var(--app-safe-right) - 40px))",
+    ...(useTop ? { top: "calc(var(--app-safe-top) + 20px)" } : { bottom: "calc(var(--app-safe-bottom) + 84px)" }),
+    maxHeight: "calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 124px)",
+    overflowY: "auto",
+  };
 
-  const bubbleWidth = Math.min(320, viewportSize.w - MARGIN * 2);
-
-  if (targetRect) {
-    // Horizontal: center on target, clamp to viewport
-    const idealLeft = targetRect.left + targetRect.width / 2 - bubbleWidth / 2;
-    const clampedLeft = Math.max(MARGIN, Math.min(idealLeft, viewportSize.w - bubbleWidth - MARGIN));
-
-    if (position === "bottom") {
-      const top = targetRect.top + targetRect.height + 14;
-      // If bubble would go below viewport (accounting for nav bar), flip to top
-      if (top + 180 > viewportSize.h - BOTTOM_SAFE) {
-        const bottomVal = Math.max(MARGIN, viewportSize.h - targetRect.top + 14);
-        tooltipStyle = {
-          bottom: Math.min(bottomVal, viewportSize.h - MARGIN),
-          left: clampedLeft,
-          width: bubbleWidth,
-          maxHeight: viewportSize.h - MARGIN * 2 - BOTTOM_SAFE,
-          overflowY: "auto",
-        };
-        arrowClass = "tooltip-tour-arrow-bottom";
-      } else {
-        tooltipStyle = {
-          top: Math.max(MARGIN, top),
-          left: clampedLeft,
-          width: bubbleWidth,
-          maxHeight: viewportSize.h - top - BOTTOM_SAFE,
-          overflowY: "auto",
-        };
-        arrowClass = "tooltip-tour-arrow-top";
-      }
-    } else if (position === "top") {
-      const bottomVal = viewportSize.h - targetRect.top + 14;
-      // If bubble would go above viewport, flip to bottom
-      if (targetRect.top - 180 < MARGIN) {
-        tooltipStyle = {
-          top: Math.max(MARGIN, targetRect.top + targetRect.height + 14),
-          left: clampedLeft,
-          width: bubbleWidth,
-          maxHeight: viewportSize.h - (targetRect.top + targetRect.height + 14) - BOTTOM_SAFE,
-          overflowY: "auto",
-        };
-        arrowClass = "tooltip-tour-arrow-top";
-      } else {
-        tooltipStyle = {
-          bottom: Math.min(Math.max(MARGIN, bottomVal), viewportSize.h - MARGIN),
-          left: clampedLeft,
-          width: bubbleWidth,
-          maxHeight: targetRect.top - MARGIN * 2,
-          overflowY: "auto",
-        };
-        arrowClass = "tooltip-tour-arrow-bottom";
-      }
-    }
-  } else {
-    // No target found — center the tooltip safely within viewport
-    tooltipStyle = {
-      top: Math.max(MARGIN, viewportSize.h * 0.3),
-      left: Math.max(MARGIN, (viewportSize.w - bubbleWidth) / 2),
-      width: bubbleWidth,
-      maxHeight: viewportSize.h - MARGIN * 2 - BOTTOM_SAFE,
-      overflowY: "auto",
-    };
-  }
-
-  return (
-    <AnimatePresence>
+  return createPortal(
+    <AnimatePresence mode="wait">
       <motion.div
         key={`tour-${activeTour.id}-${currentStep}`}
         className="tooltip-tour-backdrop"
@@ -236,6 +185,21 @@ export function TooltipOverlay() {
         {/* Tooltip bubble */}
         <motion.div
           className="tooltip-tour-bubble"
+          ref={bubbleRef}
+          tabIndex={-1}
+          onKeyDown={event => {
+            if (event.key === "Escape") { event.preventDefault(); skipTour(); }
+            if (event.key === "Tab") {
+              const buttons = bubbleRef.current?.querySelectorAll<HTMLButtonElement>("button");
+              if (!buttons?.length) return;
+              const first = buttons[0], last = buttons[buttons.length - 1];
+              if (event.shiftKey && (document.activeElement === first || document.activeElement === bubbleRef.current)) { event.preventDefault(); last.focus(); }
+              else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            }
+          }}
+          role="dialog"
+          aria-label={step.title}
+          aria-modal="true"
           style={tooltipStyle}
           initial={{ opacity: 0, y: position === "bottom" ? -8 : 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -243,7 +207,7 @@ export function TooltipOverlay() {
         >
           <div className="tooltip-tour-bubble-inner">
             {/* Arrow */}
-            {targetRect && <div className={`tooltip-tour-arrow ${arrowClass}`} />}
+
 
             <p className="tooltip-tour-title">{step.title}</p>
             <p className="tooltip-tour-body">{step.body}</p>
@@ -272,6 +236,6 @@ export function TooltipOverlay() {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>, document.body
   );
 }

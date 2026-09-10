@@ -1,0 +1,87 @@
+[
+  {
+    "device": "iphone",
+    "theme": "light",
+    "kind": "form review",
+    "box": {
+      "x": 41,
+      "y": 366,
+      "width": 358,
+      "height": 22.75
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "iphone",
+    "theme": "dark",
+    "kind": "form review",
+    "box": {
+      "x": 41,
+      "y": 366,
+      "width": 358,
+      "height": 22.75
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad",
+    "theme": "light",
+    "kind": "form review",
+    "box": {
+      "x": 179,
+      "y": 328,
+      "width": 462,
+      "height": 22.75
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "device": "ipad",
+    "theme": "dark",
+    "kind": "form review",
+    "box": {
+      "x": 179,
+      "y": 328,
+      "width": 462,
+      "height": 22.75
+    },
+    "errors": [],
+    "pass": true
+  },
+  {
+    "kind": "spotlight tour",
+    "step": 0,
+    "box": {
+      "x": 60,
+      "y": 666.5,
+      "width": 320,
+      "height": 171.5
+    },
+    "pass": true
+  },
+  {
+    "kind": "spotlight tour",
+    "step": 1,
+    "box": {
+      "x": 60,
+      "y": 82,
+      "width": 320,
+      "height": 191
+    },
+    "pass": true
+  },
+  {
+    "kind": "spotlight tour",
+    "step": 2,
+    "box": {
+      "x": 60,
+      "y": 82,
+      "width": 320,
+      "height": 171.5
+    },
+    "pass": true
+  }
+]

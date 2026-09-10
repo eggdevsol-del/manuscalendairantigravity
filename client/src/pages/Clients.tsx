@@ -155,7 +155,7 @@ export default function Clients() {
 
   return (
     <div className="app-viewport fixed inset-0 h-[100dvh] flex flex-col overflow-hidden">
-      <PageHeader title="Clients" onBack={() => setLocation("/settings")} />
+      <PageHeader title="Clients" />
 
       <main className="flex-1 min-h-0 w-full max-w-5xl mx-auto px-4 py-4 mobile-scroll overflow-y-auto space-y-4 pb-28">
         {/* Search and Add */}

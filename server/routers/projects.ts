@@ -16,51 +16,72 @@ export const projectsRouter = router({
         input.conversationId,
         ctx.user.id
       );
-      const [sessions, plans, people, settings, leads] = await Promise.all([
-        db
-          .select({
-            id: schema.appointments.id,
-            title: schema.appointments.title,
-            startsAt: schema.appointments.startTime,
-            endsAt: schema.appointments.endTime,
-            status: schema.appointments.status,
-            sessionPlanId: schema.appointments.sessionPlanId,
-            price: schema.appointments.price,
-            expected: schema.appointments.totalExpectedAmountCents,
-            paid: schema.appointments.totalPaidAmountCents,
-            remaining: schema.appointments.remainingBalanceCents,
-            paymentStatus: schema.appointments.paymentStatus,
-            depositPaymentId: schema.appointments.depositPaymentId,
-            balancePaymentId: schema.appointments.balancePaymentId,
-          })
-          .from(schema.appointments)
-          .where(eq(schema.appointments.conversationId, input.conversationId))
-          .orderBy(asc(schema.appointments.startTime)),
-        db
-          .select()
-          .from(schema.sessionPlans)
-          .where(eq(schema.sessionPlans.conversationId, input.conversationId)),
-        db
-          .select({
-            id: schema.users.id,
-            name: schema.users.name,
-            avatar: schema.users.avatar,
-          })
-          .from(schema.users)
-          .where(
-            inArray(schema.users.id, [
-              conversation.artistId,
-              conversation.clientId!,
-            ])
-          ),
-        db.query.artistSettings.findFirst({
-          where: eq(schema.artistSettings.userId, conversation.artistId),
-        }),
-        db
-          .select({ paymentId: schema.leads.stripeCheckoutSessionId })
-          .from(schema.leads)
-          .where(eq(schema.leads.conversationId, input.conversationId)),
-      ]);
+      const [sessions, plans, people, settings, leads, briefs] =
+        await Promise.all([
+          db
+            .select({
+              id: schema.appointments.id,
+              title: schema.appointments.title,
+              startsAt: schema.appointments.startTime,
+              endsAt: schema.appointments.endTime,
+              status: schema.appointments.status,
+              sessionPlanId: schema.appointments.sessionPlanId,
+              price: schema.appointments.price,
+              expected: schema.appointments.totalExpectedAmountCents,
+              paid: schema.appointments.totalPaidAmountCents,
+              remaining: schema.appointments.remainingBalanceCents,
+              paymentStatus: schema.appointments.paymentStatus,
+              depositPaymentId: schema.appointments.depositPaymentId,
+              balancePaymentId: schema.appointments.balancePaymentId,
+            })
+            .from(schema.appointments)
+            .where(eq(schema.appointments.conversationId, input.conversationId))
+            .orderBy(asc(schema.appointments.startTime)),
+          db
+            .select()
+            .from(schema.sessionPlans)
+            .where(
+              eq(schema.sessionPlans.conversationId, input.conversationId)
+            ),
+          db
+            .select({
+              id: schema.users.id,
+              name: schema.users.name,
+              avatar: schema.users.avatar,
+            })
+            .from(schema.users)
+            .where(
+              inArray(schema.users.id, [
+                conversation.artistId,
+                conversation.clientId!,
+              ])
+            ),
+          db.query.artistSettings.findFirst({
+            where: eq(schema.artistSettings.userId, conversation.artistId),
+          }),
+          db
+            .select({
+              paymentId: schema.leads.stripeCheckoutSessionId,
+              id: schema.leads.id,
+              description: schema.leads.projectDescription,
+              referenceImages: schema.leads.referenceImages,
+              placementImages: schema.leads.bodyPlacementImages,
+            })
+            .from(schema.leads)
+            .where(eq(schema.leads.conversationId, input.conversationId)),
+          db
+            .select({
+              id: schema.consultations.id,
+              subject: schema.consultations.subject,
+              description: schema.consultations.description,
+              createdAt: schema.consultations.createdAt,
+            })
+            .from(schema.consultations)
+            .where(
+              eq(schema.consultations.conversationId, input.conversationId)
+            )
+            .orderBy(asc(schema.consultations.createdAt)),
+        ]);
       const ids = sessions.map(s => s.id);
       const paymentIds = [
         ...new Set(
@@ -120,6 +141,32 @@ export const projectsRouter = router({
       ]);
       return {
         conversationId: conversation.id,
+        briefs,
+        references: leads.flatMap(l => {
+          const parse = (raw: string | null) => {
+            try {
+              const values = JSON.parse(raw || "[]");
+              return Array.isArray(values)
+                ? values.filter(
+                    (v): v is string =>
+                      typeof v === "string" && /^https:\/\//i.test(v)
+                  )
+                : [];
+            } catch {
+              return [];
+            }
+          };
+          return [
+            ...parse(l.referenceImages).map(url => ({
+              url,
+              kind: "Reference",
+            })),
+            ...parse(l.placementImages).map(url => ({
+              url,
+              kind: "Placement",
+            })),
+          ];
+        }),
         artist: people.find(p => p.id === conversation.artistId),
         client: people.find(p => p.id === conversation.clientId),
         location: settings?.businessAddress || null,

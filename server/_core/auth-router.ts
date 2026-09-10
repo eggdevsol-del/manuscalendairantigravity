@@ -819,9 +819,19 @@ export const authRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Lead not found" });
       }
 
+      if (!Number.isInteger(payload.leadId) || typeof payload.email !== "string" ||
+          lead.clientEmail.toLowerCase() !== payload.email.toLowerCase() ||
+          lead.conversationId !== payload.conversationId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Booking token does not match this request" });
+      }
       // 3. Check if user already exists with this email
       const existingUser = await getUserByEmail(payload.email);
       if (existingUser) {
+        // A public booking token proves submission, not ownership of an existing account.
+        if (existingUser.role !== "client" || !input.password || !existingUser.password ||
+            !(await comparePassword(input.password, existingUser.password))) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Your request is saved. Sign in with your existing password, or use password recovery." });
+        }
         // Auto-link: update lead + conversation + consultation with existing user ID
         await drizzleDb
           .update(drizzleSchema.leads)
@@ -854,6 +864,7 @@ export const authRouter = router({
           },
           token: authToken,
           isNewUser: false,
+          conversationId: lead.conversationId,
         };
       }
 
@@ -872,42 +883,21 @@ export const authRouter = router({
         // Password flow
         hashedPw = await hashPassword(input.password);
       } else if (input.googleAuthCode) {
-        // Google flow — exchange code for user info
+        // Only a successful exchange for the same verified email may claim this request.
         loginMethod = "google";
-        try {
-          const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              code: input.googleAuthCode,
-              client_id: process.env.GOOGLE_CLIENT_ID || "",
-              client_secret: process.env.GOOGLE_CLIENT_SECRET || "",
-              redirect_uri: "postmessage",
-              grant_type: "authorization_code",
-            }),
-          });
-          if (tokenRes.ok) {
-            const tokens = (await tokenRes.json()) as { access_token: string };
-            const userInfoRes = await fetch(
-              "https://www.googleapis.com/oauth2/v3/userinfo",
-              {
-                headers: { Authorization: `Bearer ${tokens.access_token}` },
-              }
-            );
-            if (userInfoRes.ok) {
-              const gProfile = (await userInfoRes.json()) as {
-                email?: string;
-                name?: string;
-                picture?: string;
-              };
-              if (gProfile.email) userEmail = gProfile.email;
-              if (gProfile.name) userName = gProfile.name;
-              if (gProfile.picture) userAvatar = gProfile.picture;
-            }
-          }
-        } catch (e) {
-          console.error("[ClaimLead] Google auth exchange failed:", e);
-        }
+        const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+          method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ code: input.googleAuthCode, client_id: process.env.GOOGLE_CLIENT_ID || "", client_secret: process.env.GOOGLE_CLIENT_SECRET || "", redirect_uri: "postmessage", grant_type: "authorization_code" }),
+        });
+        if (!tokenRes.ok) throw new TRPCError({ code: "UNAUTHORIZED", message: "Google sign-in failed. Please try again." });
+        const tokens = await tokenRes.json() as { access_token?: string };
+        if (!tokens.access_token) throw new TRPCError({ code: "UNAUTHORIZED", message: "Google sign-in failed." });
+        const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+        if (!userInfoRes.ok) throw new TRPCError({ code: "UNAUTHORIZED", message: "Google identity could not be verified." });
+        const gProfile = await userInfoRes.json() as { email?: string; email_verified?: boolean; name?: string; picture?: string };
+        if (!gProfile.email_verified || gProfile.email?.toLowerCase() !== payload.email.toLowerCase()) throw new TRPCError({ code: "UNAUTHORIZED", message: "Use the Google account matching your booking email." });
+        userName = gProfile.name || userName;
+        userAvatar = gProfile.picture || null;
       } else {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -967,6 +957,7 @@ export const authRouter = router({
         },
         token: authToken,
         isNewUser: true,
+        conversationId: lead.conversationId,
       };
     }),
 });

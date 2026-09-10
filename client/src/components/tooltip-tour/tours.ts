@@ -63,53 +63,9 @@ export const DASHBOARD_TOUR: TourConfig = {
   route: "/dashboard",
   category: "artist",
   steps: [
-    // ── Today tab (Steps 0–2) ──────────────────────
-    {
-      targetId: "payout-widget",
-      title: "Your earnings",
-      body: "Track revenue at a glance — deposits, pending, and withdrawal balance. Tap to see your full money screen.",
-      position: "bottom",
-    },
-    {
-      targetId: "dashboard-tabs",
-      title: "Today · Clients · Supplies",
-      body: "Swipe or tap to switch between your daily schedule, client list, and supplier catalog.",
-      position: "bottom",
-    },
-    {
-      targetId: "demo-task-card",
-      title: "Things that need you",
-      body: "Task cards flag things that need your attention — follow-ups, deposits due, and more. Tap to expand and see action options.",
-      position: "bottom",
-      nextDelay: 500, // Wait for Clients tab to mount
-    },
-    // ── Clients tab (Steps 3–4) ───────────────────────
-    {
-      targetId: "demo-clients-area",
-      title: "Your clients",
-      body: "Your complete client list — see their session history, total spend, and status at a glance. Tap any client to view their full profile.",
-      position: "bottom",
-    },
-    {
-      targetId: "demo-client-card",
-      title: "Client profile",
-      body: "Each client card shows their name, session count, lifetime value, and location. Tap to drill into appointments, orders, and notes.",
-      position: "bottom",
-      nextDelay: 500, // Wait for Supplies tab to mount
-    },
-    // ── Supplies tab (Steps 5–6) ─────────────────────
-    {
-      targetId: "demo-suppliers-area",
-      title: "Your suppliers",
-      body: "Your linked suppliers appear here. Tap any to browse products and reorder supplies without leaving the app.",
-      position: "bottom",
-    },
-    {
-      targetId: "demo-supplier-card",
-      title: "Find new suppliers",
-      body: "Browse curated tattoo supply stores and add them with one tap. Find inks, needles, aftercare, machines, and more.",
-      position: "bottom",
-    },
+    { targetId: "dashboard-tabs", title: "Start with today's work", body: "Open your inbox to reply to enquiries, check the calendar, or share your public booking link. Clients can send a request in their browser.", position: "bottom" },
+    { targetId: "demo-task-card", title: "What needs you", body: "Your sessions and tasks bring outstanding work together. Expand a task to act on a reply, deposit or follow-up. Example tasks are shown during this tour.", position: "bottom" },
+    { targetId: "payout-widget", title: "Your business overview", body: "Review earnings after the day's actions. Tap the money strip for details; business tools and supplies remain available below.", position: "top" },
   ],
 };
 

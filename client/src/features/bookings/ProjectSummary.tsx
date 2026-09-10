@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { ProjectFormsSheet } from "./ProjectFormsSheet";
+import { projectNextStep } from "./projectStatus";
+import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -20,12 +24,33 @@ export default function ProjectSummary() {
   );
   const { user } = useAuth();
   const join = trpc.waitlist.join.useMutation();
+  const [formsFor, setFormsFor] = useState<number | null>(null);
   const data = query.data;
+  const isArtist = user?.role === "artist" || user?.role === "admin";
+  const next = data ? projectNextStep(data, isArtist) : null;
+  const firstPendingForm = data?.forms.find(
+    f =>
+      f.status === "pending" &&
+      data.sessions.some(
+        s =>
+          s.id === f.appointmentId &&
+          !["cancelled", "completed", "no-show"].includes(s.status)
+      )
+  );
+  const projectUrl = `${window.location.origin}/projects/${conversationId}`;
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(projectUrl);
+      toast.success("Project link copied");
+    } catch {
+      toast.error("Could not copy. You can copy this page’s address instead.");
+    }
+  };
   return (
     <main className="app-document h-[calc(100dvh-5rem)] overflow-y-auto touch-pan-y bg-background text-foreground pb-24">
       <PageHeader
-        title="Project details"
-        subtitle="Sessions, forms and payment history"
+        title="Project"
+        subtitle="Brief, sessions, forms and payments"
       />
       <div className="max-w-3xl mx-auto p-5 space-y-6">
         <Link
@@ -54,6 +79,91 @@ export default function ProjectSummary() {
                 Estimates can change with the agreed design. See the proposal in
                 your conversation for its terms.
               </p>
+            </section>
+            {next && (
+              <section
+                className="rounded-2xl border border-primary/30 bg-primary/5 p-5 space-y-3"
+                aria-label="Next step"
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Next step
+                </p>
+                <h2 className="text-xl font-semibold">{next.title}</h2>
+                <p className="text-sm text-muted-foreground">{next.body}</p>
+                {next.action === "Review forms" &&
+                firstPendingForm?.appointmentId ? (
+                  <Button
+                    onClick={() => setFormsFor(firstPendingForm.appointmentId)}
+                  >
+                    Review & sign forms
+                  </Button>
+                ) : (
+                  <Link
+                    href={`/chat/${conversationId}`}
+                    className="inline-flex rounded-full bg-primary text-primary-foreground px-5 py-3 font-medium"
+                  >
+                    {next.action}
+                  </Link>
+                )}
+              </section>
+            )}
+            <div className="flex flex-wrap gap-3 items-center">
+              <Button variant="outline" onClick={copyLink}>
+                Copy project link
+              </Button>
+              {isArtist && (
+                <a
+                  className="min-h-11 inline-flex items-center underline"
+                  href={`sms:?body=${encodeURIComponent(`Your tattoo project with ${data.artist?.name || "your artist"}: ${projectUrl} — keep this link for your brief, bookings and payments. Sign in with your Tattoi account when asked.`)}`}
+                >
+                  Prepare SMS link
+                </a>
+              )}
+              <p className="text-xs text-muted-foreground w-full">
+                This reusable link opens your project after sign-in. It does not
+                grant access to anyone you forward it to.
+              </p>
+            </div>
+            <section className="space-y-3" aria-label="Design brief">
+              <h2 className="text-xl font-semibold">
+                Design brief & references
+              </h2>
+              {!data.briefs.length && (
+                <p className="text-sm text-muted-foreground">
+                  Discuss your design in the conversation. No separate brief is
+                  recorded yet.
+                </p>
+              )}
+              {data.briefs.map(brief => (
+                <article
+                  key={brief.id}
+                  className="rounded-2xl border bg-card p-5 space-y-2"
+                >
+                  <h3 className="font-semibold">{brief.subject}</h3>
+                  <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                    {brief.description}
+                  </p>
+                </article>
+              ))}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {data.references.map((ref, i) => (
+                  <a
+                    key={`${ref.url}-${i}`}
+                    href={ref.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl border overflow-hidden"
+                  >
+                    <img
+                      loading="lazy"
+                      src={ref.url}
+                      alt={`${ref.kind} image ${i + 1}`}
+                      className="aspect-square w-full object-cover"
+                    />
+                    <span className="block p-2 text-xs">{ref.kind}</span>
+                  </a>
+                ))}
+              </div>
             </section>
             {user?.role === "client" && (
               <section className="border rounded-2xl p-5 space-y-3">
@@ -121,6 +231,18 @@ export default function ProjectSummary() {
                       .map(f => (
                         <li key={f.id}>
                           {f.title}: <strong>{f.status}</strong>
+                          {!isArtist &&
+                            f.status === "pending" &&
+                            !["cancelled", "completed", "no-show"].includes(
+                              s.status
+                            ) && (
+                              <button
+                                className="ml-3 min-h-11 underline"
+                                onClick={() => setFormsFor(s.id)}
+                              >
+                                Review & sign
+                              </button>
+                            )}
                         </li>
                       ))}
                   </ul>
@@ -128,11 +250,13 @@ export default function ProjectSummary() {
                     href={`/chat/${conversationId}`}
                     className="inline-flex min-h-11 items-center underline"
                   >
-                    {s.status === "completed"
-                      ? "Ask your artist about aftercare"
-                      : s.paymentStatus === "pending_deposit"
-                        ? "Review payment with your artist"
-                        : "Message your artist"}
+                    {isArtist
+                      ? "Open client conversation"
+                      : s.status === "completed"
+                        ? "Ask your artist about aftercare"
+                        : s.paymentStatus === "pending_deposit"
+                          ? "Review payment with your artist"
+                          : "Message your artist"}
                   </Link>
                 </article>
               ))}
@@ -187,6 +311,18 @@ export default function ProjectSummary() {
           </>
         )}
       </div>
+      {formsFor && (
+        <ProjectFormsSheet
+          appointmentId={formsFor}
+          onClose={() => {
+            setFormsFor(null);
+            void query.refetch();
+          }}
+          onSigned={() => {
+            void query.refetch();
+          }}
+        />
+      )}
     </main>
   );
 }

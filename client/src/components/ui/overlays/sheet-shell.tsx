@@ -1,3 +1,4 @@
+import { InlineWorkflowGuide, guideForOverlay } from "@/features/guides/InlineWorkflowGuide";
 import React from "react";
 import { Badge } from "../badge";
 import {
@@ -70,6 +71,7 @@ export function SheetShell({
         </SheetHeader>
 
         <div className="px-6 py-4 overflow-y-auto flex-1 min-h-0 mobile-scroll">
+          {guideForOverlay(title) && <InlineWorkflowGuide id={guideForOverlay(title)!} />}
           {children}
         </div>
 

@@ -1,3 +1,5 @@
+import { SuppliesSegment } from "@/features/dashboard/SuppliesSegment";
+import { PageShell, PageHeader } from "@/components/ui/ssot";
 import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
 import Purchases from "@/features/storefront/Purchases";
 import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
@@ -43,6 +45,7 @@ export default function ArtistShell() {
             <Redirect to="/dashboard" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/supplies"><PageShell><PageHeader title="Supplies" /><div className="flex-1 min-h-0 overflow-y-auto mobile-scroll p-4 pb-28"><SuppliesSegment /></div></PageShell></Route>
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
           <Route path="/projects/:id" component={ProjectSummary} />

@@ -76,7 +76,7 @@ function GuardedShell() {
     // Using !loading alone creates a single-frame gap where loading=false
     // but user hasn't populated yet, causing a premature /login redirect.
     if (isSessionChecked && !loading && !user) {
-      setLocation("/login");
+      setLocation(`/login?returnTo=${encodeURIComponent(window.location.pathname)}`);
     }
   }, [user, loading, isSessionChecked, setLocation]);
 
@@ -99,6 +99,7 @@ function GuardedShell() {
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
+  "supplies",
   "calendar",
   "conversations",
   "chat",

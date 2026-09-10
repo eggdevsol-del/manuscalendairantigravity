@@ -22,7 +22,7 @@ export default function ClientShell() {
         <Switch>
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
-            <Redirect to="/discover" />
+            <Redirect to="/bookings" />
           </Route>
           <Route path="/discover" component={ClientHome} />
           <Route path="/profile" component={ClientProfilePage} />

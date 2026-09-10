@@ -1,3 +1,4 @@
+import { WorkflowHelp } from "@/features/guides/WorkflowHelp";
 /**
  * HowTosSettings — Settings panel listing available tooltip tours
  * ────────────────────────────────────────────────────────────────
@@ -30,7 +31,7 @@ export function HowTosSettings({ onBack }: HowTosSettingsProps) {
   const [, setLocation] = useLocation();
   const { isTourCompleted, resetTour, startTour } = useTooltipTour();
 
-  const role = user?.role === "artist" ? "artist" : "client";
+  const role = user?.role === "artist" || user?.role === "admin" ? "artist" : "client";
   const tours = getToursForRole(role);
 
   const handleStartTour = (tour: TourConfig) => {
@@ -40,13 +41,14 @@ export function HowTosSettings({ onBack }: HowTosSettingsProps) {
     }
     // Navigate to the tour's page
     setLocation(tour.route);
-    // Small delay for page to mount, then startTour is triggered by page component
     onBack();
+    if (tour.id === "dashboard-overview") startTour(tour);
   };
 
   return (
     <div style={{ padding: "0 16px" }}>
       <PageHeader title="How to's" onBack={onBack} />
+      <WorkflowHelp expanded />
 
       <p style={{
         fontSize: 13, color: "var(--muted-foreground, #888)",
