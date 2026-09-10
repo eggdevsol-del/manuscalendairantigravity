@@ -297,7 +297,10 @@ function response(name, role, test) {
       interval: "month",
       intervalCount: 1,
     };
-  if (name === "studios.getCurrentStudio" && test.startsWith("studio"))
+  if (
+    name === "studios.getCurrentStudio" &&
+    (test.startsWith("studio") || test.startsWith("calendar-studio"))
+  )
     return {
       id: "studio-fixture",
       name: "Northside Studio",
@@ -310,7 +313,8 @@ function response(name, role, test) {
     return [
       { id: "member-fixture", user: artist, role: "owner", status: "active" },
     ];
-  if (name === "appointments.getStudioCalendar") return [appointment];
+  if (name === "appointments.getStudioCalendar")
+    return test === "calendar-studio-empty" ? [] : [appointment];
   if (name === "funnel.getFunnelSettings")
     return { publicSlug: "ella", funnelEnabled: true };
   if (name === "funnel.checkSlugAvailability") return { available: true };
@@ -510,6 +514,8 @@ function response(name, role, test) {
 const cases = [
   ["today-phone", 440, 956, "artist", "/dashboard"],
   ["today-tablet", 1180, 820, "artist", "/dashboard"],
+  ["calendar-studio-empty", 440, 956, "artist", "/calendar"],
+  ["calendar-studio-overlap", 1180, 820, "artist", "/calendar"],
   ["calendar-phone", 440, 956, "artist", "/calendar"],
   ["calendar-tablet", 1180, 820, "artist", "/calendar"],
   ["client-bookings", 440, 956, "client", "/bookings"],
@@ -648,6 +654,13 @@ for (const [test, width, height, role, path] of cases) {
     .filter({ hasNotText: "Opening your workspace" })
     .waitFor();
   try {
+    if (test.startsWith("calendar-studio")) {
+      const personal = page.getByRole("button").filter({ hasText: "14:00" });
+      await personal.first().waitFor();
+      const shared = page.getByRole("button").filter({ hasText: "10:00" });
+      if ((await personal.count()) !== 1 || (await shared.count()) !== 1)
+        throw Error("Personal booking missing or shared booking duplicated");
+    }
     if (test.startsWith("guide-")) {
       await page
         .getByRole("button")

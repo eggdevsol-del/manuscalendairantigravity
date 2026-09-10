@@ -62,16 +62,17 @@ export function useCalendarAgendaController() {
     { enabled: isStudioView, placeholderData: prev => prev }
   );
 
-  // 2. Artist Context (Solo)
-  const isSoloArtistView = !isStudioView && isArtistLike;
+  // Always include the signed-in artist’s appointments, including bookings
+  // created before joining a studio and connected-calendar events.
+  const isArtistView = isArtistLike;
   const {
-    data: soloAppointments,
-    isLoading: isLoadingSoloAppts,
-    refetch: refetchSoloAppts,
-    error: soloError,
+    data: artistAppointments,
+    isLoading: isLoadingArtistAppts,
+    refetch: refetchArtistAppts,
+    error: artistError,
   } = trpc.appointments.getArtistCalendar.useQuery(
     { artistId: user?.id!, startDate: requestStart, endDate: requestEnd },
-    { enabled: isSoloArtistView, placeholderData: prev => prev }
+    { enabled: isArtistView, placeholderData: prev => prev }
   );
 
   // 3. Client Context
@@ -87,24 +88,35 @@ export function useCalendarAgendaController() {
   );
 
   const appointments = useMemo(() => {
+    if (isArtistLike) {
+      // The studio endpoint already enforces shared-calendar privacy. Never
+      // substitute it for the owner’s personal calendar or duplicate shared bookings.
+      return Array.from(
+        new Map(
+          [
+            ...(isStudioView ? (studioAppointments ?? []) : []),
+            ...(artistAppointments ?? []),
+          ].map(appointment => [appointment.id, appointment])
+        ).values()
+      );
+    }
     if (isStudioView) return studioAppointments;
-    if (isSoloArtistView) return soloAppointments;
     if (isClientView) return clientAppointments;
     return [];
   }, [
     isStudioView,
     studioAppointments,
-    isSoloArtistView,
-    soloAppointments,
+    isArtistLike,
+    artistAppointments,
     isClientView,
     clientAppointments,
   ]);
 
   const isLoading =
-    isLoadingStudioAppts ||
-    isLoadingSoloAppts ||
-    isLoadingClientAppts ||
-    isLoadingStudio;
+    (isStudioView && isLoadingStudioAppts) ||
+    (isArtistView && isLoadingArtistAppts) ||
+    (isClientView && isLoadingClientAppts) ||
+    (isArtistLike && isLoadingStudio);
 
   const activeArtists = useMemo(() => {
     if (!teamMembers || teamMembers.length === 0) {
@@ -128,13 +140,13 @@ export function useCalendarAgendaController() {
 
   const refetch = useCallback(() => {
     if (isStudioView) refetchStudioAppts();
-    else if (isSoloArtistView) refetchSoloAppts();
-    else if (isClientView) refetchClientAppts();
+    if (isArtistView) refetchArtistAppts();
+    if (isClientView) refetchClientAppts();
   }, [
     isStudioView,
     refetchStudioAppts,
-    isSoloArtistView,
-    refetchSoloAppts,
+    isArtistView,
+    refetchArtistAppts,
     isClientView,
     refetchClientAppts,
   ]);
@@ -283,7 +295,7 @@ export function useCalendarAgendaController() {
   return {
     user,
     isLoading,
-    error: studioError || soloError || clientError,
+    error: studioError || artistError || clientError,
     activeDate,
     eventsByDay,
     handleDateTap,
