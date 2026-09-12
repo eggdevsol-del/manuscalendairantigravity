@@ -36,6 +36,7 @@ const styles = [
   "Trash Polka",
   "Fine Line",
   "Other",
+  "Not sure yet",
 ];
 const sizes = [
   "Tiny (< 5cm)",
@@ -53,10 +54,6 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
   const [, hubParams] = useRoute("/:slug");
   const params = bookingParams || startParams || hubParams;
   const profile = trpc.feed.getPublicArtistProfile.useQuery(
-    { slug: params?.slug || "" },
-    { enabled: !!params?.slug, retry: false }
-  );
-  const links = trpc.funnel.getArtistBySlug.useQuery(
     { slug: params?.slug || "" },
     { enabled: !!params?.slug, retry: false }
   );
@@ -109,24 +106,6 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
               ? "Bookings are currently closed"
               : "Request a booking"}
           </Action>
-          {(links.data?.hasProducts || links.data?.hasSeminars) && (
-            <div className="v3-inline">
-              {links.data.hasProducts && (
-                <ActionLink
-                  href={`/shop/${encodeURIComponent(params?.slug || "")}`}
-                >
-                  Shop
-                </ActionLink>
-              )}
-              {links.data.hasSeminars && (
-                <ActionLink
-                  href={`/events/${encodeURIComponent(params?.slug || "")}`}
-                >
-                  Events
-                </ActionLink>
-              )}
-            </div>
-          )}
           {!!artist.portfolio.length && (
             <Section title="Selected work">
               <div className="v3-file-grid">
@@ -204,6 +183,7 @@ function Intake({
     size: "",
     timeframe: "",
   });
+  const [step, setStep] = useState(1);
   const [selectedStyles, setStyles] = useState<string[]>([]);
   const [refs, setRefs] = useState<Attachment[]>([]);
   const [placements, setPlacements] = useState<Attachment[]>([]);
@@ -419,95 +399,127 @@ function Intake({
           className="v3-form"
           onSubmit={e => {
             e.preventDefault();
-            void send();
+            if (step < 6) {
+              if (step === 1 && !selectedStyles.length) {
+                setError(
+                  "Choose at least one style, including ‘Not sure’ if you need guidance."
+                );
+                return;
+              }
+              setError("");
+              setStep(step + 1);
+            } else void send();
           }}
         >
+          <Status>
+            Step {step} of 6 ·{" "}
+            {
+              [
+                "Your idea",
+                "Placement & timing",
+                "References",
+                "Placement photo",
+                "Your details",
+                "Review request",
+              ][step - 1]
+            }
+          </Status>
           <Feedback loading={loading} />
           <fieldset disabled={busy || loading} className="v3-form">
-            <Section title="Your idea">
-              <div className="v3-form">
-                <label>
-                  What would you like tattooed?
-                  <textarea
-                    required
-                    minLength={10}
-                    rows={4}
-                    value={draft.description}
-                    onChange={e =>
-                      setDraft({ ...draft, description: e.target.value })
-                    }
-                  />
-                </label>
-                <fieldset>
-                  <legend>Style · choose any that fit</legend>
-                  <div className="v3-style-choices">
-                    {styles.map(style => (
-                      <label key={style}>
-                        <input
-                          type="checkbox"
-                          checked={selectedStyles.includes(style)}
-                          onChange={() =>
-                            setStyles(current =>
-                              current.includes(style)
-                                ? current.filter(s => s !== style)
-                                : [...current, style]
-                            )
-                          }
-                        />
-                        {style}
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-                <label>
-                  Placement
-                  <input
-                    value={draft.placement}
-                    onChange={e =>
-                      setDraft({ ...draft, placement: e.target.value })
-                    }
-                    placeholder="For example, outer forearm"
-                  />
-                </label>
-                <label>
-                  Approximate size
-                  <select
-                    aria-label="Approximate size"
-                    value={draft.size}
-                    onChange={e => setDraft({ ...draft, size: e.target.value })}
-                  >
-                    <option value="">Not sure yet</option>
-                    {sizes.map(size => (
-                      <option key={size}>{size}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Preferred timeframe
-                  <select
-                    aria-label="Preferred timeframe"
-                    value={draft.timeframe}
-                    onChange={e =>
-                      setDraft({ ...draft, timeframe: e.target.value })
-                    }
-                  >
-                    <option value="">Flexible</option>
-                    {[
-                      "As soon as possible",
-                      "Within 1 month",
-                      "Within 3 months",
-                      "Within 6 months",
-                      "No rush — flexible",
-                    ].map(time => (
-                      <option key={time}>{time}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </Section>
-            {attachments(false)}
-            {attachments(true)}
-            {!user && (
+            {step === 1 && (
+              <Section title="Your idea">
+                <div className="v3-form">
+                  <label>
+                    What would you like tattooed?
+                    <textarea
+                      required
+                      minLength={10}
+                      rows={4}
+                      value={draft.description}
+                      onChange={e =>
+                        setDraft({ ...draft, description: e.target.value })
+                      }
+                    />
+                  </label>
+                  <fieldset>
+                    <legend>Style · choose any that fit</legend>
+                    <div className="v3-style-choices">
+                      {styles.map(style => (
+                        <label key={style}>
+                          <input
+                            type="checkbox"
+                            checked={selectedStyles.includes(style)}
+                            onChange={() =>
+                              setStyles(current =>
+                                current.includes(style)
+                                  ? current.filter(s => s !== style)
+                                  : [...current, style]
+                              )
+                            }
+                          />
+                          {style}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
+                </div>
+              </Section>
+            )}
+            {step === 2 && (
+              <Section title="Placement & timing">
+                <div className="v3-form">
+                  <label>
+                    Placement
+                    <input
+                      value={draft.placement}
+                      onChange={e =>
+                        setDraft({ ...draft, placement: e.target.value })
+                      }
+                      placeholder="For example, outer forearm"
+                    />
+                  </label>
+                  <label>
+                    Approximate size
+                    <select
+                      aria-label="Approximate size"
+                      value={draft.size}
+                      onChange={e =>
+                        setDraft({ ...draft, size: e.target.value })
+                      }
+                    >
+                      <option value="">Not sure yet</option>
+                      {sizes.map(size => (
+                        <option key={size}>{size}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Preferred timeframe
+                    <select
+                      aria-label="Preferred timeframe"
+                      value={draft.timeframe}
+                      onChange={e =>
+                        setDraft({ ...draft, timeframe: e.target.value })
+                      }
+                    >
+                      <option value="">Flexible</option>
+                      {[
+                        "As soon as possible",
+                        "Within 1 month",
+                        "Within 3 months",
+                        "Within 6 months",
+                        "No rush — flexible",
+                      ].map(time => (
+                        <option key={time}>{time}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </Section>
+            )}
+            {step === 3 && attachments(false)}
+            {step === 4 && attachments(true)}
+            {step === 5 && !user && (
               <Section title="Your details">
                 <div className="v3-form">
                   <div className="v3-form-pair">
@@ -589,11 +601,57 @@ function Intake({
                 </div>
               </Section>
             )}
+            {step === 5 && user && (
+              <Section title="Your details">
+                <p>
+                  Sending as {user.name}. Your request will stay with your
+                  existing account.
+                </p>
+              </Section>
+            )}
+            {step === 6 && (
+              <Section title="Review your request">
+                <p>{draft.description}</p>
+                <Row title="Style" detail={selectedStyles.join(", ")} />
+                <Row
+                  title="Placement & size"
+                  detail={`${draft.placement || "To discuss"} · ${draft.size || "To discuss"}`}
+                />
+                <Row title="Timeframe" detail={draft.timeframe || "Flexible"} />
+                <Row
+                  title="Images"
+                  detail={`${refs.length} references · ${placements.length} placement photos`}
+                />
+                <Row
+                  title="Contact"
+                  detail={
+                    user?.name ||
+                    `${draft.firstName} ${draft.lastName} · ${draft.email}`
+                  }
+                />
+              </Section>
+            )}
           </fieldset>
           {error && <p role="alert">{error}</p>}
           <Action type="submit" disabled={busy || loading}>
-            {busy ? "Sending your request…" : "Send booking request"}
+            {busy
+              ? "Sending your request…"
+              : step === 6
+                ? "Send booking request"
+                : "Continue"}
           </Action>
+          {step > 1 && (
+            <Action
+              tone="quiet"
+              disabled={busy}
+              onClick={() => {
+                setError("");
+                setStep(step - 1);
+              }}
+            >
+              Back
+            </Action>
+          )}
           <p className="v3-muted">
             There’s no payment at this stage. Your artist will review your
             request first.

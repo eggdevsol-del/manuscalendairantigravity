@@ -1,6 +1,3 @@
-import Products from "@/app-v3/pages/Products";
-import Events from "@/app-v3/pages/Events";
-import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
 import Studio from "@/app-v3/pages/Studio";
 import Purchases from "@/app-v3/pages/Purchases";
 import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
@@ -40,9 +37,6 @@ export default function ArtistShell() {
     <div className="artist-workspace min-h-screen">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/products" component={Products} />
-          <Route path="/artist-events" component={Events} />
-          <Route path="/store-orders" component={StoreOrders} />
           <Route path="/studio" component={Studio} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">

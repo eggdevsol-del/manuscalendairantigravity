@@ -1,3 +1,4 @@
+import { HomeTabs } from "../design/HomeTabs";
 import { useEffect, useState } from "react";
 import { useSearch } from "wouter";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -53,9 +54,10 @@ function Directory() {
     <Screen
       title="Supplies"
       subtitle="Find what you need for the next session."
-      back="/business"
+      back="/dashboard"
     >
       <ActionLink href="/supply-orders">Your supply orders</ActionLink>
+      <HomeTabs />
       <SearchField
         value={search}
         onChange={setSearch}

@@ -19,7 +19,7 @@ const artistGuides: Guide[] = [
     title: "Run your day",
     route: "/dashboard",
     steps: [
-      "Today brings your appointments and outstanding work together. Open an appointment to see the client and next action.",
+      "Home brings your appointments and outstanding work together. Open an appointment to see the client and next action.",
       "Check consent, the deposit and the client’s arrival before starting. Finish the session from its booking workspace when the work is done.",
     ],
   },
@@ -67,15 +67,6 @@ const artistGuides: Guide[] = [
     steps: [
       "Choose your public link name and save it. Only the saved link is offered for copying and sharing.",
       "Clients send their idea from your public page before creating a password. They can then follow the conversation and booking in their account.",
-    ],
-  },
-  {
-    id: "portfolio",
-    title: "Build your public portfolio",
-    route: "/artist-profile?view=Portfolio",
-    steps: [
-      "Add a photo and caption, or review imported work. Open an item to see the full image or video.",
-      "Select items to remove them from your portfolio. Review the public profile before sharing the booking link.",
     ],
   },
   {

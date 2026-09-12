@@ -1,3 +1,4 @@
+import { HomeTabs } from "../design/HomeTabs";
 import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Plus, MessageCircle, Mail, Phone, CheckCircle2 } from "lucide-react";
@@ -61,6 +62,7 @@ export default function Clients() {
         </Action>
       }
     >
+      <HomeTabs />
       <div className={`v3-client-layout ${selected ? "has-selection" : ""}`}>
         <section className="v3-client-list">
           <SearchField

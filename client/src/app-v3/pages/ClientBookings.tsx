@@ -44,8 +44,9 @@ export default function ClientBookings() {
   const selected = appointments.find(a => a.id === pay);
   return (
     <Screen
-      title={`Hi${user?.name ? `, ${user.name.split(" ")[0]}` : ""}`}
-      subtitle="Your tattoo bookings"
+      title="Bookings"
+      wide
+      subtitle={`Your next piece, from first idea to healed tattoo${user?.name ? ` · ${user.name.split(" ")[0]}` : ""}`}
     >
       <Tabs
         items={["Upcoming", "Past"] as const}
@@ -83,66 +84,68 @@ export default function ClientBookings() {
         error={bookings.error}
         onRetry={() => bookings.refetch()}
       />
-      {appointments.map(a => (
-        <Panel key={a.id}>
-          <div className="v3-stack">
-            <div>
-              <h2>{a.projectName || a.title}</h2>
-              <p>
-                {a.artist.name}
-                {a.sessionIndex
-                  ? ` · Session ${a.sessionIndex}${a.sessionTotal ? ` of ${a.sessionTotal}` : ""}`
-                  : ""}
-              </p>
-            </div>
-            <div>
-              <Status
-                tone={
-                  a.status === "confirmed" || a.status === "completed"
-                    ? "success"
-                    : a.status === "cancelled"
-                      ? "danger"
-                      : "warning"
-                }
-              >
-                {statusLabel(a.status)}
-              </Status>
-            </div>
-            <div className="v3-inline">
-              <CalendarDays size={20} />
-              {bookingDate(a.startsAt, a.timeZone)}
-            </div>
-            {a.studioName && (
-              <div className="v3-inline">
-                <MapPin size={20} />
-                {a.studioName}
+      <div className="v3-booking-cards">
+        {appointments.map(a => (
+          <Panel key={a.id}>
+            <div className="v3-stack">
+              <div>
+                <h2>{a.projectName || a.title}</h2>
+                <p>
+                  {a.artist.name}
+                  {a.sessionIndex
+                    ? ` · Session ${a.sessionIndex}${a.sessionTotal ? ` of ${a.sessionTotal}` : ""}`
+                    : ""}
+                </p>
               </div>
-            )}
-            {a.paymentRequest && a.balanceDueCents > 0 && (
-              <Action onClick={() => setPay(a.id)}>
-                Review {money(a.balanceDueCents)} balance
-              </Action>
-            )}
-            {a.conversationId && (
-              <>
-                <ActionLink
-                  href={`/projects/${a.conversationId}?session=${a.id}`}
-                  tone="quiet"
+              <div>
+                <Status
+                  tone={
+                    a.status === "confirmed" || a.status === "completed"
+                      ? "success"
+                      : a.status === "cancelled"
+                        ? "danger"
+                        : "warning"
+                  }
                 >
-                  {tab === "Past"
-                    ? "View session & aftercare"
-                    : "Manage booking"}
-                  <ArrowRight />
-                </ActionLink>
-                <ActionLink href={`/chat/${a.conversationId}`}>
-                  <MessageCircle />
-                  Message {a.artist.name}
-                </ActionLink>
-              </>
-            )}
-          </div>
-        </Panel>
-      ))}
+                  {statusLabel(a.status)}
+                </Status>
+              </div>
+              <div className="v3-inline">
+                <CalendarDays size={20} />
+                {bookingDate(a.startsAt, a.timeZone)}
+              </div>
+              {a.studioName && (
+                <div className="v3-inline">
+                  <MapPin size={20} />
+                  {a.studioName}
+                </div>
+              )}
+              {a.paymentRequest && a.balanceDueCents > 0 && (
+                <Action onClick={() => setPay(a.id)}>
+                  Review {money(a.balanceDueCents)} balance
+                </Action>
+              )}
+              {a.conversationId && (
+                <>
+                  <ActionLink
+                    href={`/projects/${a.conversationId}?session=${a.id}`}
+                    tone="quiet"
+                  >
+                    {tab === "Past"
+                      ? "View session & aftercare"
+                      : "Manage booking"}
+                    <ArrowRight />
+                  </ActionLink>
+                  <ActionLink href={`/chat/${a.conversationId}`}>
+                    <MessageCircle />
+                    Message {a.artist.name}
+                  </ActionLink>
+                </>
+              )}
+            </div>
+          </Panel>
+        ))}
+      </div>
       {tab === "Upcoming" &&
         bookings.data?.pendingConsults?.map(c => (
           <Panel key={c.id}>

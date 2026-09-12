@@ -30,9 +30,9 @@ export default function ArtistProfile() {
       : "Profile";
   return (
     <Screen
-      title="Your public profile"
+      title="Profile"
       subtitle="A clear introduction to you and your work."
-      back="/business"
+      back="/dashboard"
       wide
     >
       <Feedback
@@ -48,9 +48,9 @@ export default function ArtistProfile() {
             icon={<Avatar name={user.name} src={user.avatar} />}
           />
           <div className="v3-inline">
-            <ActionLink href="/products">Manage shop</ActionLink>
-            <ActionLink href="/artist-events">Manage events</ActionLink>
-            <ActionLink href="/store-orders">Store orders</ActionLink>
+            <ActionLink href="/business">
+              Business settings & payouts
+            </ActionLink>
             {settings.data.publicSlug && (
               <ActionLink href={`/book/${settings.data.publicSlug}`}>
                 Preview booking page
@@ -63,17 +63,7 @@ export default function ArtistProfile() {
               Photo & personal details
             </ActionLink>
           </div>
-          <Tabs
-            items={["Profile", "Portfolio"] as const}
-            value={tab}
-            label="Profile sections"
-            onChange={next => go(`/artist-profile?view=${next}`)}
-          />
-          {tab === "Profile" ? (
-            <PublicDetails settings={settings.data} />
-          ) : (
-            <Portfolio />
-          )}
+          <PublicDetails settings={settings.data} />
         </>
       )}
     </Screen>

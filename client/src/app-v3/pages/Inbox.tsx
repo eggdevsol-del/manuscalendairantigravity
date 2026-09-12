@@ -48,7 +48,7 @@ export default function Inbox() {
       `${r.name} ${r.subject}`.toLowerCase().includes(search.toLowerCase())
   );
   return (
-    <Screen title="Inbox" wide>
+    <Screen title="Messages" wide>
       <div className={`v3-inbox ${selected ? "has-selection" : ""}`}>
         <section className="v3-inbox-list">
           <SearchField

@@ -67,7 +67,9 @@ export function BookingComposer({
     "weekly" | "biweekly" | "monthly" | "consecutive"
   >("weekly");
   const [findingDates, setFindingDates] = useState(false);
-  const [step, setStep] = useState<"details" | "review">("details");
+  const [step, setStep] = useState<
+    "client" | "service" | "frequency" | "details" | "review"
+  >(conversationId ? "service" : "client");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const getConversation = trpc.conversations.getOrCreate.useMutation();
@@ -110,6 +112,7 @@ export function BookingComposer({
         throw new Error(
           "Not enough available dates were found. Try a different starting date."
         );
+      setStep("review");
       setSessions(current =>
         current.map((s, i) => ({
           ...s,
@@ -220,10 +223,47 @@ export function BookingComposer({
       setBusy(false);
     }
   }
+  function chooseService(name: string) {
+    setService(name);
+    const svc = services.find(s => s.name === name);
+    if (svc) {
+      const percentage = fixedDeposit
+        ? 25
+        : Number(settings.data?.depositPercentage ?? 25);
+      setSessions(s =>
+        Array.from(
+          {
+            length: Math.max(1, Math.min(52, Number(svc.sittings) || 1)),
+          },
+          (_, i) => ({
+            ...s[0],
+            date: format(
+              addDays(new Date(s[0].date + "T" + s[0].time), 7 * i),
+              "yyyy-MM-dd"
+            ),
+            duration: svc.duration || 60,
+            price: String(svc.price || 0),
+            deposit: String(Math.round((svc.price || 0) * percentage) / 100),
+          })
+        )
+      );
+    }
+    const chosen = services.find(s => s.name === name);
+    setStep((chosen?.sittings || 1) > 1 ? "frequency" : "details");
+    setError("");
+  }
   return (
     <div className="v3-stack">
       <Status>
-        {step === "review" ? "Review before sending" : "Plan the session"}
+        {
+          {
+            client: "1 · Choose client",
+            service: "2 · Choose service",
+            frequency: "3 · Find dates",
+            details: "3 · Session dates",
+            review: "4 · Review & send",
+          }[step]
+        }
       </Status>
       <Feedback
         loading={settings.isLoading || conversation.isLoading}
@@ -234,6 +274,127 @@ export function BookingComposer({
           else void clients.refetch();
         }}
       />
+      {step === "client" && (
+        <Section title="Who are you booking?">
+          <SearchField
+            value={search}
+            onChange={setSearch}
+            label="Search your clients"
+          />
+          {clients.data
+            ?.filter((c): c is NonNullable<typeof c> => !!c)
+            .filter(c =>
+              `${c.name} ${c.email}`
+                .toLowerCase()
+                .includes(search.toLowerCase())
+            )
+            .map(c => (
+              <Row
+                key={c.id}
+                title={c.name || "Client"}
+                detail={c.email}
+                onClick={() => {
+                  setClient(c.id);
+                  setStep("service");
+                }}
+              />
+            ))}
+          {!clients.isLoading && !clients.data?.length && (
+            <>
+              <p>Clients appear here after they send a booking request.</p>
+              <ActionLink href="/artist-profile">
+                Share your booking link
+              </ActionLink>
+            </>
+          )}
+        </Section>
+      )}
+      {step === "service" && (
+        <Section title="What are we planning?">
+          <p className="v3-muted">
+            Choose a saved service. Its sitting count, duration and price carry
+            through to the plan.
+          </p>
+          {services.map((svc, i) => (
+            <Row
+              key={i}
+              title={svc.name}
+              detail={`${svc.sittings || 1} sitting${(svc.sittings || 1) > 1 ? "s" : ""} · ${svc.duration} minutes per sitting`}
+              trailing={<strong>{money(Math.round(svc.price * 100))}</strong>}
+              onClick={() => chooseService(svc.name)}
+            />
+          ))}
+          {!settings.isLoading && !services.length && (
+            <ActionLink href="/settings?section=work-hours">
+              Set up your services
+            </ActionLink>
+          )}
+          {!conversationId && (
+            <Action tone="quiet" onClick={() => setStep("client")}>
+              Back to clients
+            </Action>
+          )}
+        </Section>
+      )}
+      {step === "frequency" && (
+        <Section title="Let’s find your dates">
+          <p>
+            {service} · {sessions.length} sitting
+            {sessions.length === 1 ? "" : "s"}
+          </p>
+          <div className="v3-choice-grid">
+            {(
+              [
+                ["consecutive", "Consecutive working days"],
+                ["weekly", "Weekly"],
+                ["biweekly", "Every two weeks"],
+                ["monthly", "Monthly"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                className="v3-choice"
+                aria-pressed={frequency === value}
+                onClick={() => setFrequency(value)}
+                disabled={findingDates}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <label className="v3-form">
+            Start looking from
+            <input
+              type="date"
+              value={sessions[0].date}
+              disabled={findingDates}
+              onChange={e => update(0, { date: e.target.value })}
+            />
+          </label>
+          <p className="v3-muted">
+            We’ll use your working hours and existing bookings. Review every
+            sitting before sending.
+          </p>
+          {error && <p role="alert">{error}</p>}
+          <Action disabled={findingDates} onClick={findDates}>
+            {findingDates ? "Checking availability…" : "Find available dates"}
+          </Action>
+          <Action
+            tone="quiet"
+            disabled={findingDates}
+            onClick={() => setStep("details")}
+          >
+            Choose dates myself
+          </Action>
+          <Action
+            tone="quiet"
+            disabled={findingDates}
+            onClick={() => setStep("service")}
+          >
+            Back to services
+          </Action>
+        </Section>
+      )}
       {step === "details" ? (
         <form
           className="v3-form"
@@ -245,134 +406,14 @@ export function BookingComposer({
           }}
         >
           <fieldset className="v3-form" disabled={findingDates || busy}>
-            {!conversationId && (
-              <Section title="Client">
-                {client ? (
-                  <Row
-                    title={clientName}
-                    detail="Change client"
-                    onClick={() => setClient("")}
-                  />
-                ) : (
-                  <>
-                    <SearchField
-                      value={search}
-                      onChange={setSearch}
-                      label="Search clients"
-                    />
-                    {clients.data
-                      ?.filter((c): c is NonNullable<typeof c> => !!c)
-                      .filter(c =>
-                        `${c.name} ${c.email}`
-                          .toLowerCase()
-                          .includes(search.toLowerCase())
-                      )
-                      .map(c => (
-                        <Row
-                          key={c.id}
-                          title={c.name || "Client"}
-                          detail={c.email}
-                          onClick={() => setClient(c.id)}
-                        />
-                      ))}
-                    {!clients.isLoading && !clients.data?.length && (
-                      <ActionLink href="/clients">
-                        Add your first client
-                      </ActionLink>
-                    )}
-                  </>
-                )}
-              </Section>
-            )}
-            <label>
-              Service
-              <select
-                aria-label="Service"
-                value={service}
-                required
-                onChange={e => {
-                  setService(e.target.value);
-                  const svc = services.find(s => s.name === e.target.value);
-                  if (svc) {
-                    const percentage = fixedDeposit
-                      ? 25
-                      : Number(settings.data?.depositPercentage ?? 25);
-                    setSessions(s =>
-                      Array.from(
-                        {
-                          length: Math.max(
-                            1,
-                            Math.min(52, Number(svc.sittings) || 1)
-                          ),
-                        },
-                        (_, i) => ({
-                          ...s[0],
-                          date: format(
-                            addDays(
-                              new Date(s[0].date + "T" + s[0].time),
-                              7 * i
-                            ),
-                            "yyyy-MM-dd"
-                          ),
-                          duration: svc.duration || 60,
-                          price: String(svc.price || 0),
-                          deposit: String(
-                            Math.round((svc.price || 0) * percentage) / 100
-                          ),
-                        })
-                      )
-                    );
-                  }
-                }}
-              >
-                <option value="">Choose a service</option>
-                {services.map((s, i) => (
-                  <option key={`${s.name}-${i}`} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {!settings.isLoading && !services.length && (
-              <ActionLink href="/settings?section=work-hours">
-                Set up your services
-              </ActionLink>
-            )}
-            {service && (
-              <Panel>
-                <div className="v3-form">
-                  <label>
-                    Space sessions
-                    <select
-                      aria-label="Space sessions"
-                      value={frequency}
-                      onChange={e =>
-                        setFrequency(e.target.value as typeof frequency)
-                      }
-                    >
-                      <option value="weekly">Weekly</option>
-                      <option value="biweekly">Every two weeks</option>
-                      <option value="monthly">Monthly</option>
-                      <option value="consecutive">
-                        Consecutive working days
-                      </option>
-                    </select>
-                  </label>
-                  <Action
-                    tone="secondary"
-                    disabled={findingDates || busy}
-                    onClick={findDates}
-                  >
-                    {findingDates ? "Finding dates…" : "Find available dates"}
-                  </Action>
-                  <small>
-                    Uses your working hours and existing bookings, starting from
-                    the first date below. You can adjust each date before
-                    sending.
-                  </small>
-                </div>
-              </Panel>
-            )}
+            <Row
+              title={service}
+              detail={clientName}
+              onClick={() => setStep("service")}
+            />
+            <Action tone="secondary" onClick={() => setStep("frequency")}>
+              Find dates automatically
+            </Action>
             {sessions.map((s, i) => (
               <Section
                 key={i}
@@ -485,7 +526,7 @@ export function BookingComposer({
             <Action type="submit">Review proposal</Action>
           </fieldset>
         </form>
-      ) : (
+      ) : step === "review" ? (
         <>
           <Panel>
             <h2>{service}</h2>
@@ -535,7 +576,7 @@ export function BookingComposer({
             Edit details
           </Action>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

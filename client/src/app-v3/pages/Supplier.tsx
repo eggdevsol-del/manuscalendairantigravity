@@ -31,7 +31,7 @@ export default function SupplierToday() {
   const data = stats.data;
   return (
     <Screen
-      title="Today"
+      title="Home"
       subtitle={profile.data?.businessName || "Your store at a glance"}
     >
       <Feedback
@@ -58,7 +58,7 @@ export default function SupplierToday() {
               href="/merchant/products"
             />
           </Section>
-          <Section title="Sales">
+          <Section title="Tattoi sales">
             <Panel>
               <h2>
                 {new Intl.NumberFormat("en-AU", {
@@ -75,6 +75,23 @@ export default function SupplierToday() {
           </Section>
         </div>
       )}
+      <Section title="Manage your sales channel">
+        <Row
+          title="Catalogue & stock"
+          detail="Manage products available to artists"
+          href="/merchant/products"
+        />
+        <Row
+          title="Shopify connection"
+          detail="Import and review your catalogue"
+          href="/settings"
+        />
+        <Row
+          title="Artist conversations"
+          detail="Help customers with their orders"
+          href="/conversations"
+        />
+      </Section>
       <SupplierPayments />
       <Row
         title="Store settings"

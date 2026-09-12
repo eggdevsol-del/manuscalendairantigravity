@@ -15,19 +15,25 @@ export default function Navigation() {
     <nav
       id="bottom-nav"
       aria-label="Main navigation"
-      className={"v3-navigation" + (artist ? " v3-navigation-artist" : "")}
+      className="v3-navigation v3-navigation-artist"
     >
-      {artist && (
-        <Link className="v3-navigation-brand v3-wordmark" href="/dashboard">
+      {
+        <Link
+          className="v3-navigation-brand v3-wordmark"
+          href={user?.role === "client" ? "/bookings" : "/dashboard"}
+        >
           TATTOI
         </Link>
-      )}
+      }
       <div className="v3-navigation-items">
         {navItems.map(item => {
           const active =
             path === item.path ||
             (!!item.path && path.startsWith(item.path + "/")) ||
             (item.id === "messages" && path.startsWith("/chat/")) ||
+            (artist &&
+              item.id === "dashboard" &&
+              ["/clients", "/supplies", "/supply-orders"].includes(path)) ||
             (item.id === "calendar" &&
               artist &&
               path.startsWith("/projects/")) ||

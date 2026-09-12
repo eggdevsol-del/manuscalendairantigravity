@@ -1,3 +1,4 @@
+import { CalendarTimeline } from "../design/CalendarTimeline";
 import { useState, useMemo } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
@@ -17,7 +18,6 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useCalendarAgendaController } from "@/pages/calendar/hooks/useCalendarAgendaController";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { calendarLanes } from "@/features/workspace/calendarLayout";
 import {
   bookingDate,
   bookingTime,
@@ -46,7 +46,6 @@ export default function Calendar() {
     () => Number(new URLSearchParams(search).get("appointment")) || null
   );
   const [bookingDateValue, setBookingDateValue] = useState<Date | null>(null);
-  const [weekend, setWeekend] = useState(false);
   const [artist, setArtist] = useState("");
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const monday = startOfWeek(c.activeDate, { weekStartsOn: 1 });
@@ -58,17 +57,6 @@ export default function Calendar() {
           a => a.status !== "cancelled" && (!artist || a.artistId === artist)
         ),
     [c.eventsByDay, artist]
-  );
-  const visibleWeek = events.filter(
-    a =>
-      instant(a.startTime) >= monday &&
-      instant(a.startTime) < addDays(monday, 7)
-  );
-  const showWeekend =
-    weekend ||
-    visibleWeek.some(a => [0, 6].includes(instant(a.startTime).getDay()));
-  const days = Array.from({ length: wide && !showWeekend ? 5 : 7 }, (_, i) =>
-    addDays(monday, i)
   );
   const selected = events.find(a => a.id === selectedId);
   const dayEvents = events
@@ -85,7 +73,7 @@ export default function Calendar() {
   function select(a: any) {
     setSelectedId(a.id);
   }
-  const period = `${format(monday, "d")}–${format(addDays(monday, days.length - 1), "d MMMM yyyy")}`;
+  const period = `${format(monday, "d")}–${format(addDays(monday, 6), "d MMMM yyyy")}`;
   return (
     <Screen
       title="Calendar"
@@ -119,16 +107,6 @@ export default function Calendar() {
           </Action>
         </div>
         <div className="v3-inline">
-          {wide && (
-            <label className="v3-inline">
-              <input
-                type="checkbox"
-                checked={showWeekend}
-                onChange={e => setWeekend(e.target.checked)}
-              />
-              Weekend
-            </label>
-          )}
           {c.activeArtists.length > 1 && (
             <select
               aria-label="Calendar artist"
@@ -149,18 +127,17 @@ export default function Calendar() {
         </div>
       </div>
       <Feedback loading={c.isLoading} error={c.error} onRetry={c.refetch} />
-      {wide ? (
-        <div className="v3-calendar-workspace" data-selected={!!selected}>
-          <div className="v3-calendar-grid-scroll">
-            <WeekGrid
-              days={days}
-              events={visibleWeek}
-              zone={zone}
-              selectedId={selectedId}
-              select={select}
-              create={setBookingDateValue}
-            />
-          </div>
+      <div className="v3-calendar-workspace" data-selected={!!selected}>
+        <CalendarTimeline
+          events={events}
+          date={c.activeDate}
+          onDate={c.setActiveDate}
+          onSelect={select}
+          selectedId={selectedId}
+          zone={zone}
+          loading={c.isFetching}
+        />
+        {wide && (
           <aside
             className="v3-calendar-inspector"
             aria-label="Selected booking"
@@ -172,61 +149,25 @@ export default function Calendar() {
                 onClose={() => setSelectedId(null)}
               />
             ) : (
-              <div className="v3-thread-empty">
-                <CalendarDays />
-                <h2>Your week at a glance</h2>
-                <p>
-                  Select a booking to see its details, or choose a time to add
-                  one.
+              <Section title={format(c.activeDate, "EEEE, d MMMM")}>
+                <p className="v3-muted">
+                  Select a session to see the client, forms and payment actions
+                  here.
                 </p>
-              </div>
+                {dayEvents.map(a => (
+                  <Row
+                    key={a.id}
+                    title={a.client?.name || a.clientName || a.title}
+                    detail={bookingTime(a.startTime, zone)}
+                    onClick={() => select(a)}
+                  />
+                ))}
+                {!dayEvents.length && <p>No sessions booked.</p>}
+              </Section>
             )}
           </aside>
-        </div>
-      ) : (
-        <>
-          <div className="v3-day-strip">
-            {days.map(day => (
-              <button
-                key={day.toISOString()}
-                aria-pressed={
-                  format(day, "yyyy-MM-dd") ===
-                  format(c.activeDate, "yyyy-MM-dd")
-                }
-                onClick={() => goDay(day)}
-              >
-                <span>{format(day, "EEE")}</span>
-                <strong>{format(day, "d")}</strong>
-              </button>
-            ))}
-          </div>
-          <Section title="Your day">
-            {dayEvents.map(a => (
-              <Row
-                key={a.id}
-                title={a.client?.name || a.clientName || a.title}
-                detail={
-                  <>
-                    {a.title} · {bookingTime(a.startTime, zone)}–
-                    {bookingTime(a.endTime, zone)}
-                  </>
-                }
-                onClick={() => select(a)}
-                trailing={
-                  <Status
-                    tone={a.status === "confirmed" ? "success" : "neutral"}
-                  >
-                    {statusLabel(a.status)}
-                  </Status>
-                }
-              />
-            ))}
-            {!dayEvents.length && !c.isLoading && (
-              <Feedback empty="No appointments on this day. Add a booking when you're ready." />
-            )}
-          </Section>
-        </>
-      )}
+        )}
+      </div>
       {!wide && (
         <SheetShell
           isOpen={!!selected}
@@ -259,101 +200,6 @@ export default function Calendar() {
         )}
       </SheetShell>
     </Screen>
-  );
-}
-function WeekGrid({
-  days,
-  events,
-  zone,
-  selectedId,
-  select,
-  create,
-}: {
-  days: Date[];
-  events: any[];
-  zone: string;
-  selectedId: number | null;
-  select: (a: any) => void;
-  create: (d: Date) => void;
-}) {
-  const hours = events.flatMap(a => [
-    Number(formatInTimeZone(instant(a.startTime), zone, "H")),
-    Number(formatInTimeZone(instant(a.endTime), zone, "H")) + 1,
-  ]);
-  const first = Math.min(8, ...hours),
-    last = Math.min(24, Math.max(18, ...hours));
-  const rows = Array.from({ length: last - first }, (_, i) => first + i);
-  return (
-    <div
-      className="v3-calendar-grid"
-      style={{
-        gridTemplateColumns: `48px repeat(${days.length}, minmax(90px,1fr))`,
-      }}
-    >
-      <div className="v3-calendar-day" />
-      {days.map(d => (
-        <div key={d.toISOString()} className="v3-calendar-day">
-          {format(d, "EEE d")}
-        </div>
-      ))}
-      <div className="v3-calendar-times">
-        {rows.map(h => (
-          <div key={h}>{String(h).padStart(2, "0")}:00</div>
-        ))}
-      </div>
-      {days.map(day => {
-        const items = events.filter(
-          a =>
-            formatInTimeZone(instant(a.startTime), zone, "yyyy-MM-dd") ===
-            format(day, "yyyy-MM-dd")
-        );
-        const lanes = calendarLanes(items);
-        return (
-          <div key={day.toISOString()} className="v3-calendar-column">
-            {rows.map(hour => (
-              <button
-                key={hour}
-                className="v3-calendar-slot"
-                aria-label={`New booking ${format(day, "EEEE d MMMM")} at ${hour}:00`}
-                onClick={() => {
-                  const date = new Date(day);
-                  date.setHours(hour, 0, 0, 0);
-                  create(date);
-                }}
-              />
-            ))}
-            {items.map(a => {
-              const start = instant(a.startTime),
-                end = instant(a.endTime);
-              const minutes =
-                Number(formatInTimeZone(start, zone, "H")) * 60 +
-                Number(formatInTimeZone(start, zone, "m"));
-              const duration = Math.max(20, (+end - +start) / 60000);
-              const lane = lanes.get(a.id) || { lane: 0, count: 1 };
-              return (
-                <button
-                  key={a.id}
-                  className={`v3-calendar-event ${a.id === selectedId ? "is-selected" : ""}`}
-                  style={{
-                    top: (minutes - first * 60) * 1.2,
-                    height: duration * 1.2,
-                    left: `calc(${(100 * lane.lane) / lane.count}% + 3px)`,
-                    width: `calc(${100 / lane.count}% - 6px)`,
-                  }}
-                  onClick={() => select(a)}
-                >
-                  <strong>{a.client?.name || a.clientName || a.title}</strong>
-                  <span>
-                    {bookingTime(a.startTime, zone)}–
-                    {bookingTime(a.endTime, zone)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
   );
 }
 function BookingInspector({

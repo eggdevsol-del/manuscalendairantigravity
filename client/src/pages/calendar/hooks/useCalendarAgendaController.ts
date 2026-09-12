@@ -53,6 +53,7 @@ export function useCalendarAgendaController() {
     isLoading: isLoadingStudioAppts,
     refetch: refetchStudioAppts,
     error: studioError,
+    isFetching: fetchingStudio,
   } = trpc.appointments.getStudioCalendar.useQuery(
     {
       studioId: currentStudio?.id!,
@@ -70,6 +71,7 @@ export function useCalendarAgendaController() {
     isLoading: isLoadingArtistAppts,
     refetch: refetchArtistAppts,
     error: artistError,
+    isFetching: fetchingArtist,
   } = trpc.appointments.getArtistCalendar.useQuery(
     { artistId: user?.id!, startDate: requestStart, endDate: requestEnd },
     { enabled: isArtistView, placeholderData: prev => prev }
@@ -82,6 +84,7 @@ export function useCalendarAgendaController() {
     isLoading: isLoadingClientAppts,
     refetch: refetchClientAppts,
     error: clientError,
+    isFetching: fetchingClient,
   } = trpc.appointments.getClientCalendar.useQuery(
     { clientId: user?.id!, startDate: requestStart, endDate: requestEnd },
     { enabled: isClientView, placeholderData: prev => prev }
@@ -298,6 +301,7 @@ export function useCalendarAgendaController() {
     error: studioError || artistError || clientError,
     activeDate,
     eventsByDay,
+    isFetching: fetchingStudio || fetchingArtist || fetchingClient,
     handleDateTap,
     handleAppointmentTap,
     startBooking,

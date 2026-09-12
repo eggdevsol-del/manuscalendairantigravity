@@ -14,26 +14,27 @@ import {
 import { BottomNavButton } from "./types";
 
 export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
-  { id: "dashboard", path: "/dashboard", label: "Today", icon: Home },
+  { id: "dashboard", path: "/dashboard", label: "Home", icon: Home },
   {
     id: "messages",
     path: "/conversations",
-    label: "Inbox",
+    label: "Messages",
     icon: MessageCircle,
     badgeCount: 0,
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-  { id: "clients", path: "/clients", label: "Clients", icon: Users },
+  { id: "profile", path: "/artist-profile", label: "Profile", icon: User },
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
-  { id: "bookings", path: "/bookings", label: "Bookings", icon: Calendar },
+  { id: "discover", path: "/discover", label: "Discover", icon: Search },
   {
     id: "messages",
     path: "/conversations",
-    label: "Inbox",
+    label: "Messages",
     icon: MessageCircle,
   },
+  { id: "bookings", path: "/bookings", label: "Bookings", icon: Calendar },
   { id: "profile", path: "/profile", label: "Profile", icon: User },
 ];
 
@@ -42,7 +43,7 @@ export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
   {
     id: "messages",
     path: "/conversations",
-    label: "Inbox",
+    label: "Messages",
     icon: MessageCircle,
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
@@ -50,7 +51,7 @@ export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
 ];
 
 export const MERCHANT_NAV_ITEMS: BottomNavButton[] = [
-  { id: "dashboard", path: "/dashboard", label: "Today", icon: Home },
+  { id: "dashboard", path: "/dashboard", label: "Home", icon: Home },
   { id: "orders", path: "/merchant/orders", label: "Orders", icon: Package },
   {
     id: "products",
@@ -61,7 +62,7 @@ export const MERCHANT_NAV_ITEMS: BottomNavButton[] = [
   {
     id: "messages",
     path: "/conversations",
-    label: "Inbox",
+    label: "Messages",
     icon: MessageCircle,
     badgeCount: 0,
   },

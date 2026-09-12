@@ -131,6 +131,7 @@ export function ClientProfileSheet({
   const addNoteMutation = trpc.clientProfile.addClientNote.useMutation({
     onSuccess: () => {
       toast.success("Note added");
+      setNewNoteText("");
       utils.clientProfile.getClientNotes.invalidate({ clientId: targetClientId });
     },
     onError: err => {
@@ -154,7 +155,6 @@ export function ClientProfileSheet({
       clientId: targetClientId,
       note: newNoteText,
     });
-    setNewNoteText("");
   };
 
   const handleSaveToDevice = async (imageUrl: string) => {
