@@ -1,6 +1,6 @@
 import { invokeLLM, type InvokeResult } from "../_core/llm";
 import { messageTags, messages, designBriefs } from "../../drizzle/schema";
-import { and, eq, desc, asc } from "drizzle-orm";
+import { and, eq, desc, asc, lte } from "drizzle-orm";
 import type { MySql2Database } from "drizzle-orm/mysql2";
 import * as schema from "../../drizzle/schema";
 
@@ -321,8 +321,8 @@ export async function summariseConversationState(
 const PROJECT_NAME_SYSTEM_PROMPT = `You name tattoo projects based on conversation context between an artist and client.
 
 STRICT RULES:
-- Output ONLY the project name (2-5 words). Nothing else — no quotes, no punctuation, no explanation.
-- Be descriptive and specific to what the client wants (e.g. "Botanical half sleeve", "Geometric forearm band", "Memorial portrait", "Koi fish thigh piece").
+- Output ONLY the project name (2-5 words). Nothing else — no quotes or explanation. A slash may join related subjects.
+- Be descriptive and specific to what the client wants (e.g. "Jesus/Angels full arm", "Botanical half sleeve", "Geometric forearm band", "Memorial portrait", "Koi fish thigh piece").
 - Never include the artist or client name.
 - Never use generic names like "Tattoo project", "New booking", "Custom piece", or "Tattoo session".
 - If the conversation doesn't contain enough detail, use what's available (service name, placement, style).
@@ -339,12 +339,16 @@ STRICT RULES:
 export async function generateProjectName(
   db: MySql2Database<typeof schema>,
   conversationId: number,
-  fallbackTitle?: string
+  fallbackTitle?: string,
+  before?: string
 ): Promise<string> {
   try {
     // Get the most recent 10 messages for context
     const recentMessages = await db.query.messages.findMany({
-      where: eq(messages.conversationId, conversationId),
+      where: and(
+        eq(messages.conversationId, conversationId),
+        before ? lte(messages.createdAt, before) : undefined
+      ),
       orderBy: (m, { desc: d }) => [d(m.createdAt)],
       limit: 10,
     });

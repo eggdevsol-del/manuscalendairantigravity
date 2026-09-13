@@ -67,7 +67,7 @@ export function SessionPlanCheckoutSheet({
     onSuccess: () => setStep("payment"),
   });
   const plan = query.data;
-  const paid = plan?.status === "accepted";
+  const paid = plan?.depositRecorded || plan?.status === "accepted";
   usePaymentRefresh(step === "confirming" || paid);
   useEffect(() => {
     if (step !== "confirming") return;
@@ -81,7 +81,8 @@ export function SessionPlanCheckoutSheet({
         if (!accept.isPending) onClose();
       }}
       footer={
-        step === "review" && plan?.status === "pending" ? (
+        step === "review" &&
+        (plan?.requiresDeposit ?? plan?.status === "pending") ? (
           <Action
             style={{ width: "100%" }}
             disabled={accept.isPending}
@@ -123,7 +124,7 @@ export function SessionPlanCheckoutSheet({
             </p>
             <Action onClick={onClose}>Done</Action>
           </>
-        ) : step === "confirming" ? (
+        ) : step === "confirming" || plan?.paymentState ? (
           <Confirming onCheck={() => query.refetch()} />
         ) : step === "payment" && accept.data ? (
           <DotsCheckout

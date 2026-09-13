@@ -417,7 +417,9 @@ function PlanMessage({
       {plan && (
         <>
           <Status tone={plan.status === "accepted" ? "success" : "neutral"}>
-            {statusLabel(plan.status)}
+            {plan.depositRecorded
+              ? "Deposit recorded"
+              : statusLabel(plan.status)}
           </Status>
           {plan.items.map(item => (
             <Row
@@ -428,16 +430,17 @@ function PlanMessage({
             />
           ))}
           <p>Deposit {money(plan.depositTotalCents)}</p>
-          {plan.status === "pending" && me.data?.id === plan.clientId && (
-            <>
-              <Action onClick={() => setCheckout(true)}>
-                Review dates & pay deposit
-              </Action>
-              <Action tone="quiet" onClick={() => setDeclining(true)}>
-                Decline plan
-              </Action>
-            </>
-          )}
+          {(plan.requiresDeposit ?? plan.status === "pending") &&
+            me.data?.id === plan.clientId && (
+              <>
+                <Action onClick={() => setCheckout(true)}>
+                  Review dates & pay deposit
+                </Action>
+                <Action tone="quiet" onClick={() => setDeclining(true)}>
+                  Decline plan
+                </Action>
+              </>
+            )}
           {declining && (
             <div role="alert">
               <p>Decline these proposed dates?</p>

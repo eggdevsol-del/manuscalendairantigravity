@@ -1,5 +1,5 @@
 import { projectKey, projectSessions } from "../data/projectSessions";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
 import {
   CheckCircle2,
@@ -60,6 +60,35 @@ export default function Booking() {
           !["cancelled", "completed", "no-show"].includes(s.status) &&
           instant(s.endsAt) > new Date()
       ) || data?.sessions.at(-1);
+  const namingAttempts = useRef(new Set<number>());
+  const nameProject = trpc.projects.nameProject.useMutation({
+    onSuccess: () => query.refetch(),
+  });
+  useEffect(() => {
+    let stopped = false;
+    void (async () => {
+      const unnamed = [
+        ...new Set(
+          (data?.sessions || [])
+            .filter(s => !s.projectName && s.sessionPlanId)
+            .map(s => s.sessionPlanId!)
+        ),
+      ];
+      for (const sessionPlanId of unnamed) {
+        if (stopped) return;
+        if (namingAttempts.current.has(sessionPlanId)) continue;
+        namingAttempts.current.add(sessionPlanId);
+        try {
+          await nameProject.mutateAsync({ conversationId: id, sessionPlanId });
+        } catch {
+          /* Existing labels remain until naming can be retried. */
+        }
+      }
+    })();
+    return () => {
+      stopped = true;
+    };
+  }, [id, data?.sessions]);
   const [sign, setSign] = useState(false),
     [balance, setBalance] = useState(false);
   const [plan, setPlan] = useState<number | null>(null);
@@ -72,7 +101,10 @@ export default function Booking() {
     ...new Map((data?.sessions || []).map(s => [projectKey(s), s])).values(),
   ];
   // A returning client's new proposal must remain reachable before sessions exist.
-  const pending = data?.plans.filter(p => p.status === "pending") || [];
+  const pending =
+    data?.plans.filter(
+      p => p.paymentState || (p.requiresDeposit ?? p.status === "pending")
+    ) || [];
   const refresh = () => {
     void query.refetch();
     if (client) void forms.refetch();
@@ -93,7 +125,7 @@ export default function Booking() {
     .join(" · ");
   return (
     <Screen
-      title={session?.title || "Your booking"}
+      title={session?.projectName || "Tattoo project"}
       subtitle={subtitle}
       back={client ? "/bookings" : "/calendar"}
     >
@@ -132,7 +164,7 @@ export default function Booking() {
                 >
                   {groups.map(s => (
                     <option key={projectKey(s)} value={projectKey(s)}>
-                      {s.title} · {bookingDate(s.startsAt, s.timeZone)}
+                      {s.projectName || "Unnamed tattoo project"}
                     </option>
                   ))}
                 </select>
@@ -144,6 +176,7 @@ export default function Booking() {
               <label>
                 Session
                 <select
+                  aria-label="Session"
                   value={session?.id}
                   onChange={e => navigate(tab, Number(e.target.value))}
                 >
@@ -165,13 +198,18 @@ export default function Booking() {
                 {client &&
                   pending.map(p => (
                     <Panel tone="attention" key={p.id}>
-                      <h2>Confirm your appointment</h2>
+                      <h2>{p.projectName || "Review your booking proposal"}</h2>
                       <p>
-                        Review the dates, terms and deposit to secure your
-                        booking.
+                        {p.paymentState
+                          ? "Your payment is being checked. Do not pay again while we confirm the booking."
+                          : "Review the dates, terms and deposit to secure your booking."}
                       </p>
                       <Action onClick={() => setPlan(p.id)}>
-                        Review {money(p.depositCents)} deposit
+                        {p.paymentState ? (
+                          "Check payment confirmation"
+                        ) : (
+                          <>Review {money(p.depositCents)} deposit</>
+                        )}
                       </Action>
                     </Panel>
                   ))}

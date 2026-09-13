@@ -39,7 +39,10 @@ export default function ClientBookings() {
     conversationId: number;
   } | null>(null);
   const [pay, setPay] = useState<number | null>(null);
-  const pending = plans.data?.filter(p => p.status === "pending") || [];
+  const pending =
+    plans.data?.filter(
+      p => p.paymentState || (p.requiresDeposit ?? p.status === "pending")
+    ) || [];
   const appointments = bookings.data?.appointments || [];
   const selected = appointments.find(a => a.id === pay);
   return (
@@ -61,19 +64,32 @@ export default function ClientBookings() {
             <Panel key={p.id} tone="attention">
               <div className="v3-inline">
                 <CreditCard />
-                <h2>Confirm your appointment</h2>
+                <h2>{p.projectName || "Review your booking proposal"}</h2>
               </div>
               <p>
-                Review your dates with {p.artist?.name || "your artist"} and pay
-                your deposit to secure the time.
+                {p.paymentState ? (
+                  "Your payment is being checked. Do not pay again while we confirm the booking."
+                ) : (
+                  <>
+                    Review your dates with {p.artist?.name || "your artist"} and
+                    pay your deposit to secure the time.
+                  </>
+                )}
               </p>
               <Action
                 onClick={() =>
                   setPlan({ id: p.id, conversationId: p.conversationId || 0 })
                 }
               >
-                Review {money(p.depositTotalCents + (p.platformFeeCents || 0))}{" "}
-                deposit & fee
+                {p.paymentState ? (
+                  "Check payment confirmation"
+                ) : (
+                  <>
+                    Review{" "}
+                    {money(p.depositTotalCents + (p.platformFeeCents || 0))}{" "}
+                    deposit & fee
+                  </>
+                )}
               </Action>
             </Panel>
           ))}

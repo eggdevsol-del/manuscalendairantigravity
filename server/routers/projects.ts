@@ -1,6 +1,8 @@
+import { generateProjectName } from "../services/llmEnrichment";
+import { readPresentedPlans } from "../services/sessionPlanPresentation";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { and, eq, inArray, or, asc, desc } from "drizzle-orm";
+import { and, eq, inArray, or, asc, desc, isNull } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
 import { requireConversationAccess, requireArtist } from "../services/access";
@@ -43,6 +45,7 @@ export const projectsRouter = router({
           .select({
             id: schema.appointments.id,
             title: schema.appointments.title,
+            projectName: schema.appointments.projectName,
             startTime: schema.appointments.startTime,
             endTime: schema.appointments.endTime,
             timeZone: schema.appointments.timeZone,
@@ -91,6 +94,62 @@ export const projectsRouter = router({
         forms,
       };
     }),
+  nameProject: protectedProcedure
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        sessionPlanId: z.number().int().positive(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database unavailable");
+      await requireConversationAccess(db, input.conversationId, ctx.user.id);
+      const plan = await db.query.sessionPlans.findFirst({
+        where: and(
+          eq(schema.sessionPlans.id, input.sessionPlanId),
+          eq(schema.sessionPlans.conversationId, input.conversationId)
+        ),
+      });
+      if (!plan?.messageId)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This imported project needs an artist-provided name.",
+        });
+      const message = await db.query.messages.findFirst({
+        where: eq(schema.messages.id, plan.messageId),
+      });
+      let metadata: Record<string, any> = {};
+      try {
+        metadata = JSON.parse(message?.metadata || "{}");
+      } catch {}
+      const existing = await db.query.appointments.findFirst({
+        where: eq(schema.appointments.sessionPlanId, plan.id),
+      });
+      const name =
+        existing?.projectName ||
+        metadata.projectName ||
+        (await generateProjectName(
+          db,
+          input.conversationId,
+          metadata.serviceName,
+          plan.createdAt || undefined
+        ));
+      await db
+        .update(schema.messages)
+        .set({ metadata: JSON.stringify({ ...metadata, projectName: name }) })
+        .where(eq(schema.messages.id, plan.messageId));
+      await db
+        .update(schema.appointments)
+        .set({ projectName: name })
+        .where(
+          and(
+            eq(schema.appointments.sessionPlanId, plan.id),
+            isNull(schema.appointments.projectName)
+          )
+        );
+      return { projectName: name };
+    }),
   summary: protectedProcedure
     .input(z.object({ conversationId: z.number().int().positive() }))
     .query(async ({ ctx, input }) => {
@@ -108,6 +167,7 @@ export const projectsRouter = router({
             timeZone: schema.appointments.timeZone,
             description: schema.appointments.description,
             title: schema.appointments.title,
+            projectName: schema.appointments.projectName,
             startsAt: schema.appointments.startTime,
             endsAt: schema.appointments.endTime,
             status: schema.appointments.status,
@@ -156,6 +216,16 @@ export const projectsRouter = router({
           .from(schema.leads)
           .where(eq(schema.leads.conversationId, input.conversationId)),
       ]);
+      const detailedPlans = plans.length
+        ? await db.query.sessionPlans.findMany({
+            where: inArray(
+              schema.sessionPlans.id,
+              plans.map(p => p.id)
+            ),
+            with: { items: true, message: true },
+          })
+        : [];
+      const presentedPlans = await readPresentedPlans(db, detailedPlans);
       const ids = sessions.map(s => s.id);
       const paymentIds = [
         ...new Set(
@@ -256,9 +326,13 @@ export const projectsRouter = router({
               Math.max(0, (expected ?? (price || 0) * 100) - (paid || 0)),
           })
         ),
-        plans: plans.map(p => ({
+        plans: presentedPlans.map(p => ({
           id: p.id,
           status: p.status,
+          requiresDeposit: p.requiresDeposit,
+          depositRecorded: p.depositRecorded,
+          paymentState: p.paymentState,
+          projectName: p.projectName,
           estimateCents: p.totalEstimateCents,
           depositCents: p.depositTotalCents,
           createdAt: p.createdAt,

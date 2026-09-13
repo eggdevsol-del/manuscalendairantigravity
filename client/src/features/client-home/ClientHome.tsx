@@ -50,7 +50,9 @@ export default function ClientHome() {
   const { setBottomNavHidden } = useBottomNav();
 
   // Artist focus mode
-  const [focusedArtist, setFocusedArtist] = useState<FocusedArtist | null>(null);
+  const [focusedArtist, setFocusedArtist] = useState<FocusedArtist | null>(
+    null
+  );
   const [showProfile, setShowProfile] = useState(false);
   const mainFeedScrollPos = useRef(0);
   const isExitingRef = useRef(false);
@@ -64,40 +66,46 @@ export default function ClientHome() {
   const [isShopExpanded, setIsShopExpanded] = useState(false);
 
   // Enter artist focus mode
-  const handleImageTap = useCallback((card: FeedCardData) => {
-    // Save scroll position
-    if (scrollRef.current) {
-      mainFeedScrollPos.current = scrollRef.current.scrollTop;
-    }
-    setFocusedArtist({
-      id: card.artistId,
-      name: card.artistName,
-      avatar: card.artistAvatar,
-      slug: card.artistSlug,
-      tappedImageId: card.id,
-    });
-    // Hide header, show immersive view
-    setHeaderHidden(true);
-    setBottomNavHidden(true);
-    // Scroll to top for the artist feed
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
-  }, [setBottomNavHidden]);
+  const handleImageTap = useCallback(
+    (card: FeedCardData) => {
+      // Save scroll position
+      if (scrollRef.current) {
+        mainFeedScrollPos.current = scrollRef.current.scrollTop;
+      }
+      setFocusedArtist({
+        id: card.artistId,
+        name: card.artistName,
+        avatar: card.artistAvatar,
+        slug: card.artistSlug,
+        tappedImageId: card.id,
+      });
+      // Hide header, show immersive view
+      setHeaderHidden(true);
+      setBottomNavHidden(true);
+      // Scroll to top for the artist feed
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 0;
+      }
+    },
+    [setBottomNavHidden]
+  );
 
   // Open artist profile directly (from tapping artist name/avatar in feed)
-  const handleArtistProfileTap = useCallback((card: FeedCardData) => {
-    setFocusedArtist({
-      id: card.artistId,
-      name: card.artistName,
-      avatar: card.artistAvatar,
-      slug: card.artistSlug,
-      tappedImageId: card.id,
-    });
-    setShowProfile(true);
-    setHeaderHidden(true);
-    setBottomNavHidden(true);
-  }, [setBottomNavHidden]);
+  const handleArtistProfileTap = useCallback(
+    (card: FeedCardData) => {
+      setFocusedArtist({
+        id: card.artistId,
+        name: card.artistName,
+        avatar: card.artistAvatar,
+        slug: card.artistSlug,
+        tappedImageId: card.id,
+      });
+      setShowProfile(true);
+      setHeaderHidden(true);
+      setBottomNavHidden(true);
+    },
+    [setBottomNavHidden]
+  );
 
   // Exit artist focus mode
   const handleExitFocus = useCallback(() => {
@@ -168,7 +176,9 @@ export default function ClientHome() {
   return (
     <>
       {/* ── Auto-hide Header ── */}
-      <header className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}>
+      <header
+        className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}
+      >
         {focusedArtist ? (
           /* Focus mode header — mirrors the pill layout */
           <div className="artist-focus-header-row">
@@ -206,7 +216,7 @@ export default function ClientHome() {
                 <div className="client-home-avatar-fallback">{initials}</div>
               )}
             </div>
-            <span className="client-home-logo">d.o.t.s</span>
+            <span className="client-home-logo">TATTOI</span>
             <div className="client-home-toggle">
               <button
                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
@@ -270,7 +280,10 @@ export default function ClientHome() {
         <div className="client-home-content-inner">
           {/* Base layer: always rendered (discovery or home) */}
           {view === "discovery" ? (
-            <DiscoverFeedContent onImageTap={handleImageTap} onArtistProfileTap={handleArtistProfileTap} />
+            <DiscoverFeedContent
+              onImageTap={handleImageTap}
+              onArtistProfileTap={handleArtistProfileTap}
+            />
           ) : (
             <div className="client-home-view">
               <MyArtistsSection
@@ -301,7 +314,11 @@ export default function ClientHome() {
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ type: "tween", duration: 0.25, ease: [0.12, 0, 0.04, 1] }}
+            transition={{
+              type: "tween",
+              duration: 0.25,
+              ease: [0.12, 0, 0.04, 1],
+            }}
             style={{ zIndex: 2 }}
           >
             <ArtistPortfolioFeed

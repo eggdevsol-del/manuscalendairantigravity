@@ -61,6 +61,17 @@ export async function fulfillSessionPlan(
         eq(schema.studioMembers.status, "active")
       ),
     });
+    let projectName: string | null = null;
+    if (plan.messageId) {
+      const message = await tx.query.messages.findFirst({
+        where: eq(schema.messages.id, plan.messageId),
+      });
+      try {
+        const metadata = JSON.parse(message?.metadata || "{}");
+        if (typeof metadata.projectName === "string")
+          projectName = metadata.projectName.slice(0, 60);
+      } catch {}
+    }
     const now = mysqlDate(new Date());
     for (const item of items) {
       const start = utcDate(item.startsAt);
@@ -87,6 +98,7 @@ export async function fulfillSessionPlan(
         clientId: plan.clientId,
         conversationId: plan.conversationId,
         title: `Session ${item.sessionIndex}`,
+        projectName,
         startTime: mysqlDate(start),
         endTime: mysqlDate(end),
         timeZone: "Australia/Brisbane",

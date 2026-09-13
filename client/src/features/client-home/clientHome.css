@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 16px;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+  padding-top: calc(var(--app-safe-top, env(safe-area-inset-top, 0px)) + 6px);
   background: transparent;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -63,7 +63,11 @@
 
 /* ── Logo ── */
 .client-home-logo {
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family:
+    "DM Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -115,8 +119,8 @@
 
 /* Padding top for header */
 .client-home-content-inner {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 44px);
-  padding-bottom: 80px;
+  padding-top: calc(var(--app-safe-top, env(safe-area-inset-top, 0px)) + 44px);
+  padding-bottom: calc(94px + var(--app-safe-bottom));
   min-height: 100%;
 }
 
@@ -185,7 +189,7 @@
 /* ── Floating Artist Pill ── */
 .artist-focus-pill {
   position: fixed;
-  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  top: calc(var(--app-safe-top, env(safe-area-inset-top, 0px)) + 8px);
   left: 12px;
   right: 12px;
   z-index: 44;
@@ -274,4 +278,19 @@
 
 .artist-focus-pill-book:active {
   opacity: 0.85;
+}
+/* Keep controls legible over both bright and dark portfolio media. */
+.client-home-header {
+  background: var(--v3-paper);
+}
+.client-home-toggle-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+.client-home-toggle-btn.active {
+  background: var(--v3-gold-soft);
+  color: var(--v3-ink);
+}
+.client-home-content-inner {
+  padding-top: calc(var(--app-safe-top) + 62px);
 }

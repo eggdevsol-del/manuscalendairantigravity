@@ -1,3 +1,8 @@
+import {
+  readPresentedPlans,
+  sessionPlanSignature,
+} from "../services/sessionPlanPresentation";
+import { generateProjectName } from "../services/llmEnrichment";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import { withDatabaseTransaction } from "../services/core";
@@ -44,6 +49,18 @@ export const sessionPlansRouter = router({
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      requireArtist(ctx.user);
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
+      const projectName = await generateProjectName(
+        database,
+        input.conversationId,
+        input.serviceName
+      );
       return database.transaction(async dbRef => {
         requireArtist(ctx.user);
         const conversation = await requireConversationAccess(
@@ -109,6 +126,31 @@ export const sessionPlansRouter = router({
               "Sessions must not overlap; deposits cannot exceed the estimate.",
           });
 
+        // Serialize retries for this client/artist relationship and reuse an identical proposal.
+        await dbRef
+          .select({ id: schema.conversations.id })
+          .from(schema.conversations)
+          .where(eq(schema.conversations.id, input.conversationId))
+          .for("update");
+        const previous = await dbRef.query.sessionPlans.findMany({
+          where: eq(schema.sessionPlans.conversationId, input.conversationId),
+          with: { items: true },
+        });
+        const signature = sessionPlanSignature({
+          id: 0,
+          artistId,
+          clientId,
+          status: "pending",
+          depositTotalCents,
+          totalEstimateCents,
+          items: input.sessions,
+        });
+        const same = previous.find(
+          p =>
+            ["pending", "accepted"].includes(p.status) &&
+            sessionPlanSignature(p) === signature
+        );
+        if (same) return { sessionPlanId: same.id, messageId: same.messageId };
         // Create the session plan
         const [planResult] = await dbRef.insert(schema.sessionPlans).values({
           artistId,
@@ -154,6 +196,8 @@ export const sessionPlansRouter = router({
             type: "session_plan",
             sessionPlanId: planId,
             sessionCount: input.sessions.length,
+            projectName,
+            serviceName: input.serviceName,
             totalEstimateCents,
             depositTotalCents,
             sessions: input.sessions,
@@ -208,6 +252,20 @@ export const sessionPlansRouter = router({
           });
 
         // Get artist settings for Stripe Connect
+        const siblings = await dbRef.query.sessionPlans.findMany({
+          where: and(
+            eq(schema.sessionPlans.artistId, plan.artistId),
+            eq(schema.sessionPlans.clientId, plan.clientId)
+          ),
+          with: { items: true },
+        });
+        const presented = await readPresentedPlans(dbRef, siblings);
+        if (!presented.find(p => p.id === plan.id)?.requiresDeposit)
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "This deposit is already recorded or this proposal has been replaced. Refresh your bookings; do not pay again.",
+          });
         const artistSettings = await dbRef.query.artistSettings.findFirst({
           where: eq(schema.artistSettings.userId, plan.artistId),
         });
@@ -469,12 +527,13 @@ export const sessionPlansRouter = router({
       where: eq(schema.sessionPlans.clientId, ctx.user.id),
       with: {
         items: true,
+        message: true,
         artist: { columns: publicUserColumns },
       },
       orderBy: desc(schema.sessionPlans.createdAt),
     });
 
-    return plans;
+    return readPresentedPlans(dbRef, plans);
   }),
 
   /**
@@ -490,6 +549,7 @@ export const sessionPlansRouter = router({
         where: eq(schema.sessionPlans.id, input.sessionPlanId),
         with: {
           items: true,
+          message: true,
           artist: { columns: publicUserColumns },
           client: { columns: publicUserColumns },
         },
@@ -500,6 +560,14 @@ export const sessionPlansRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      return plan;
+      const siblings = await dbRef.query.sessionPlans.findMany({
+        where: and(
+          eq(schema.sessionPlans.artistId, plan.artistId),
+          eq(schema.sessionPlans.clientId, plan.clientId)
+        ),
+        with: { items: true, message: true },
+      });
+      const presented = await readPresentedPlans(dbRef, siblings);
+      return { ...plan, ...presented.find(p => p.id === plan.id) };
     }),
 });
