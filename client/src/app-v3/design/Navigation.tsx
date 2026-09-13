@@ -1,5 +1,4 @@
 import { Link, useLocation } from "wouter";
-import { Settings } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useBottomNav } from "@/contexts/BottomNavContext";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
@@ -17,14 +16,6 @@ export default function Navigation() {
       aria-label="Main navigation"
       className="v3-navigation v3-navigation-artist"
     >
-      {
-        <Link
-          className="v3-navigation-brand v3-wordmark"
-          href={user?.role === "client" ? "/bookings" : "/dashboard"}
-        >
-          TATTOI
-        </Link>
-      }
       <div className="v3-navigation-items">
         {navItems.map(item => {
           const active =
@@ -77,26 +68,6 @@ export default function Navigation() {
           );
         })}
       </div>
-      {artist && (
-        <Link
-          className="v3-navigation-business v3-navigation-item"
-          href="/business"
-          aria-current={
-            [
-              "/business",
-              "/money",
-              "/settings",
-              "/subscriptions",
-              "/bank-payouts",
-            ].includes(path)
-              ? "page"
-              : undefined
-          }
-        >
-          <Settings size={22} />
-          <span>Business</span>
-        </Link>
-      )}
     </nav>
   );
 }

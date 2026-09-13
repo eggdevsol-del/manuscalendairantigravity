@@ -1,3 +1,4 @@
+import { WeekAgenda } from "../design/WeekAgenda";
 import { HomeTabs } from "../design/HomeTabs";
 import { DesignBrief } from "../design/DesignBrief";
 import { useState } from "react";
@@ -85,7 +86,11 @@ export default function Today() {
             {expanded && tasks.tasks.length > 0 && (
               <Section title="Needs your attention">
                 {tasks.tasks.map(task => (
-                  <div key={task.id} className="v3-divider">
+                  <div
+                    key={task.id}
+                    className="v3-task-card"
+                    data-priority={task._serverTask.priorityLevel}
+                  >
                     <Row
                       title={task.title}
                       detail={task.context}
@@ -100,6 +105,11 @@ export default function Today() {
                         else go("/clients");
                       }}
                     />
+                    {task._serverTask.conversationId && (
+                      <DesignBrief
+                        conversationId={task._serverTask.conversationId}
+                      />
+                    )}
                     <Action
                       tone="quiet"
                       disabled={!!tasks.completingTask}
@@ -208,23 +218,7 @@ export default function Today() {
                   </Panel>
                 )}
               </Section>
-              <Section title="Your day">
-                {sessions.map(s => (
-                  <Row
-                    key={s.id}
-                    title={s.client?.name || s.title}
-                    detail={s.title}
-                    icon={<time>{bookingTime(s.startTime, zone)}</time>}
-                    href={href(s)}
-                  />
-                ))}
-                {!sessions.length && (
-                  <p className="v3-muted">Nothing booked today.</p>
-                )}
-                <ActionLink href="/calendar" tone="quiet">
-                  View calendar <ArrowRight />
-                </ActionLink>
-              </Section>
+              <WeekAgenda />
             </div>
           )}
         </div>

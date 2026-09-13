@@ -1,3 +1,4 @@
+import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
 import {
@@ -52,14 +53,13 @@ export default function Booking() {
     { enabled: id > 0 }
   );
   const data = query.data;
-  const session =
-    data?.sessions.find(s => s.id === selectedId) ||
-    data?.sessions.find(
-      s =>
-        !["cancelled", "completed", "no-show"].includes(s.status) &&
-        instant(s.endsAt) > new Date()
-    ) ||
-    data?.sessions.at(-1);
+  const session = selectedId
+    ? data?.sessions.find(s => s.id === selectedId)
+    : data?.sessions.find(
+        s =>
+          !["cancelled", "completed", "no-show"].includes(s.status) &&
+          instant(s.endsAt) > new Date()
+      ) || data?.sessions.at(-1);
   const [sign, setSign] = useState(false),
     [balance, setBalance] = useState(false);
   const [plan, setPlan] = useState<number | null>(null);
@@ -67,6 +67,11 @@ export default function Booking() {
     { appointmentId: session?.id },
     { enabled: client && !!session }
   );
+  const siblings = projectSessions(data?.sessions || [], session);
+  const groups = [
+    ...new Map((data?.sessions || []).map(s => [projectKey(s), s])).values(),
+  ];
+  // A returning client's new proposal must remain reachable before sessions exist.
   const pending = data?.plans.filter(p => p.status === "pending") || [];
   const refresh = () => {
     void query.refetch();
@@ -81,7 +86,7 @@ export default function Booking() {
   const subtitle = [
     client ? data?.artist?.name : data?.client?.name,
     session && data
-      ? `Session ${session.sessionIndex || data.sessions.findIndex(s => s.id === session.id) + 1} of ${session.sessionTotal || data.sessions.length}`
+      ? `Session ${session.sessionIndex || siblings.findIndex(s => s.id === session.id) + 1} of ${session.sessionTotal || siblings.length}`
       : null,
   ]
     .filter(Boolean)
@@ -100,6 +105,9 @@ export default function Booking() {
       {!(id > 0) && (
         <Feedback empty="This booking link is invalid. Open your bookings to choose a session." />
       )}
+      {data && selectedId && !session && (
+        <Feedback empty="This session is not available in this conversation. Choose a tattoo project below or return to your bookings." />
+      )}
       {data && (
         <>
           <Tabs
@@ -108,7 +116,30 @@ export default function Booking() {
             onChange={t => navigate(t)}
             label="Booking sections"
           />
-          {data.sessions.length > 1 && (
+          {groups.length > 1 && (
+            <div className="v3-form">
+              <label>
+                Tattoo project
+                <select
+                  aria-label="Tattoo project"
+                  value={session ? projectKey(session) : ""}
+                  onChange={e => {
+                    const target = groups.find(
+                      s => projectKey(s) === e.target.value
+                    );
+                    if (target) navigate(tab, target.id);
+                  }}
+                >
+                  {groups.map(s => (
+                    <option key={projectKey(s)} value={projectKey(s)}>
+                      {s.title} · {bookingDate(s.startsAt, s.timeZone)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+          {siblings.length > 1 && (
             <div className="v3-form">
               <label>
                 Session
@@ -116,9 +147,10 @@ export default function Booking() {
                   value={session?.id}
                   onChange={e => navigate(tab, Number(e.target.value))}
                 >
-                  {data.sessions.map((s, i) => (
+                  {siblings.map((s, i) => (
                     <option key={s.id} value={s.id}>
-                      Session {i + 1} · {bookingDate(s.startsAt, s.timeZone)} ·{" "}
+                      Session {s.sessionIndex || i + 1} ·{" "}
+                      {bookingDate(s.startsAt, s.timeZone)} ·{" "}
                       {statusLabel(s.status)}
                     </option>
                   ))}
@@ -229,7 +261,11 @@ export default function Booking() {
                   </Panel>
                 )}
                 {data.briefs.length > 0 && (
-                  <Section title="Design notes">
+                  <Section title="Conversation design notes">
+                    <p className="v3-muted">
+                      These notes belong to the client conversation and may
+                      cover more than one tattoo.
+                    </p>
                     {data.briefs.map(b => (
                       <div key={b.id} className="v3-stack">
                         <p style={{ whiteSpace: "pre-wrap" }}>
@@ -289,7 +325,7 @@ export default function Booking() {
             </div>
           )}
           {tab === "Files" && (
-            <Section title="Reference images">
+            <Section title="Conversation reference images">
               {!data.briefs.some(b => b.images.length) && (
                 <Feedback empty="No references attached yet. Add photos in Messages." />
               )}
@@ -317,7 +353,7 @@ export default function Booking() {
             </Section>
           )}
           {tab === "Payments" && (
-            <Section title="Payment history · AUD">
+            <Section title="Conversation payment history · AUD">
               <p className="v3-muted">
                 Session totals can include imported payments without a linked
                 transaction.

@@ -63,25 +63,29 @@ export function PaymentRequestBanner() {
       const id = e.detail?.requestId;
       if (id) {
         markAsPaid(id);
-        setDismissed((prev) => new Set(prev).add(id));
+        setDismissed(prev => new Set(prev).add(id));
       }
     };
     window.addEventListener("payment-request-paid" as any, handler);
-    return () => window.removeEventListener("payment-request-paid" as any, handler);
+    return () =>
+      window.removeEventListener("payment-request-paid" as any, handler);
   }, []);
 
   // Hide on /pay/ routes — the checkout page handles its own UI
   const isOnPayRoute = location.startsWith("/pay/");
 
   // Find the first non-dismissed pending request
-  const pending = (requests || []).find((r) => !dismissed.has(r.id));
+  const pending = (requests || []).find(r => !dismissed.has(r.id));
 
   if (!isClient || !pending || isOnPayRoute) return null;
 
-  const amountDisplay = `$${(pending.amountCents / 100).toLocaleString("en-AU", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })}`;
+  const amountDisplay = `$${(pending.amountCents / 100).toLocaleString(
+    "en-AU",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }
+  )}`;
 
   return (
     <AnimatePresence>
@@ -91,7 +95,7 @@ export function PaymentRequestBanner() {
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
+        className="tattoi-notice fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
       >
         <div className="bg-popover/95 backdrop-blur-[12px] border border-border rounded-[var(--radius-md)] p-[14px_16px] flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           <div
@@ -112,7 +116,7 @@ export function PaymentRequestBanner() {
 
           <button
             onClick={() => {
-              setDismissed((prev) => new Set(prev).add(pending.id));
+              setDismissed(prev => new Set(prev).add(pending.id));
             }}
             className="bg-transparent border-none text-muted-foreground text-[13px] cursor-pointer p-[4px_6px] shrink-0 hover:text-foreground transition-colors"
             aria-label="Dismiss"

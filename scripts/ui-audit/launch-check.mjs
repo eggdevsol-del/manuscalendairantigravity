@@ -116,13 +116,13 @@ for (const theme of ["light", "dark"])
       await timeline.waitFor();
       const dateBefore = await page.locator(".v3-subtitle").innerText();
       await page
-        .getByRole("button", { name: "Compact agenda", exact: true })
+        .getByRole("button", { name: "Expand agenda", exact: true })
         .click();
       await page.waitForTimeout(250);
       if ((await page.locator(".v3-subtitle").innerText()) !== dateBefore)
         errors.push("Compacting agenda changed selected date");
       await page
-        .getByRole("button", { name: "Expand agenda", exact: true })
+        .getByRole("button", { name: "Compact agenda", exact: true })
         .click();
       await page.waitForTimeout(100);
       const before = await page

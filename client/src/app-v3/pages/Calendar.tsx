@@ -46,6 +46,7 @@ export default function Calendar() {
     () => Number(new URLSearchParams(search).get("appointment")) || null
   );
   const [bookingDateValue, setBookingDateValue] = useState<Date | null>(null);
+  const [agendaExpanded, setAgendaExpanded] = useState(false);
   const [artist, setArtist] = useState("");
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const monday = startOfWeek(c.activeDate, { weekStartsOn: 1 });
@@ -126,6 +127,20 @@ export default function Calendar() {
           )}
         </div>
       </div>
+      <div className="v3-week-strip" aria-label="Calendar week">
+        {Array.from({ length: 7 }, (_, i) => addDays(monday, i)).map(date => (
+          <button
+            key={date.toISOString()}
+            aria-pressed={
+              format(date, "yyyy-MM-dd") === format(c.activeDate, "yyyy-MM-dd")
+            }
+            onClick={() => goDay(date)}
+          >
+            <span>{format(date, "EEE")}</span>
+            <strong>{format(date, "d")}</strong>
+          </button>
+        ))}
+      </div>
       <Feedback loading={c.isLoading} error={c.error} onRetry={c.refetch} />
       <div className="v3-calendar-workspace" data-selected={!!selected}>
         <CalendarTimeline
@@ -136,7 +151,43 @@ export default function Calendar() {
           selectedId={selectedId}
           zone={zone}
           loading={c.isFetching}
+          onBook={setBookingDateValue}
+          services={c.artistServices}
         />
+        {!wide && (
+          <>
+            <button
+              className="v3-action v3-action-secondary v3-agenda-toggle"
+              aria-expanded={agendaExpanded}
+              onClick={() => setAgendaExpanded(!agendaExpanded)}
+            >
+              <span>
+                {format(c.activeDate, "EEE d MMM")} · {dayEvents.length}{" "}
+                sessions
+              </span>
+              <span>
+                {agendaExpanded ? "Collapse agenda" : "Expand agenda"}
+              </span>
+            </button>
+            {agendaExpanded && (
+              <section className="v3-mobile-agenda" aria-label="Day agenda">
+                {dayEvents.map(a => (
+                  <Row
+                    key={a.id}
+                    title={a.client?.name || a.clientName || a.title}
+                    detail={`${bookingTime(a.startTime, zone)} · ${a.title} · ${statusLabel(a.status)}`}
+                    onClick={() => select(a)}
+                  />
+                ))}
+                {!dayEvents.length && (
+                  <p className="v3-muted">
+                    No sessions booked. Use + beside a date to book.
+                  </p>
+                )}
+              </section>
+            )}
+          </>
+        )}
         {wide && (
           <aside
             className="v3-calendar-inspector"

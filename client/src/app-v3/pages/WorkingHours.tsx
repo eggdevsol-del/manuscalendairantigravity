@@ -33,7 +33,17 @@ export default function WorkingHours() {
   const [days, setDays] = useState<WorkDay[]>(readSchedule(null));
   const [services, setServices] = useState<Service[]>([]);
   const [edit, setEdit] = useState<number | null>(null);
-  const [draft, setDraft] = useState<Service | null>(null);
+  const [draft, setDraft] = useState<
+    | (Omit<Service, "duration" | "price" | "sittings"> & {
+        name: string;
+        description: string;
+        showInFunnel: boolean;
+        duration: number | "";
+        price: number | "";
+        sittings: number | "";
+      })
+    | null
+  >(null);
   const [error, setError] = useState("");
   const [scheduleUnreadable, setScheduleUnreadable] = useState(false);
   const [servicesUnreadable, setServicesUnreadable] = useState(false);
@@ -113,6 +123,9 @@ export default function WorkingHours() {
     if (servicesUnreadable) return;
     if (
       !draft?.name.trim() ||
+      draft.duration === "" ||
+      draft.price === "" ||
+      draft.sittings === "" ||
       !Number.isInteger(draft.duration) ||
       draft.duration <= 0 ||
       draft.duration > 1440 ||
@@ -129,8 +142,8 @@ export default function WorkingHours() {
     }
     const list =
       edit === null
-        ? [...services, draft]
-        : services.map((s, i) => (i === edit ? draft : s));
+        ? [...services, draft as Service]
+        : services.map((s, i) => (i === edit ? (draft as Service) : s));
     save.mutate(
       { services: JSON.stringify(list) },
       {
@@ -388,6 +401,21 @@ export default function WorkingHours() {
               />
             </label>
             <label>
+              Service colour
+              <input
+                type="color"
+                aria-label="Service colour"
+                value={
+                  typeof draft.color === "string" &&
+                  /^#[0-9a-f]{6}$/i.test(draft.color)
+                    ? draft.color
+                    : "#c9a96e"
+                }
+                onChange={e => setDraft({ ...draft, color: e.target.value })}
+              />
+              <small>Used as an accent on calendar sessions.</small>
+            </label>
+            <label>
               Description
               <textarea
                 value={draft.description || ""}
@@ -405,7 +433,11 @@ export default function WorkingHours() {
                 max={1440}
                 value={draft.duration}
                 onChange={e =>
-                  setDraft({ ...draft, duration: Number(e.target.value) })
+                  setDraft({
+                    ...draft,
+                    duration:
+                      e.target.value === "" ? "" : Number(e.target.value),
+                  })
                 }
               />
             </label>
@@ -418,7 +450,10 @@ export default function WorkingHours() {
                 step="0.01"
                 value={draft.price}
                 onChange={e =>
-                  setDraft({ ...draft, price: Number(e.target.value) })
+                  setDraft({
+                    ...draft,
+                    price: e.target.value === "" ? "" : Number(e.target.value),
+                  })
                 }
               />
             </label>
@@ -431,7 +466,11 @@ export default function WorkingHours() {
                 max={52}
                 value={draft.sittings}
                 onChange={e =>
-                  setDraft({ ...draft, sittings: Number(e.target.value) })
+                  setDraft({
+                    ...draft,
+                    sittings:
+                      e.target.value === "" ? "" : Number(e.target.value),
+                  })
                 }
               />
             </label>

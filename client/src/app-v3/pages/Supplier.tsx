@@ -110,11 +110,6 @@ export function SupplierOrders() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<number | null>(null);
   const query = trpc.storefront.getOrders.useQuery();
-  const update = trpc.storefront.updateOrderStatus.useMutation({
-    onSuccess: () => {
-      void query.refetch();
-    },
-  });
   const orders = (query.data || []).filter(
     o =>
       (tab === "All" ||
@@ -216,17 +211,17 @@ export function SupplierOrders() {
                   </p>
                 )}
               </Section>
-              {update.error && <p role="alert">{update.error.message}</p>}
-              {order.status === "paid" && (
-                <Action
-                  disabled={update.isPending}
-                  onClick={() =>
-                    update.mutate({ orderId: order.id, status: "fulfilled" })
-                  }
-                >
-                  {update.isPending ? "Saving…" : "Mark fulfilled"}
-                </Action>
-              )}
+              <p className="v3-muted">
+                Fulfilment, tracking and inventory are managed in Shopify.
+              </p>
+              <a
+                className="v3-action v3-action-secondary"
+                href="https://admin.shopify.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open Shopify orders
+              </a>
             </div>
           ) : (
             <Feedback empty="Select an order to review its items and delivery details." />

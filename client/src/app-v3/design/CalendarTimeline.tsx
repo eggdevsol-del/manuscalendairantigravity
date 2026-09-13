@@ -23,6 +23,8 @@ export function CalendarTimeline({
   selectedId,
   zone,
   loading = false,
+  onBook,
+  services = [],
 }: {
   events: any[];
   date: Date;
@@ -31,6 +33,8 @@ export function CalendarTimeline({
   selectedId: number | null;
   zone: string;
   loading?: boolean;
+  onBook?: (date: Date) => void;
+  services?: { name: string; color?: string }[];
 }) {
   const [origin, setOrigin] = useState(() =>
     addDays(startOfDay(date), -middle)
@@ -38,9 +42,9 @@ export function CalendarTimeline({
   const scroll = useRef<HTMLDivElement>(null);
   const visibleDate = useRef(format(date, "yyyy-MM-dd"));
   const withinDay = useRef(0);
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const lastExpanded = useRef(expanded);
-  const [scrollTop, setScrollTop] = useState(middle * 186);
+  const [scrollTop, setScrollTop] = useState(middle * 138);
   const [viewportHeight, setViewportHeight] = useState(600);
   const byDay = useMemo(() => {
     const result = new Map<string, any[]>();
@@ -142,7 +146,14 @@ export function CalendarTimeline({
           {expanded ? "Compact agenda" : "Expand agenda"}
         </button>
       </div>
-      <div ref={scroll} className="v3-timeline-scroll" onScroll={trackDate}>
+      <div
+        ref={scroll}
+        className="v3-timeline-scroll"
+        onScroll={trackDate}
+        tabIndex={0}
+        role="region"
+        aria-label="Scrollable calendar timeline"
+      >
         <div
           style={{ height: offsets[offsets.length - 1], position: "relative" }}
         >
@@ -167,6 +178,14 @@ export function CalendarTimeline({
               >
                 <h3>
                   <span>{format(day, "EEE")}</span> {format(day, "d MMMM")}{" "}
+                  {onBook && (
+                    <button
+                      aria-label={`Book on ${format(day, "d MMMM yyyy")}`}
+                      onClick={() => onBook(day)}
+                    >
+                      +
+                    </button>
+                  )}
                   {key === format(new Date(), "yyyy-MM-dd") && (
                     <small>Today</small>
                   )}
@@ -176,6 +195,11 @@ export function CalendarTimeline({
                     <button
                       key={event.id}
                       className="v3-timeline-session"
+                      style={{
+                        borderLeftColor:
+                          services.find(s => s.name === event.title)?.color ||
+                          undefined,
+                      }}
                       aria-pressed={selectedId === event.id}
                       onClick={() => onSelect(event)}
                     >

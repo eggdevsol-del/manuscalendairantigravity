@@ -471,10 +471,10 @@
 }
 @media (min-width: 768px) {
   .artist-workspace .v3-screen {
-    left: var(--workspace-sidebar);
+    left: 0;
   }
   .artist-workspace .v3-scroll {
-    padding-bottom: var(--app-safe-bottom);
+    padding-bottom: calc(94px + var(--app-safe-bottom));
   }
   .v3-grid {
     grid-template-columns: minmax(0, 1.3fr) minmax(280px, 1fr);
@@ -1033,48 +1033,6 @@
   outline: 2px solid var(--v3-gold-ink);
   outline-offset: -3px;
 }
-@media (min-width: 768px) {
-  .v3-navigation-artist {
-    inset: 0 auto 0 0;
-    width: var(--v3-rail);
-    border-top: 0;
-    border-right: 1px solid var(--v3-line);
-    padding: calc(var(--app-safe-top) + 32px) 16px
-      max(24px, var(--app-safe-bottom));
-    display: flex;
-    flex-direction: column;
-  }
-  .v3-navigation-artist .v3-navigation-brand {
-    display: block;
-    padding: 8px 8px 42px;
-  }
-  .v3-navigation-artist .v3-navigation-items {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .v3-navigation-artist .v3-navigation-item {
-    flex: none;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
-    min-height: 50px;
-    padding: 12px;
-    border-radius: var(--v3-radius);
-    font-size: 15px;
-  }
-  .v3-navigation-artist .v3-navigation-item[aria-current="page"] {
-    background: var(--v3-gold-soft);
-  }
-  .v3-navigation-artist .v3-navigation-item[aria-current="page"]::after {
-    bottom: auto;
-    right: 10px;
-  }
-  .v3-navigation-artist .v3-navigation-business {
-    display: flex;
-    margin-top: auto;
-  }
-}
-
 /* Business workflows share the same cards, spacing and responsive detail rail. */
 .v3-plan-grid {
   display: grid;
@@ -1585,11 +1543,11 @@
 @media (min-width: 768px) {
   .v3-screen-client,
   .v3-screen-merchant {
-    left: var(--v3-rail);
+    left: 0;
   }
   .v3-screen-client .v3-scroll,
   .v3-screen-merchant .v3-scroll {
-    padding-bottom: var(--app-safe-bottom);
+    padding-bottom: calc(94px + var(--app-safe-bottom));
   }
   .v3-booking-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1763,4 +1721,320 @@
 .v3-continuous-calendar[data-expanded="false"] .v3-timeline-session {
   height: 56px;
   padding: 8px 12px;
+}
+
+/* Conversation previews are summaries; the complete message belongs in the thread. */
+.v3-inbox-list .v3-row {
+  flex-shrink: 0;
+}
+.v3-inbox-list .v3-row-copy {
+  overflow: hidden;
+}
+.v3-inbox-list .v3-row-copy strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3-inbox-list .v3-row-copy > span {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+.v3-task-card {
+  border: 1px solid var(--v3-line);
+  border-left: 3px solid var(--v3-gold);
+  border-radius: var(--v3-radius);
+  padding: 4px 12px;
+  margin-top: 12px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--v3-gold) 16%, var(--v3-surface)),
+    var(--v3-surface) 78%
+  );
+}
+.v3-task-card > .v3-row {
+  border: 0;
+}
+@media (min-width: 768px) {
+  .v3-screen:has(.v3-inbox) > .v3-scroll {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .v3-screen:has(.v3-inbox) .v3-content {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .v3-inbox {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .v3-inbox-list {
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+  .v3-inbox-thread,
+  .v3-thread-layout,
+  .v3-thread {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .v3-thread-layout.with-context {
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .v3-thread-header,
+  .v3-composer {
+    flex-shrink: 0;
+  }
+  .v3-conversation-context {
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+}
+
+/* Selected experience: one shared header and bottom navigation on every device. */
+.v3-action,
+.v3-icon-button {
+  border-radius: 8px;
+}
+.v3-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 12px;
+  padding-bottom: 16px;
+  min-height: 0;
+}
+.v3-masthead {
+  position: static;
+  margin: 0 0 8px;
+  min-width: 0;
+}
+.v3-masthead > .v3-wordmark {
+  display: block;
+  visibility: visible;
+}
+.v3-brand-caption {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  color: var(--v3-muted);
+}
+.v3-header h1,
+.v3-header > .v3-subtitle,
+.v3-header-with-back h1,
+.v3-header-with-back > .v3-subtitle {
+  padding: 0;
+}
+.v3-header h1 {
+  font-size: 26px;
+}
+.v3-header > .v3-subtitle {
+  font-size: 14px;
+  margin: 0;
+}
+.v3-navigation-items {
+  max-width: 780px;
+  margin: auto;
+}
+.v3-task-card[data-priority="high"],
+.v3-task-card[data-priority="urgent"] {
+  --task-accent: var(--v3-red);
+}
+.v3-task-card {
+  border-left-color: var(--task-accent, var(--v3-gold));
+  background: linear-gradient(
+    90deg,
+    color-mix(
+      in srgb,
+      var(--task-accent, var(--v3-gold)) 16%,
+      var(--v3-surface)
+    ),
+    var(--v3-surface) 78%
+  );
+}
+.v3-week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.v3-week-strip button {
+  min-width: 0;
+  min-height: 52px;
+  border-radius: 8px;
+  padding: 6px 2px;
+  display: grid;
+  justify-items: center;
+  font-size: 12px;
+}
+.v3-week-strip button[aria-pressed="true"] {
+  background: var(--v3-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--v3-gold);
+}
+.v3-week-strip strong {
+  font-size: 16px;
+}
+.v3-agenda-toggle {
+  display: none;
+}
+.v3-screen:has(.v3-calendar-workspace) > .v3-scroll {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.v3-screen:has(.v3-calendar-workspace) .v3-content {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  gap: 12px;
+  padding-bottom: 0;
+}
+.v3-calendar-workspace {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+.v3-continuous-calendar {
+  height: 100%;
+  min-height: 0;
+}
+.v3-timeline-scroll {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+  overflow-anchor: none;
+}
+.v3-calendar-inspector {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.v3-timeline-day h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.v3-timeline-day h3 button {
+  margin-left: auto;
+  min-width: 44px;
+  min-height: 44px;
+}
+.v3-timeline-session > span {
+  min-width: 0;
+}
+.v3-timeline-session strong,
+.v3-timeline-session span > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .v3-agenda-toggle {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .v3-calendar-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .v3-calendar-workspace .v3-continuous-calendar {
+    flex: 1;
+  }
+  .v3-mobile-agenda {
+    flex: 0 1 55%;
+    overflow: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+}
+@media (min-width: 768px) and (max-width: 1099px) {
+  .v3-calendar-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 0.75fr);
+  }
+  .v3-calendar-workspace .v3-calendar-inspector {
+    display: block;
+    position: static;
+    width: auto;
+    padding: 16px;
+    box-shadow: none;
+  }
+}
+.v3-continuous-calendar {
+  display: flex;
+  flex-direction: column;
+}
+.v3-thread-header > div {
+  flex: 1;
+  min-width: 0;
+}
+.v3-thread-header h2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3-context-toggle {
+  display: inline-flex;
+}
+.v3-context-sheet .v3-conversation-context {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+@media (min-width: 1180px) {
+  .v3-context-toggle {
+    display: none;
+  }
+}
+.v3-catalogue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.v3-catalogue-grid .v3-panel {
+  min-width: 0;
+  padding: 16px;
+}
+.v3-catalogue-grid h2 {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+.v3-catalogue-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: var(--v3-soft);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+@media (min-width: 768px) {
+  .v3-catalogue-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+/* Operational prompts reserve space and sit below sheets, never over form controls. */
+.tattoi-notice {
+  z-index: 40;
+  bottom: calc(82px + var(--app-safe-bottom));
+}
+body:has(.tattoi-notice) .v3-scroll {
+  padding-bottom: calc(194px + var(--app-safe-bottom));
+}
+@media (max-width: 767px) {
+  body:has(.tattoi-notice) .v3-inbox.has-selection {
+    height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 205px);
+  }
 }

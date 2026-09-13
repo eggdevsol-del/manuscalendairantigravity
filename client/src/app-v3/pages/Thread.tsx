@@ -32,7 +32,11 @@ import {
 export function Thread({ id }: { id: number }) {
   const c = useChatController(id);
   const [notesDraft, setNotesDraft] = useState("");
+  const [contextOpen, setContextOpen] = useState(false);
   const [booking, setBooking] = useState(false);
+  const sharedMedia = (c.messages || []).flatMap(message =>
+    mediaUrls(objectFromJson(message.content))
+  );
   const file = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
   const refresh = () => {
@@ -71,6 +75,16 @@ export function Thread({ id }: { id: number }) {
             >
               <CalendarDays />
               Book
+            </Action>
+          )}
+          {c.isArtist && c.conversation?.clientId && (
+            <Action
+              className="v3-context-toggle"
+              tone="quiet"
+              aria-label="Client details and media"
+              onClick={() => setContextOpen(true)}
+            >
+              Details
             </Action>
           )}
         </header>
@@ -348,8 +362,26 @@ export function Thread({ id }: { id: number }) {
           clientId={c.conversation.clientId}
           draft={notesDraft}
           onDraftChange={setNotesDraft}
+          media={sharedMedia}
         />
       )}
+      <SheetShell
+        isOpen={contextOpen}
+        onClose={() => setContextOpen(false)}
+        title="Client details & media"
+      >
+        {contextOpen && c.isArtist && c.conversation?.clientId && (
+          <div className="v3-context-sheet">
+            <ConversationContext
+              id={id}
+              clientId={c.conversation.clientId}
+              draft={notesDraft}
+              onDraftChange={setNotesDraft}
+              media={sharedMedia}
+            />
+          </div>
+        )}
+      </SheetShell>
     </div>
   );
 }

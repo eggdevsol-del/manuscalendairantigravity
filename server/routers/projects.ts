@@ -172,7 +172,7 @@ export const projectsRouter = router({
           ? [inArray(schema.paymentLedger.stripePaymentId, paymentIds)]
           : []),
       ];
-      const [history, forms] = await Promise.all([
+      const [history, forms, requests] = await Promise.all([
         links.length
           ? db
               .select({
@@ -212,6 +212,22 @@ export const projectsRouter = router({
               .from(schema.consentForms)
               .where(inArray(schema.consentForms.appointmentId, ids))
           : [],
+        ids.length
+          ? db
+              .select({
+                id: schema.paymentRequests.id,
+                appointmentId: schema.paymentRequests.appointmentId,
+                amountCents: schema.paymentRequests.amountCents,
+                expiresAt: schema.paymentRequests.expiresAt,
+              })
+              .from(schema.paymentRequests)
+              .where(
+                and(
+                  inArray(schema.paymentRequests.appointmentId, ids),
+                  eq(schema.paymentRequests.status, "pending")
+                )
+              )
+          : [],
       ]);
       return {
         conversationId: conversation.id,
@@ -229,6 +245,8 @@ export const projectsRouter = router({
             ...s
           }) => ({
             ...s,
+            pendingRequest:
+              requests.find(r => r.appointmentId === s.id) || null,
             startsAt: s.startsAt.replace(" ", "T") + "Z",
             endsAt: s.endsAt.replace(" ", "T") + "Z",
             estimateCents: expected ?? Math.round((price || 0) * 100),

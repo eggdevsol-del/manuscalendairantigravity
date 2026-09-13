@@ -55,7 +55,7 @@ export function ArrivalToast({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
+          className="tattoi-notice fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
         >
           <div className="bg-popover/95 backdrop-blur-[12px] border border-border rounded-[var(--radius-md)] p-[14px_16px] flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             {/* Icon */}
@@ -65,7 +65,10 @@ export function ArrivalToast({
               }`}
             >
               {confirmingNoShow ? (
-                <AlertTriangle size={18} className="text-destructive-foreground" />
+                <AlertTriangle
+                  size={18}
+                  className="text-destructive-foreground"
+                />
               ) : (
                 <UserCheck size={18} className="text-primary-foreground" />
               )}
@@ -74,9 +77,7 @@ export function ArrivalToast({
             {/* Text */}
             <div className="flex-1 min-w-0">
               <p className="m-0 text-[14px] font-semibold text-foreground leading-[1.3]">
-                {confirmingNoShow
-                  ? "Mark as no-show?"
-                  : "Client arrived?"}
+                {confirmingNoShow ? "Mark as no-show?" : "Client arrived?"}
               </p>
               <p className="m-0 text-[12px] text-muted-foreground leading-[1.3] truncate">
                 {confirmingNoShow
@@ -85,6 +86,13 @@ export function ArrivalToast({
               </p>
             </div>
 
+            <button
+              onClick={onDismiss}
+              className="min-h-11 px-2 text-xs text-muted-foreground"
+              aria-label="Remind me about arrival later"
+            >
+              Later
+            </button>
             {/* Buttons */}
             {confirmingNoShow ? (
               <>

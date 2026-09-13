@@ -11,7 +11,9 @@ export function ConversationContext({
   clientId,
   draft,
   onDraftChange,
+  media = [],
 }: {
+  media?: string[];
   id: number;
   clientId: string;
   draft: string;
@@ -49,6 +51,26 @@ export function ConversationContext({
         {query.data && !query.data.sessions.length && (
           <p className="v3-muted">
             No sessions scheduled yet. Use Book to create a plan.
+          </p>
+        )}
+      </Panel>
+      <Panel>
+        <h3>Shared references</h3>
+        <div className="v3-file-grid">
+          {[
+            ...new Set([
+              ...media,
+              ...(query.data?.briefs.flatMap(b => b.images) || []),
+            ]),
+          ].map(url => (
+            <a key={url} href={url} target="_blank" rel="noreferrer">
+              <img src={url} alt="Shared design reference" loading="lazy" />
+            </a>
+          ))}
+        </div>
+        {!media.length && !query.data?.briefs.some(b => b.images.length) && (
+          <p className="v3-muted">
+            Photos shared in this conversation appear here.
           </p>
         )}
       </Panel>

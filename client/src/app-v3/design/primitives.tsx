@@ -38,6 +38,9 @@ export function Screen({
               className="v3-wordmark"
             >
               TATTOI
+              <small className="v3-brand-caption">
+                Department of Tattoo Services
+              </small>
             </Link>
           )}
           {action || (

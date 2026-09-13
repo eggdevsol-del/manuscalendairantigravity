@@ -12,6 +12,11 @@ interface Session {
   status: string;
   remainingCents: number;
   sessionPlanId?: number | null;
+  pendingRequest?: {
+    id: number;
+    amountCents: number;
+    expiresAt: string | null;
+  } | null;
 }
 export function SessionActions({
   session: s,
@@ -100,7 +105,19 @@ export function SessionActions({
     return null;
   return (
     <>
-      {canFinish && (
+      {s.pendingRequest && (
+        <Panel>
+          <strong>Payment request already sent</strong>
+          <p>
+            {money(s.pendingRequest.amountCents)} ·{" "}
+            {!s.pendingRequest.expiresAt ||
+            instant(s.pendingRequest.expiresAt) > new Date()
+              ? "Awaiting payment"
+              : "Link expired — review the existing request before sending another."}
+          </p>
+        </Panel>
+      )}
+      {canFinish && !s.pendingRequest && (
         <Action onClick={() => open("finish")}>
           {s.status === "completed"
             ? "Request remaining balance"

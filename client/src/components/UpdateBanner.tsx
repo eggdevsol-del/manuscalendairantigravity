@@ -31,9 +31,12 @@ export function UpdateBanner() {
     };
 
     window.addEventListener("pwa-update-available", onUpdate);
-    navigator.serviceWorker?.getRegistration().then(registration => {
-      if(registration?.waiting)onUpdate();
-    }).catch(()=>{});
+    navigator.serviceWorker
+      ?.getRegistration()
+      .then(registration => {
+        if (registration?.waiting) onUpdate();
+      })
+      .catch(() => {});
     return () => window.removeEventListener("pwa-update-available", onUpdate);
   }, [dismissed]);
 
@@ -60,7 +63,7 @@ export function UpdateBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
+          className="tattoi-notice fixed bottom-[calc(env(safe-area-inset-bottom,0px)+80px)] left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-32px)] max-w-[420px]"
         >
           <div className="bg-popover/95 backdrop-blur-[12px] border border-border rounded-[var(--radius-md)] p-[14px_16px] flex items-center gap-3 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
             <div className="w-9 h-9 rounded-[var(--radius-sm)] bg-primary flex items-center justify-center shrink-0">
