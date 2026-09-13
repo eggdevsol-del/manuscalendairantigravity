@@ -1294,36 +1294,6 @@
   }
 }
 
-/* Guidance floats above navigation and respects every safe-area edge. */
-.v3-guide {
-  position: fixed;
-  z-index: 9992;
-  right: calc(var(--app-safe-right, 0px) + 16px);
-  bottom: calc(var(--app-safe-bottom, 0px) + 88px);
-  width: min(
-    400px,
-    calc(100vw - var(--app-safe-left, 0px) - var(--app-safe-right, 0px) - 32px)
-  );
-  max-height: calc(
-    100dvh - var(--app-safe-top, 0px) - var(--app-safe-bottom, 0px) - 120px
-  );
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: var(--v3-paper);
-  color: var(--v3-ink);
-  border: 1px solid var(--v3-line);
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 10px 40px rgb(0 0 0 / 18%);
-}
-.v3-guide p {
-  margin: 12px 0 18px;
-  line-height: 1.6;
-}
-.v3-guide h2 {
-  font-size: 18px;
-}
-
 /* Signed-document canvases use paper and ink independent of the app theme. */
 .v3-signature-canvas {
   width: 100%;

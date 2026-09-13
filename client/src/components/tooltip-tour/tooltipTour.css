@@ -20,8 +20,13 @@
 
 /* Pulse animation on the spotlight hole */
 @keyframes tooltip-spotlight-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 .tooltip-tour-pulse-ring {
@@ -161,4 +166,31 @@
   margin-left: -6px;
   border-top: none;
   border-left: none;
+}
+/* Keep the page interactive so a tour can follow opening a conversation or wizard. */
+.tooltip-tour-backdrop,
+.tooltip-tour-backdrop svg {
+  pointer-events: none;
+}
+.tooltip-tour-bubble {
+  pointer-events: auto;
+  transition:
+    top 0.18s ease,
+    left 0.18s ease;
+  overscroll-behavior: contain;
+}
+.tooltip-tour-actions button {
+  min-height: 44px;
+}
+.tooltip-tour-next:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-tour-bubble {
+    transition: none;
+  }
+  .tooltip-tour-pulse-ring {
+    animation: none;
+  }
 }

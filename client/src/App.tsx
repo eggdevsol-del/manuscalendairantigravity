@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import { GuideOverlay } from "@/app-v3/pages/Guides";
 import { Feedback, Screen } from "@/app-v3/design/primitives";
 import { ActionPanel } from "@/components/ActionPanel";
 import { Toaster, TooltipProvider } from "@/components/ui";
@@ -305,7 +304,6 @@ function App() {
                 <UpdateBanner />
                 <AuthOnlyBanners />
                 <TooltipOverlay />
-                <GuideOverlay />
                 <ActionPanel />
                 <ErrorBoundary boundary="app-root">
                   <Router />

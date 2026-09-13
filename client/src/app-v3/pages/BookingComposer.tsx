@@ -253,7 +253,7 @@ export function BookingComposer({
     setError("");
   }
   return (
-    <div className="v3-stack">
+    <div className="v3-stack" data-tour-booking-step={step}>
       <Status>
         {
           {

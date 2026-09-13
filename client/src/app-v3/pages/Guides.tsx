@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTooltipTour } from "@/components/tooltip-tour";
@@ -177,16 +176,16 @@ const supplierGuides: Guide[] = [
     route: "/dashboard",
     steps: [
       "Today shows paid orders needing fulfilment, low stock and recorded sales.",
-      "Open Orders to work through purchases, or Products to adjust your Tattoi stock allocation.",
+      "Open Orders to review purchases, or Products to check the imported catalogue and availability.",
     ],
   },
   {
     id: "supplier-products",
-    title: "Create and publish a product",
+    title: "Review your Shopify catalogue",
     route: "/merchant/products",
     steps: [
-      "Add a product with its name, description, images, price and stock. Review variants before saving.",
-      "Keep a product hidden while preparing it, then publish it when pricing, inventory and delivery are ready.",
+      "Your imported products show images, prices and stock here. Search to find a product.",
+      "Use Edit catalogue in Shopify to change products, variants and stock. If the connection is missing, review it in Settings.",
     ],
   },
   {
@@ -195,7 +194,7 @@ const supplierGuides: Guide[] = [
     route: "/merchant/orders",
     steps: [
       "Select a paid order and check items, quantities and delivery details.",
-      "Prepare the order, add tracking where appropriate, then mark it fulfilled. This records fulfilment; it does not book a courier.",
+      "Open Shopify orders to manage fulfilment and tracking. Tattoi shows the order record; it does not book a courier.",
     ],
   },
   {
@@ -256,6 +255,55 @@ const clientGuides: Guide[] = [
   },
 ];
 
+// Targets are resolved after navigation and as controls appear; missing targets are never replaced by the header.
+const guideTargets: Record<string, string[]> = {
+  today: ["css:.v3-attention", "text:Up next"],
+  booking: [
+    "text:New booking",
+    'css:[data-tour-booking-step="details"]',
+    'css:[data-tour-booking-step="review"]',
+  ],
+  inbox: ["css:.v3-inbox-list", "text:Book"],
+  clients: ["css:input[type=search]", "css:.v3-client-detail"],
+  hours: ["css:.v3-form", "text:Services"],
+  link: ["css:.v3-form", "text:Copy link"],
+  money: ["css:.v3-facts", "text:Payment history"],
+  bank: ["css:.v3-content .v3-panel", "css:.v3-form"],
+  forms: ["css:.v3-content .v3-form", "text:Procedure log"],
+  waitlist: ["css:.v3-content .v3-row", "css:.v3-form"],
+  studio: ["text:Schedule", "text:Team", "text:Billing"],
+  travel: ["text:Add trip", "css:.v3-content .v3-row"],
+  import: ["css:input[type=file]", "css:.v3-content .v3-action-primary"],
+  instagram: ["css:.v3-form input", "css:.v3-form button"],
+  supplies: ["css:input[type=search]", 'css:a[href="/supply-orders"]'],
+  notifications: ["text:This device", "text:Saved message templates"],
+  plans: ["css:.v3-plan-grid", "css:.v3-plan-grid .v3-action"],
+  "supplier-day": [
+    'css:a[href="/merchant/orders"]',
+    'css:a[href="/merchant/products"]',
+  ],
+  "supplier-products": [
+    "css:.v3-catalogue-grid",
+    'css:a[href$="/admin/products"],a[href="/settings"]',
+  ],
+  "supplier-orders": [
+    "css:.v3-content .v3-row",
+    'css:a[href="https://admin.shopify.com"]',
+  ],
+  "supplier-payments": [
+    "text:Payments & payouts",
+    "css:.v3-content .v3-status, .v3-content .v3-action-primary",
+  ],
+  "supplier-shopify": ["text:Shopify", "css:.v3-form"],
+  "supplier-account": ["css:.v3-form", 'css:a[href="/account-settings"]'],
+  "client-booking": [
+    "css:.v3-booking-cards",
+    "css:.v3-content .v3-action-primary",
+  ],
+  "client-message": ["css:.v3-inbox-list", "css:.v3-composer"],
+  "client-profile": ["css:.v3-content .v3-row", 'css:a[href="/bookings"]'],
+};
+
 export default function Guides() {
   const { user } = useAuth();
   const [, go] = useLocation();
@@ -298,7 +346,9 @@ export default function Guides() {
                   steps: guide.steps.map((body, index) => ({
                     title: guide.title,
                     body,
-                    targetId: "css:.v3-header",
+                    targetId:
+                      guideTargets[guide.id]?.[index] ||
+                      "css:[data-tour-unavailable]",
                     onNext:
                       index === guide.steps.length - 1 ? undefined : () => {},
                   })),
@@ -308,47 +358,5 @@ export default function Guides() {
           ))}
       </Section>
     </Screen>
-  );
-}
-
-/** Non-modal guidance keeps the actual page usable. It never performs a business action. */
-export function GuideOverlay() {
-  const { activeTour, currentStep, nextStep, skipTour } = useTooltipTour();
-  const visible = activeTour?.id.startsWith("v3-");
-  useEffect(() => {
-    if (!visible) return;
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") skipTour();
-    };
-    window.addEventListener("keydown", escape);
-    return () => window.removeEventListener("keydown", escape);
-  }, [visible, skipTour]);
-  if (!activeTour || !visible) return null;
-  const step = activeTour.steps[currentStep];
-  return createPortal(
-    <aside
-      className="v3-guide"
-      aria-label="Guided walkthrough"
-      aria-live="polite"
-    >
-      <div className="v3-section-heading">
-        <h2>{step.title}</h2>
-        <small>
-          {currentStep + 1} / {activeTour.steps.length}
-        </small>
-      </div>
-      <p>{step.body}</p>
-      <div className="v3-inline">
-        <Action tone="quiet" onClick={skipTour}>
-          Close guide
-        </Action>
-        <Action onClick={nextStep}>
-          {currentStep === activeTour.steps.length - 1
-            ? "Finish guide"
-            : "Next step"}
-        </Action>
-      </div>
-    </aside>,
-    document.body
   );
 }

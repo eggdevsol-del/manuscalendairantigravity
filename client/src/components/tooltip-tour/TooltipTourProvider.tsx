@@ -37,6 +37,7 @@ interface TooltipTourContextType {
   startTour: (tour: TourDefinition) => void;
   /** Advance to next step (or finish) */
   nextStep: () => void;
+  previousStep: () => void;
   /** Skip / dismiss the entire tour */
   skipTour: () => void;
   /** Register a target element ref */
@@ -70,7 +71,9 @@ function getCompletedTours(): string[] {
 }
 
 function setCompletedTours(tours: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tours));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tours));
+  } catch {}
 }
 
 export function TooltipTourProvider({
@@ -81,6 +84,7 @@ export function TooltipTourProvider({
   const [activeTour, setActiveTour] = useState<TourDefinition | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedTours, setCompleted] = useState<string[]>(getCompletedTours);
+  const generation = useRef(0);
   const targets = useRef<Map<string, HTMLElement>>(new Map());
 
   const registerTarget = useCallback((id: string, el: HTMLElement | null) => {
@@ -96,7 +100,39 @@ export function TooltipTourProvider({
   }, []);
 
   const getTarget = useCallback((id: string) => {
-    return targets.current.get(id) || null;
+    const visible = (el: HTMLElement | null) =>
+      el &&
+      el.getClientRects().length &&
+      getComputedStyle(el).visibility !== "hidden"
+        ? el
+        : null;
+    if (id.startsWith("css:")) {
+      try {
+        return (
+          Array.from(document.querySelectorAll<HTMLElement>(id.slice(4)))
+            .map(visible)
+            .find(Boolean) || null
+        );
+      } catch {
+        return null;
+      }
+    }
+    if (id.startsWith("text:")) {
+      const text = id.slice(5);
+      return (
+        Array.from(
+          document.querySelectorAll<HTMLElement>("button,a,label,h2,h3,summary")
+        )
+          .filter(
+            el =>
+              (el.getAttribute("aria-label") || el.textContent || "").trim() ===
+              text
+          )
+          .map(visible)
+          .find(Boolean) || null
+      );
+    }
+    return visible(targets.current.get(id) || null);
   }, []);
 
   const isTourCompleted = useCallback(
@@ -116,17 +152,20 @@ export function TooltipTourProvider({
   }, []);
 
   const startTour = useCallback((tour: TourDefinition) => {
+    generation.current++;
     setActiveTour(tour);
     setCurrentStep(0);
   }, []);
 
   const skipTour = useCallback(() => {
+    generation.current++;
     setActiveTour(null);
     setCurrentStep(0);
   }, [activeTour, markComplete]);
 
   const nextStep = useCallback(async () => {
     if (!activeTour) return;
+    const run = generation.current;
     const step = activeTour.steps[currentStep];
 
     // Run onNext callback if defined
@@ -134,12 +173,15 @@ export function TooltipTourProvider({
       await step.onNext();
     }
 
+    if (run !== generation.current) return;
     const delay = step?.nextDelay || 0;
 
     if (currentStep + 1 < activeTour.steps.length) {
       // Advance with optional delay
       if (delay > 0) {
-        setTimeout(() => setCurrentStep(currentStep + 1), delay);
+        setTimeout(() => {
+          if (run === generation.current) setCurrentStep(currentStep + 1);
+        }, delay);
       } else {
         setCurrentStep(currentStep + 1);
       }
@@ -164,6 +206,10 @@ export function TooltipTourProvider({
       value={{
         startTour,
         nextStep,
+        previousStep: () => {
+          generation.current++;
+          setCurrentStep(step => Math.max(0, step - 1));
+        },
         skipTour,
         registerTarget,
         unregisterTarget,
