@@ -35,62 +35,62 @@ import {
   ShippingAddressElement,
 } from "@stripe/react-stripe-js/checkout";
 
-// ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
+// Ivory fallback. usePaymentAppearance resolves the active light/dark tokens.
 const originalAppearance: Appearance = {
-  theme: "night",
+  theme: "stripe",
   variables: {
-    colorPrimary: "#F8D057",
-    colorBackground: "#232326",
-    colorText: "#FFFFFF",
-    colorTextSecondary: "#7A7A7A",
-    colorDanger: "#ff4d4f",
+    colorPrimary: "#382c24",
+    colorBackground: "#fffdfa",
+    colorText: "#29231e",
+    colorTextSecondary: "#746c64",
+    colorDanger: "#9d342e",
     borderRadius: "12px",
-    fontFamily: '"DM Sans", "Inter", system-ui, sans-serif',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
     fontSizeBase: "15px",
     spacingGridRow: "16px",
     spacingGridColumn: "12px",
   },
   rules: {
     ".Input": {
-      border: "1px solid rgba(255,255,255,0.12)",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
+      border: "1px solid #e5e0d9",
+      backgroundColor: "#fffdfa",
+      color: "#29231e",
       padding: "14px 12px",
       fontSize: "15px",
       transition: "border-color 200ms ease, box-shadow 200ms ease",
     },
     ".Input:focus": {
-      border: "1px solid #F8D057",
-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
+      border: "1px solid #382c24",
+      boxShadow: "0 0 0 2px rgba(56,44,36,0.12)",
     },
     ".Input::placeholder": {
-      color: "#7A7A7A",
+      color: "#746c64",
     },
     ".Label": {
-      color: "#999",
+      color: "#746c64",
       fontSize: "12px",
       fontWeight: "500",
-      textTransform: "uppercase" as any,
-      letterSpacing: "0.5px",
+      textTransform: "none" as any,
+      letterSpacing: "0",
       marginBottom: "6px",
     },
     ".Tab": {
-      border: "1px solid rgba(255,255,255,0.12)",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
+      border: "1px solid #e5e0d9",
+      backgroundColor: "#fffdfa",
+      color: "#29231e",
       borderRadius: "12px",
     },
     ".Tab--selected": {
-      border: "1px solid #F8D057",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
+      border: "1px solid #382c24",
+      backgroundColor: "#fffdfa",
+      color: "#29231e",
+      boxShadow: "0 0 0 2px rgba(56,44,36,0.12)",
     },
     ".Tab:hover": {
-      border: "1px solid rgba(255,255,255,0.25)",
+      border: "1px solid #746c64",
     },
     ".Error": {
-      color: "#ff4d4f",
+      color: "#9d342e",
       fontSize: "13px",
     },
   },
@@ -106,16 +106,17 @@ function usePaymentAppearance() {
       const css = getComputedStyle(root);
       const value = (name: string, fallback: string) =>
         css.getPropertyValue(name).trim() || fallback;
-      const foreground = value("--foreground", "#FFFFFF");
-      const surface = value("--card", "#1A1A1E");
-      const muted = value("--muted-foreground", "#7A7A7A");
-      const border = value("--border", "rgba(255,255,255,0.12)");
+      const primary = value("--primary", "#382c24");
+      const foreground = value("--foreground", "#29231e");
+      const surface = value("--card", "#fffdfa");
+      const muted = value("--muted-foreground", "#746c64");
+      const border = value("--border", "#e5e0d9");
       setAppearance({
         ...originalAppearance,
         theme: root.classList.contains("dark") ? "night" : "stripe",
         variables: {
           ...originalAppearance.variables,
-          colorPrimary: value("--primary", "#F8D057"),
+          colorPrimary: primary,
           colorBackground: surface,
           colorText: foreground,
           colorTextSecondary: muted,
@@ -131,6 +132,10 @@ function usePaymentAppearance() {
             border: `1px solid ${border}`,
             fontSize: "16px",
           },
+          ".Input:focus": {
+            border: `1px solid ${primary}`,
+            boxShadow: `0 0 0 1px ${primary}`,
+          },
           ".Input::placeholder": { color: muted },
           ".Label": { ...originalAppearance.rules?.[".Label"], color: muted },
           ".Tab": {
@@ -141,6 +146,8 @@ function usePaymentAppearance() {
           },
           ".Tab--selected": {
             ...originalAppearance.rules?.[".Tab--selected"],
+            border: `1px solid ${primary}`,
+            boxShadow: `0 0 0 1px ${primary}`,
             backgroundColor: surface,
             color: foreground,
           },
@@ -470,7 +477,7 @@ function CheckoutLayout({
             color: "var(--foreground)",
             fontSize: 22,
             fontWeight: 700,
-            fontFamily: '"DM Sans", sans-serif',
+            fontFamily: "var(--ivory-body)",
           }}
         >
           {formattedAmount}
@@ -492,7 +499,7 @@ function CheckoutLayout({
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2
               className="w-6 h-6 animate-spin"
-              style={{ color: "#F8D057" }}
+              style={{ color: "var(--primary)" }}
             />
           </div>
         )}
@@ -504,11 +511,11 @@ function CheckoutLayout({
         <div
           role="alert"
           style={{
-            background: "rgba(255,77,79,0.1)",
-            border: "1px solid rgba(255,77,79,0.3)",
+            background: "var(--v3-red-soft)",
+            border: "1px solid var(--v3-red)",
             borderRadius: 12,
             padding: "10px 14px",
-            color: "#ff4d4f",
+            color: "var(--v3-red)",
             fontSize: 13,
             fontWeight: 500,
           }}
@@ -545,14 +552,12 @@ function CheckoutLayout({
           height: 52,
           borderRadius: 14,
           fontSize: 16,
-          fontFamily: '"DM Sans", sans-serif',
-          background: isProcessing
-            ? "rgba(248,208,87,0.7)"
-            : "linear-gradient(135deg, #F8D057 0%, #F0C040 100%)",
-          color: "#1B1B1B",
+          fontFamily: "var(--ivory-body)",
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
           border: "none",
           cursor: isProcessing ? "wait" : "pointer",
-          boxShadow: "0 2px 12px rgba(248,208,87,0.25)",
+          boxShadow: "var(--ivory-shadow)",
         }}
       >
         {isProcessing ? (

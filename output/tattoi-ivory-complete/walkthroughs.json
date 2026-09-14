@@ -1,0 +1,93 @@
+{
+  "Meet your artist": [
+    "client-discover",
+    "public-public-artist",
+    "flow-intake-idea",
+    "flow-intake-placement",
+    "flow-intake-reference",
+    "flow-intake-placement-photo",
+    "flow-intake-details",
+    "flow-intake-review"
+  ],
+  "Plan a tattoo": [
+    "artist-today",
+    "artist-inbox",
+    "artist-conversation",
+    "flow-booking-client",
+    "flow-booking-service",
+    "flow-booking-frequency",
+    "flow-booking-review",
+    "client-bookings",
+    "flow-deposit-review",
+    "flow-payment-confirming"
+  ],
+  "The appointment": [
+    "client-booking-overview",
+    "flow-client-consent",
+    "flow-consent-signature",
+    "artist-calendar",
+    "artist-project-overview",
+    "flow-session-finish",
+    "public-balance-link",
+    "flow-balance-confirming"
+  ],
+  "Changes & recovery": [
+    "flow-session-reschedule",
+    "flow-session-cancel",
+    "artist-payout-history",
+    "flow-refund-review",
+    "client-earlier-appointments",
+    "artist-cancellation-waitlist"
+  ],
+  "Your clients": [
+    "artist-clients",
+    "flow-client-detail",
+    "flow-client-forms",
+    "flow-client-notes",
+    "flow-private-notes",
+    "flow-design-brief",
+    "artist-notifications",
+    "flow-notification-template"
+  ],
+  "Your studio": [
+    "artist-studio-schedule",
+    "artist-studio-team",
+    "flow-studio-remove",
+    "artist-studio-billing",
+    "artist-studio-invitations"
+  ],
+  "Your business": [
+    "artist-business",
+    "artist-money",
+    "artist-bank-payouts",
+    "artist-plans",
+    "artist-working-hours",
+    "flow-services",
+    "flow-service-editor",
+    "artist-settings-travel",
+    "flow-travel-add"
+  ],
+  "Your work & shop": [
+    "artist-artist-profile",
+    "flow-portfolio",
+    "flow-portfolio-upload",
+    "flow-portfolio-view",
+    "artist-artist-events",
+    "flow-event-create",
+    "public-public-shop",
+    "flow-shop-cart",
+    "merchant-supplier-orders",
+    "flow-order-detail"
+  ],
+  "Settings & imports": [
+    "artist-settings",
+    "artist-settings-profile",
+    "artist-settings-business",
+    "artist-settings-data-import",
+    "flow-import-mapping",
+    "artist-settings-instagram",
+    "artist-settings-regulation",
+    "flow-medical-template",
+    "flow-consent-template"
+  ]
+}

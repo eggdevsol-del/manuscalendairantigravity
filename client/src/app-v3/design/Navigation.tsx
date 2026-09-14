@@ -14,7 +14,7 @@ export default function Navigation() {
     <nav
       id="bottom-nav"
       aria-label="Main navigation"
-      className="v3-navigation v3-navigation-artist"
+      className={`v3-navigation v3-navigation-${user?.role || "client"}`}
     >
       <div className="v3-navigation-items">
         {navItems.map(item => {

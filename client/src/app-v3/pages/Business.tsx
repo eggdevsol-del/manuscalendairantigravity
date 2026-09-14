@@ -54,6 +54,26 @@ export default function Business() {
             href="/waitlist"
           />
         </Section>
+        <Section title="Shop & events">
+          <Row
+            title="Your products"
+            detail="Catalogue and availability"
+            icon={<Package />}
+            href="/products"
+          />
+          <Row
+            title="Store orders"
+            detail="Payment and fulfilment"
+            icon={<ListChecks />}
+            href="/store-orders"
+          />
+          <Row
+            title="Workshops & events"
+            detail="Create an event and review registrations"
+            icon={<CalendarDays />}
+            href="/artist-events"
+          />
+        </Section>
         <Section title="Behind the scenes">
           <Row
             title="Supplies"

@@ -13,10 +13,10 @@ export function DesignBrief({ conversationId }: { conversationId: number }) {
   const [open, setOpen] = useState(() => {
     try {
       return (
-        localStorage.getItem(`brief-collapsed-${conversationId}`) !== "true"
+        localStorage.getItem(`brief-collapsed-${conversationId}`) === "false"
       );
     } catch {
-      return true;
+      return false;
     }
   });
   return (

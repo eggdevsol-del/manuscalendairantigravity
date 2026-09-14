@@ -206,7 +206,9 @@ export default function ClientHome() {
         ) : (
           /* Normal header */
           <>
-            <div
+            <button
+              type="button"
+              aria-label="Your profile"
               className="client-home-avatar"
               onClick={() => setLocation("/profile")}
             >
@@ -215,13 +217,15 @@ export default function ClientHome() {
               ) : (
                 <div className="client-home-avatar-fallback">{initials}</div>
               )}
-            </div>
-            <span className="client-home-logo">TATTOI</span>
+            </button>
+            <span className="client-home-logo">tattoi</span>
             <div className="client-home-toggle">
               <button
                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
                 onClick={() => setView("discovery")}
                 title="Discovery"
+                aria-label="Discover artists"
+                aria-pressed={view === "discovery"}
               >
                 <Compass size={18} />
               </button>
@@ -229,6 +233,8 @@ export default function ClientHome() {
                 className={`client-home-toggle-btn ${view === "home" ? "active" : ""}`}
                 onClick={() => setView("home")}
                 title="Home"
+                aria-label="Your artists and bookings"
+                aria-pressed={view === "home"}
               >
                 <Home size={18} />
               </button>
@@ -273,7 +279,7 @@ export default function ClientHome() {
 
       {/* ── Content ── */}
       <div
-        className={`client-home-content${view === "discovery" ? " snap-scroll" : ""}`}
+        className={`client-home-content${view === "discovery" ? " snap-scroll ivory-discovery-feed" : ""}`}
         ref={!focusedArtist ? scrollRef : undefined}
         onScroll={!focusedArtist ? handleScroll : undefined}
       >

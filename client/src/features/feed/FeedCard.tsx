@@ -43,6 +43,7 @@ interface FeedCardProps {
   onTagTap?: (tag: string) => void;
   compact?: boolean;
   focusMode?: boolean;
+  discoveryMode?: boolean;
   /** Index in the feed — first 10 get eager loading */
   index?: number;
 }
@@ -59,6 +60,7 @@ export function FeedCard({
   onTagTap,
   compact,
   focusMode,
+  discoveryMode = false,
   index = 999,
 }: FeedCardProps) {
   const [liked, setLiked] = useState(card.isLiked);
@@ -124,7 +126,7 @@ export function FeedCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${card.artistName} on d.o.t.s`,
+          title: `${card.artistName} on Tattoi`,
           url: `${window.location.origin}/${card.artistSlug}`,
         });
       } catch {
@@ -141,7 +143,10 @@ export function FeedCard({
   /* ── Focus mode: full-screen immersive layout ── */
   if (focusMode) {
     return (
-      <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
+      <div
+        className={`feed-card feed-card-focus ${discoveryMode ? "ivory-discovery-card" : ""}`}
+        onClick={handleDoubleTap}
+      >
         {/* Full-bleed media */}
         {isVideo ? (
           <div
@@ -225,10 +230,33 @@ export function FeedCard({
 
         {/* Bottom overlay: actions + description + tags */}
         <div className="feed-card-focus-bottom">
+          {discoveryMode && (
+            <div className="ivory-discovery-artist">
+              <h2>{card.artistName}</h2>
+              <p>
+                {[card.artistCity, card.keywords[0]]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
+              {card.artistSlug && (
+                <button
+                  className="v3-action v3-action-primary"
+                  onClick={e => {
+                    e.stopPropagation();
+                    onArtistTap(card.artistSlug!);
+                  }}
+                >
+                  View artist
+                </button>
+              )}
+            </div>
+          )}
           {/* Action row */}
           <div className="feed-card-focus-actions">
             <button
               className={`feed-card-focus-action-btn ${liked ? "feed-card-liked" : ""}`}
+              aria-label={liked ? "Unlike artwork" : "Like artwork"}
+              aria-pressed={liked}
               onClick={e => {
                 e.stopPropagation();
                 handleLike();
@@ -242,6 +270,7 @@ export function FeedCard({
             </button>
             <button
               className="feed-card-focus-action-btn"
+              aria-label="Share artwork"
               onClick={e => {
                 e.stopPropagation();
                 handleShare();

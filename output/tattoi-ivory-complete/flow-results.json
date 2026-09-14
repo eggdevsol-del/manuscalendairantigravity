@@ -1,0 +1,4361 @@
+[
+  {
+    "id": "flow-booking-client",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "overflow": false,
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nNew booking\n1 \u00b7 Choose client\nWho are you booking?\nSearch your clients\nMia Chen\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 225,
+        "full": 225
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar",
+      "conversations.getClients"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-booking-service",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "overflow": false,
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nNew booking\n2 \u00b7 Choose service\nWhat are we planning?\n\nChoose a saved service. Its sitting count, duration and price carry through to the plan.\n\nFull day\n1 sitting \u00b7 180 minutes per sitting\n$600.00\nBotanical sleeve\n3 sittings \u00b7 180 minutes per sitting\n$600.00\nBack to clients\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 365,
+        "full": 365
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar",
+      "conversations.getClients"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-booking-frequency",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "overflow": false,
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nNew booking\n3 \u00b7 Find dates\nLet\u2019s find your dates\n\nBotanical sleeve \u00b7 3 sittings\n\nConsecutive working days\nWeekly\nEvery two weeks\nMonthly\nStart looking from\n\nWe\u2019ll use your working hours and existing bookings. Review every sitting before sending.\n\nFind available datesChoose dates myselfBack to services\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 636,
+        "full": 636
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar",
+      "conversations.getClients"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-booking-review",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "overflow": false,
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nNew booking\n4 \u00b7 Review & send\nBotanical sleeve\n\nMia Chen \u00b7 3 sessions\n\nTue, 15 Sept, 10:00 am\n180 minutes \u00b7 Deposit $150.00\n$600.00\nTue, 22 Sept, 10:00 am\n180 minutes \u00b7 Deposit $150.00\n$600.00\nTue, 29 Sept, 10:00 am\n180 minutes \u00b7 Deposit $150.00\n$600.00\nTotal estimate\n$1,800.00\nDeposit\n$450.00\n\nYour client will receive this proposal in Messages and review the applicable fee and terms at checkout. Their booking is confirmed after payment.\n\nSend proposal\nEdit details\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 689,
+        "full": 763
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar",
+      "conversations.getClients",
+      "booking.checkAvailability"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-booking-single",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "overflow": false,
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nNew booking\n3 \u00b7 Session dates\nFull day\nMia Chen\nFind dates automatically\nSession 1\nDate\nTime\nDuration in minutes\nSession price \u00b7 AUD\nDeposit \u00b7 AUD\nTimes in Australia/Brisbane. Availability is checked when the proposal is sent.\nAdd another session\nReview proposal\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 689,
+        "full": 775
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar",
+      "conversations.getClients"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-booking-single-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-new-client",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "overflow": false,
+    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nSearch clients\nMC\nMia Chen\nView client\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nAdd client\n\nAdd their details now. You can send a booking proposal when you\u2019re ready.\n\nFull name\nEmail (optional)\nPhone (optional)\nAdd client\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          24,
+          226.28125,
+          72.5625,
+          42.296875
+        ]
+      },
+      {
+        "text": "Clients",
+        "href": "/clients",
+        "rect": [
+          100.5625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies",
+        "rect": [
+          177.140625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 463,
+        "full": 463
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "conversations.getClients",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-client-detail",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "overflow": false,
+    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nBack to all clients\nMC\nMia Chen\nmia@example.test\n0400000000\nMessage Mia\nBookings\nForms\nNotes\nSession history\nBotanical sleeve\nThu, 10 Sept, 10:00 am \u00b7 Confirmed\n$0.00 paid\nGeometric shoulder\nThu, 10 Sept, 2:00 pm \u00b7 Confirmed\n$0.00 paid\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          24,
+          226.28125,
+          72.5625,
+          42.296875
+        ]
+      },
+      {
+        "text": "Clients",
+        "href": "/clients",
+        "rect": [
+          100.5625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies",
+        "rect": [
+          177.140625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "mia@example.test",
+        "href": "mailto:mia@example.test",
+        "rect": [
+          20,
+          422.96875,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "0400000000",
+        "href": "tel:0400000000",
+        "rect": [
+          20,
+          463.609375,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "Message Mia",
+        "href": "/chat/12",
+        "rect": [
+          20,
+          504.25,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Botanical sleeve\nThu, 10 Sept, 10:00 am \u00b7 Confirmed\n$0.00 paid",
+        "href": "/projects/12?session=101",
+        "rect": [
+          20,
+          670.890625,
+          362,
+          78.890625
+        ]
+      },
+      {
+        "text": "Geometric shoulder\nThu, 10 Sept, 2:00 pm \u00b7 Confirmed\n$0.00 paid",
+        "href": "/projects/12?session=102",
+        "rect": [
+          20,
+          749.78125,
+          362,
+          77.890625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 761
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "conversations.getClients",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "projects.clientWorkspace"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-client-detail-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-client-forms",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "overflow": false,
+    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nBack to all clients\nMC\nMia Chen\nmia@example.test\n0400000000\nMessage Mia\nBookings\nForms\nNotes\nConsent & medical forms\n\nForms will appear when sessions are booked.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          24,
+          226.28125,
+          72.5625,
+          42.296875
+        ]
+      },
+      {
+        "text": "Clients",
+        "href": "/clients",
+        "rect": [
+          100.5625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies",
+        "rect": [
+          177.140625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "mia@example.test",
+        "href": "mailto:mia@example.test",
+        "rect": [
+          20,
+          422.96875,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "0400000000",
+        "href": "tel:0400000000",
+        "rect": [
+          20,
+          463.609375,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "Message Mia",
+        "href": "/chat/12",
+        "rect": [
+          20,
+          504.25,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 702
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "conversations.getClients",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "projects.clientWorkspace"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-client-notes",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "overflow": false,
+    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nBack to all clients\nMC\nMia Chen\nmia@example.test\n0400000000\nMessage Mia\nBookings\nForms\nNotes\nPrivate artist note\nOnly visible in your artist account.\nSave note\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          24,
+          226.28125,
+          72.5625,
+          42.296875
+        ]
+      },
+      {
+        "text": "Clients",
+        "href": "/clients",
+        "rect": [
+          100.5625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies",
+        "rect": [
+          177.140625,
+          226.28125,
+          72.578125,
+          42.296875
+        ]
+      },
+      {
+        "text": "mia@example.test",
+        "href": "mailto:mia@example.test",
+        "rect": [
+          20,
+          422.96875,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "0400000000",
+        "href": "tel:0400000000",
+        "rect": [
+          20,
+          463.609375,
+          362,
+          24.640625
+        ]
+      },
+      {
+        "text": "Message Mia",
+        "href": "/chat/12",
+        "rect": [
+          20,
+          504.25,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 824
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "conversations.getClients",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "projects.clientWorkspace"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-client-notes-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-private-notes",
+    "role": "artist",
+    "path": "/chat/12",
+    "title": "Messages",
+    "overflow": false,
+    "text": "Mia Chen\nOpen booking\nBook\nDetails\nDesign brief\n\u2304\nClient records & private notes\nPrivate notes\n\nArtist notes \u00b7 not sent to the client\n\nNew note\nSave note\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "MCMia ChenI love the peonies. Could we leave room to extend it later?2",
+        "href": "/chat/12",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "",
+        "href": "/conversations",
+        "rect": [
+          20,
+          81.6875,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Open booking",
+        "href": "/projects/12",
+        "rect": [
+          76,
+          94.09375,
+          61.21875,
+          44.640625
+        ]
+      },
+      {
+        "text": "Forms & payments",
+        "href": "/projects/12?session=101",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "2Messages",
+        "href": "/conversations",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 820,
+        "full": 884
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "designBrief.get",
+      "conversations.getById",
+      "messages.list",
+      "quickActions.list",
+      "artistSettings.get",
+      "consultations.list",
+      "conversations.list",
+      "funnel.getLeads",
+      "appointments.getArtistCalendar",
+      "conversations.markAsRead",
+      "clientProfile.getClientNotes",
+      "projects.summary"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-design-brief",
+    "role": "artist",
+    "path": "/chat/12",
+    "title": "Messages",
+    "overflow": false,
+    "text": "Mia Chen\nOpen booking\nBook\nDetails\nDesign brief\n\u2303\n\nBotanical sleeve \u00b7 black and grey. Peonies wrapping the forearm, with space for a future upper-arm extension.\n\nClient records & private notes\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "MCMia ChenI love the peonies. Could we leave room to extend it later?2",
+        "href": "/chat/12",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "",
+        "href": "/conversations",
+        "rect": [
+          20,
+          81.6875,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Open booking",
+        "href": "/projects/12",
+        "rect": [
+          76,
+          94.09375,
+          61.21875,
+          44.640625
+        ]
+      },
+      {
+        "text": "Forms & payments",
+        "href": "/projects/12?session=101",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "2Messages",
+        "href": "/conversations",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 820,
+        "full": 820
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "designBrief.get",
+      "conversations.getById",
+      "messages.list",
+      "quickActions.list",
+      "artistSettings.get",
+      "consultations.list",
+      "conversations.list",
+      "funnel.getLeads",
+      "appointments.getArtistCalendar",
+      "conversations.markAsRead",
+      "clientProfile.getClientNotes",
+      "projects.summary"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-services",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours & services",
+    "overflow": false,
+    "text": "Working hours & services\n\nMake your availability work for you\n\nAvailability\nServices\nServices\nAdd service\nFull day\n180 minutes \u00b7 $600.00 \u00b7 1 session\nBotanical sleeve\n180 minutes \u00b7 $600.00 \u00b7 3 sessions\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 619,
+        "full": 619
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-service-editor",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours & services",
+    "overflow": false,
+    "text": "Working hours & services\n\nMake your availability work for you\n\nAvailability\nServices\nServices\nAdd service\nFull day\n180 minutes \u00b7 $600.00 \u00b7 1 session\nBotanical sleeve\n180 minutes \u00b7 $600.00 \u00b7 3 sessions\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nAdd service\nService name\nService colour\nUsed as an accent on calendar sessions.\nDescription\nDuration per session \u00b7 minutes\nPrice per session \u00b7 AUD\nNumber of sessions\n Show on your booking page\nSave service\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 619,
+        "full": 619
+      },
+      {
+        "height": 689,
+        "full": 828
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-service-editor-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-portfolio-upload",
+    "role": "artist",
+    "path": "/artist-profile?view=Portfolio",
+    "title": "Profile",
+    "overflow": false,
+    "text": "Profile\n\nA clear introduction to you and your work.\n\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nProfile\nPortfolio\nPortfolio\nAdd photo\nInstagram import\nSelect Botanical study\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nAdd to your portfolio\nPhoto\nOne photo, up to 10 MB.\nDescription\nAdd photo\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business",
+        "rect": [
+          20,
+          318.78125,
+          249.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan",
+        "rect": [
+          20,
+          379.171875,
+          203.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link",
+        "rect": [
+          20,
+          439.5625,
+          213.703125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile",
+        "rect": [
+          20,
+          499.953125,
+          220.453125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Instagram import",
+        "href": "/settings?section=instagram",
+        "rect": [
+          20,
+          712.734375,
+          167.109375,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 920
+      },
+      {
+        "height": 329,
+        "full": 329
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "portfolio.list"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-portfolio-upload-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-travel-add",
+    "role": "artist",
+    "path": "/settings?section=travel",
+    "title": "Travel & guest spots",
+    "overflow": false,
+    "text": "Travel & guest spots\n\nYour itinerary and clients at each destination.\n\nSave your guest spots and find existing clients in the same city or country. Saving a trip does not send messages or change your booking availability.\n\nManage working hours\nYour itinerary\nAdd trip\n\nNo travel dates yet.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nTravel dates\nCity\nCountry\nFrom\nUntil\nSave trip\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Manage working hours",
+        "href": "/work-hours",
+        "rect": [
+          41,
+          351.453125,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 658
+      },
+      {
+        "height": 327,
+        "full": 327
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-studio-remove",
+    "role": "artist",
+    "path": "/studio?view=Team",
+    "title": "Northside Studio",
+    "overflow": false,
+    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nYour invitations\nSchedule\nTeam\nBilling\nYour team\nEM\nElla Morgan\nowner \u00b7 Active\nLeave\nOG\nOliver Grant\nartist \u00b7 Active\nRemove\nInvite an artist\n\nUse their existing Tattoi artist email. The invitation appears in their studio invitations and chat.\n\nArtist email\nRole\nArtist\nManager\nManagers can invite artists and view the studio schedule.\nSend invitation\n\nArtists keep their personal clients and booking history if they leave. Removing a member ends their access to this studio.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nRemove Oliver Grant?\n\nStudio access will end. Personal clients, messages and booking history remain with the artist.\n\nRemove member\nKeep membership\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations",
+        "rect": [
+          20,
+          215.890625,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1028
+      },
+      {
+        "height": 237,
+        "full": 237
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "studios.getCurrentStudio",
+      "billing.studioOffer",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-studio-remove-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-past-bookings",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "overflow": false,
+    "text": "tattoi\nBookings\n\nYour tattoos, sittings and next steps\n\nUpcoming\nPast\nBotanical sleeve\n\nElla Morgan \u00b7 1 sitting\n\n1 form to complete\n$0.00 paid\nComplete sitting 2 forms\nSitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am\n\nDeposit received \u00b7 $450.00 remaining \u00b7 1 form to complete\n\nMessage Ella Morgan\nMore options\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings",
+        "rect": [
+          20,
+          70,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "",
+        "href": "/profile",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms",
+        "rect": [
+          41,
+          428.765625,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "Sitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am",
+        "href": "/projects/12?session=101",
+        "rect": [
+          54,
+          504.15625,
+          294,
+          68
+        ]
+      },
+      {
+        "text": "Message Ella Morgan",
+        "href": "/chat/12",
+        "rect": [
+          41,
+          639.9375,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/waitlist",
+        "rect": [
+          20,
+          803.328125,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "",
+        "href": "/purchases",
+        "rect": [
+          20,
+          871.328125,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "",
+        "href": "/discover",
+        "rect": [
+          20,
+          939.328125,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 743
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "appointments.getClientBookings",
+      "sessionPlans.getByClient",
+      "conversations.list"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-past-bookings-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-deposit-review",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "overflow": false,
+    "text": "tattoi\nBookings\n\nYour tattoos, sittings and next steps\n\nUpcoming\nPast\nBooking proposal\n\nElla Morgan \u00b7 1 sittings\n\nReview your proposed dates and deposit before confirming.\n\nSitting 1\nThu, 10 Sept, 10:00 am\nReview $155.10 deposit & fee\nBotanical sleeve\n\nElla Morgan \u00b7 1 sitting\n\nNext: sitting 2 \u00b7 Thu, 10 Sept, 10:00 am\n\n1 form to complete\n$0.00 paid\nComplete sitting 2 forms\nSitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am\n\nDeposit received \u00b7 $450.00 remaining \u00b7 1 form to complete\n\nMessage Ella Morgan\nMore options\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nReview your booking\nEM\nElla Morgan\n1 session\nYour sessions\nSession 1\nThu, 10 Sept, 10:00 am \u00b7 180 minutes\n$150.00 deposit\nSession estimate\n$600.00\nDeposit due now\n$150.00\nPlatform fee\n$5.10\nTotal due today\n$155.10\n\nDeposits are non-refundable under the booking terms. The estimated session balance after this deposit is $450.00. Each session\u2019s balance is requested separately.\n\nContinue to secure checkout\nClose",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings",
+        "rect": [
+          20,
+          70,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "",
+        "href": "/profile",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms",
+        "rect": [
+          41,
+          774.15625,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "Sitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am",
+        "href": "/projects/12?session=101",
+        "rect": [
+          56,
+          849.546875,
+          292,
+          68
+        ]
+      },
+      {
+        "text": "Message Ella Morgan",
+        "href": "/chat/12",
+        "rect": [
+          41,
+          985.328125,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/waitlist",
+        "rect": [
+          20,
+          1148.71875,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "",
+        "href": "/purchases",
+        "rect": [
+          20,
+          1216.71875,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "",
+        "href": "/discover",
+        "rect": [
+          20,
+          1284.71875,
+          362,
+          68
+        ]
+      },
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1089
+      },
+      {
+        "height": 597,
+        "full": 641
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "appointments.getClientBookings",
+      "sessionPlans.getByClient",
+      "conversations.list",
+      "sessionPlans.getById"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-deposit-review-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-client-consent",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Tattoo project",
+    "overflow": false,
+    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nComplete your consent forms\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nReview balance\nMessage Ella Morgan\nChange this sitting\n\nSend a request to your artist. Your appointment stays booked until they confirm a change. Their cancellation policy applies.\n\nRequest a date changeRequest cancellation\nWant an earlier appointment?\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nConsent forms\nProcedure consent\n\n1 form remaining\n\nSample form for layout testing only.\nContinue to signature\nFinish later\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/bookings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/profile",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Message Ella Morgan",
+        "href": "/projects/12?session=101&view=Messages",
+        "rect": [
+          20,
+          1040.890625,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1339
+      },
+      {
+        "height": 314,
+        "full": 314
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "appointments.getClientBookings",
+      "sessionPlans.getByClient",
+      "conversations.list",
+      "projects.summary",
+      "forms.getPendingForms"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-client-consent-part-2.png",
+      "flow-client-consent-part-3.png"
+    ]
+  },
+  {
+    "id": "flow-product-details",
+    "role": "merchant",
+    "path": "/merchant/products",
+    "title": "Products",
+    "overflow": false,
+    "text": "tattoi\nProducts\n\nYour Shopify catalogue on Tattoi\n\nManage products, variants and stock in Shopify. Review the imported catalogue here.\n\nReview Shopify connection\nSearch products\nCartridge needles\n\n$32.00\n\nPublished\n\n24 in stock\n\nView 1 variants\n0.30 mm \u00b7 Round liner\n24 in stock\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          70,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Review Shopify connection",
+        "href": "/settings",
+        "rect": [
+          20,
+          289.171875,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 662
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "storefront.getProducts",
+      "merchantAuth.getMerchantProfile",
+      "conversations.list"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-archive-request",
+    "role": "artist",
+    "path": "/lead/1",
+    "title": "Booking request",
+    "overflow": false,
+    "text": "Booking request\n\nMia Chen\n\nMC\nMia Chen\nnew\nTheir idea\n\nFine-line peonies for my forearm, with room to extend later.\n\nPlacement\nForearm\nStyles\nFine Line\nReferences & placement\nNext step\n\nDiscuss the idea with your client, then send a booking plan when the details are agreed.\n\nOpen conversation\nEmail Mia Chen\nArchive request\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nArchive this request?\n\nThe request leaves the new-enquiry list. Existing conversations and bookings remain available.\n\nArchive request\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/conversations",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          185.359375,
+          175,
+          175
+        ]
+      },
+      {
+        "text": "Email Mia Chen",
+        "href": "mailto:undefined?subject=Your%20tattoo%20booking%20request",
+        "rect": [
+          41,
+          580.109375,
+          320,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1057
+      },
+      {
+        "height": 146,
+        "full": 146
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "funnel.getLead",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-archive-request-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-intake-idea",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 1 of 6 \u00b7 Your idea\nYour idea\nWhat would you like tattooed?\nStyle \u00b7 choose any that fit\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nNot sure yet\nContinue\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 656,
+        "full": 887
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-intake-idea-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-intake-placement",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 2 of 6 \u00b7 Placement & timing\nPlacement & timing\nPlacement\nApproximate size\nNot sure yet\nTiny (< 5cm)\nSmall (5-10cm)\nMedium (10-20cm)\nLarge (20-30cm)\nExtra Large (30cm+)\nFull sleeve\nHalf sleeve\nPreferred timeframe\nFlexible\nAs soon as possible\nWithin 1 month\nWithin 3 months\nWithin 6 months\nNo rush \u2014 flexible\nContinue\nBack\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 614,
+        "full": 614
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-intake-reference",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 3 of 6 \u00b7 References\nReference images\nAdd inspiration\nOptional \u00b7 up to 5 images, 10 MB each\nContinue\nBack\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 452,
+        "full": 452
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-intake-placement-photo",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 4 of 6 \u00b7 Placement photo\nPlacement photos\nAdd a photo of the area\nOptional \u00b7 up to 5 images, 10 MB each\nContinue\nBack\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 452,
+        "full": 452
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-intake-details",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 5 of 6 \u00b7 Your details\nYour details\nFirst name\nLast name\nEmail\nPhone\nDate of birth\nGender\nChoose\nMale\nFemale\nOther\nContinue\nBack\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 656,
+        "full": 823
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-intake-details-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-intake-review",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 6 of 6 \u00b7 Review request\nReview your request\n\nFine-line peonies on my forearm, with room to extend later.\n\nStyle\nFine Line\nPlacement & size\nOuter forearm \u00b7 To discuss\nTimeframe\nWithin 3 months\nImages\n0 references \u00b7 0 placement photos\nContact\nMia Chen \u00b7 mia@example.test\nSend booking request\nBack\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "",
+        "href": "/__ivory_artwork.png",
+        "rect": [
+          20,
+          553.734375,
+          175,
+          175
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 711
+      },
+      {
+        "height": 656,
+        "full": 771
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "feed.getPublicArtistProfile"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-intake-review-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-consent-signature",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Tattoo project",
+    "overflow": false,
+    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nComplete your consent forms\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nReview balance\nMessage Ella Morgan\nChange this sitting\n\nSend a request to your artist. Your appointment stays booked until they confirm a change. Their cancellation policy applies.\n\nRequest a date changeRequest cancellation\nWant an earlier appointment?\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nConsent forms\nProcedure consent\n\n1 form remaining\n\nReview form again\nI allow my artist to publish photos of this tattoo. Optional; leaving this unchecked does not affect my booking.\nI have read this form and my answers are accurate. I agree to sign this version.\n\nDraw your signature with your finger, pen or mouse.\n\nClear signature\nSign this form\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/bookings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/profile",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Message Ella Morgan",
+        "href": "/projects/12?session=101&view=Messages",
+        "rect": [
+          20,
+          1040.890625,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1339
+      },
+      {
+        "height": 689,
+        "full": 697
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "appointments.getClientBookings",
+      "sessionPlans.getByClient",
+      "conversations.list",
+      "projects.summary",
+      "forms.getPendingForms"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-consent-signature-part-2.png",
+      "flow-consent-signature-part-3.png"
+    ]
+  },
+  {
+    "id": "flow-notification-template",
+    "role": "artist",
+    "path": "/notifications-management",
+    "title": "Notifications",
+    "overflow": false,
+    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you\u2019re away from the app.\n\nEnable notifications\nSaved message templates\nAdd template\n\nPrepare reusable wording for your client communications. Saving a template does not schedule a delivery.\n\nAdd your first template for confirmations, preparation or aftercare.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nAdd template\nPurpose\nConfirmation\nReminder\nFollow-up\nBirthday\nPromotional\nAftercare\nPreparation\nCustom\nTitle\nMessage\nTiming note\nEnable template\nSave template\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 658
+      },
+      {
+        "height": 688,
+        "full": 688
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "notifications.list",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-refund-review",
+    "role": "artist",
+    "path": "/payout-history",
+    "title": "Payment history",
+    "overflow": false,
+    "text": "Payment history\n\nClient payments, refunds and transfers to your bank.\n\nBank payouts\n$600.00\nFri, 11 Sept, 10:00 am \u00b7 Bank ending 1234\npaid\nPayment ledger\n\nAmounts below are recorded in AUD. Open a refund to verify the original charge and its currency.\n\nMia Chen\ndeposit \u00b7 Wed, 9 Sept, 10:00 am\n$150.00\nPlatform fee\n$5.10\nArtist fee\n$0.00\nReview refund\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nReview refund\n$155.10\n\nAUD \u00b7 remaining refundable amount\n\nThis refunds the remaining original payment, including its remaining platform fee. It does not cancel appointments.\n\nI\u2019ve checked the amount and want to issue this refund.\nRefund $155.10\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/money",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 752
+      },
+      {
+        "height": 371,
+        "full": 371
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "payouts.payoutHistory",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "payouts.refundPreview"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-refund-review-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-session-reschedule",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Tattoo project",
+    "overflow": false,
+    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nMessage Mia Chen\nReschedule\nMore session options\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nReschedule session\nNew date\nNew time\nAustralia/Brisbane. The session duration and existing payments stay the same.\nSave new time\nGo back\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/calendar",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Message Mia Chen",
+        "href": "/projects/12?session=101&view=Messages",
+        "rect": [
+          20,
+          517.109375,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1080
+      },
+      {
+        "height": 409,
+        "full": 409
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "projects.summary",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-session-reschedule-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-session-cancel",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Tattoo project",
+    "overflow": false,
+    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nMessage Mia Chen\nReschedule\nMore session options\nCancel session\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nCancel session\n\nCancel this session? Payment records remain available. Cancellation does not automatically issue a refund.\n\nConfirm cancellation\nGo back\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/calendar",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Message Mia Chen",
+        "href": "/projects/12?session=101&view=Messages",
+        "rect": [
+          20,
+          517.109375,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1130
+      },
+      {
+        "height": 237,
+        "full": 237
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "projects.summary",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-session-cancel-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-portfolio",
+    "role": "artist",
+    "path": "/artist-profile?view=Portfolio",
+    "title": "Profile",
+    "overflow": false,
+    "text": "Profile\n\nA clear introduction to you and your work.\n\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nProfile\nPortfolio\nPortfolio\nAdd photo\nInstagram import\nSelect Botanical study\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business",
+        "rect": [
+          20,
+          318.78125,
+          249.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan",
+        "rect": [
+          20,
+          379.171875,
+          203.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link",
+        "rect": [
+          20,
+          439.5625,
+          213.703125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile",
+        "rect": [
+          20,
+          499.953125,
+          220.453125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Instagram import",
+        "href": "/settings?section=instagram",
+        "rect": [
+          20,
+          712.734375,
+          167.109375,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 920
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "portfolio.list"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-portfolio-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-portfolio-view",
+    "role": "artist",
+    "path": "/artist-profile?view=Portfolio",
+    "title": "Profile",
+    "overflow": false,
+    "text": "Profile\n\nA clear introduction to you and your work.\n\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nProfile\nPortfolio\nPortfolio\nAdd photo\nInstagram import\nSelect Botanical study\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nYour work\n\nBotanical study\n\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business",
+        "rect": [
+          20,
+          56.78125,
+          249.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan",
+        "rect": [
+          20,
+          117.171875,
+          203.15625,
+          50.390625
+        ]
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link",
+        "rect": [
+          20,
+          177.5625,
+          213.703125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile",
+        "rect": [
+          20,
+          237.953125,
+          220.453125,
+          50.390625
+        ]
+      },
+      {
+        "text": "Instagram import",
+        "href": "/settings?section=instagram",
+        "rect": [
+          20,
+          450.734375,
+          167.109375,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 920
+      },
+      {
+        "height": 602,
+        "full": 602
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar",
+      "portfolio.list"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-portfolio-view-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-payment-confirming",
+    "role": "public",
+    "path": "/deposit/preview?status=success",
+    "title": "Confirming your payment",
+    "overflow": false,
+    "text": "tattoi\nSign in\nConfirming your payment\n\nElla Morgan\n\nWaiting for confirmation\n\nYour payment was submitted. Please don\u2019t pay again while we check its status.\n\nCheck confirmationOpen my bookings\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "Open my bookings",
+        "href": "/bookings",
+        "rect": [
+          41,
+          443.34375,
+          320,
+          50.390625
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 612,
+        "full": 612
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "funnel.getDepositInfo"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-balance-confirming",
+    "role": "public",
+    "path": "/balance/101?status=success",
+    "title": "Confirming your payment",
+    "overflow": false,
+    "text": "tattoi\nSign in\nConfirming your payment\n\nElla Morgan\n\nWaiting for confirmation\n\nYour payment was submitted. Please don\u2019t pay again while we check its status.\n\nCheck confirmationOpen my bookings\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          73.1875,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "Sign in",
+        "href": "/login",
+        "rect": [
+          293.40625,
+          64,
+          88.59375,
+          50.390625
+        ]
+      },
+      {
+        "text": "Open my bookings",
+        "href": "/bookings",
+        "rect": [
+          41,
+          443.34375,
+          320,
+          50.390625
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 612,
+        "full": 612
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "funnel.getBalanceInfo"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
+    "id": "flow-discovery-home",
+    "role": "client",
+    "path": "/discover",
+    "overflow": false,
+    "text": "M\ntattoi\nMy Artists\nE\n\nElla Morgan\n\n2 unread messages\n\nTap to view portfolio\n\n2\nDiscover Artists\n\nSee Artist Map\n\n0 artists near Brisbane\n\nAll Artists\nNear Me\nPopular\nAll\nRealism\nPortrait\nBlack & Grey\nColour\nT\u0101moko\nTraditional\nNeo-Trad\nGeometric\nWatercolour\nFine Line\nBlackwork\nJapanese\n\nNo artists match your search\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 874,
+        "full": 884
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "feed.getDiscoverFeed",
+      "clientProfile.getProfile",
+      "clientProfile.getSpendSummary",
+      "clientProfile.getHistory",
+      "clientProfile.getBoards",
+      "clientProfile.getPhotos",
+      "clientProfile.getUpcoming",
+      "clientProfile.getConsentForms",
+      "favourites.list",
+      "conversations.list",
+      "auth.listArtists"
+    ],
+    "bottom": false,
+    "parts": [],
+    "title": "Discovery / your artists"
+  },
+  {
+    "id": "flow-consent-template",
+    "role": "artist",
+    "path": "/settings?section=regulation",
+    "title": "Forms & procedure records",
+    "overflow": false,
+    "text": "Forms & procedure records\n\nKeep your paperwork close to the booking.\n\nProcedure log\nMedical\nConsent\nConsent template\n\nChanges apply to forms created after saving. Forms already issued or signed keep their original wording.\n\nTemplate wording\nSave template\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 619,
+        "full": 911
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "forms.getTemplates",
+      "forms.getProcedureLogs",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-consent-template-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-medical-template",
+    "role": "artist",
+    "path": "/settings?section=regulation",
+    "title": "Forms & procedure records",
+    "overflow": false,
+    "text": "Forms & procedure records\n\nKeep your paperwork close to the booking.\n\nProcedure log\nMedical\nConsent\nMedical template\n\nChanges apply to forms created after saving. Forms already issued or signed keep their original wording.\n\nStart each yes/no question with its number and a full stop, for example \u201c1. Do you have any allergies?\u201d. Clients answer every numbered question before signing.\n\nTemplate wording\nSave template\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 619,
+        "full": 1009
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "forms.getTemplates",
+      "forms.getProcedureLogs",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-medical-template-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-session-finish",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Tattoo project",
+    "time": "2026-09-10T01:00:00Z",
+    "overflow": false,
+    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nMessage Mia Chen\nFinish session\nReschedule\nMore session options\nToday\n2\nMessages\nCalendar\nProfile\n\nClient arrived?\n\nMia Chen\n\nLater\nNo\nYes\n9:41\n\u2022\u2022\u2022 \u25b0\nFinish session\n$450.00 remaining\n\nSend your client a payment request for this session. Completion follows the payment workflow.\n\nSend payment request\nGo back\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/calendar",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Message Mia Chen",
+        "href": "/projects/12?session=101&view=Messages",
+        "rect": [
+          20,
+          453.109375,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1246
+      },
+      {
+        "height": 310,
+        "full": 310
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "projects.summary",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-session-finish-part-2.png",
+      "flow-session-finish-part-3.png"
+    ]
+  },
+  {
+    "id": "flow-import-mapping",
+    "role": "artist",
+    "path": "/settings?section=data-import",
+    "title": "Import your data",
+    "overflow": false,
+    "text": "Import your data\n\nReview matches and duplicates before adding anything.\n\nChoose your file\nWhat are you importing?\nClients\nAppointments\nCSV file\nUp to 500 rows and 5 MB.\n\nclients.csv \u00b7 1 rows\n\nEach client needs an email or phone. Use YYYY-MM-DD or DD/MM/YYYY dates and HH:mm or h:mm AM/PM times. Appointment imports use Australia/Brisbane time.\n\nMatch your columns\nClient name\nNot included\nname\nemail\nphone\nEmail\nNot included\nname\nemail\nphone\nPhone\nNot included\nname\nemail\nphone\nReview matches & duplicates\nConnect an external calendar\nCalendar feed URL\n\nExternal events appear alongside your Tattoi calendar. Edit those events in their original calendar.\n\nSave calendar link\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          20,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "",
+        "href": "/business",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 1079
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-import-mapping-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-discovery-focus",
+    "role": "client",
+    "path": "/discover",
+    "overflow": false,
+    "text": "M\ntattoi\nElla Morgan\n\nBrisbane \u00b7 Fine Line\n\nView artist\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 874,
+        "full": 946
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "feed.getDiscoverFeed",
+      "clientProfile.getProfile",
+      "clientProfile.getSpendSummary",
+      "clientProfile.getHistory",
+      "clientProfile.getBoards",
+      "clientProfile.getPhotos",
+      "clientProfile.getUpcoming",
+      "clientProfile.getConsentForms",
+      "favourites.list",
+      "conversations.list",
+      "feed.getArtistFeed"
+    ],
+    "bottom": false,
+    "parts": [],
+    "title": "Discovery / artist focus"
+  },
+  {
+    "id": "flow-event-create",
+    "role": "artist",
+    "path": "/artist-events",
+    "title": "Your events",
+    "overflow": false,
+    "text": "Create event\nYour events\n\nWorkshops and seminars, in person or online.\n\nPreview events page\n\nCreate your first workshop when you\u2019re ready to take registrations.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0\nCreate an event\nEvent name\nDescription\nFormat\nIn person\nOnline\nDate and time\nAustralia/Brisbane\nVenue or location URL\nAvailable places\nPrice per person \u00b7 AUD\n\nThe event is published when you create it. Online access links are shown to paid attendees.\n\nPublish event\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/artist-profile",
+        "rect": [
+          20,
+          67.1875,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Preview events page",
+        "href": "/events/ella-morgan",
+        "rect": [
+          20,
+          222.28125,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 652
+      },
+      {
+        "height": 689,
+        "full": 803
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "storefront.getSeminars",
+      "artistSettings.get",
+      "conversations.list",
+      "appointments.getArtistCalendar"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-event-create-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-order-detail",
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Orders",
+    "overflow": false,
+    "text": "tattoi\nOrders\n\nFrom paid to delivered\n\nTo fulfil\nFulfilled\nAll\nSearch orders\nAll orders\nOrder #1\n\nThu, 10 Sept, 10:00 am\n\nPaid in full\nItems\n1 \u00d7 Cartridge needles\n$32.00\nTotal\n$32.00\nshipping\n\nElla Morgan\n\nFulfilment, tracking and inventory are managed in Shopify.\n\nOpen Shopify orders\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          70,
+          66.515625,
+          32
+        ]
+      },
+      {
+        "text": "",
+        "href": "/settings",
+        "rect": [
+          338,
+          64,
+          44,
+          44
+        ]
+      },
+      {
+        "text": "Open Shopify orders",
+        "href": "https://admin.shopify.com",
+        "rect": [
+          20,
+          907.828125,
+          362,
+          50.390625
+        ]
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 658,
+        "full": 898
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "auth.refreshToken",
+      "storefront.getOrders",
+      "conversations.list"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-order-detail-part-2.png"
+    ]
+  },
+  {
+    "id": "flow-shop-cart",
+    "role": "public",
+    "path": "/shop/ella-morgan",
+    "title": "Ella Morgan",
+    "overflow": false,
+    "text": "Cart \u00b7 1\nElla Morgan\n\nShop essentials, aftercare and original work.\n\nSearch this store\nBotanical art print\nAbout this product\n\nStudio pickup\n\n$45.00 AUD\nAdd to cart\n9:41\n\u2022\u2022\u2022 \u25b0\nYour cart\n\nReview your items and payment securely.\n\nBotanical art print\n$45.00\n\u2212\n1\n+\nRemove\nDelivery method\n\nThese items need different delivery methods. Check them out separately.\n\nSubtotal\n$45.00\nShipping\n$0.00\nPlatform fee\n$5.00\nTotal (AUD)\n$50.00\n\nStock is held for 30 minutes after checkout opens. Final prices are confirmed by the store.\n\nContinue to payment\nClose",
+    "links": [
+      {
+        "text": "",
+        "href": "/ella-morgan",
+        "rect": [
+          20,
+          67.1875,
+          44,
+          44
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 652,
+        "full": 778
+      },
+      {
+        "height": 639,
+        "full": 639
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "storefront.getArtistStorefront"
+    ],
+    "bottom": true,
+    "parts": [
+      "flow-shop-cart-part-2.png"
+    ]
+  }
+]

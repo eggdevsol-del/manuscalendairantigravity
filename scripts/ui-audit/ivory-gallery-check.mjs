@@ -1,0 +1,11 @@
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url);const {chromium}=require(process.env.PLAYWRIGHT_PATH);
+const browser=await chromium.launch({headless:true,executablePath:process.env.AUDIT_BROWSER});
+const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+await page.goto('file://'+process.cwd()+'/output/tattoi-ivory-complete/index.html');
+await page.locator('.card').first().click();await page.locator('#next').click();await page.locator('#close').click();
+await page.locator('#search').fill('studio');if(await page.locator('.card').count()<3)throw Error('Search failed');
+await page.locator('#search').fill('');await page.getByRole('button',{name:'Plan a tattoo',exact:true}).click();await page.keyboard.press('ArrowRight');
+if(!await page.locator('#screen').evaluate(i=>i.complete&&i.naturalWidth>0))await page.locator('#screen').evaluate(i=>new Promise(r=>i.onload=r));
+await page.setViewportSize({width:402,height:874});if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Gallery overflow');
+if(errors.length)throw Error(errors.join('\n'));console.log('Gallery search, modal, tour, image and mobile layout passed');await browser.close();

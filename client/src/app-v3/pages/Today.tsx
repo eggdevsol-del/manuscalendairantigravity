@@ -34,7 +34,7 @@ export default function Today() {
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const day = trpc.dashboard.getArtistOverview.useQuery({ timeZone: zone });
   const tasks = useBusinessTasks();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const [, go] = useLocation();
   const [actionError, setActionError] = useState("");
   const sessions = (day.data?.todayTimeline || []).filter(
@@ -59,7 +59,7 @@ export default function Today() {
       ? `/projects/${s.conversationId}?session=${s.id}`
       : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`;
   return (
-    <Screen title="Home" subtitle={date} wide>
+    <Screen title="Today" subtitle={date} wide>
       <HomeTabs />
       <div className="v3-home-workspace">
         <div className="v3-home-main">
@@ -201,7 +201,7 @@ export default function Today() {
                     {next.conversationId && (
                       <DesignBrief conversationId={next.conversationId} />
                     )}
-                    <ActionLink href={href(next)} tone="quiet">
+                    <ActionLink href={href(next)} tone="primary">
                       View booking <ArrowRight />
                     </ActionLink>
                   </Panel>

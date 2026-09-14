@@ -1,3 +1,6 @@
+import Products from "@/app-v3/pages/Products";
+import Events from "@/app-v3/pages/Events";
+import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
 import Studio from "@/app-v3/pages/Studio";
 import Purchases from "@/app-v3/pages/Purchases";
 import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
@@ -44,6 +47,9 @@ export default function ArtistShell() {
           </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/business" component={BusinessPage} />
+          <Route path="/products" component={Products} />
+          <Route path="/artist-events" component={Events} />
+          <Route path="/store-orders" component={StoreOrders} />
           <Route path="/money" component={MoneyPage} />
           <Route path="/supplies" component={SuppliesPage} />
           <Route path="/conversations" component={Conversations} />

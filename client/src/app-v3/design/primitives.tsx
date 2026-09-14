@@ -1,6 +1,6 @@
 import { useId, type ReactNode, type ButtonHTMLAttributes } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronRight, Search, UserRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, UserRound } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 /** V3 presentation primitives. Domain operations belong to data hooks, never here. */
@@ -30,17 +30,14 @@ export function Screen({
         <div className="v3-masthead">
           {back ? (
             <Link className="v3-icon-button" aria-label="Back" href={back}>
-              <ArrowLeft size={22} />
+              <ChevronLeft size={26} />
             </Link>
           ) : (
             <Link
               href={user?.role === "client" ? "/bookings" : "/dashboard"}
               className="v3-wordmark"
             >
-              TATTOI
-              <small className="v3-brand-caption">
-                Department of Tattoo Services
-              </small>
+              tattoi
             </Link>
           )}
           {action || (
@@ -53,7 +50,13 @@ export function Screen({
                     ? "/settings"
                     : "/business"
               }
-              aria-label="Business and profile"
+              aria-label={
+                user?.role === "client"
+                  ? "Your profile"
+                  : user?.role === "merchant"
+                    ? "Store settings"
+                    : "Your business"
+              }
             >
               {user?.avatar ? (
                 <img src={user.avatar} alt="" />

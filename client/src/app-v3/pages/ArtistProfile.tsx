@@ -63,7 +63,17 @@ export default function ArtistProfile() {
               Photo & personal details
             </ActionLink>
           </div>
-          <PublicDetails settings={settings.data} />
+          <Tabs
+            items={["Profile", "Portfolio"] as const}
+            value={tab}
+            onChange={value => go(`/artist-profile?view=${value}`)}
+            label="Artist profile sections"
+          />
+          {tab === "Portfolio" ? (
+            <Portfolio />
+          ) : (
+            <PublicDetails settings={settings.data} />
+          )}
         </>
       )}
     </Screen>

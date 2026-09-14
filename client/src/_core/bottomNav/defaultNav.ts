@@ -14,7 +14,7 @@ import {
 import { BottomNavButton } from "./types";
 
 export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
-  { id: "dashboard", path: "/dashboard", label: "Home", icon: Home },
+  { id: "dashboard", path: "/dashboard", label: "Today", icon: Home },
   {
     id: "messages",
     path: "/conversations",

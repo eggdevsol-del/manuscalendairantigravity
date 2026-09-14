@@ -41,7 +41,7 @@ export function SheetShell({
       <SheetContent
         side={side}
         className={cn(
-          "flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
+          "ivory-sheet flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
           side === "bottom" ? "rounded-t-[24px] border-t-0 max-h-[85dvh]" : "",
           side === "left" || side === "right"
             ? "h-full border-l border-border"
@@ -50,7 +50,9 @@ export function SheetShell({
         )}
         data-overlay-id={overlayId}
       >
-        <div className="h-1 w-full bg-[rgba(255,255,255,0.12)]" />
+        {side === "bottom" && (
+          <div className="ivory-sheet-handle" aria-hidden="true" />
+        )}
         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
           <div className="flex items-center justify-center relative">
             <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center">

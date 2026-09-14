@@ -83,6 +83,24 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
       )}
       {artist && (
         <>
+          {hub && artist.portfolio[0]?.imageUrl && (
+            <a
+              className="ivory-artist-hero"
+              href={artist.portfolio[0].imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={artist.portfolio[0].imageUrl}
+                alt={
+                  artist.portfolio[0].description ||
+                  `Tattoo by ${artist.displayName}`
+                }
+                fetchPriority="high"
+              />
+              <span>Selected work by {artist.displayName}</span>
+            </a>
+          )}
           <Row
             title={artist.displayName}
             detail={artist.slug ? "@" + artist.slug : undefined}

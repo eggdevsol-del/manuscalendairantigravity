@@ -17,7 +17,10 @@ interface DiscoverFeedContentProps {
   onArtistProfileTap?: (card: FeedCardData) => void;
 }
 
-export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: DiscoverFeedContentProps) {
+export default function DiscoverFeedContent({
+  onImageTap,
+  onArtistProfileTap,
+}: DiscoverFeedContentProps) {
   const [, setLocation] = useLocation();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -32,7 +35,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
   } = trpc.feed.getDiscoverFeed.useInfiniteQuery(
     { limit: 10, tag: activeTag || undefined },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      getNextPageParam: lastPage => lastPage.nextCursor ?? undefined,
       initialCursor: 0,
     }
   );
@@ -45,7 +48,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     if (!el) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
@@ -74,10 +77,13 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     toast.success("Link copied to clipboard");
   }, []);
 
-  const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
-    ...card,
-    videoUrl: (card as any).videoUrl || null,
-  }))) ?? [];
+  const allCards =
+    data?.pages.flatMap(page =>
+      page.cards.map(card => ({
+        ...card,
+        videoUrl: (card as any).videoUrl || null,
+      }))
+    ) ?? [];
 
   const handleTagTap = useCallback((tag: string) => {
     setActiveTag(tag);
@@ -101,7 +107,9 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
 
   if (isLoading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
+      <div
+        style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}
+      >
         <Loader2 className="animate-spin text-muted-foreground" size={32} />
       </div>
     );
@@ -129,21 +137,32 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
     <>
       {/* Active filter pill */}
       {activeTag && (
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
-          padding: "8px 14px",
-          position: "sticky", top: 0, zIndex: 10,
-          background: "var(--color-bg-base)",
-        }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 14px",
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            background: "var(--color-bg-base)",
+          }}
+        >
           <button
             onClick={() => setActiveTag(null)}
             style={{
-              display: "flex", alignItems: "center", gap: 6,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
               background: "rgba(123, 92, 245, 0.15)",
               color: "rgba(123, 92, 245, 1)",
               border: "1px solid rgba(123, 92, 245, 0.3)",
-              borderRadius: 100, padding: "5px 12px",
-              fontSize: 12, fontWeight: 600, cursor: "pointer",
+              borderRadius: 100,
+              padding: "5px 12px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
             }}
           >
             {activeTag}
@@ -168,6 +187,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: 
             onImageTap={onImageTap}
             onTagTap={handleTagTap}
             focusMode
+            discoveryMode
             compact
           />
         ))}

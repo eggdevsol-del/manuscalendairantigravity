@@ -1,0 +1,1504 @@
+diff --git a/client/src/_core/bottomNav/defaultNav.ts b/client/src/_core/bottomNav/defaultNav.ts
+index d1b3881..fbb0d96 100644
+--- a/client/src/_core/bottomNav/defaultNav.ts
++++ b/client/src/_core/bottomNav/defaultNav.ts
+@@ -14,7 +14,7 @@ import {
+ import { BottomNavButton } from "./types";
+ 
+ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
+-  { id: "dashboard", path: "/dashboard", label: "Home", icon: Home },
++  { id: "dashboard", path: "/dashboard", label: "Today", icon: Home },
+   {
+     id: "messages",
+     path: "/conversations",
+diff --git a/client/src/app-v3/design/DesignBrief.tsx b/client/src/app-v3/design/DesignBrief.tsx
+index 9dd77c9..dc17dfb 100644
+--- a/client/src/app-v3/design/DesignBrief.tsx
++++ b/client/src/app-v3/design/DesignBrief.tsx
+@@ -13,10 +13,10 @@ export function DesignBrief({ conversationId }: { conversationId: number }) {
+   const [open, setOpen] = useState(() => {
+     try {
+       return (
+-        localStorage.getItem(`brief-collapsed-${conversationId}`) !== "true"
++        localStorage.getItem(`brief-collapsed-${conversationId}`) === "false"
+       );
+     } catch {
+-      return true;
++      return false;
+     }
+   });
+   return (
+diff --git a/client/src/app-v3/design/Navigation.tsx b/client/src/app-v3/design/Navigation.tsx
+index 78893ad..3bf5603 100644
+--- a/client/src/app-v3/design/Navigation.tsx
++++ b/client/src/app-v3/design/Navigation.tsx
+@@ -14,7 +14,7 @@ export default function Navigation() {
+     <nav
+       id="bottom-nav"
+       aria-label="Main navigation"
+-      className="v3-navigation v3-navigation-artist"
++      className={`v3-navigation v3-navigation-${user?.role || "client"}`}
+     >
+       <div className="v3-navigation-items">
+         {navItems.map(item => {
+diff --git a/client/src/app-v3/design/primitives.tsx b/client/src/app-v3/design/primitives.tsx
+index ccbfa0d..5543857 100644
+--- a/client/src/app-v3/design/primitives.tsx
++++ b/client/src/app-v3/design/primitives.tsx
+@@ -1,6 +1,6 @@
+ import { useId, type ReactNode, type ButtonHTMLAttributes } from "react";
+ import { Link } from "wouter";
+-import { ArrowLeft, ChevronRight, Search, UserRound } from "lucide-react";
++import { ChevronLeft, ChevronRight, Search, UserRound } from "lucide-react";
+ import { useAuth } from "@/_core/hooks/useAuth";
+ 
+ /** V3 presentation primitives. Domain operations belong to data hooks, never here. */
+@@ -30,17 +30,14 @@ export function Screen({
+         <div className="v3-masthead">
+           {back ? (
+             <Link className="v3-icon-button" aria-label="Back" href={back}>
+-              <ArrowLeft size={22} />
++              <ChevronLeft size={26} />
+             </Link>
+           ) : (
+             <Link
+               href={user?.role === "client" ? "/bookings" : "/dashboard"}
+               className="v3-wordmark"
+             >
+-              TATTOI
+-              <small className="v3-brand-caption">
+-                Department of Tattoo Services
+-              </small>
++              tattoi
+             </Link>
+           )}
+           {action || (
+@@ -53,7 +50,13 @@ export function Screen({
+                     ? "/settings"
+                     : "/business"
+               }
+-              aria-label="Business and profile"
++              aria-label={
++                user?.role === "client"
++                  ? "Your profile"
++                  : user?.role === "merchant"
++                    ? "Store settings"
++                    : "Your business"
++              }
+             >
+               {user?.avatar ? (
+                 <img src={user.avatar} alt="" />
+diff --git a/client/src/app-v3/design/system.css b/client/src/app-v3/design/system.css
+index 682f858..10e12e1 100644
+--- a/client/src/app-v3/design/system.css
++++ b/client/src/app-v3/design/system.css
+@@ -1,14 +1,14 @@
+-/* Tattoi V3: the approved paper, ink and gold visual language. */
++/* Tattoi Ivory foundations. Legacy v3-gold names remain aliases for consumers. */
+ :root {
+-  --v3-paper: #f5f5f7;
+-  --v3-ink: #1a1a1e;
+-  --v3-surface: #ffffff;
+-  --v3-line: #e0e0e8;
+-  --v3-muted: #6a6a72;
+-  --v3-soft: #ebebef;
+-  --v3-gold: #f8d057;
+-  --v3-gold-ink: #795d00;
+-  --v3-gold-soft: #fef9e7;
++  --v3-paper: #f8f6f2;
++  --v3-ink: #29231e;
++  --v3-surface: #fffdfa;
++  --v3-line: #e5e0d9;
++  --v3-muted: #746c64;
++  --v3-soft: #efebe5;
++  --v3-gold: #382c24;
++  --v3-gold-ink: #514236;
++  --v3-gold-soft: #eee8df;
+   --v3-green: #24644d;
+   --v3-green-soft: #eaf1eb;
+   --v3-red: #9d342e;
+@@ -31,8 +31,8 @@
+   --border: var(--v3-line);
+   --input: var(--v3-surface);
+   --primary: var(--v3-gold);
+-  --primary-foreground: #191a16;
+-  --primary-rgb: 248, 208, 87;
++  --primary-foreground: #fffdfa;
++  --primary-rgb: 56, 44, 36;
+   --accent: var(--v3-gold-soft);
+   --accent-foreground: var(--v3-ink);
+   --ring: var(--v3-gold-ink);
+@@ -57,14 +57,17 @@
+ }
+ 
+ .dark {
+-  --v3-paper: #1b1b1b;
+-  --v3-ink: #ffffff;
+-  --v3-surface: #242424;
+-  --v3-line: #ffffff20;
+-  --v3-muted: #a5a5ad;
+-  --v3-soft: #2a2a2a;
+-  --v3-gold-ink: #f8d057;
+-  --v3-gold-soft: #3a2f00;
++  --v3-paper: #1d1a17;
++  --v3-ink: #f8f3eb;
++  --v3-surface: #29251f;
++  --v3-line: #443c33;
++  --v3-muted: #bdb2a5;
++  --v3-soft: #342e27;
++  --v3-gold: #e3d6c5;
++  --primary-foreground: #29231e;
++  --primary-rgb: 227, 214, 197;
++  --v3-gold-ink: #e3d6c5;
++  --v3-gold-soft: #3a3229;
+   --v3-green: #9ed2b8;
+   --v3-green-soft: #22362c;
+   --v3-red: #f0a29c;
+@@ -152,7 +155,7 @@
+ }
+ .v3-action-primary {
+   background: var(--v3-gold);
+-  color: #191a16;
++  color: var(--primary-foreground);
+ }
+ .v3-action-secondary {
+   border-color: var(--v3-line);
+@@ -1436,7 +1439,7 @@
+ .v3-timeline-day h3 small {
+   font-size: 11px;
+   background: var(--v3-gold);
+-  color: #1a1a1e;
++  color: var(--primary-foreground);
+   border-radius: 8px;
+   padding: 3px 7px;
+ }
+@@ -1653,7 +1656,7 @@
+   }
+   .v3-navigation-artist .v3-navigation-item[aria-current="page"] {
+     background: var(--v3-gold);
+-    color: #1a1a1e;
++    color: var(--primary-foreground);
+   }
+ }
+ .v3-panel {
+diff --git a/client/src/app-v3/pages/ArtistProfile.tsx b/client/src/app-v3/pages/ArtistProfile.tsx
+index dbf3328..ceb9cc7 100644
+--- a/client/src/app-v3/pages/ArtistProfile.tsx
++++ b/client/src/app-v3/pages/ArtistProfile.tsx
+@@ -63,7 +63,17 @@ export default function ArtistProfile() {
+               Photo & personal details
+             </ActionLink>
+           </div>
+-          <PublicDetails settings={settings.data} />
++          <Tabs
++            items={["Profile", "Portfolio"] as const}
++            value={tab}
++            onChange={value => go(`/artist-profile?view=${value}`)}
++            label="Artist profile sections"
++          />
++          {tab === "Portfolio" ? (
++            <Portfolio />
++          ) : (
++            <PublicDetails settings={settings.data} />
++          )}
+         </>
+       )}
+     </Screen>
+diff --git a/client/src/app-v3/pages/Business.tsx b/client/src/app-v3/pages/Business.tsx
+index 9dc6efe..9793e1a 100644
+--- a/client/src/app-v3/pages/Business.tsx
++++ b/client/src/app-v3/pages/Business.tsx
+@@ -54,6 +54,26 @@ export default function Business() {
+             href="/waitlist"
+           />
+         </Section>
++        <Section title="Shop & events">
++          <Row
++            title="Your products"
++            detail="Catalogue and availability"
++            icon={<Package />}
++            href="/products"
++          />
++          <Row
++            title="Store orders"
++            detail="Payment and fulfilment"
++            icon={<ListChecks />}
++            href="/store-orders"
++          />
++          <Row
++            title="Workshops & events"
++            detail="Create an event and review registrations"
++            icon={<CalendarDays />}
++            href="/artist-events"
++          />
++        </Section>
+         <Section title="Behind the scenes">
+           <Row
+             title="Supplies"
+diff --git a/client/src/app-v3/pages/PublicArtist.tsx b/client/src/app-v3/pages/PublicArtist.tsx
+index f2d0e42..f3cc2d8 100644
+--- a/client/src/app-v3/pages/PublicArtist.tsx
++++ b/client/src/app-v3/pages/PublicArtist.tsx
+@@ -83,6 +83,24 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
+       )}
+       {artist && (
+         <>
++          {hub && artist.portfolio[0]?.imageUrl && (
++            <a
++              className="ivory-artist-hero"
++              href={artist.portfolio[0].imageUrl}
++              target="_blank"
++              rel="noopener noreferrer"
++            >
++              <img
++                src={artist.portfolio[0].imageUrl}
++                alt={
++                  artist.portfolio[0].description ||
++                  `Tattoo by ${artist.displayName}`
++                }
++                fetchPriority="high"
++              />
++              <span>Selected work by {artist.displayName}</span>
++            </a>
++          )}
+           <Row
+             title={artist.displayName}
+             detail={artist.slug ? "@" + artist.slug : undefined}
+diff --git a/client/src/app-v3/pages/Today.tsx b/client/src/app-v3/pages/Today.tsx
+index 53edca7..3f0625b 100644
+--- a/client/src/app-v3/pages/Today.tsx
++++ b/client/src/app-v3/pages/Today.tsx
+@@ -34,7 +34,7 @@ export default function Today() {
+   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+   const day = trpc.dashboard.getArtistOverview.useQuery({ timeZone: zone });
+   const tasks = useBusinessTasks();
+-  const [expanded, setExpanded] = useState(true);
++  const [expanded, setExpanded] = useState(false);
+   const [, go] = useLocation();
+   const [actionError, setActionError] = useState("");
+   const sessions = (day.data?.todayTimeline || []).filter(
+@@ -59,7 +59,7 @@ export default function Today() {
+       ? `/projects/${s.conversationId}?session=${s.id}`
+       : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`;
+   return (
+-    <Screen title="Home" subtitle={date} wide>
++    <Screen title="Today" subtitle={date} wide>
+       <HomeTabs />
+       <div className="v3-home-workspace">
+         <div className="v3-home-main">
+@@ -201,7 +201,7 @@ export default function Today() {
+                     {next.conversationId && (
+                       <DesignBrief conversationId={next.conversationId} />
+                     )}
+-                    <ActionLink href={href(next)} tone="quiet">
++                    <ActionLink href={href(next)} tone="primary">
+                       View booking <ArrowRight />
+                     </ActionLink>
+                   </Panel>
+diff --git a/client/src/components/ui/overlays/sheet-shell.tsx b/client/src/components/ui/overlays/sheet-shell.tsx
+index fbc5525..6a9c642 100644
+--- a/client/src/components/ui/overlays/sheet-shell.tsx
++++ b/client/src/components/ui/overlays/sheet-shell.tsx
+@@ -41,7 +41,7 @@ export function SheetShell({
+       <SheetContent
+         side={side}
+         className={cn(
+-          "flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
++          "ivory-sheet flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
+           side === "bottom" ? "rounded-t-[24px] border-t-0 max-h-[85dvh]" : "",
+           side === "left" || side === "right"
+             ? "h-full border-l border-border"
+@@ -50,7 +50,9 @@ export function SheetShell({
+         )}
+         data-overlay-id={overlayId}
+       >
+-        <div className="h-1 w-full bg-[rgba(255,255,255,0.12)]" />
++        {side === "bottom" && (
++          <div className="ivory-sheet-handle" aria-hidden="true" />
++        )}
+         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
+           <div className="flex items-center justify-center relative">
+             <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center">
+diff --git a/client/src/components/ui/ssot/DotsCheckout.tsx b/client/src/components/ui/ssot/DotsCheckout.tsx
+index 15539f5..8b22e13 100644
+--- a/client/src/components/ui/ssot/DotsCheckout.tsx
++++ b/client/src/components/ui/ssot/DotsCheckout.tsx
+@@ -35,62 +35,62 @@ import {
+   ShippingAddressElement,
+ } from "@stripe/react-stripe-js/checkout";
+ 
+-// ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
++// Ivory fallback. usePaymentAppearance resolves the active light/dark tokens.
+ const originalAppearance: Appearance = {
+-  theme: "night",
++  theme: "stripe",
+   variables: {
+-    colorPrimary: "#F8D057",
+-    colorBackground: "#232326",
+-    colorText: "#FFFFFF",
+-    colorTextSecondary: "#7A7A7A",
+-    colorDanger: "#ff4d4f",
++    colorPrimary: "#382c24",
++    colorBackground: "#fffdfa",
++    colorText: "#29231e",
++    colorTextSecondary: "#746c64",
++    colorDanger: "#9d342e",
+     borderRadius: "12px",
+-    fontFamily: '"DM Sans", "Inter", system-ui, sans-serif',
++    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+     fontSizeBase: "15px",
+     spacingGridRow: "16px",
+     spacingGridColumn: "12px",
+   },
+   rules: {
+     ".Input": {
+-      border: "1px solid rgba(255,255,255,0.12)",
+-      backgroundColor: "#1A1A1E",
+-      color: "#FFFFFF",
++      border: "1px solid #e5e0d9",
++      backgroundColor: "#fffdfa",
++      color: "#29231e",
+       padding: "14px 12px",
+       fontSize: "15px",
+       transition: "border-color 200ms ease, box-shadow 200ms ease",
+     },
+     ".Input:focus": {
+-      border: "1px solid #F8D057",
+-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
++      border: "1px solid #382c24",
++      boxShadow: "0 0 0 2px rgba(56,44,36,0.12)",
+     },
+     ".Input::placeholder": {
+-      color: "#7A7A7A",
++      color: "#746c64",
+     },
+     ".Label": {
+-      color: "#999",
++      color: "#746c64",
+       fontSize: "12px",
+       fontWeight: "500",
+-      textTransform: "uppercase" as any,
+-      letterSpacing: "0.5px",
++      textTransform: "none" as any,
++      letterSpacing: "0",
+       marginBottom: "6px",
+     },
+     ".Tab": {
+-      border: "1px solid rgba(255,255,255,0.12)",
+-      backgroundColor: "#1A1A1E",
+-      color: "#FFFFFF",
++      border: "1px solid #e5e0d9",
++      backgroundColor: "#fffdfa",
++      color: "#29231e",
+       borderRadius: "12px",
+     },
+     ".Tab--selected": {
+-      border: "1px solid #F8D057",
+-      backgroundColor: "#1A1A1E",
+-      color: "#FFFFFF",
+-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
++      border: "1px solid #382c24",
++      backgroundColor: "#fffdfa",
++      color: "#29231e",
++      boxShadow: "0 0 0 2px rgba(56,44,36,0.12)",
+     },
+     ".Tab:hover": {
+-      border: "1px solid rgba(255,255,255,0.25)",
++      border: "1px solid #746c64",
+     },
+     ".Error": {
+-      color: "#ff4d4f",
++      color: "#9d342e",
+       fontSize: "13px",
+     },
+   },
+@@ -106,16 +106,17 @@ function usePaymentAppearance() {
+       const css = getComputedStyle(root);
+       const value = (name: string, fallback: string) =>
+         css.getPropertyValue(name).trim() || fallback;
+-      const foreground = value("--foreground", "#FFFFFF");
+-      const surface = value("--card", "#1A1A1E");
+-      const muted = value("--muted-foreground", "#7A7A7A");
+-      const border = value("--border", "rgba(255,255,255,0.12)");
++      const primary = value("--primary", "#382c24");
++      const foreground = value("--foreground", "#29231e");
++      const surface = value("--card", "#fffdfa");
++      const muted = value("--muted-foreground", "#746c64");
++      const border = value("--border", "#e5e0d9");
+       setAppearance({
+         ...originalAppearance,
+         theme: root.classList.contains("dark") ? "night" : "stripe",
+         variables: {
+           ...originalAppearance.variables,
+-          colorPrimary: value("--primary", "#F8D057"),
++          colorPrimary: primary,
+           colorBackground: surface,
+           colorText: foreground,
+           colorTextSecondary: muted,
+@@ -131,6 +132,10 @@ function usePaymentAppearance() {
+             border: `1px solid ${border}`,
+             fontSize: "16px",
+           },
++          ".Input:focus": {
++            border: `1px solid ${primary}`,
++            boxShadow: `0 0 0 1px ${primary}`,
++          },
+           ".Input::placeholder": { color: muted },
+           ".Label": { ...originalAppearance.rules?.[".Label"], color: muted },
+           ".Tab": {
+@@ -141,6 +146,8 @@ function usePaymentAppearance() {
+           },
+           ".Tab--selected": {
+             ...originalAppearance.rules?.[".Tab--selected"],
++            border: `1px solid ${primary}`,
++            boxShadow: `0 0 0 1px ${primary}`,
+             backgroundColor: surface,
+             color: foreground,
+           },
+@@ -470,7 +477,7 @@ function CheckoutLayout({
+             color: "var(--foreground)",
+             fontSize: 22,
+             fontWeight: 700,
+-            fontFamily: '"DM Sans", sans-serif',
++            fontFamily: "var(--ivory-body)",
+           }}
+         >
+           {formattedAmount}
+@@ -492,7 +499,7 @@ function CheckoutLayout({
+           <div className="absolute inset-0 flex items-center justify-center">
+             <Loader2
+               className="w-6 h-6 animate-spin"
+-              style={{ color: "#F8D057" }}
++              style={{ color: "var(--primary)" }}
+             />
+           </div>
+         )}
+@@ -504,11 +511,11 @@ function CheckoutLayout({
+         <div
+           role="alert"
+           style={{
+-            background: "rgba(255,77,79,0.1)",
+-            border: "1px solid rgba(255,77,79,0.3)",
++            background: "var(--v3-red-soft)",
++            border: "1px solid var(--v3-red)",
+             borderRadius: 12,
+             padding: "10px 14px",
+-            color: "#ff4d4f",
++            color: "var(--v3-red)",
+             fontSize: 13,
+             fontWeight: 500,
+           }}
+@@ -545,14 +552,12 @@ function CheckoutLayout({
+           height: 52,
+           borderRadius: 14,
+           fontSize: 16,
+-          fontFamily: '"DM Sans", sans-serif',
+-          background: isProcessing
+-            ? "rgba(248,208,87,0.7)"
+-            : "linear-gradient(135deg, #F8D057 0%, #F0C040 100%)",
+-          color: "#1B1B1B",
++          fontFamily: "var(--ivory-body)",
++          background: "var(--primary)",
++          color: "var(--primary-foreground)",
+           border: "none",
+           cursor: isProcessing ? "wait" : "pointer",
+-          boxShadow: "0 2px 12px rgba(248,208,87,0.25)",
++          boxShadow: "var(--ivory-shadow)",
+         }}
+       >
+         {isProcessing ? (
+diff --git a/client/src/features/client-home/ClientHome.tsx b/client/src/features/client-home/ClientHome.tsx
+index 15993e4..525c226 100644
+--- a/client/src/features/client-home/ClientHome.tsx
++++ b/client/src/features/client-home/ClientHome.tsx
+@@ -206,7 +206,9 @@ export default function ClientHome() {
+         ) : (
+           /* Normal header */
+           <>
+-            <div
++            <button
++              type="button"
++              aria-label="Your profile"
+               className="client-home-avatar"
+               onClick={() => setLocation("/profile")}
+             >
+@@ -215,13 +217,15 @@ export default function ClientHome() {
+               ) : (
+                 <div className="client-home-avatar-fallback">{initials}</div>
+               )}
+-            </div>
+-            <span className="client-home-logo">TATTOI</span>
++            </button>
++            <span className="client-home-logo">tattoi</span>
+             <div className="client-home-toggle">
+               <button
+                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
+                 onClick={() => setView("discovery")}
+                 title="Discovery"
++                aria-label="Discover artists"
++                aria-pressed={view === "discovery"}
+               >
+                 <Compass size={18} />
+               </button>
+@@ -229,6 +233,8 @@ export default function ClientHome() {
+                 className={`client-home-toggle-btn ${view === "home" ? "active" : ""}`}
+                 onClick={() => setView("home")}
+                 title="Home"
++                aria-label="Your artists and bookings"
++                aria-pressed={view === "home"}
+               >
+                 <Home size={18} />
+               </button>
+@@ -273,7 +279,7 @@ export default function ClientHome() {
+ 
+       {/* ── Content ── */}
+       <div
+-        className={`client-home-content${view === "discovery" ? " snap-scroll" : ""}`}
++        className={`client-home-content${view === "discovery" ? " snap-scroll ivory-discovery-feed" : ""}`}
+         ref={!focusedArtist ? scrollRef : undefined}
+         onScroll={!focusedArtist ? handleScroll : undefined}
+       >
+diff --git a/client/src/features/client-home/DiscoverFeedContent.tsx b/client/src/features/client-home/DiscoverFeedContent.tsx
+index 371d7ac..3308238 100644
+--- a/client/src/features/client-home/DiscoverFeedContent.tsx
++++ b/client/src/features/client-home/DiscoverFeedContent.tsx
+@@ -17,7 +17,10 @@ interface DiscoverFeedContentProps {
+   onArtistProfileTap?: (card: FeedCardData) => void;
+ }
+ 
+-export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }: DiscoverFeedContentProps) {
++export default function DiscoverFeedContent({
++  onImageTap,
++  onArtistProfileTap,
++}: DiscoverFeedContentProps) {
+   const [, setLocation] = useLocation();
+   const loadMoreRef = useRef<HTMLDivElement>(null);
+   const [activeTag, setActiveTag] = useState<string | null>(null);
+@@ -32,7 +35,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+   } = trpc.feed.getDiscoverFeed.useInfiniteQuery(
+     { limit: 10, tag: activeTag || undefined },
+     {
+-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
++      getNextPageParam: lastPage => lastPage.nextCursor ?? undefined,
+       initialCursor: 0,
+     }
+   );
+@@ -45,7 +48,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+     if (!el) return;
+ 
+     const observer = new IntersectionObserver(
+-      (entries) => {
++      entries => {
+         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+           fetchNextPage();
+         }
+@@ -74,10 +77,13 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+     toast.success("Link copied to clipboard");
+   }, []);
+ 
+-  const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
+-    ...card,
+-    videoUrl: (card as any).videoUrl || null,
+-  }))) ?? [];
++  const allCards =
++    data?.pages.flatMap(page =>
++      page.cards.map(card => ({
++        ...card,
++        videoUrl: (card as any).videoUrl || null,
++      }))
++    ) ?? [];
+ 
+   const handleTagTap = useCallback((tag: string) => {
+     setActiveTag(tag);
+@@ -101,7 +107,9 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+ 
+   if (isLoading) {
+     return (
+-      <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
++      <div
++        style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}
++      >
+         <Loader2 className="animate-spin text-muted-foreground" size={32} />
+       </div>
+     );
+@@ -129,21 +137,32 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+     <>
+       {/* Active filter pill */}
+       {activeTag && (
+-        <div style={{
+-          display: "flex", alignItems: "center", gap: 8,
+-          padding: "8px 14px",
+-          position: "sticky", top: 0, zIndex: 10,
+-          background: "var(--color-bg-base)",
+-        }}>
++        <div
++          style={{
++            display: "flex",
++            alignItems: "center",
++            gap: 8,
++            padding: "8px 14px",
++            position: "sticky",
++            top: 0,
++            zIndex: 10,
++            background: "var(--color-bg-base)",
++          }}
++        >
+           <button
+             onClick={() => setActiveTag(null)}
+             style={{
+-              display: "flex", alignItems: "center", gap: 6,
++              display: "flex",
++              alignItems: "center",
++              gap: 6,
+               background: "rgba(123, 92, 245, 0.15)",
+               color: "rgba(123, 92, 245, 1)",
+               border: "1px solid rgba(123, 92, 245, 0.3)",
+-              borderRadius: 100, padding: "5px 12px",
+-              fontSize: 12, fontWeight: 600, cursor: "pointer",
++              borderRadius: 100,
++              padding: "5px 12px",
++              fontSize: 12,
++              fontWeight: 600,
++              cursor: "pointer",
+             }}
+           >
+             {activeTag}
+@@ -168,6 +187,7 @@ export default function DiscoverFeedContent({ onImageTap, onArtistProfileTap }:
+             onImageTap={onImageTap}
+             onTagTap={handleTagTap}
+             focusMode
++            discoveryMode
+             compact
+           />
+         ))}
+diff --git a/client/src/features/feed/FeedCard.tsx b/client/src/features/feed/FeedCard.tsx
+index 85a3ce4..754da3b 100644
+--- a/client/src/features/feed/FeedCard.tsx
++++ b/client/src/features/feed/FeedCard.tsx
+@@ -43,6 +43,7 @@ interface FeedCardProps {
+   onTagTap?: (tag: string) => void;
+   compact?: boolean;
+   focusMode?: boolean;
++  discoveryMode?: boolean;
+   /** Index in the feed — first 10 get eager loading */
+   index?: number;
+ }
+@@ -59,6 +60,7 @@ export function FeedCard({
+   onTagTap,
+   compact,
+   focusMode,
++  discoveryMode = false,
+   index = 999,
+ }: FeedCardProps) {
+   const [liked, setLiked] = useState(card.isLiked);
+@@ -124,7 +126,7 @@ export function FeedCard({
+     if (navigator.share) {
+       try {
+         await navigator.share({
+-          title: `${card.artistName} on d.o.t.s`,
++          title: `${card.artistName} on Tattoi`,
+           url: `${window.location.origin}/${card.artistSlug}`,
+         });
+       } catch {
+@@ -141,7 +143,10 @@ export function FeedCard({
+   /* ── Focus mode: full-screen immersive layout ── */
+   if (focusMode) {
+     return (
+-      <div className="feed-card feed-card-focus" onClick={handleDoubleTap}>
++      <div
++        className={`feed-card feed-card-focus ${discoveryMode ? "ivory-discovery-card" : ""}`}
++        onClick={handleDoubleTap}
++      >
+         {/* Full-bleed media */}
+         {isVideo ? (
+           <div
+@@ -225,10 +230,33 @@ export function FeedCard({
+ 
+         {/* Bottom overlay: actions + description + tags */}
+         <div className="feed-card-focus-bottom">
++          {discoveryMode && (
++            <div className="ivory-discovery-artist">
++              <h2>{card.artistName}</h2>
++              <p>
++                {[card.artistCity, card.keywords[0]]
++                  .filter(Boolean)
++                  .join(" · ")}
++              </p>
++              {card.artistSlug && (
++                <button
++                  className="v3-action v3-action-primary"
++                  onClick={e => {
++                    e.stopPropagation();
++                    onArtistTap(card.artistSlug!);
++                  }}
++                >
++                  View artist
++                </button>
++              )}
++            </div>
++          )}
+           {/* Action row */}
+           <div className="feed-card-focus-actions">
+             <button
+               className={`feed-card-focus-action-btn ${liked ? "feed-card-liked" : ""}`}
++              aria-label={liked ? "Unlike artwork" : "Like artwork"}
++              aria-pressed={liked}
+               onClick={e => {
+                 e.stopPropagation();
+                 handleLike();
+@@ -242,6 +270,7 @@ export function FeedCard({
+             </button>
+             <button
+               className="feed-card-focus-action-btn"
++              aria-label="Share artwork"
+               onClick={e => {
+                 e.stopPropagation();
+                 handleShare();
+diff --git a/client/src/main.tsx b/client/src/main.tsx
+index 029e253..32675eb 100644
+--- a/client/src/main.tsx
++++ b/client/src/main.tsx
+@@ -11,6 +11,7 @@ import { getLoginUrl, API_BASE_URL } from "./const";
+ import "./index.css";
+ import "./features/workspace/workspace.css";
+ import "./app-v3/design/system.css";
++import "./app-v3/design/ivory.css";
+ import { registerServiceWorker } from "./lib/pwa";
+ import { initializeAnalytics } from "./lib/analytics";
+ import { initGlobalErrorListeners } from "./lib/errorReporter";
+diff --git a/client/src/shells/ArtistShell.tsx b/client/src/shells/ArtistShell.tsx
+index dba6ce1..4c83006 100644
+--- a/client/src/shells/ArtistShell.tsx
++++ b/client/src/shells/ArtistShell.tsx
+@@ -1,3 +1,6 @@
++import Products from "@/app-v3/pages/Products";
++import Events from "@/app-v3/pages/Events";
++import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
+ import Studio from "@/app-v3/pages/Studio";
+ import Purchases from "@/app-v3/pages/Purchases";
+ import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
+@@ -44,6 +47,9 @@ export default function ArtistShell() {
+           </Route>
+           <Route path="/dashboard" component={Dashboard} />
+           <Route path="/business" component={BusinessPage} />
++          <Route path="/products" component={Products} />
++          <Route path="/artist-events" component={Events} />
++          <Route path="/store-orders" component={StoreOrders} />
+           <Route path="/money" component={MoneyPage} />
+           <Route path="/supplies" component={SuppliesPage} />
+           <Route path="/conversations" component={Conversations} />
+diff --git a/client/src/app-v3/design/ivory.css b/client/src/app-v3/design/ivory.css
+new file mode 100644
+index 0000000..04fe155
+--- /dev/null
++++ b/client/src/app-v3/design/ivory.css
+@@ -0,0 +1,709 @@
++/* Ivory: the shared Tattoi presentation layer. Domain and payment state stay in pages. */
++:root {
++  --ivory-display:
++    ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
++  --ivory-body:
++    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
++  --ivory-warning: #855318;
++  --ivory-warning-bg: #f8eedc;
++  --ivory-shadow: 0 8px 28px rgb(56 44 36 / 5%);
++  --v3-radius: 22px;
++  --v3-gutter: 20px;
++  --color-primary: var(--primary);
++}
++.dark {
++  --ivory-warning: #e8c38c;
++  --ivory-warning-bg: #3a3021;
++  --ivory-shadow: 0 8px 28px rgb(0 0 0 / 12%);
++}
++body {
++  font-family: var(--ivory-body);
++  -webkit-font-smoothing: antialiased;
++}
++.v3-screen {
++  font-family: var(--ivory-body);
++  font-size: 17px;
++  line-height: 1.45;
++}
++.v3-header {
++  padding: 10px var(--v3-gutter) 22px;
++}
++.v3-masthead {
++  margin-bottom: 14px;
++}
++.v3-wordmark {
++  font: 32px/1 var(--ivory-display);
++  letter-spacing: -0.055em;
++  text-transform: none;
++}
++.v3-header h1 {
++  font-family: var(--ivory-display);
++  font-weight: 500;
++  font-size: 36px;
++  line-height: 1.1;
++  letter-spacing: -0.045em;
++}
++.v3-subtitle {
++  font-size: 15px;
++  line-height: 1.45;
++  margin-top: 8px;
++  max-width: 44ch;
++}
++.v3-content {
++  gap: 24px;
++  padding-bottom: 28px;
++}
++.v3-scroll {
++  scrollbar-width: thin;
++  scrollbar-color: var(--v3-line) transparent;
++}
++.v3-action {
++  border-radius: 16px;
++  min-height: 50px;
++  font-size: 16px;
++  font-weight: 550;
++  padding: 13px 18px;
++  transition:
++    background-color 0.15s,
++    transform 0.15s;
++}
++.v3-action-primary {
++  background: var(--primary);
++  color: var(--primary-foreground);
++  box-shadow: 0 2px 3px rgb(56 44 36 / 5%);
++}
++.v3-action-secondary {
++  background: var(--v3-soft);
++  border-color: transparent;
++}
++.v3-action-quiet {
++  box-shadow: none;
++}
++.v3-action:not(:disabled):active {
++  transform: scale(0.985);
++}
++.v3-icon-button {
++  border-radius: 50%;
++  background: var(--v3-soft);
++}
++.v3-section-heading {
++  margin: 0 2px 12px;
++}
++.v3-section-heading h2 {
++  font: 550 15px/1.35 var(--ivory-body);
++  text-transform: none;
++  letter-spacing: 0;
++  color: var(--v3-muted);
++}
++.v3-panel {
++  border-color: color-mix(in srgb, var(--v3-line) 60%, transparent);
++  box-shadow: var(--ivory-shadow);
++  padding: 20px;
++}
++.v3-panel h2,
++.v3-panel h3 {
++  font-weight: 550;
++  letter-spacing: -0.025em;
++}
++.v3-panel-attention {
++  background: var(--v3-gold-soft);
++}
++.v3-row {
++  padding: 16px 4px;
++  gap: 12px;
++  min-height: 68px;
++  font-size: 16px;
++}
++.v3-row-copy strong {
++  font-weight: 550;
++  line-height: 1.35;
++}
++.v3-row-copy > span {
++  font-size: 14px;
++  line-height: 1.45;
++  margin-top: 4px;
++}
++.v3-row-icon {
++  color: var(--v3-gold-ink);
++}
++.v3-section > .v3-row {
++  background: var(--v3-surface);
++  padding-inline: 16px;
++  border-color: var(--v3-line);
++}
++.v3-section > .v3-section-heading + .v3-row {
++  border-radius: 20px 20px 0 0;
++}
++.v3-section > .v3-row:last-child {
++  border-bottom: 0;
++  border-radius: 0 0 20px 20px;
++}
++.v3-section > .v3-section-heading + .v3-row:last-child {
++  border-radius: 20px;
++}
++.v3-avatar {
++  background: var(--v3-soft);
++  box-shadow: inset 0 0 0 1px var(--v3-line);
++  color: var(--v3-gold-ink);
++}
++.v3-status {
++  border-radius: 99px;
++  font-size: 12px;
++  line-height: 1.4;
++  padding: 6px 10px;
++}
++.v3-status[data-tone="warning"] {
++  color: var(--ivory-warning);
++  background: var(--ivory-warning-bg);
++}
++.v3-search {
++  background: var(--v3-soft);
++  border-color: transparent;
++  border-radius: 14px;
++}
++.v3-search input {
++  font-size: 17px;
++}
++.v3-tabs {
++  gap: 3px;
++  background: var(--v3-soft);
++  border: 0;
++  border-radius: 14px;
++  padding: 4px;
++}
++.v3-tabs button {
++  flex: 1 0 auto;
++  min-height: 44px;
++  padding: 9px 12px;
++  border: 0;
++  border-radius: 11px;
++  font-size: 14px;
++}
++.v3-tabs button[aria-selected="true"] {
++  background: var(--v3-surface);
++  box-shadow: 0 1px 5px rgb(56 44 36 / 9%);
++}
++.v3-form {
++  gap: 22px;
++}
++.v3-form label {
++  font-size: 15px;
++  font-weight: 500;
++}
++.v3-form input,
++.v3-form select,
++.v3-form textarea {
++  border-radius: 14px;
++  font-size: 17px;
++  padding: 13px 14px;
++  border-color: var(--v3-line);
++}
++.v3-form input:focus-visible,
++.v3-form select:focus-visible,
++.v3-form textarea:focus-visible {
++  outline: 2px solid var(--ring);
++  outline-offset: 3px;
++}
++.v3-form input[type="checkbox"],
++.v3-form input[type="radio"] {
++  accent-color: var(--primary);
++}
++.v3-form small {
++  font-size: 13px;
++  line-height: 1.45;
++}
++.v3-feedback {
++  border-radius: 20px;
++  padding: 24px;
++  background: var(--v3-soft);
++}
++.v3-feedback[role="alert"] {
++  border-left: 3px solid var(--v3-red);
++}
++.v3-feedback h2 {
++  font-family: var(--ivory-display);
++  font-weight: 500;
++  font-size: 25px;
++  margin-bottom: 8px;
++}
++.v3-choice {
++  border-radius: 18px;
++}
++.v3-choice[aria-pressed="true"] {
++  background: var(--v3-gold-soft);
++  border-color: var(--v3-gold-ink);
++}
++.v3-facts {
++  font-size: 15px;
++}
++.v3-facts > div {
++  padding: 15px 0;
++}
++.v3-price {
++  font: 40px/1.15 var(--ivory-display);
++  font-variant-numeric: tabular-nums;
++}
++/* A quiet next appointment leads the working day. Expand the task queue when needed. */
++.v3-home-main > .v3-stack {
++  order: -1;
++}
++.v3-home-tabs {
++  display: flex;
++  gap: 4px;
++  background: var(--v3-soft);
++  padding: 4px;
++  border-radius: 14px;
++}
++.v3-home-tabs a {
++  flex: 1;
++  min-width: 0;
++  border: 0;
++  background: transparent;
++  border-radius: 11px;
++  padding: 11px 12px;
++  font-size: 14px;
++}
++.v3-home-main .v3-section-heading h2 {
++  font-size: 15px;
++  color: var(--v3-muted);
++  letter-spacing: 0;
++}
++.v3-next-name {
++  font-family: var(--ivory-display);
++  font-size: 32px !important;
++  font-weight: 500;
++}
++.v3-attention {
++  background: var(--v3-surface);
++  border-radius: 18px;
++}
++.v3-design-brief {
++  background: var(--v3-soft);
++  border: 0;
++  border-radius: 16px;
++}
++.v3-brief-toggle,
++.v3-thread-notes summary {
++  min-height: 44px;
++}
++/* Familiar chat geometry; the proposal remains part of the conversation. */
++.v3-thread-header h2 {
++  font-size: 18px;
++}
++.v3-messages {
++  gap: 16px;
++}
++.v3-message-text {
++  border-radius: 20px 20px 20px 6px;
++  font-size: 16px;
++  line-height: 1.45;
++  background: var(--v3-soft);
++}
++.v3-message.is-own .v3-message-text {
++  border-radius: 20px 20px 6px 20px;
++  background: var(--primary);
++  color: var(--primary-foreground);
++}
++.v3-composer {
++  border-top: 0;
++  padding: 10px 0;
++  align-items: center;
++}
++.v3-composer textarea {
++  border-radius: 24px;
++  padding: 13px 16px;
++  resize: none;
++}
++.v3-composer .v3-action {
++  border-radius: 50%;
++  min-width: 48px;
++}
++.v3-message time {
++  font-size: 12px;
++}
++/* Service colour carries meaning; selection never erases it. */
++.v3-day-strip button {
++  border-radius: 22px;
++  min-height: 70px;
++}
++.v3-day-strip button[aria-pressed="true"] {
++  background: var(--primary);
++  color: var(--primary-foreground);
++}
++.v3-day-strip button[aria-pressed="true"] span {
++  color: inherit;
++}
++.v3-day-strip strong {
++  font-weight: 500;
++  font-variant-numeric: tabular-nums;
++}
++.v3-calendar-event {
++  border-radius: 12px;
++}
++.v3-calendar-event.is-selected {
++  outline: 2px solid var(--v3-gold-ink);
++  outline-offset: -2px;
++}
++.v3-continuous-calendar {
++  border-color: var(--v3-line);
++  border-radius: 22px;
++}
++.v3-timeline-session {
++  border-radius: 15px;
++}
++.v3-timeline-day h3 {
++  font-weight: 550;
++}
++.v3-sitting-list > li {
++  border-radius: 15px;
++}
++/* System-like floating tab bar, retaining each role's existing destinations. */
++.v3-navigation {
++  inset: auto max(12px, var(--app-safe-right)) max(8px, var(--app-safe-bottom))
++    max(12px, var(--app-safe-left));
++  padding: 5px;
++  border: 1px solid color-mix(in srgb, var(--v3-line) 80%, transparent);
++  border-radius: 30px;
++  background: color-mix(in srgb, var(--v3-surface) 92%, transparent);
++  backdrop-filter: blur(22px);
++  -webkit-backdrop-filter: blur(22px);
++  box-shadow: 0 6px 25px rgb(56 44 36 / 10%);
++}
++.v3-navigation-items {
++  gap: 2px;
++  max-width: 600px;
++  margin: auto;
++}
++.v3-navigation-item {
++  min-height: 58px;
++  border-radius: 24px;
++  font-size: 11px;
++  gap: 3px;
++}
++.v3-navigation-item[aria-current="page"],
++.v3-navigation-artist .v3-navigation-item[aria-current="page"] {
++  background: var(--v3-soft);
++  color: var(--v3-ink);
++}
++.v3-navigation-item[aria-current="page"]::after {
++  display: none;
++}
++.v3-navigation-icon {
++  display: flex;
++}
++.v3-navigation-count {
++  background: var(--v3-red);
++  color: white;
++}
++/* All existing Radix sheets keep their portal, focus trap and dismissal behaviour. */
++[data-slot="sheet-overlay"] {
++  background: rgb(29 23 18 / 28%);
++  backdrop-filter: blur(3px);
++}
++[data-slot="sheet-content"] {
++  border-color: var(--v3-line);
++  font-family: var(--ivory-body);
++}
++[data-slot="sheet-content"][data-side="bottom"] {
++  border-radius: 30px 30px 0 0;
++}
++.ivory-sheet-handle {
++  width: 36px;
++  height: 5px;
++  border-radius: 99px;
++  background: var(--v3-line);
++  margin: 10px auto 0;
++  flex-shrink: 0;
++}
++.ivory-sheet [data-slot="sheet-header"] {
++  border-bottom: 0;
++  padding: 18px 58px 16px 24px;
++}
++.ivory-sheet [data-slot="sheet-title"] {
++  font-family: var(--ivory-display);
++  font-size: 27px;
++  font-weight: 500;
++  line-height: 1.2;
++  text-align: left;
++  width: 100%;
++}
++.ivory-sheet [data-slot="sheet-description"] {
++  font-size: 14px;
++  text-align: left;
++}
++[data-slot="sheet-close"] {
++  border-radius: 50%;
++  background: var(--v3-soft);
++  opacity: 1;
++}
++/* Discovery and artist focus retain the existing media pool and feed interactions. */
++body .client-home-header {
++  padding: 8px 20px;
++  padding-top: calc(var(--app-safe-top, 0px) + 8px);
++  background: color-mix(in srgb, var(--v3-paper) 94%, transparent);
++  backdrop-filter: blur(20px);
++}
++body .client-home-logo {
++  font: 32px/1 var(--ivory-display);
++  text-transform: none;
++  letter-spacing: -0.06em;
++}
++body .client-home-avatar {
++  width: 44px;
++  height: 44px;
++  border: 1px solid var(--v3-line);
++}
++body .client-home-toggle {
++  border-radius: 99px;
++  background: var(--v3-soft);
++}
++body .client-home-toggle-btn {
++  width: 44px;
++  min-height: 44px;
++  border-radius: 50%;
++}
++body .client-home-toggle-btn.active {
++  background: var(--v3-surface);
++  color: var(--v3-ink);
++  box-shadow: 0 1px 5px rgb(56 44 36 / 8%);
++}
++body .client-home-content-inner {
++  padding-top: calc(var(--app-safe-top, 0px) + 74px);
++}
++body .snap-scroll .client-home-content-inner {
++  padding-top: 0;
++}
++body .feed-card:not(.feed-card-focus) {
++  margin: 0 16px 24px;
++  border-radius: 24px;
++  overflow: hidden;
++  background: var(--v3-surface);
++  border: 1px solid var(--v3-line);
++  box-shadow: var(--ivory-shadow);
++}
++body .feed-card:not(.feed-card-focus) .feed-card-header {
++  padding: 14px 16px;
++}
++body .feed-card-artist-name {
++  font-size: 17px;
++  letter-spacing: -0.02em;
++}
++body .feed-card:not(.feed-card-focus) .feed-card-image-container {
++  border-radius: 0;
++}
++body .feed-card:not(.feed-card-focus) .feed-card-actions {
++  padding: 10px 12px;
++}
++body .feed-card-action-btn {
++  min-width: 44px;
++  min-height: 44px;
++}
++body .artist-focus-pill {
++  background: color-mix(in srgb, var(--v3-surface) 94%, transparent);
++  color: var(--v3-ink);
++  border: 1px solid var(--v3-line);
++  border-radius: 28px;
++  box-shadow: var(--ivory-shadow);
++}
++body .artist-focus-pill-name,
++body .artist-focus-pill-back {
++  color: var(--v3-ink);
++}
++body .artist-focus-pill-back,
++body .artist-profile-close {
++  min-height: 44px;
++  min-width: 44px;
++}
++body .artist-focus-pill-book,
++body .artist-focus-book-btn {
++  background: var(--primary);
++  color: var(--primary-foreground);
++  border-radius: 20px;
++  min-height: 44px;
++}
++body .artist-profile-name {
++  font: 32px/1.2 var(--ivory-display);
++}
++body .artist-profile-bio {
++  font-size: 15px;
++}
++body .artist-profile-header {
++  background: var(--v3-paper);
++  border-color: var(--v3-line);
++}
++@media (min-width: 768px) {
++  :root {
++    --v3-gutter: 32px;
++  }
++  .v3-header {
++    padding-top: 28px;
++    padding-bottom: 24px;
++  }
++  .v3-navigation {
++    max-width: 600px;
++    margin-inline: auto;
++  }
++  .v3-header h1 {
++    font-size: 38px;
++  }
++}
++@media (max-width: 380px) {
++  :root {
++    --v3-gutter: 16px;
++  }
++  .v3-header h1 {
++    font-size: 32px;
++  }
++  .v3-form-pair {
++    grid-template-columns: 1fr;
++  }
++  .v3-hours-fields {
++    grid-template-columns: 1fr auto 1fr;
++  }
++  .v3-hours-fields > label:last-child {
++    grid-column: 1 / -1;
++  }
++}
++@media (prefers-reduced-motion: reduce) {
++  .v3-action,
++  body .client-home-header,
++  body .client-home-toggle-btn,
++  [data-slot="sheet-content"],
++  [data-slot="sheet-overlay"] {
++    animation: none !important;
++    transition: none !important;
++  }
++}
++@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
++  .v3-navigation,
++  body .client-home-header,
++  body .artist-focus-pill {
++    background: var(--v3-surface);
++    backdrop-filter: none;
++    -webkit-backdrop-filter: none;
++  }
++}
++@media (max-width: 767px) {
++  body:has(.v3-inbox.has-selection) .v3-navigation {
++    display: none;
++  }
++  .v3-screen:has(.v3-inbox.has-selection) .v3-scroll {
++    padding-bottom: var(--app-safe-bottom);
++  }
++  .v3-screen:has(.v3-inbox.has-selection) .v3-content {
++    padding-bottom: 0;
++  }
++  .v3-inbox.has-selection {
++    height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 12px);
++  }
++}
++.v3-identity-form form > .v3-action {
++  width: 100%;
++}
++.v3-identity-roles {
++  border: 0;
++  border-radius: 14px;
++  padding: 4px;
++  background: var(--v3-soft);
++}
++.v3-identity-roles a {
++  border-radius: 11px;
++  font-size: 14px;
++}
++.v3-identity-roles a[aria-current] {
++  border: 0;
++  background: var(--v3-surface);
++  box-shadow: 0 1px 4px rgb(56 44 36 / 8%);
++}
++.ivory-artist-hero {
++  display: block;
++  position: relative;
++  border-radius: 24px;
++  overflow: hidden;
++  max-height: 460px;
++}
++.ivory-artist-hero img {
++  width: 100%;
++  height: 100%;
++  max-height: 460px;
++  aspect-ratio: 4/5;
++  object-fit: cover;
++}
++.ivory-artist-hero span {
++  position: absolute;
++  inset: auto 0 0;
++  padding: 40px 20px 20px;
++  background: linear-gradient(transparent, rgb(22 17 13 / 65%));
++  color: white;
++  font-size: 14px;
++}
++.v3-week-strip button[aria-pressed="true"] {
++  background: var(--primary);
++  color: var(--primary-foreground);
++  border-color: transparent;
++  border-radius: 22px;
++}
++.v3-week-strip button[aria-pressed="true"] span {
++  color: inherit;
++}
++.v3-week-strip button {
++  min-height: 66px;
++}
++body .ivory-discovery-feed .client-home-content-inner {
++  padding-top: calc(var(--app-safe-top, 0px) + 74px);
++  padding-bottom: calc(var(--app-safe-bottom, 0px) + 90px);
++}
++body .ivory-discovery-feed {
++  scroll-padding-top: calc(var(--app-safe-top, 0px) + 74px);
++}
++body .ivory-discovery-card {
++  width: calc(100% - 32px);
++  height: max(
++    500px,
++    calc(
++      100dvh - var(--app-safe-top, 0px) - var(--app-safe-bottom, 0px) - 176px
++    )
++  );
++  margin: 0 16px 20px;
++  border-radius: 24px;
++  overflow: hidden;
++}
++body .ivory-discovery-card .feed-card-watermark {
++  display: none;
++}
++body .ivory-discovery-card .feed-card-focus-bottom {
++  inset: auto 10px 10px;
++  padding: 16px;
++  border-radius: 20px;
++  background: color-mix(in srgb, var(--v3-surface) 97%, transparent);
++  color: var(--v3-ink);
++}
++.ivory-discovery-artist h2 {
++  font: 26px/1.15 var(--ivory-display);
++  letter-spacing: -0.03em;
++}
++.ivory-discovery-artist p {
++  color: var(--v3-muted);
++  font-size: 14px;
++  margin: 5px 0 14px;
++}
++.ivory-discovery-artist .v3-action {
++  width: 100%;
++}
++body .ivory-discovery-card .feed-card-focus-actions {
++  position: absolute;
++  bottom: calc(100% + 14px);
++  right: 4px;
++  gap: 8px;
++}
++body .ivory-discovery-card .feed-card-focus-action-btn {
++  width: 44px;
++  height: 44px;
++  border-radius: 50%;
++  background: rgb(29 23 18 / 58%);
++}
++body .ivory-discovery-card .feed-card-focus-like-count,
++body .ivory-discovery-card .feed-card-focus-desc,
++body .ivory-discovery-card .feed-card-focus-tags {
++  display: none;
++}
