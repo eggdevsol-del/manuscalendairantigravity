@@ -32,14 +32,21 @@ function usePaymentRefresh(confirming: boolean) {
     return () => timers.forEach(clearTimeout);
   }, [confirming, utils]);
 }
-function Confirming({ onCheck }: { onCheck: () => unknown }) {
+function Confirming({
+  onCheck,
+  unverified = false,
+}: {
+  onCheck: () => unknown;
+  unverified?: boolean;
+}) {
   return (
     <Panel>
       <div role="status">
         <h2>Confirming your payment</h2>
         <p>
-          Your payment was submitted. Please don’t pay again. You can close this
-          sheet and return to Bookings to check its status.
+          {unverified
+            ? "We can’t verify the payment status right now. This does not confirm a payment was made. Check again before attempting another payment."
+            : "Your payment was submitted. Please don’t pay again. You can close this sheet and return to Bookings to check its status."}
         </p>
       </div>
       <Action tone="secondary" onClick={() => onCheck()}>
@@ -61,7 +68,12 @@ export function SessionPlanCheckoutSheet({
   const [timedOut, setTimedOut] = useState(false);
   const query = trpc.sessionPlans.getById.useQuery(
     { sessionPlanId },
-    { refetchInterval: step === "confirming" && !timedOut ? 2000 : false }
+    {
+      refetchInterval: q =>
+        !timedOut && (step === "confirming" || q.state.data?.paymentState)
+          ? 2000
+          : false,
+    }
   );
   const accept = trpc.sessionPlans.accept.useMutation({
     onSuccess: () => setStep("payment"),
@@ -70,10 +82,10 @@ export function SessionPlanCheckoutSheet({
   const paid = plan?.depositRecorded || plan?.status === "accepted";
   usePaymentRefresh(step === "confirming" || paid);
   useEffect(() => {
-    if (step !== "confirming") return;
+    if (step !== "confirming" && !plan?.paymentState) return;
     const timer = setTimeout(() => setTimedOut(true), 60000);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, plan?.paymentState]);
   return (
     <SheetShell
       isOpen
@@ -125,7 +137,10 @@ export function SessionPlanCheckoutSheet({
             <Action onClick={onClose}>Done</Action>
           </>
         ) : step === "confirming" || plan?.paymentState ? (
-          <Confirming onCheck={() => query.refetch()} />
+          <Confirming
+            unverified={plan?.paymentState === "unverified"}
+            onCheck={() => query.refetch()}
+          />
         ) : step === "payment" && accept.data ? (
           <DotsCheckout
             clientSecret={accept.data.clientSecret}

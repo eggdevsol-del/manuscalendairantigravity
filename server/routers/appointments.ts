@@ -1,3 +1,4 @@
+import { selectBookingProjects } from "../../shared/clientBookingGroups";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { requireArtist, requireConversationAccess } from "../services/access";
 import { TRPCError } from "@trpc/server";
@@ -1255,212 +1256,173 @@ export const appointmentsRouter = router({
       const dbRef = await db.getDb();
       if (!dbRef) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      const clientId = ctx.user.id;
-      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
-
-      if (input.tab === "upcoming") {
-        // Upcoming: confirmed/pending appointments where startTime >= now, excluding cancelled
-        const upcoming = await dbRef.query.appointments.findMany({
-          where: and(
-            eq(schema.appointments.clientId, clientId),
-            gte(schema.appointments.startTime, now),
-            not(eq(schema.appointments.status, "cancelled"))
-          ),
-          orderBy: (appointments, { asc }) => [asc(appointments.startTime)],
-        });
-
-        // Enrich with artist info
-        const artistIds = [...new Set(upcoming.map(a => a.artistId))];
-        const artists =
-          artistIds.length > 0
-            ? await dbRef.query.users.findMany({
+      const rows = await dbRef.query.appointments.findMany({
+        where: eq(schema.appointments.clientId, ctx.user.id),
+        orderBy: (a, { asc }) => [asc(a.startTime)],
+      });
+      const selected = selectBookingProjects(rows, input.tab);
+      const planIds = [
+        ...new Set(
+          selected.map(a => a.sessionPlanId).filter((id): id is number => !!id)
+        ),
+      ];
+      const savedPlans = planIds.length
+        ? await dbRef.query.sessionPlans.findMany({
+            where: inArray(schema.sessionPlans.id, planIds),
+            with: { message: true },
+          })
+        : [];
+      const savedNames = new Map(
+        savedPlans.map(p => {
+          let name: string | null = null;
+          try {
+            const meta = JSON.parse(p.message?.metadata || "{}");
+            if (typeof meta.projectName === "string") name = meta.projectName;
+          } catch {}
+          return [p.id, name];
+        })
+      );
+      const artistIds = [...new Set(rows.map(a => a.artistId))];
+      const ids = selected.map(a => a.id);
+      const [artists, settings, requests, forms, leads, consults] =
+        await Promise.all([
+          artistIds.length
+            ? dbRef.query.users.findMany({
                 where: inArray(schema.users.id, artistIds),
               })
-            : [];
-        const artistSettings =
-          artistIds.length > 0
-            ? await dbRef.query.artistSettings.findMany({
+            : [],
+          artistIds.length
+            ? dbRef.query.artistSettings.findMany({
                 where: inArray(schema.artistSettings.userId, artistIds),
               })
-            : [];
-
-        // Get pending consult requests
-        const pendingConsults = await dbRef.query.consultations.findMany({
-          where: and(
-            eq(schema.consultations.clientId, clientId),
-            eq(schema.consultations.status, "pending")
-          ),
-        });
-
-        // Get payment requests for upcoming appointments
-        const appointmentIds = upcoming.map(a => a.id);
-        const paymentRequests =
-          appointmentIds.length > 0
-            ? await dbRef.query.paymentRequests.findMany({
+            : [],
+          ids.length
+            ? dbRef.query.paymentRequests.findMany({
                 where: and(
-                  inArray(schema.paymentRequests.appointmentId, appointmentIds),
+                  inArray(schema.paymentRequests.appointmentId, ids),
+                  eq(schema.paymentRequests.clientId, ctx.user.id),
                   eq(schema.paymentRequests.status, "pending")
                 ),
               })
-            : [];
-
-        const artistMap = new Map(artists.map(a => [a.id, a]));
-        const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
-        const paymentRequestMap = new Map(
-          paymentRequests.map(pr => [pr.appointmentId, pr])
-        );
-
-        // Get consult artist info
-        const consultArtistIds = [
-          ...new Set(pendingConsults.map(c => c.artistId)),
-        ];
-        const consultArtists =
-          consultArtistIds.length > 0
-            ? await dbRef.query.users.findMany({
-                where: inArray(schema.users.id, consultArtistIds),
+            : [],
+          ids.length
+            ? dbRef.query.consentForms.findMany({
+                where: and(
+                  inArray(schema.consentForms.appointmentId, ids),
+                  eq(schema.consentForms.status, "pending")
+                ),
               })
-            : [];
-        const consultArtistMap = new Map(consultArtists.map(a => [a.id, a]));
-
-        return {
-          appointments: upcoming.map(a => {
-            const artist = artistMap.get(a.artistId);
-            const settings = settingsMap.get(a.artistId);
-            const payReq = paymentRequestMap.get(a.id);
-            const durationMinutes =
-              a.startTime && a.endTime
-                ? Math.round(
-                    (new Date(a.endTime).getTime() -
-                      new Date(a.startTime).getTime()) /
-                      60000
-                  )
-                : null;
-
-            return {
-              id: a.id,
-              startsAt: a.startTime.replace(" ", "T") + "Z",
-              timeZone: a.timeZone || "Australia/Brisbane",
-              endsAt: a.endTime.replace(" ", "T") + "Z",
-              durationMinutes,
-              status: a.status,
-              title: a.title,
-              projectName: a.projectName,
-              sessionIndex: a.sessionIndex,
-              sessionTotal: a.sessionTotal,
-              serviceName: a.serviceName,
-              studioName: settings?.businessName || null,
-              artist: {
-                id: a.artistId,
-                name: settings?.displayName || artist?.name || "Artist",
-              },
-              amountPaidCents:
-                a.totalPaidAmountCents ?? (a.amountPaid || 0) * 100,
-              completedAt: a.completedAt,
-              aftercareTemplateId: a.aftercareTemplateId,
-              depositPaidCents: a.depositPaid
-                ? (a.depositAmount || 0) * 100
-                : 0,
-              estimateCents:
-                a.totalExpectedAmountCents || (a.price ? a.price * 100 : 0),
-              balanceDueCents: a.remainingBalanceCents || 0,
-              paymentStatus: a.paymentStatus,
-              paymentRequest: payReq
-                ? {
-                    id: payReq.id,
-                    amountCents: payReq.amountCents,
-                    status: payReq.status,
-                  }
-                : null,
-              conversationId: a.conversationId,
-            };
-          }),
-          pendingConsults: pendingConsults.map(c => {
-            const artist = consultArtistMap.get(c.artistId);
-            return {
-              id: c.id,
-              artistId: c.artistId,
-              artistName: artist?.name || "Artist",
-              subject: c.subject,
-              createdAt: c.createdAt,
-              conversationId: c.conversationId,
-            };
-          }),
-        };
-      } else {
-        // Past: completed appointments
-        const past = await dbRef.query.appointments.findMany({
-          where: and(
-            eq(schema.appointments.clientId, clientId),
-            eq(schema.appointments.status, "completed")
-          ),
-          orderBy: (appointments, { desc: d }) => [d(appointments.startTime)],
-        });
-
-        // Enrich with artist info
-        const artistIds = [...new Set(past.map(a => a.artistId))];
-        const artists =
-          artistIds.length > 0
-            ? await dbRef.query.users.findMany({
-                where: inArray(schema.users.id, artistIds),
+            : [],
+          input.tab === "upcoming"
+            ? dbRef.query.leads.findMany({
+                where: and(
+                  eq(schema.leads.clientId, ctx.user.id),
+                  inArray(schema.leads.status, [
+                    "new",
+                    "viewed",
+                    "contacted",
+                    "qualifying",
+                    "proposal_sent",
+                    "proposal_accepted",
+                    "deposit_requested",
+                    "deposit_pending",
+                  ])
+                ),
               })
-            : [];
-        const artistSettings =
-          artistIds.length > 0
-            ? await dbRef.query.artistSettings.findMany({
-                where: inArray(schema.artistSettings.userId, artistIds),
+            : [],
+          input.tab === "upcoming"
+            ? dbRef.query.consultations.findMany({
+                where: and(
+                  eq(schema.consultations.clientId, ctx.user.id),
+                  eq(schema.consultations.status, "pending")
+                ),
               })
-            : [];
-
-        const artistMap = new Map(artists.map(a => [a.id, a]));
-        const settingsMap = new Map(artistSettings.map(s => [s.userId, s]));
-
-        return {
-          appointments: past.map(a => {
-            const artist = artistMap.get(a.artistId);
-            const settings = settingsMap.get(a.artistId);
-            const durationMinutes =
-              a.startTime && a.endTime
-                ? Math.round(
-                    (new Date(a.endTime).getTime() -
-                      new Date(a.startTime).getTime()) /
-                      60000
-                  )
-                : null;
-
-            return {
-              id: a.id,
-              startsAt: a.startTime.replace(" ", "T") + "Z",
-              timeZone: a.timeZone || "Australia/Brisbane",
-              endsAt: a.endTime.replace(" ", "T") + "Z",
-              durationMinutes,
-              status: a.status,
-              title: a.title,
-              projectName: a.projectName,
-              sessionIndex: a.sessionIndex,
-              sessionTotal: a.sessionTotal,
-              serviceName: a.serviceName,
-              studioName: settings?.businessName || null,
-              artist: {
-                id: a.artistId,
-                name: settings?.displayName || artist?.name || "Artist",
-              },
-              depositPaidCents: a.depositPaid
-                ? (a.depositAmount || 0) * 100
-                : 0,
-              estimateCents: a.totalExpectedAmountCents ?? (a.price || 0) * 100,
-              balanceDueCents: a.remainingBalanceCents ?? 0,
-              paymentRequest: null,
-              amountPaidCents:
-                a.totalPaidAmountCents ||
-                (a.amountPaid ? a.amountPaid * 100 : 0),
-              completedAt: a.completedAt || a.actualEndTime || a.endTime,
-              aftercareTemplateId: a.aftercareTemplateId,
-              paymentStatus: a.paymentStatus,
-              conversationId: a.conversationId,
-            };
-          }),
-        };
-      }
+            : [],
+        ]);
+      const requestArtistIds = [
+        ...new Set([...leads, ...consults].map(l => l.artistId)),
+      ];
+      const requestArtists = requestArtistIds.length
+        ? await dbRef.query.users.findMany({
+            where: inArray(schema.users.id, requestArtistIds),
+          })
+        : [];
+      const timestamp = (value: string) => value.replace(" ", "T") + "Z";
+      return {
+        appointments: selected.map(a => {
+          const artist = artists.find(u => u.id === a.artistId);
+          const setting = settings.find(s => s.userId === a.artistId);
+          const request = requests.find(
+            r =>
+              r.appointmentId === a.id &&
+              (!r.expiresAt || new Date(timestamp(r.expiresAt)) > new Date())
+          );
+          return {
+            id: a.id,
+            sessionPlanId: a.sessionPlanId,
+            startsAt: timestamp(a.startTime),
+            endsAt: timestamp(a.endTime),
+            timeZone: a.timeZone || "Australia/Brisbane",
+            durationMinutes: Math.round(
+              (+new Date(timestamp(a.endTime)) -
+                +new Date(timestamp(a.startTime))) /
+                60000
+            ),
+            status: a.status,
+            title: a.title,
+            projectName:
+              a.projectName ||
+              (a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null) ||
+              null,
+            sessionIndex: a.sessionIndex,
+            sessionTotal: a.sessionTotal,
+            serviceName: a.serviceName,
+            studioName: setting?.businessName || null,
+            artist: {
+              id: a.artistId,
+              name: setting?.displayName || artist?.name || "Artist",
+            },
+            amountPaidCents:
+              a.totalPaidAmountCents ?? (a.amountPaid || 0) * 100,
+            depositPaidCents: a.depositPaid ? (a.depositAmount || 0) * 100 : 0,
+            estimateCents: a.totalExpectedAmountCents ?? (a.price || 0) * 100,
+            balanceDueCents: a.remainingBalanceCents ?? 0,
+            paymentStatus: a.paymentStatus,
+            paymentRequest: request
+              ? {
+                  id: request.id,
+                  amountCents: request.amountCents,
+                  status: request.status,
+                  token: request.token,
+                }
+              : null,
+            pendingFormCount: forms.filter(f => f.appointmentId === a.id)
+              .length,
+            completedAt: a.completedAt,
+            aftercareTemplateId: a.aftercareTemplateId,
+            conversationId: a.conversationId,
+          };
+        }),
+        pendingRequests: leads.map(l => ({
+          id: l.id,
+          artistName:
+            requestArtists.find(a => a.id === l.artistId)?.name ||
+            "Your artist",
+          description: l.projectDescription,
+          status: l.status,
+          conversationId: l.conversationId,
+        })),
+        pendingConsults: consults.map(c => ({
+          id: c.id,
+          artistId: c.artistId,
+          artistName:
+            requestArtists.find(a => a.id === c.artistId)?.name ||
+            "Your artist",
+          subject: c.subject,
+          createdAt: c.createdAt,
+          conversationId: c.conversationId,
+        })),
+      };
     }),
 
   /**

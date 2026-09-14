@@ -1,3 +1,7 @@
+import {
+  paymentProjectKeys,
+  briefProjectKeys,
+} from "../services/projectAttribution";
 import { generateProjectName } from "../services/llmEnrichment";
 import { readPresentedPlans } from "../services/sessionPlanPresentation";
 import { TRPCError } from "@trpc/server";
@@ -248,6 +252,7 @@ export const projectsRouter = router({
               .select({
                 id: schema.paymentLedger.id,
                 bookingId: schema.paymentLedger.bookingId,
+                stripePaymentId: schema.paymentLedger.stripePaymentId,
                 type: schema.paymentLedger.transactionType,
                 amountCents: schema.paymentLedger.amountCents,
                 platformFeeCents: schema.paymentLedger.platformFeeCents,
@@ -286,6 +291,7 @@ export const projectsRouter = router({
           ? db
               .select({
                 id: schema.paymentRequests.id,
+                token: schema.paymentRequests.token,
                 appointmentId: schema.paymentRequests.appointmentId,
                 amountCents: schema.paymentRequests.amountCents,
                 expiresAt: schema.paymentRequests.expiresAt,
@@ -316,7 +322,12 @@ export const projectsRouter = router({
           }) => ({
             ...s,
             pendingRequest:
-              requests.find(r => r.appointmentId === s.id) || null,
+              requests.find(
+                r =>
+                  r.appointmentId === s.id &&
+                  (!r.expiresAt ||
+                    new Date(r.expiresAt.replace(" ", "T") + "Z") > new Date())
+              ) || null,
             startsAt: s.startsAt.replace(" ", "T") + "Z",
             endsAt: s.endsAt.replace(" ", "T") + "Z",
             estimateCents: expected ?? Math.round((price || 0) * 100),
@@ -337,7 +348,14 @@ export const projectsRouter = router({
           depositCents: p.depositTotalCents,
           createdAt: p.createdAt,
         })),
-        history,
+        history: history.map(({ stripePaymentId, ...entry }) => ({
+          ...entry,
+          projectKeys: paymentProjectKeys(
+            { ...entry, stripePaymentId },
+            sessions,
+            plans
+          ),
+        })),
         forms,
         briefs: leads.map(({ paymentId, references, ...lead }) => {
           let images: string[] = [];
@@ -349,7 +367,11 @@ export const projectsRouter = router({
                   typeof url === "string" && /^https?:\/\//.test(url)
               );
           } catch {}
-          return { ...lead, images };
+          const projectKeys = briefProjectKeys(
+            { ...lead, paymentId },
+            detailedPlans
+          );
+          return { ...lead, images, projectKeys };
         }),
       };
     }),

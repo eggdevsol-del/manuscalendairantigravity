@@ -60,6 +60,9 @@ export default function Booking() {
           !["cancelled", "completed", "no-show"].includes(s.status) &&
           instant(s.endsAt) > new Date()
       ) || data?.sessions.at(-1);
+  const [namingFailed, setNamingFailed] = useState(false);
+  const [namingRetry, setNamingRetry] = useState(0);
+  const [requestDraft, setRequestDraft] = useState("");
   const namingAttempts = useRef(new Set<number>());
   const nameProject = trpc.projects.nameProject.useMutation({
     onSuccess: () => query.refetch(),
@@ -81,14 +84,14 @@ export default function Booking() {
         try {
           await nameProject.mutateAsync({ conversationId: id, sessionPlanId });
         } catch {
-          /* Existing labels remain until naming can be retried. */
+          setNamingFailed(true);
         }
       }
     })();
     return () => {
       stopped = true;
     };
-  }, [id, data?.sessions]);
+  }, [id, data?.sessions, namingRetry]);
   const [sign, setSign] = useState(false),
     [balance, setBalance] = useState(false);
   const [plan, setPlan] = useState<number | null>(null);
@@ -96,6 +99,18 @@ export default function Booking() {
     { appointmentId: session?.id },
     { enabled: client && !!session }
   );
+  const formAction = useRef("");
+  useEffect(() => {
+    const key = `${id}:${session?.id}`;
+    if (
+      qs.get("action") === "forms" &&
+      forms.data?.length &&
+      formAction.current !== key
+    ) {
+      formAction.current = key;
+      setSign(true);
+    }
+  }, [search, id, session?.id, forms.data]);
   const siblings = projectSessions(data?.sessions || [], session);
   const groups = [
     ...new Map((data?.sessions || []).map(s => [projectKey(s), s])).values(),
@@ -103,8 +118,23 @@ export default function Booking() {
   // A returning client's new proposal must remain reachable before sessions exist.
   const pending =
     data?.plans.filter(
-      p => p.paymentState || (p.requiresDeposit ?? p.status === "pending")
+      p =>
+        (!session || p.id === session.sessionPlanId) &&
+        (p.paymentState || (p.requiresDeposit ?? p.status === "pending"))
     ) || [];
+  const selectedKey = session ? projectKey(session) : null;
+  const briefs = (data?.briefs || []).filter(
+    b => !selectedKey || b.projectKeys?.includes(selectedKey)
+  );
+  const unassignedBriefs = (data?.briefs || []).filter(
+    b => !b.projectKeys?.length
+  );
+  const unassignedHistory = (data?.history || []).filter(
+    h => !h.projectKeys?.length
+  );
+  const history = (data?.history || []).filter(
+    h => !selectedKey || h.projectKeys?.includes(selectedKey)
+  );
   const refresh = () => {
     void query.refetch();
     if (client) void forms.refetch();
@@ -171,27 +201,40 @@ export default function Booking() {
               </label>
             </div>
           )}
-          {siblings.length > 1 && (
-            <div className="v3-form">
-              <label>
-                Session
-                <select
-                  aria-label="Session"
-                  value={session?.id}
-                  onChange={e => navigate(tab, Number(e.target.value))}
-                >
-                  {siblings.map((s, i) => (
-                    <option key={s.id} value={s.id}>
-                      Session {s.sessionIndex || i + 1} ·{" "}
-                      {bookingDate(s.startsAt, s.timeZone)} ·{" "}
-                      {statusLabel(s.status)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+          {namingFailed && (
+            <Panel>
+              <p>
+                We couldn’t name every project. Your bookings are still
+                available.
+              </p>
+              <Action
+                tone="secondary"
+                onClick={() => {
+                  namingAttempts.current.clear();
+                  setNamingFailed(false);
+                  setNamingRetry(n => n + 1);
+                }}
+              >
+                Retry project names
+              </Action>
+            </Panel>
           )}
-          {tab === "Messages" && <Thread id={id} />}
+          {siblings.length > 1 && (
+            <Section title="Project sittings">
+              <ol className="v3-sitting-list" aria-label="Project sittings">
+                {siblings.map((s, i) => (
+                  <li key={s.id} data-next={s.id === session?.id}>
+                    <Row
+                      title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}`}
+                      detail={bookingDate(s.startsAt, s.timeZone)}
+                      onClick={() => navigate(tab, s.id)}
+                    />
+                  </li>
+                ))}
+              </ol>
+            </Section>
+          )}
+          {tab === "Messages" && <Thread id={id} initialDraft={requestDraft} />}
           {tab === "Overview" && (
             <div className="v3-grid">
               <div className="v3-stack">
@@ -298,13 +341,12 @@ export default function Booking() {
                     </p>
                   </Panel>
                 )}
-                {data.briefs.length > 0 && (
-                  <Section title="Conversation design notes">
+                {briefs.length > 0 && (
+                  <Section title="Project design notes">
                     <p className="v3-muted">
-                      These notes belong to the client conversation and may
-                      cover more than one tattoo.
+                      These references are linked to this tattoo project.
                     </p>
-                    {data.briefs.map(b => (
+                    {briefs.map(b => (
                       <div key={b.id} className="v3-stack">
                         <p style={{ whiteSpace: "pre-wrap" }}>
                           {b.description || "Discuss your design in Messages."}
@@ -337,7 +379,17 @@ export default function Booking() {
                         <dd>{money(session.remainingCents)}</dd>
                       </div>
                     </dl>
+                    {client && session.pendingRequest && (
+                      <ActionLink
+                        tone="primary"
+                        href={`/pay/${session.pendingRequest.token}`}
+                      >
+                        Review {money(session.pendingRequest.amountCents)}{" "}
+                        request
+                      </ActionLink>
+                    )}
                     {client &&
+                      !session.pendingRequest &&
                       session.remainingCents > 0 &&
                       !["cancelled", "no-show"].includes(session.status) && (
                         <Action onClick={() => setBalance(true)}>
@@ -358,17 +410,46 @@ export default function Booking() {
                 {!client && session && (
                   <SessionActions session={session} onChange={refresh} />
                 )}{" "}
+                {client &&
+                  session &&
+                  !["cancelled", "completed", "no-show"].includes(
+                    session.status
+                  ) && (
+                    <Section title="Change this sitting">
+                      <p className="v3-muted">
+                        Send a request to your artist. Your appointment stays
+                        booked until they confirm a change. Their cancellation
+                        policy applies.
+                      </p>
+                      {["Request a date change", "Request cancellation"].map(
+                        label => (
+                          <Action
+                            key={label}
+                            tone="secondary"
+                            onClick={() => {
+                              setRequestDraft(
+                                `${label} for ${session.projectName || "my tattoo project"}, sitting ${session.sessionIndex || 1} on ${bookingDate(session.startsAt, session.timeZone)}. `
+                              );
+                              navigate("Messages");
+                            }}
+                          >
+                            {label}
+                          </Action>
+                        )
+                      )}
+                    </Section>
+                  )}
                 {client && <EarlierAppointment conversationId={id} />}
               </aside>
             </div>
           )}
           {tab === "Files" && (
-            <Section title="Conversation reference images">
-              {!data.briefs.some(b => b.images.length) && (
-                <Feedback empty="No references attached yet. Add photos in Messages." />
+            <Section title="Project reference images">
+              {!briefs.some(b => b.images.length) && (
+                <Feedback empty="No references are linked to this project yet. Older, unassigned references remain available in Messages." />
               )}
               <div className="v3-file-grid">
-                {data.briefs
+                {briefs
                   .flatMap(b => b.images)
                   .map((url, i) => (
                     <a
@@ -385,21 +466,75 @@ export default function Booking() {
                     </a>
                   ))}
               </div>
-              <ActionLink href={`/projects/${id}?view=Messages`} tone="quiet">
+              {!!unassignedBriefs.length && selectedKey && (
+                <details>
+                  <summary className="v3-row">
+                    Older conversation references · unassigned
+                  </summary>
+                  <p className="v3-muted">
+                    These references have no verified project link and may
+                    concern a different tattoo.
+                  </p>
+                  {unassignedBriefs.map(b => (
+                    <div key={b.id}>
+                      <p>{b.description}</p>
+                      <div className="v3-file-grid">
+                        {b.images.map((url, i) => (
+                          <a
+                            key={`${url}-${i}`}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <img
+                              src={url}
+                              alt={`Unassigned reference ${i + 1}`}
+                              loading="lazy"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </details>
+              )}
+              <ActionLink
+                href={`/projects/${id}?${session ? `session=${session.id}&` : ""}view=Messages`}
+                tone="quiet"
+              >
                 Share photos in Messages
               </ActionLink>
             </Section>
           )}
           {tab === "Payments" && (
-            <Section title="Conversation payment history · AUD">
+            <Section title="Project payment history · AUD">
               <p className="v3-muted">
                 Session totals can include imported payments without a linked
                 transaction.
               </p>
-              {!data.history.length && (
+              {!history.length && (
                 <Feedback empty="No linked transactions recorded." />
               )}
-              {data.history.map(h => (
+              {!!unassignedHistory.length && selectedKey && (
+                <details>
+                  <summary className="v3-row">
+                    Other conversation transactions · unassigned
+                  </summary>
+                  <p className="v3-muted">
+                    These transactions have no verified project link. They are
+                    not included as this project’s payments.
+                  </p>
+                  {unassignedHistory.map(h => (
+                    <Row
+                      key={h.id}
+                      title={statusLabel(h.type)}
+                      detail={h.createdAt && bookingDate(h.createdAt)}
+                      trailing={<strong>{money(h.amountCents)}</strong>}
+                    />
+                  ))}
+                </details>
+              )}
+              {history.map(h => (
                 <Row
                   key={h.id}
                   title={`${statusLabel(h.type)} · ${h.method || "Payment"}`}
@@ -447,7 +582,7 @@ export default function Booking() {
           appointmentId={session.id}
           balanceDueCents={session.remainingCents}
           artistName={data?.artist?.name || "Your artist"}
-          projectName={session.title}
+          projectName={session.projectName || "Tattoo project"}
         />
       )}
     </Screen>

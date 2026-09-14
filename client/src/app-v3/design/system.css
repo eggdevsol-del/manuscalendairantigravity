@@ -2008,3 +2008,38 @@ body:has(.tattoi-notice) .v3-scroll {
     height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 205px);
   }
 }
+.v3-sitting-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.v3-sitting-list > li {
+  border: 1px solid var(--v3-line);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.v3-sitting-list > li[data-next="true"] {
+  border-left: 3px solid var(--v3-gold);
+  background: var(--v3-gold-soft);
+}
+.v3-sitting-list .v3-row {
+  padding: 8px 0;
+}
+.v3-sitting-list .v3-muted {
+  font-size: 12px;
+  padding-bottom: 8px;
+}
+.v3-next-sitting {
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .v3-booking-cards > :only-child {
+    grid-column: 1 / -1;
+  }
+  .v3-booking-cards > :only-child .v3-sitting-list {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}

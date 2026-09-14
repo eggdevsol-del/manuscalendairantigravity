@@ -251,6 +251,8 @@ function response(name, role) {
         {
           ...appointment,
           startsAt: appointment.startTime,
+          endsAt: appointment.endTime,
+          pendingFormCount: 1,
           projectName: appointment.title,
           depositPaidCents: 15000,
           estimateCents: 60000,

@@ -134,7 +134,7 @@ try {
       await page.getByRole("button", { name: /Review .* deposit/ }).count(),
       0
     );
-    await page.getByLabel("Session", { exact: true }).selectOption("102");
+    await page.getByRole("button", { name: /Sitting 2 ·/ }).click();
     await page
       .getByRole("heading", { name: "Jesus/Angels full arm", exact: true })
       .waitFor();

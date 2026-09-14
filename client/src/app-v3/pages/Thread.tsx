@@ -2,7 +2,7 @@ import { ConversationContext } from "../design/ConversationContext";
 import { DesignBrief } from "../design/DesignBrief";
 import { ClientNotes } from "../design/ClientNotes";
 import { BookingComposer } from "./BookingComposer";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { ImagePlus, Send, CalendarDays, ArrowLeft } from "lucide-react";
 import { useChatController } from "@/features/chat/useChatController";
@@ -29,8 +29,23 @@ import {
   messageText,
 } from "../data/messagePresentation";
 
-export function Thread({ id }: { id: number }) {
+export function Thread({
+  id,
+  initialDraft = "",
+}: {
+  id: number;
+  initialDraft?: string;
+}) {
   const c = useChatController(id);
+  const appliedDraft = useRef("");
+  useEffect(() => {
+    if (initialDraft && appliedDraft.current !== initialDraft) {
+      appliedDraft.current = initialDraft;
+      c.setMessageText(current =>
+        current ? `${current}\n${initialDraft}` : initialDraft
+      );
+    }
+  }, [initialDraft, c.setMessageText]);
   const [notesDraft, setNotesDraft] = useState("");
   const [contextOpen, setContextOpen] = useState(false);
   const [booking, setBooking] = useState(false);
