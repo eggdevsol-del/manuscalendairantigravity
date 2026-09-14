@@ -707,3 +707,268 @@ body .ivory-discovery-card .feed-card-focus-desc,
 body .ivory-discovery-card .feed-card-focus-tags {
   display: none;
 }
+
+/* Shared geometry: page-level navigation belongs in Screen's subheader slot. */
+:root {
+  --v3-control-height: 50px;
+  --v3-icon-size: 44px;
+  --v3-segment-height: 52px;
+  --v3-header-title-height: 72px;
+  --v3-header-subtitle-height: 42px;
+}
+.v3-screen .v3-header {
+  width: 100%;
+  max-width: 1080px;
+  align-self: center;
+  gap: 0;
+  padding: 8px var(--v3-gutter) 16px;
+}
+.v3-screen-wide .v3-header {
+  max-width: none;
+}
+.v3-screen .v3-header .v3-masthead {
+  position: static;
+  min-height: var(--v3-control-height);
+  margin: 0 0 10px;
+  gap: 12px;
+}
+.v3-screen .v3-header h1 {
+  font-size: 32px;
+  line-height: 36px;
+  min-height: var(--v3-header-title-height);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: flex-end;
+}
+.v3-screen .v3-header > .v3-subtitle {
+  min-height: var(--v3-header-subtitle-height);
+  font-size: 14px;
+  line-height: 21px;
+  padding: 0;
+  margin: 6px 0 0;
+}
+.v3-masthead > .v3-avatar,
+.v3-masthead > .v3-icon-button {
+  width: var(--v3-icon-size);
+  height: var(--v3-icon-size);
+  min-height: var(--v3-icon-size);
+  flex-shrink: 0;
+}
+.v3-masthead .v3-action {
+  min-height: var(--v3-control-height);
+}
+.v3-content {
+  width: 100%;
+}
+.v3-subheader {
+  flex: none;
+  width: 100%;
+  max-width: 1080px;
+  align-self: center;
+  padding: 0 var(--v3-gutter) 16px;
+}
+.v3-screen-wide .v3-subheader {
+  max-width: none;
+}
+.v3-tabs,
+.v3-home-tabs {
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  margin: 0;
+  min-height: var(--v3-segment-height);
+  background: var(--v3-soft);
+  border: 0;
+  border-radius: 14px;
+  overflow: visible;
+}
+.v3-tabs > button,
+.v3-home-tabs > a {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: var(--v3-icon-size);
+  padding: 8px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 14px;
+  line-height: 18px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border-radius: 11px;
+}
+.v3-home-tabs > a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .v3-subheader {
+    padding-inline: 0;
+  }
+  .v3-subheader > .v3-tabs,
+  .v3-subheader > .v3-home-tabs {
+    border-radius: 0;
+  }
+  .v3-screen:has(.v3-inbox.has-selection) .v3-subheader {
+    display: none;
+  }
+}
+@media (max-height: 600px) and (orientation: landscape) {
+  .v3-screen .v3-header h1 {
+    min-height: 36px;
+  }
+  .v3-screen .v3-header > .v3-subtitle {
+    min-height: 21px;
+  }
+}
+
+.v3-action {
+  line-height: 22px;
+}
+.v3-masthead > .v3-wordmark {
+  min-height: var(--v3-icon-size);
+  display: inline-flex;
+  align-items: center;
+}
+.v3-thread-header a.v3-muted,
+.v3-screen summary {
+  min-height: var(--v3-icon-size);
+  align-content: center;
+}
+.v3-thread-header a.v3-muted {
+  display: inline-flex;
+  align-items: center;
+}
+.v3-screen summary {
+  cursor: pointer;
+  padding-block: 10px;
+}
+@media (max-width: 380px) {
+  .v3-week-strip {
+    width: calc(100% + 2 * var(--v3-gutter));
+    margin-inline: calc(-1 * var(--v3-gutter));
+    gap: 2px;
+  }
+}
+button.artist-profile-close,
+.booking-form-close,
+.booking-form-image-remove {
+  min-width: var(--v3-icon-size);
+  min-height: var(--v3-icon-size);
+}
+button.artist-profile-grid-item {
+  border: 0;
+  padding: 0;
+}
+button.feed-card-focus-desc {
+  font: inherit;
+  text-align: left;
+  border: 0;
+  background: transparent;
+}
+button.feed-card-header {
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+}
+.v3-identity-form .v3-text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--v3-icon-size);
+}
+/* The discovery entry sheet uses the same controls and safe areas as workspace sheets. */
+body .artist-profile-header {
+  padding: calc(var(--app-safe-top, 0px) + 8px) var(--v3-gutter) 8px;
+}
+body .artist-profile-scroll {
+  padding-bottom: calc(var(--app-safe-bottom, 0px) + 20px);
+}
+body .booking-form-modal {
+  max-height: 85dvh;
+  border-radius: 30px 30px 0 0;
+  padding-bottom: var(--app-safe-bottom, 0px);
+  background: var(--v3-surface);
+}
+body .booking-form-header {
+  padding: 18px 24px 16px;
+  border: 0;
+  gap: 12px;
+}
+body .booking-form-header h3 {
+  font: 500 27px/1.2 var(--ivory-display);
+  min-width: 0;
+}
+body .booking-form-close {
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--v3-soft);
+  align-items: center;
+  justify-content: center;
+}
+body .booking-form-scroll {
+  padding: 16px 24px 24px;
+  gap: 22px;
+}
+body .booking-form-group label {
+  font-size: 15px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+body .booking-form-input {
+  min-width: 0;
+  min-height: var(--v3-control-height);
+  font-size: 17px;
+  border: 1px solid var(--v3-line);
+  border-radius: 14px;
+  padding: 13px 14px;
+  background: var(--v3-paper);
+}
+body .booking-form-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+body .booking-form-chip {
+  min-height: var(--v3-icon-size);
+}
+@media (max-width: 380px) {
+  .booking-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Let WebKit own touch deceleration; virtualisation never animates a fling. */
+.v3-timeline-scroll,
+.v3-mobile-agenda {
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scroll-behavior: auto;
+  scroll-snap-type: none;
+}
+/* Match the virtual row model: 58px heading + 16px footer; sessions are 64/112px. */
+.v3-timeline-day h3 {
+  height: 58px;
+  padding: 7px 0;
+}
+.v3-timeline-session strong {
+  font-size: 15px;
+  line-height: 20px;
+}
+.v3-timeline-session time {
+  line-height: 18px;
+}
+.v3-timeline-session span > span,
+.v3-timeline-session small {
+  line-height: 16px;
+  margin-top: 2px;
+}

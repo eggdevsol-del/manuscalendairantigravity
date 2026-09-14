@@ -25,6 +25,7 @@ export function CalendarTimeline({
   loading = false,
   onBook,
   services = [],
+  navigationKey = 0,
 }: {
   events: any[];
   date: Date;
@@ -35,6 +36,7 @@ export function CalendarTimeline({
   loading?: boolean;
   onBook?: (date: Date) => void;
   services?: { name: string; color?: string }[];
+  navigationKey?: number;
 }) {
   const [origin, setOrigin] = useState(() =>
     addDays(startOfDay(date), -middle)
@@ -44,11 +46,23 @@ export function CalendarTimeline({
   const withinDay = useRef(0);
   const [expanded, setExpanded] = useState(false);
   const lastExpanded = useRef(expanded);
+  const lastNavigation = useRef(navigationKey);
+  const initialized = useRef(false);
+  const scrolling = useRef(false);
+  const touching = useRef(false);
+  const frame = useRef<number | null>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [settledRevision, setSettledRevision] = useState(0);
+  const [renderedEvents, setRenderedEvents] = useState(events);
+  // A query response must not resize virtual rows under a native iOS fling.
+  useLayoutEffect(() => {
+    if (!scrolling.current && !touching.current) setRenderedEvents(events);
+  }, [events, settledRevision]);
   const [scrollTop, setScrollTop] = useState(middle * 138);
   const [viewportHeight, setViewportHeight] = useState(600);
   const byDay = useMemo(() => {
     const result = new Map<string, any[]>();
-    for (const event of events) {
+    for (const event of renderedEvents) {
       const key = formatInTimeZone(
         instant(event.startTime),
         zone,
@@ -59,7 +73,7 @@ export function CalendarTimeline({
     for (const rows of result.values())
       rows.sort((a, b) => +instant(a.startTime) - +instant(b.startTime));
     return result;
-  }, [events, zone]);
+  }, [renderedEvents, zone]);
   const offsets = useMemo(() => {
     const positions = [0];
     for (let index = 0; index < windowSize; index++) {
@@ -89,27 +103,14 @@ export function CalendarTimeline({
     observer.observe(scroll.current);
     return () => observer.disconnect();
   }, []);
-  // Anchor by date, not an obsolete pixel offset, when row heights or the date window change.
-  useLayoutEffect(() => {
-    const key = format(date, "yyyy-MM-dd");
-    if (key !== visibleDate.current || expanded !== lastExpanded.current)
-      withinDay.current = 0;
-    visibleDate.current = key;
-    lastExpanded.current = expanded;
-    const index = differenceInCalendarDays(date, origin);
-    if (index < 0 || index >= windowSize) {
-      setOrigin(addDays(startOfDay(date), -middle));
-      return;
-    }
-    const top =
-      offsets[index] +
-      Math.min(withinDay.current, offsets[index + 1] - offsets[index] - 1);
-    if (scroll.current) scroll.current.scrollTop = top;
-    setScrollTop(top);
-  }, [date, origin, offsets, expanded]);
-  function trackDate() {
-    const top = scroll.current?.scrollTop || 0;
-    const index = indexAt(top + 0.5);
+  const lastOffsets = useRef(offsets);
+  function clearIdle() {
+    if (idleTimer.current !== null) clearTimeout(idleTimer.current);
+    idleTimer.current = null;
+  }
+  function readPosition() {
+    const top = Math.max(0, scroll.current?.scrollTop || 0);
+    const index = indexAt(top);
     const day = addDays(origin, index);
     withinDay.current = Math.max(0, top - offsets[index]);
     setScrollTop(top);
@@ -118,12 +119,103 @@ export function CalendarTimeline({
       visibleDate.current = key;
       onDate(day);
     }
-    if (index < 20 || index > windowSize - 20) setOrigin(addDays(day, -middle));
+    return { day, index };
   }
-  const first = Math.max(0, indexAt(scrollTop) - 4);
+  function finishScrolling() {
+    if (touching.current) return;
+    clearIdle();
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+    const { day, index } = readPosition();
+    scrolling.current = false;
+    // Rebase only after momentum ends. Replacing scrollTop mid-fling stops WKWebView inertia.
+    if (index < 20 || index > windowSize - 20) setOrigin(addDays(day, -middle));
+    setSettledRevision(revision => revision + 1);
+  }
+  const finish = useRef(finishScrolling);
+  finish.current = finishScrolling;
+  function scheduleIdle() {
+    clearIdle();
+    idleTimer.current = setTimeout(() => finish.current(), 200);
+  }
+  function trackDate() {
+    scrolling.current = true;
+    scheduleIdle();
+    if (frame.current !== null) return;
+    frame.current = requestAnimationFrame(() => {
+      frame.current = null;
+      readPosition();
+    });
+  }
+  useEffect(() => {
+    const element = scroll.current;
+    const end = () => finish.current();
+    element?.addEventListener("scrollend", end);
+    return () => {
+      element?.removeEventListener("scrollend", end);
+      clearIdle();
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+    };
+  }, []);
+  // Own scroll-derived date echoes are read-only. Only an explicit navigation or
+  // a settled layout change may move the native scroll position.
+  useLayoutEffect(() => {
+    const key = format(date, "yyyy-MM-dd");
+    const navigation = navigationKey !== lastNavigation.current;
+    const modeChange = expanded !== lastExpanded.current;
+    const externalDate = key !== visibleDate.current;
+    const firstLayout = !initialized.current;
+    const geometryChanged = offsets !== lastOffsets.current;
+    if (
+      !firstLayout &&
+      !navigation &&
+      !modeChange &&
+      !externalDate &&
+      !geometryChanged
+    )
+      return;
+    const intentional = navigation || modeChange || externalDate;
+    if (!intentional && !firstLayout && (scrolling.current || touching.current))
+      return;
+    if (intentional || firstLayout) {
+      clearIdle();
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current = null;
+      scrolling.current = false;
+      withinDay.current = 0;
+    }
+    visibleDate.current = key;
+    lastNavigation.current = navigationKey;
+    lastExpanded.current = expanded;
+    lastOffsets.current = offsets;
+    initialized.current = true;
+    const index = differenceInCalendarDays(date, origin);
+    if (index < 0 || index >= windowSize) {
+      setOrigin(addDays(startOfDay(date), -middle));
+      return;
+    }
+    const top =
+      offsets[index] +
+      Math.min(withinDay.current, offsets[index + 1] - offsets[index] - 1);
+    const element = scroll.current;
+    if (!element) return;
+    const distance = Math.abs(element.scrollTop - top);
+    if (distance > 0.5) {
+      const smooth =
+        navigation &&
+        !firstLayout &&
+        distance < viewportHeight * 5 &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (smooth) element.scrollTo({ top, behavior: "smooth" });
+      else element.scrollTop = top;
+      if (!smooth) setScrollTop(top);
+    }
+  }, [date, origin, offsets, expanded, navigationKey, settledRevision]);
+  const overscan = Math.max(4, Math.ceil(viewportHeight / 138));
+  const first = Math.max(0, indexAt(scrollTop) - overscan);
   const last = Math.min(
     windowSize - 1,
-    indexAt(scrollTop + viewportHeight) + 4
+    indexAt(scrollTop + viewportHeight) + overscan
   );
   const rows = Array.from({ length: last - first + 1 }, (_, i) => {
     const index = first + i;
@@ -139,6 +231,7 @@ export function CalendarTimeline({
       <div className="v3-timeline-heading">
         <strong>{format(date, "MMMM yyyy")}</strong>
         <button
+          type="button"
           className="v3-icon-button"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
@@ -150,6 +243,23 @@ export function CalendarTimeline({
         ref={scroll}
         className="v3-timeline-scroll"
         onScroll={trackDate}
+        onTouchStart={() => {
+          touching.current = true;
+          scrolling.current = true;
+          clearIdle();
+        }}
+        onTouchEnd={() => {
+          touching.current = false;
+          scheduleIdle();
+        }}
+        onTouchCancel={() => {
+          touching.current = false;
+          scheduleIdle();
+        }}
+        onWheel={() => {
+          scrolling.current = true;
+          scheduleIdle();
+        }}
         tabIndex={0}
         role="region"
         aria-label="Scrollable calendar timeline"
@@ -180,6 +290,7 @@ export function CalendarTimeline({
                   <span>{format(day, "EEE")}</span> {format(day, "d MMMM")}{" "}
                   {onBook && (
                     <button
+                      type="button"
                       aria-label={`Book on ${format(day, "d MMMM yyyy")}`}
                       onClick={() => onBook(day)}
                     >
@@ -193,6 +304,7 @@ export function CalendarTimeline({
                 {items.length ? (
                   items.map(event => (
                     <button
+                      type="button"
                       key={event.id}
                       className="v3-timeline-session"
                       style={{

@@ -5,7 +5,7 @@
 ## Verification
 
 - TypeScript and final production build passed.
-- Unit suite: 48 files, 188 tests passed.
+- Unit suite: 59 files, 229 tests passed.
 - All 135 capture scenarios completed without detected error boundaries or horizontal document overflow.
 - Existing interaction checks passed for failed-note draft preservation, retry, layout transition and multi-sitting booking.
 - Selected light/dark iPhone and iPad layouts checked. Collection uses 402 × 874 CSS pixels at 2× resolution.
@@ -158,3 +158,9 @@ Isolated tRPC fixtures; external network blocked. Live Stripe payments, Google a
 | Your events | artist | `/artist-events` | [PNG](screens/flow-event-create.png) |
 | Orders | merchant | `/merchant/orders` | [PNG](screens/flow-order-detail.png) |
 | Ella Morgan | public | `/shop/ella-morgan` | [PNG](screens/flow-shop-cart.png) |
+
+Latest cohesion audit: 123 route/viewport checks, 11 feed/dialog assertions, commerce recovery checks and the full 229-test unit suite passed. See [the audit report](audit/AUDIT.md) for fixes and release-validation limits.
+
+Calendar follow-up: eight targeted regressions and 32 browser scroll checks passed; see [calendar details](audit/CALENDAR-SCROLL.md).
+
+Close controls follow-up: 47 flow/calendar scenarios and 30 portfolio/map browser checks passed; see [the close-controls report](audit/CLOSE-CONTROLS.md).

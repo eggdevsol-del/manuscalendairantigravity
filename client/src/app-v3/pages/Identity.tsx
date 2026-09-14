@@ -466,11 +466,26 @@ export function MagicLink() {
   );
 }
 export function CompleteProfile() {
-  const { user, loading, error } = useAuth();
+  const { user, loading, error, refresh } = useAuth();
   if (loading)
     return (
       <IdentityLayout title="Your details" description="Loading your account…">
         <Feedback loading />
+      </IdentityLayout>
+    );
+  if (error && !user)
+    return (
+      <IdentityLayout
+        title="Your details"
+        description="We couldn’t load your account details."
+      >
+        <p role="alert">
+          Please try again to continue setting up your account.
+        </p>
+        <Action onClick={() => refresh()}>Try again</Action>
+        <ActionLink href="/login" tone="quiet">
+          Back to sign in
+        </ActionLink>
       </IdentityLayout>
     );
   if (!user) return <Redirect to="/login" />;

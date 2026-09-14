@@ -160,13 +160,15 @@ export default function WorkingHours() {
       title="Working hours & services"
       subtitle="Make your availability work for you"
       back="/business"
+      subheader={
+        <Tabs
+          items={["Availability", "Services"] as const}
+          value={tab}
+          onChange={setTab}
+          label="Schedule settings"
+        />
+      }
     >
-      <Tabs
-        items={["Availability", "Services"] as const}
-        value={tab}
-        onChange={setTab}
-        label="Schedule settings"
-      />
       <Feedback
         loading={query.isLoading}
         error={query.error}

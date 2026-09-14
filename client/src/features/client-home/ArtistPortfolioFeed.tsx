@@ -27,22 +27,21 @@ export default function ArtistPortfolioFeed({
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
-  const { data, isLoading } = trpc.feed.getArtistFeed.useQuery(
-    { artistId },
-    { staleTime: 60000 }
-  );
+  const { data, isLoading, isError, refetch } =
+    trpc.feed.getArtistFeed.useQuery({ artistId }, { staleTime: 60000 });
 
   const utils = trpc.useUtils();
 
   const toggleLikeMutation = trpc.portfolio.toggleLike.useMutation({
-    onError: () => {
+    onSettled: () => {
       utils.feed.getArtistFeed.invalidate({ artistId });
+      utils.feed.getDiscoverFeed.invalidate();
     },
   });
 
   const handleLike = useCallback(
     (id: number) => {
-      toggleLikeMutation.mutate({ portfolioId: id });
+      return toggleLikeMutation.mutateAsync({ portfolioId: id });
     },
     [toggleLikeMutation]
   );
@@ -83,7 +82,7 @@ export default function ArtistPortfolioFeed({
     ...card,
     videoUrl: (card as any).videoUrl || null,
   }));
-  const tappedIndex = allCards.findIndex((c) => c.id === tappedImageId);
+  const tappedIndex = allCards.findIndex(c => c.id === tappedImageId);
   const reorderedCards =
     tappedIndex > 0
       ? [...allCards.slice(tappedIndex), ...allCards.slice(0, tappedIndex)]
@@ -99,11 +98,30 @@ export default function ArtistPortfolioFeed({
     );
   }
 
+  if (isError || reorderedCards.length === 0)
+    return (
+      <div className="discover-feed-empty" role={isError ? "alert" : "status"}>
+        <p>
+          {isError
+            ? "Could not load this artist’s work."
+            : "This artist has no published work yet."}
+        </p>
+        {isError && (
+          <button
+            className="v3-action v3-action-primary"
+            onClick={() => refetch()}
+          >
+            Try again
+          </button>
+        )}
+        <button className="v3-action" onClick={onExit}>
+          Back to Discover
+        </button>
+      </div>
+    );
+
   return (
-    <div
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="discover-feed-cards">
         {reorderedCards.map((card, index) => (
           <FeedCard

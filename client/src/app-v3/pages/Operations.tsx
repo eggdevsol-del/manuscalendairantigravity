@@ -134,11 +134,11 @@ export function ErrorReports() {
   const busy = resolve.isPending || clear.isPending || purge.isPending;
   const error = resolve.error || clear.error || purge.error;
   return (
-    <Screen title="Error reports" back="/admin/operations">
-      {user?.role !== "admin" ? (
-        <Feedback empty="Administrator access is required." />
-      ) : (
-        <>
+    <Screen
+      title="Error reports"
+      back="/admin/operations"
+      subheader={
+        user?.role === "admin" && (
           <Tabs
             items={["Unresolved", "Resolved", "All"] as const}
             value={filter}
@@ -148,6 +148,13 @@ export function ErrorReports() {
               setPage(0);
             }}
           />
+        )
+      }
+    >
+      {user?.role !== "admin" ? (
+        <Feedback empty="Administrator access is required." />
+      ) : (
+        <>
           <Feedback
             loading={query.isLoading}
             error={query.error}

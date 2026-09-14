@@ -112,6 +112,8 @@ export function useChatController(conversationId: number) {
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
       if (!file) return;
+      // Allow selecting the same photo again after a failed upload.
+      event.target.value = "";
       if (!file.type.startsWith("image/")) {
         toast.error("Please select an image file");
         return;

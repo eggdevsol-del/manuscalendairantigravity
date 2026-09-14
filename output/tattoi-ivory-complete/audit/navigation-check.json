@@ -1,0 +1,110 @@
+[
+  {
+    "role": "artist",
+    "path": "/dashboard",
+    "title": "Today",
+    "active": [
+      "/dashboard"
+    ],
+    "errors": []
+  },
+  {
+    "role": "artist",
+    "path": "/conversations",
+    "title": "Messages",
+    "active": [
+      "/conversations"
+    ],
+    "errors": []
+  },
+  {
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "active": [
+      "/calendar"
+    ],
+    "errors": []
+  },
+  {
+    "role": "artist",
+    "path": "/artist-profile",
+    "title": "Profile",
+    "active": [
+      "/artist-profile"
+    ],
+    "errors": []
+  },
+  {
+    "role": "client",
+    "path": "/discover",
+    "title": "tattoi",
+    "active": [
+      "/discover"
+    ],
+    "errors": []
+  },
+  {
+    "role": "client",
+    "path": "/conversations",
+    "title": "Messages",
+    "active": [
+      "/conversations"
+    ],
+    "errors": []
+  },
+  {
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "active": [
+      "/bookings"
+    ],
+    "errors": []
+  },
+  {
+    "role": "client",
+    "path": "/profile",
+    "title": "Your profile",
+    "active": [
+      "/profile"
+    ],
+    "errors": []
+  },
+  {
+    "role": "merchant",
+    "path": "/dashboard",
+    "title": "Home",
+    "active": [
+      "/dashboard"
+    ],
+    "errors": []
+  },
+  {
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Orders",
+    "active": [
+      "/merchant/orders"
+    ],
+    "errors": []
+  },
+  {
+    "role": "merchant",
+    "path": "/merchant/products",
+    "title": "Products",
+    "active": [
+      "/merchant/products"
+    ],
+    "errors": []
+  },
+  {
+    "role": "merchant",
+    "path": "/conversations",
+    "title": "Messages",
+    "active": [
+      "/conversations"
+    ],
+    "errors": []
+  }
+]

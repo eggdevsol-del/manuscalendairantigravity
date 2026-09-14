@@ -62,7 +62,9 @@ for (const c of cases) {
   const errors = [];
   page.on("pageerror", e => errors.push(e.message));
   try {
-    await page.clock.install({ time: new Date(c.time || "2026-09-09T23:41:00Z") });
+    await page.clock.install({
+      time: new Date(c.time || "2026-09-09T23:41:00Z"),
+    });
     await page.goto(
       (process.env.AUDIT_URL || "http://127.0.0.1:5195") + c.path,
       { waitUntil: "networkidle", timeout: 25000 }
@@ -107,6 +109,9 @@ for (const c of cases) {
         ),
       ].map(x => ({ height: x.clientHeight, full: x.scrollHeight })),
     }));
+    if (info.overflow) errors.push("Horizontal document overflow");
+    if (/\$NaN|\$undefined/.test(info.text))
+      errors.push("Invalid displayed amount");
     if (info.text.includes("Something went wrong"))
       errors.push("Rendered error boundary");
     await page.screenshot({ path: `${out}/screens/${c.id}.png` });
@@ -152,6 +157,7 @@ for (const c of cases) {
     results.push({
       ...c,
       ...info,
+      title: c.title || info.title,
       errors,
       calls: [...new Set(calls)],
       bottom: long,
@@ -187,3 +193,5 @@ console.log(
   "routes; errors",
   results.filter(x => x.errors.length).length
 );
+
+if (results.some(x => x.errors.length)) process.exitCode = 1;

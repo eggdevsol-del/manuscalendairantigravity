@@ -1,0 +1,348 @@
+{
+  "checkedAt": "2026-09-14T21:20:27.833Z",
+  "browser": "Chromium with mobile/touch emulation",
+  "webkitInstalled": false,
+  "limits": [
+    "No WebKit browser is installed for this local audit.",
+    "Chromium gesture checks establish scroll-position ownership and row stability, not physical iPhone/WKWebView deceleration quality.",
+    "All API responses are local fixtures; external network requests are blocked."
+  ],
+  "results": [
+    {
+      "width": 390,
+      "checks": [
+        {
+          "name": "wheel crosses days and month without app position writes",
+          "passed": true,
+          "details": {
+            "distance": 940,
+            "writes": [],
+            "scrollEvents": 7,
+            "month": "October 2026"
+          }
+        },
+        {
+          "name": "browser touch gesture scrolls without app position writes",
+          "passed": true,
+          "details": {
+            "distance": 743,
+            "writes": [],
+            "scrollEvents": 69,
+            "inputs": [
+              {
+                "type": "touchstart",
+                "time": 2806
+              },
+              {
+                "type": "touchend",
+                "time": 3529
+              },
+              {
+                "type": "scrollend",
+                "time": 4024
+              }
+            ]
+          }
+        },
+        {
+          "name": "new month rows deferred while touch is held",
+          "passed": true,
+          "details": {
+            "delayedResponses": 1,
+            "writes": [],
+            "month": "October 2026",
+            "sessions": 0
+          }
+        },
+        {
+          "name": "deferred sessions appear after touch settles with date preserved",
+          "passed": true,
+          "details": {
+            "beforeDay": "Friday 2 October 2026",
+            "afterDay": "Friday 2 October 2026",
+            "writes": [
+              {
+                "kind": "scrollTop",
+                "value": 138706,
+                "time": 7074
+              }
+            ],
+            "sessions": 4
+          }
+        },
+        {
+          "name": "deferred rows do not overlap",
+          "passed": true,
+          "details": {
+            "rows": 11,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "virtual window rebases after release without visible date jump",
+          "passed": true,
+          "details": {
+            "before": {
+              "day": "Saturday 13 January 2024",
+              "index": 10,
+              "offset": 23
+            },
+            "after": {
+              "day": "Saturday 13 January 2024",
+              "index": 1000,
+              "offset": 23
+            },
+            "writes": [
+              {
+                "kind": "scrollTop",
+                "value": 138023,
+                "time": 7888
+              }
+            ]
+          }
+        },
+        {
+          "name": "Today returns to current day",
+          "passed": true,
+          "details": {
+            "day": "Thursday 10 September 2026"
+          }
+        },
+        {
+          "name": "compact booked rows fit their virtual geometry",
+          "passed": true,
+          "details": {
+            "rows": 10,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "expanded booked rows fit their virtual geometry",
+          "passed": true,
+          "details": {
+            "rows": 9,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "next week navigation reaches Monday",
+          "passed": true,
+          "details": {
+            "day": "Monday 14 September 2026"
+          }
+        },
+        {
+          "name": "previous week navigation reaches Monday",
+          "passed": true,
+          "details": {
+            "day": "Monday 7 September 2026"
+          }
+        },
+        {
+          "name": "week date selection reaches requested day",
+          "passed": true,
+          "details": {
+            "day": "Thursday 10 September 2026"
+          }
+        },
+        {
+          "name": "session opens booking details",
+          "passed": true,
+          "details": {
+            "presentation": "sheet"
+          }
+        },
+        {
+          "name": "resize retains selected booking",
+          "passed": true,
+          "details": {
+            "rows": 9,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "day add button opens dated booking flow",
+          "passed": true
+        },
+        {
+          "name": "no browser errors or error boundary",
+          "passed": true,
+          "details": []
+        }
+      ],
+      "errors": []
+    },
+    {
+      "width": 820,
+      "checks": [
+        {
+          "name": "wheel crosses days and month without app position writes",
+          "passed": true,
+          "details": {
+            "distance": 940,
+            "writes": [],
+            "scrollEvents": 7,
+            "month": "October 2026"
+          }
+        },
+        {
+          "name": "browser touch gesture scrolls without app position writes",
+          "passed": true,
+          "details": {
+            "distance": 742,
+            "writes": [],
+            "scrollEvents": 69,
+            "inputs": [
+              {
+                "type": "touchstart",
+                "time": 2398
+              },
+              {
+                "type": "touchend",
+                "time": 3129
+              },
+              {
+                "type": "scrollend",
+                "time": 3614
+              }
+            ]
+          }
+        },
+        {
+          "name": "new month rows deferred while touch is held",
+          "passed": true,
+          "details": {
+            "delayedResponses": 1,
+            "writes": [],
+            "month": "October 2026",
+            "sessions": 0
+          }
+        },
+        {
+          "name": "deferred sessions appear after touch settles with date preserved",
+          "passed": true,
+          "details": {
+            "beforeDay": "Friday 2 October 2026",
+            "afterDay": "Friday 2 October 2026",
+            "writes": [
+              {
+                "kind": "scrollTop",
+                "value": 138706,
+                "time": 6575
+              }
+            ],
+            "sessions": 4
+          }
+        },
+        {
+          "name": "deferred rows do not overlap",
+          "passed": true,
+          "details": {
+            "rows": 16,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "virtual window rebases after release without visible date jump",
+          "passed": true,
+          "details": {
+            "before": {
+              "day": "Saturday 13 January 2024",
+              "index": 10,
+              "offset": 23
+            },
+            "after": {
+              "day": "Saturday 13 January 2024",
+              "index": 1000,
+              "offset": 23
+            },
+            "writes": [
+              {
+                "kind": "scrollTop",
+                "value": 138023,
+                "time": 7391
+              }
+            ]
+          }
+        },
+        {
+          "name": "Today returns to current day",
+          "passed": true,
+          "details": {
+            "day": "Thursday 10 September 2026"
+          }
+        },
+        {
+          "name": "compact booked rows fit their virtual geometry",
+          "passed": true,
+          "details": {
+            "rows": 15,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "expanded booked rows fit their virtual geometry",
+          "passed": true,
+          "details": {
+            "rows": 14,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "next week navigation reaches Monday",
+          "passed": true,
+          "details": {
+            "day": "Monday 14 September 2026"
+          }
+        },
+        {
+          "name": "previous week navigation reaches Monday",
+          "passed": true,
+          "details": {
+            "day": "Monday 7 September 2026"
+          }
+        },
+        {
+          "name": "week date selection reaches requested day",
+          "passed": true,
+          "details": {
+            "day": "Thursday 10 September 2026"
+          }
+        },
+        {
+          "name": "session opens booking details",
+          "passed": true,
+          "details": {
+            "presentation": "inspector"
+          }
+        },
+        {
+          "name": "resize retains selected booking",
+          "passed": true,
+          "details": {
+            "rows": 12,
+            "issues": [],
+            "horizontalOverflow": false
+          }
+        },
+        {
+          "name": "day add button opens dated booking flow",
+          "passed": true
+        },
+        {
+          "name": "no browser errors or error boundary",
+          "passed": true,
+          "details": []
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

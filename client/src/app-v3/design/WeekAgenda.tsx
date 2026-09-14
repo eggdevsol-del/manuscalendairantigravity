@@ -27,6 +27,8 @@ export function WeekAgenda() {
         {dates.map(date => (
           <button
             key={date.toISOString()}
+            type="button"
+            aria-label={format(date, "EEEE, d MMMM yyyy")}
             aria-pressed={
               format(date, "yyyy-MM-dd") === format(selected, "yyyy-MM-dd")
             }

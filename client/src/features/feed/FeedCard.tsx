@@ -1,20 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Bookmark,
-  MapPin,
-  Play,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { Heart, Share2, MapPin, Play, Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  useVideoPool,
-  setGlobalMuted,
-  getGlobalMuted,
-} from "@/hooks/useVideoPool";
+import { useVideoPool, setGlobalMuted } from "@/hooks/useVideoPool";
+import { toast } from "sonner";
 
 export interface FeedCardData {
   id: number;
@@ -36,7 +24,7 @@ export interface FeedCardData {
 
 interface FeedCardProps {
   card: FeedCardData;
-  onLike: (id: number) => void;
+  onLike: (id: number) => void | Promise<{ liked: boolean }>;
   onShare: (card: FeedCardData) => void;
   onArtistTap: (slug: string) => void;
   onImageTap?: (card: FeedCardData) => void;
@@ -68,7 +56,24 @@ export function FeedCard({
   const [showHeart, setShowHeart] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [likePending, setLikePending] = useState(false);
+  const likePendingRef = useRef(false);
   const lastTap = useRef(0);
+  const singleTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!likePendingRef.current) {
+      setLiked(card.isLiked);
+      setLikeCount(card.likeCount);
+    }
+  }, [card.isLiked, card.likeCount]);
+
+  useEffect(
+    () => () => {
+      if (singleTapTimer.current) clearTimeout(singleTapTimer.current);
+    },
+    []
+  );
 
   const isVideo = card.mediaType === "video" && !!card.videoUrl;
   const eagerLoad = index < 10;
@@ -93,15 +98,40 @@ export function FeedCard({
     });
   }, []);
 
-  const handleLike = useCallback(() => {
-    setLiked(prev => !prev);
-    setLikeCount(prev => (liked ? prev - 1 : prev + 1));
-    onLike(card.id);
-  }, [liked, card.id, onLike]);
+  const handleLike = useCallback(async () => {
+    if (likePendingRef.current) return;
+    const previousLiked = liked;
+    const previousCount = likeCount;
+    likePendingRef.current = true;
+    setLikePending(true);
+    setLiked(!previousLiked);
+    setLikeCount(Math.max(0, previousCount + (previousLiked ? -1 : 1)));
+    try {
+      const result = await onLike(card.id);
+      if (result) {
+        setLiked(result.liked);
+        setLikeCount(
+          Math.max(
+            0,
+            previousCount +
+              (result.liked === previousLiked ? 0 : result.liked ? 1 : -1)
+          )
+        );
+      }
+    } catch {
+      setLiked(previousLiked);
+      setLikeCount(previousCount);
+      toast.error("Could not save your like. Please try again.");
+    } finally {
+      likePendingRef.current = false;
+      setLikePending(false);
+    }
+  }, [liked, likeCount, card.id, onLike]);
 
   const handleDoubleTap = useCallback(() => {
     const now = Date.now();
     if (now - lastTap.current < 300) {
+      if (singleTapTimer.current) clearTimeout(singleTapTimer.current);
       // Double tap — like
       if (!liked) {
         handleLike();
@@ -111,7 +141,7 @@ export function FeedCard({
     } else {
       // Single tap — enter artist focus (after delay to check for double)
       if (onImageTap) {
-        setTimeout(() => {
+        singleTapTimer.current = setTimeout(() => {
           if (Date.now() - lastTap.current >= 280) {
             // No second tap came — it's a single tap
             onImageTap(card);
@@ -123,20 +153,30 @@ export function FeedCard({
   }, [liked, handleLike, onImageTap, card]);
 
   const handleShare = useCallback(async () => {
+    if (!card.artistSlug) return;
+    const url = `${window.location.origin}/${encodeURIComponent(card.artistSlug)}`;
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${card.artistName} on Tattoi`,
-          url: `${window.location.origin}/${card.artistSlug}`,
+          url,
         });
-      } catch {
-        // User cancelled
+        return;
+      } catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "name" in error &&
+          error.name === "AbortError"
+        )
+          return;
       }
-    } else {
-      navigator.clipboard.writeText(
-        `${window.location.origin}/${card.artistSlug}`
-      );
+    }
+    try {
+      await navigator.clipboard.writeText(url);
       onShare(card);
+    } catch {
+      toast.error("Could not share this link. Please try again.");
     }
   }, [card, onShare]);
 
@@ -147,6 +187,18 @@ export function FeedCard({
         className={`feed-card feed-card-focus ${discoveryMode ? "ivory-discovery-card" : ""}`}
         onClick={handleDoubleTap}
       >
+        {onImageTap && (
+          <button
+            type="button"
+            className="sr-only focus:not-sr-only v3-action"
+            onClick={e => {
+              e.stopPropagation();
+              onImageTap(card);
+            }}
+          >
+            View artwork by {card.artistName}
+          </button>
+        )}
         {/* Full-bleed media */}
         {isVideo ? (
           <div
@@ -257,6 +309,7 @@ export function FeedCard({
               className={`feed-card-focus-action-btn ${liked ? "feed-card-liked" : ""}`}
               aria-label={liked ? "Unlike artwork" : "Like artwork"}
               aria-pressed={liked}
+              disabled={likePending}
               onClick={e => {
                 e.stopPropagation();
                 handleLike();
@@ -268,16 +321,18 @@ export function FeedCard({
                 color={liked ? "var(--color-danger)" : "#fff"}
               />
             </button>
-            <button
-              className="feed-card-focus-action-btn"
-              aria-label="Share artwork"
-              onClick={e => {
-                e.stopPropagation();
-                handleShare();
-              }}
-            >
-              <Share2 size={20} color="#fff" />
-            </button>
+            {card.artistSlug && (
+              <button
+                className="feed-card-focus-action-btn"
+                aria-label="Share artwork"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleShare();
+                }}
+              >
+                <Share2 size={20} color="#fff" />
+              </button>
+            )}
             {likeCount > 0 && (
               <span className="feed-card-focus-like-count">
                 {likeCount} {likeCount === 1 ? "like" : "likes"}
@@ -287,7 +342,9 @@ export function FeedCard({
 
           {/* Description (collapsed by default, tap to expand) */}
           {card.description && (
-            <div
+            <button
+              type="button"
+              aria-expanded={descExpanded}
               className={`feed-card-focus-desc ${descExpanded ? "expanded" : ""}`}
               onClick={e => {
                 e.stopPropagation();
@@ -298,7 +355,7 @@ export function FeedCard({
                 {card.artistName}
               </span>{" "}
               {card.description}
-            </div>
+            </button>
           )}
 
           {/* Tags (only visible when expanded) */}
@@ -309,18 +366,25 @@ export function FeedCard({
               );
               return allTags.length > 0 ? (
                 <div className="feed-card-focus-tags">
-                  {allTags.slice(0, 6).map((tag, i) => (
-                    <span
-                      key={i}
-                      className="feed-card-focus-tag feed-card-tag-tappable"
-                      onClick={e => {
-                        e.stopPropagation();
-                        onTagTap?.(tag);
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  {allTags.slice(0, 6).map((tag, i) =>
+                    onTagTap ? (
+                      <button
+                        type="button"
+                        key={i}
+                        className="feed-card-focus-tag feed-card-tag-tappable"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onTagTap?.(tag);
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    ) : (
+                      <span key={i} className="feed-card-focus-tag">
+                        {tag}
+                      </span>
+                    )
+                  )}
                 </div>
               ) : null;
             })()}
@@ -349,7 +413,10 @@ export function FeedCard({
     <div className="feed-card">
       {/* Artist header — hidden in compact mode */}
       {!compact && (
-        <div
+        <button
+          type="button"
+          disabled={!card.artistSlug}
+          aria-label={`View ${card.artistName}'s profile`}
           className="feed-card-header"
           onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
         >
@@ -375,11 +442,23 @@ export function FeedCard({
               </span>
             )}
           </div>
-        </div>
+        </button>
       )}
 
       {/* Media */}
       <div className="feed-card-image-container" onClick={handleDoubleTap}>
+        {onImageTap && (
+          <button
+            type="button"
+            className="sr-only focus:not-sr-only v3-action"
+            onClick={e => {
+              e.stopPropagation();
+              onImageTap(card);
+            }}
+          >
+            View artwork by {card.artistName}
+          </button>
+        )}
         {isVideo ? (
           <div className="feed-card-image" style={{ position: "relative" }}>
             {/* Dedicated video container: React leaves its DOM children untouched */}
@@ -462,6 +541,9 @@ export function FeedCard({
         <div className="feed-card-actions-left">
           <button
             className={`feed-card-action-btn ${liked ? "feed-card-liked" : ""}`}
+            aria-label={liked ? "Unlike artwork" : "Like artwork"}
+            aria-pressed={liked}
+            disabled={likePending}
             onClick={handleLike}
           >
             <Heart
@@ -471,22 +553,16 @@ export function FeedCard({
               className={liked ? "" : "text-foreground/70"}
             />
           </button>
-          <button
-            className="feed-card-action-btn feed-card-action-disabled"
-            disabled
-          >
-            <MessageCircle size={24} className="text-muted-foreground" />
-          </button>
-          <button className="feed-card-action-btn" onClick={handleShare}>
-            <Share2 size={22} className="text-foreground/70" />
-          </button>
+          {card.artistSlug && (
+            <button
+              className="feed-card-action-btn"
+              aria-label="Share artwork"
+              onClick={handleShare}
+            >
+              <Share2 size={22} className="text-foreground/70" />
+            </button>
+          )}
         </div>
-        <button
-          className="feed-card-action-btn feed-card-action-disabled"
-          disabled
-        >
-          <Bookmark size={24} className="text-muted-foreground" />
-        </button>
       </div>
 
       {/* Like count */}
@@ -511,21 +587,28 @@ export function FeedCard({
         );
         return allTags.length > 0 ? (
           <div className="feed-card-tags">
-            {allTags.slice(0, 6).map((tag, i) => (
-              <span
-                key={i}
-                className="feed-card-tag feed-card-tag-tappable"
-                onClick={() => onTagTap?.(tag)}
-              >
-                {tag}
-              </span>
-            ))}
+            {allTags.slice(0, 6).map((tag, i) =>
+              onTagTap ? (
+                <button
+                  type="button"
+                  key={i}
+                  className="feed-card-tag feed-card-tag-tappable"
+                  onClick={() => onTagTap?.(tag)}
+                >
+                  {tag}
+                </button>
+              ) : (
+                <span key={i} className="feed-card-tag">
+                  {tag}
+                </span>
+              )
+            )}
           </div>
         ) : null;
       })()}
 
       {/* Book CTA — hidden in compact/focus mode */}
-      {!compact && (
+      {!compact && card.artistSlug && (
         <button
           className="feed-card-book-btn"
           onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}

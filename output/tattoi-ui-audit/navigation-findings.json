@@ -1,0 +1,407 @@
+{
+  "source": "cohesion-results.json",
+  "uniqueLocalDestinations": 80,
+  "matched": [
+    {
+      "role": "public",
+      "href": "/dashboard",
+      "route": "Authenticated path \u2192 sign in"
+    },
+    {
+      "role": "public",
+      "href": "/signup?role=artist",
+      "route": "/signup"
+    },
+    {
+      "role": "public",
+      "href": "/signup?role=client",
+      "route": "/signup"
+    },
+    {
+      "role": "public",
+      "href": "/signup?role=supplier",
+      "route": "/signup"
+    },
+    {
+      "role": "public",
+      "href": "/login",
+      "route": "/login"
+    },
+    {
+      "role": "public",
+      "href": "/forgot-password",
+      "route": "/forgot-password"
+    },
+    {
+      "role": "public",
+      "href": "/signup",
+      "route": "/signup"
+    },
+    {
+      "role": "public",
+      "href": "/start/ella-morgan",
+      "route": "/start/:slug"
+    },
+    {
+      "role": "public",
+      "href": "/ella-morgan",
+      "route": "Public slug / shop / event catch-all"
+    },
+    {
+      "role": "public",
+      "href": "/business",
+      "route": "Authenticated path \u2192 sign in"
+    },
+    {
+      "role": "client",
+      "href": "/discover",
+      "route": "/discover"
+    },
+    {
+      "role": "client",
+      "href": "/conversations",
+      "route": "/conversations"
+    },
+    {
+      "role": "client",
+      "href": "/bookings",
+      "route": "/bookings"
+    },
+    {
+      "role": "client",
+      "href": "/profile",
+      "route": "/profile"
+    },
+    {
+      "role": "client",
+      "href": "/projects/12?session=101&action=forms",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "client",
+      "href": "/projects/12",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "client",
+      "href": "/projects/12?session=101&view=Messages",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "client",
+      "href": "/chat/12",
+      "route": "/chat/:id"
+    },
+    {
+      "role": "client",
+      "href": "/settings",
+      "route": "/settings"
+    },
+    {
+      "role": "client",
+      "href": "/profile?edit=true",
+      "route": "/profile"
+    },
+    {
+      "role": "client",
+      "href": "/purchases",
+      "route": "/purchases"
+    },
+    {
+      "role": "client",
+      "href": "/waitlist",
+      "route": "/waitlist"
+    },
+    {
+      "role": "client",
+      "href": "/signup?role=artist",
+      "route": "/signup"
+    },
+    {
+      "role": "artist",
+      "href": "/dashboard",
+      "route": "/dashboard"
+    },
+    {
+      "role": "artist",
+      "href": "/business",
+      "route": "/business"
+    },
+    {
+      "role": "artist",
+      "href": "/money",
+      "route": "/money"
+    },
+    {
+      "role": "artist",
+      "href": "/work-hours",
+      "route": "/work-hours"
+    },
+    {
+      "role": "artist",
+      "href": "/artist-profile",
+      "route": "/artist-profile"
+    },
+    {
+      "role": "artist",
+      "href": "/waitlist",
+      "route": "/waitlist"
+    },
+    {
+      "role": "artist",
+      "href": "/products",
+      "route": "/products"
+    },
+    {
+      "role": "artist",
+      "href": "/store-orders",
+      "route": "/store-orders"
+    },
+    {
+      "role": "artist",
+      "href": "/artist-events",
+      "route": "/artist-events"
+    },
+    {
+      "role": "artist",
+      "href": "/conversations",
+      "route": "/conversations"
+    },
+    {
+      "role": "artist",
+      "href": "/calendar",
+      "route": "/calendar"
+    },
+    {
+      "role": "artist",
+      "href": "/clients",
+      "route": "/clients"
+    },
+    {
+      "role": "artist",
+      "href": "/supplies",
+      "route": "/supplies"
+    },
+    {
+      "role": "artist",
+      "href": "/projects/12?session=101",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/events/ella-morgan",
+      "route": "/events/:slug"
+    },
+    {
+      "role": "artist",
+      "href": "/bank-payouts",
+      "route": "/bank-payouts"
+    },
+    {
+      "role": "artist",
+      "href": "/chat/12",
+      "route": "/chat/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/projects/12",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/projects/12?session=101&view=Messages",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/book/ella-morgan",
+      "route": "/book/:slug"
+    },
+    {
+      "role": "artist",
+      "href": "/settings?section=booking-link",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/settings?section=profile",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/settings?section=instagram",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/supply-orders",
+      "route": "/supply-orders"
+    },
+    {
+      "role": "artist",
+      "href": "/settings",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/studio?view=invitations",
+      "route": "/studio"
+    },
+    {
+      "role": "artist",
+      "href": "/studio",
+      "route": "/studio"
+    },
+    {
+      "role": "client",
+      "href": "/settings?section=profile",
+      "route": "/settings"
+    },
+    {
+      "role": "client",
+      "href": "/settings?section=notifications",
+      "route": "/settings"
+    },
+    {
+      "role": "client",
+      "href": "/settings?section=how-tos",
+      "route": "/settings"
+    },
+    {
+      "role": "client",
+      "href": "/settings?section=danger-zone",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/settings?section=notifications",
+      "route": "/settings"
+    },
+    {
+      "role": "artist",
+      "href": "/settings?section=business",
+      "route": "/settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/settings",
+      "route": "/settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/account-settings?section=profile",
+      "route": "/account-settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/account-settings?section=notifications",
+      "route": "/account-settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/account-settings?section=how-tos",
+      "route": "/account-settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/account-settings?section=danger-zone",
+      "route": "/account-settings"
+    },
+    {
+      "role": "merchant",
+      "href": "/dashboard",
+      "route": "/dashboard"
+    },
+    {
+      "role": "merchant",
+      "href": "/merchant/orders",
+      "route": "/merchant/orders"
+    },
+    {
+      "role": "merchant",
+      "href": "/merchant/products",
+      "route": "/merchant/products"
+    },
+    {
+      "role": "merchant",
+      "href": "/conversations",
+      "route": "/conversations"
+    },
+    {
+      "role": "merchant",
+      "href": "/account-settings",
+      "route": "/account-settings"
+    },
+    {
+      "role": "artist",
+      "href": "/artist-profile?view=Portfolio",
+      "route": "/artist-profile"
+    },
+    {
+      "role": "merchant",
+      "href": "/chat/12",
+      "route": "/chat/:id"
+    },
+    {
+      "role": "admin",
+      "href": "/business",
+      "route": "/business"
+    },
+    {
+      "role": "admin",
+      "href": "/admin/errors",
+      "route": "/admin/errors"
+    },
+    {
+      "role": "admin",
+      "href": "/dashboard",
+      "route": "/dashboard"
+    },
+    {
+      "role": "admin",
+      "href": "/conversations",
+      "route": "/conversations"
+    },
+    {
+      "role": "admin",
+      "href": "/calendar",
+      "route": "/calendar"
+    },
+    {
+      "role": "admin",
+      "href": "/artist-profile",
+      "route": "/artist-profile"
+    },
+    {
+      "role": "admin",
+      "href": "/admin/operations",
+      "route": "/admin/operations"
+    },
+    {
+      "role": "client",
+      "href": "/",
+      "route": "/"
+    },
+    {
+      "role": "artist",
+      "href": "/projects/12?session=102",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/calendar?date=2026-09-10",
+      "route": "/calendar"
+    },
+    {
+      "role": "client",
+      "href": "/projects/12?session=101",
+      "route": "/projects/:id"
+    },
+    {
+      "role": "artist",
+      "href": "/payout-history",
+      "route": "/payout-history"
+    }
+  ],
+  "suspects": []
+}

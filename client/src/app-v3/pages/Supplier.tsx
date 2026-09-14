@@ -110,6 +110,14 @@ export function SupplierOrders() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<number | null>(null);
   const query = trpc.storefront.getOrders.useQuery();
+  const utils = trpc.useUtils();
+  const update = trpc.storefront.updateOrderStatus.useMutation({
+    onSuccess: () => {
+      void query.refetch();
+      if (user?.role === "merchant")
+        void utils.merchantAuth.getDashboardStats.invalidate();
+    },
+  });
   const orders = (query.data || []).filter(
     o =>
       (tab === "All" ||
@@ -125,13 +133,15 @@ export function SupplierOrders() {
       subtitle="From paid to delivered"
       wide
       back={user?.role === "merchant" ? undefined : "/artist-profile"}
+      subheader={
+        <Tabs
+          items={["To fulfil", "Fulfilled", "All"] as const}
+          value={tab}
+          onChange={setTab}
+          label="Order status"
+        />
+      }
     >
-      <Tabs
-        items={["To fulfil", "Fulfilled", "All"] as const}
-        value={tab}
-        onChange={setTab}
-        label="Order status"
-      />
       <SearchField
         value={search}
         onChange={setSearch}
@@ -150,7 +160,10 @@ export function SupplierOrders() {
               key={o.id}
               title={`Order #${o.id}`}
               detail={`${o.buyerName || o.buyerEmail || "Customer"} · ${money(o.totalAmountCents, o.currency)}`}
-              onClick={() => setSelected(o.id)}
+              onClick={() => {
+                update.reset();
+                setSelected(o.id);
+              }}
               trailing={
                 <Status tone={o.status === "fulfilled" ? "success" : "neutral"}>
                   {statusLabel(o.status)}
@@ -211,17 +224,24 @@ export function SupplierOrders() {
                   </p>
                 )}
               </Section>
-              <p className="v3-muted">
-                Fulfilment, tracking and inventory are managed in Shopify.
-              </p>
-              <a
-                className="v3-action v3-action-secondary"
-                href="https://admin.shopify.com"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open Shopify orders
-              </a>
+              {order.status === "paid" && (
+                <>
+                  <p className="v3-muted">
+                    Mark this order fulfilled once it has been dispatched or
+                    collected by the customer.
+                  </p>
+                  <Action
+                    disabled={update.isPending}
+                    onClick={() =>
+                      update.mutate({ orderId: order.id, status: "fulfilled" })
+                    }
+                  >
+                    {update.isPending ? "Saving…" : "Mark fulfilled"}
+                  </Action>
+                </>
+              )}
+              {update.error && <p role="alert">{update.error.message}</p>}
+              {update.isSuccess && <p role="status">Order marked fulfilled.</p>}
             </div>
           ) : (
             <Feedback empty="Select an order to review its items and delivery details." />

@@ -1,7 +1,16 @@
-import { useId, type ReactNode, type ButtonHTMLAttributes } from "react";
+import {
+  createContext,
+  useContext,
+  isValidElement,
+  useId,
+  type ReactNode,
+  type ButtonHTMLAttributes,
+} from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight, Search, UserRound } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
+
+const SectionPanelContext = createContext<string | undefined>(undefined);
 
 /** V3 presentation primitives. Domain operations belong to data hooks, never here. */
 export function Screen({
@@ -9,6 +18,7 @@ export function Screen({
   subtitle,
   back,
   action,
+  subheader,
   children,
   wide = false,
   publicView = false,
@@ -17,11 +27,19 @@ export function Screen({
   subtitle?: ReactNode;
   back?: string;
   action?: ReactNode;
+  subheader?: ReactNode;
   children: ReactNode;
   wide?: boolean;
   publicView?: boolean;
 }) {
   const { user } = useAuth();
+  const panelId = useId();
+  const sectionTabs =
+    isValidElement<{ items: readonly string[]; value: string }>(subheader) &&
+    subheader.type === Tabs
+      ? subheader.props
+      : null;
+  const activeTab = sectionTabs?.items.indexOf(sectionTabs.value);
   return (
     <div
       className={`v3-screen v3-screen-${publicView ? "public" : user?.role || "public"} ${wide ? "v3-screen-wide" : ""}`}
@@ -67,10 +85,29 @@ export function Screen({
           )}
         </div>
         <h1>{title}</h1>
-        {subtitle && <p className="v3-subtitle">{subtitle}</p>}
+        <p className="v3-subtitle" aria-hidden={subtitle ? undefined : true}>
+          {subtitle || "\u00a0"}
+        </p>
       </header>
+      {subheader && (
+        <div className="v3-subheader">
+          <SectionPanelContext.Provider value={panelId}>
+            {subheader}
+          </SectionPanelContext.Provider>
+        </div>
+      )}
       <main className="v3-scroll">
-        <div className="v3-content">{children}</div>
+        <div
+          className="v3-content"
+          id={sectionTabs ? panelId : undefined}
+          role={sectionTabs ? "tabpanel" : undefined}
+          aria-labelledby={
+            sectionTabs ? `${panelId}-tab-${activeTab}` : undefined
+          }
+          tabIndex={sectionTabs ? 0 : undefined}
+        >
+          {children}
+        </div>
       </main>
     </div>
   );
@@ -244,12 +281,16 @@ export function Tabs<T extends string>({
   onChange: (value: T) => void;
   label: string;
 }) {
+  const panelId = useContext(SectionPanelContext);
   return (
     <div className="v3-tabs" role="tablist" aria-label={label}>
       {items.map((item, index) => (
         <button
           key={item}
+          type="button"
           role="tab"
+          id={panelId ? `${panelId}-tab-${index}` : undefined}
+          aria-controls={panelId}
           aria-selected={item === value}
           tabIndex={item === value ? 0 : -1}
           onClick={() => onChange(item)}

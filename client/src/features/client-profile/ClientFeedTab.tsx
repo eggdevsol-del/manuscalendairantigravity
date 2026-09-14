@@ -259,126 +259,202 @@ function DiscoverArtistCard({
 }) {
   const [, setLocation] = useLocation();
   // null = collapsed | "portfolio" | "consultation"
-  const [expanded, setExpanded] = useState<"portfolio" | "consultation" | null>(null);
+  const [expanded, setExpanded] = useState<"portfolio" | "consultation" | null>(
+    null
+  );
   const utils = trpc.useUtils();
 
-  const getOrCreate = trpc.conversations.getOrCreate.useMutation({
-    onSuccess: (conv) => {
-      utils.conversations.list.invalidate();
-      if (conv) setLocation(`/chat/${conv.id}`);
-    },
-  });
+  const getOrCreate = trpc.conversations.getOrCreate.useMutation();
+  const openingChat = useRef(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
 
-  const displayName = artist.displayName || artist.businessName || artist.name || "Artist";
+  const displayName =
+    artist.displayName || artist.businessName || artist.name || "Artist";
   const bannerUrl = artist.funnelBannerUrl || null;
   const avatarUrl = artist.avatar || null;
-  const location = artist.city || (artist.businessAddress ? artist.businessAddress.split(",")[0] : null);
-  const keywordList = (artist.keywords || "").split(",").map((k: string) => k.trim()).filter(Boolean);
+  const location =
+    artist.city ||
+    (artist.businessAddress ? artist.businessAddress.split(",")[0] : null);
+  const keywordList = (artist.keywords || "")
+    .split(",")
+    .map((k: string) => k.trim())
+    .filter(Boolean);
 
   const toggle = (section: "portfolio" | "consultation") =>
     setExpanded(prev => (prev === section ? null : section));
 
-  const handleMessage = () => {
-    if (clientId) getOrCreate.mutate({ artistId: artist.id, clientId });
+  const handleMessage = async () => {
+    if (openingChat.current) return;
+    if (!clientId) {
+      setChatError("Please sign in again to open this chat.");
+      return;
+    }
+    openingChat.current = true;
+    setIsOpeningChat(true);
+    setChatError(null);
+    try {
+      const conversation = await getOrCreate.mutateAsync({
+        artistId: artist.id,
+        clientId,
+      });
+      if (!conversation?.id) throw new Error("Conversation was not returned");
+      void utils.conversations.list.invalidate();
+      setLocation(`/chat/${conversation.id}`);
+    } catch {
+      setChatError("Chat couldn't open. Please try again.");
+    } finally {
+      openingChat.current = false;
+      setIsOpeningChat(false);
+    }
   };
 
   return (
     <div className="w-full rounded-2xl overflow-hidden bg-[#111] shadow-lg border border-border">
-      {/* Tappable card header → toggles portfolio */}
-      <button
-        className="w-full text-left focus:outline-none"
-        onClick={() => toggle("portfolio")}
-      >
-        {/* Banner */}
-        <div className="relative h-[100px] overflow-hidden">
-          {bannerUrl
-            ? <img src={bannerUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            : <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/40 to-transparent" />
-        </div>
-
-        {/* Info + action buttons row */}
-        <div
-          className="relative -mt-7 flex items-end gap-3 px-4 pb-3"
-          onClick={e => e.stopPropagation()} // prevent card toggle when tapping buttons
+      {/* Portfolio, favourite, consultation and chat have independent targets. */}
+      <div className="relative">
+        <button
+          type="button"
+          aria-label={`${expanded === "portfolio" ? "Hide" : "View"} ${displayName}'s portfolio`}
+          aria-expanded={expanded === "portfolio"}
+          className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+          onClick={() => toggle("portfolio")}
         >
-          {/* Avatar (part of the button but we stop propagation on action row) */}
-          <div className="w-12 h-12 rounded-full border-2 border-border overflow-hidden bg-secondary/50 shrink-0 shadow-lg">
-            {avatarUrl
-              ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
-                  <span className="text-white font-bold text-lg">{displayName.charAt(0).toUpperCase()}</span>
-                </div>
-            }
+          {/* Banner */}
+          <div className="relative h-[100px] overflow-hidden">
+            {bannerUrl ? (
+              <img
+                src={bannerUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-primary/10" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111] via-black/40 to-transparent" />
           </div>
-          <div
-            className="flex-1 min-w-0 pb-1 cursor-pointer"
-            onClick={e => { e.stopPropagation(); toggle("portfolio"); }}
-          >
-            <p className="text-white font-bold text-base leading-tight truncate drop-shadow-md">{displayName}</p>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
-              {location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
-                  <p className="text-muted-foreground text-xs truncate">{location}</p>
+
+          {/* Artist information remains part of the portfolio target. */}
+          <div className="relative -mt-7 flex items-end gap-3 px-4 pb-3">
+            <div className="w-12 h-12 rounded-full border-2 border-border overflow-hidden bg-secondary/50 shrink-0 shadow-lg">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
+                  <span className="text-white font-bold text-lg">
+                    {displayName.charAt(0).toUpperCase()}
+                  </span>
                 </div>
-              )}
-              {artist.bookingCount !== undefined && artist.bookingCount > 0 && (
-                <span className="text-[10px] text-[var(--color-status-success-text)] font-bold bg-[var(--color-status-success-bg)] px-1.5 py-0.5 rounded shrink-0">
-                  🔥 {artist.bookingCount} Booking{artist.bookingCount !== 1 ? "s" : ""}
-                </span>
-              )}
-              {artist.distance !== undefined && artist.distance !== null && artist.distance !== Infinity && (
-                <span className="text-[10px] text-[var(--color-status-info-text)] font-bold bg-[var(--color-status-info-bg)] px-1.5 py-0.5 rounded shrink-0">
-                  📍 {artist.distance.toFixed(1)} km
-                </span>
               )}
             </div>
-            {expanded === null && (
-              <p className="text-white/30 text-[10px] mt-0.5">Tap to view portfolio</p>
-            )}
+            <div className="flex-1 min-w-0 pb-1">
+              <p className="text-white font-bold text-base leading-tight truncate drop-shadow-md">
+                {displayName}
+              </p>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-0.5">
+                {location && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-muted-foreground shrink-0" />
+                    <p className="text-muted-foreground text-xs truncate">
+                      {location}
+                    </p>
+                  </div>
+                )}
+                {artist.bookingCount !== undefined &&
+                  artist.bookingCount > 0 && (
+                    <span className="text-[10px] text-[var(--color-status-success-text)] font-bold bg-[var(--color-status-success-bg)] px-1.5 py-0.5 rounded shrink-0">
+                      🔥 {artist.bookingCount} Booking
+                      {artist.bookingCount !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                {artist.distance !== undefined &&
+                  artist.distance !== null &&
+                  artist.distance !== Infinity && (
+                    <span className="text-[10px] text-[var(--color-status-info-text)] font-bold bg-[var(--color-status-info-bg)] px-1.5 py-0.5 rounded shrink-0">
+                      📍 {artist.distance.toFixed(1)} km
+                    </span>
+                  )}
+              </div>
+              {expanded === null && (
+                <p className="text-white/30 text-[10px] mt-0.5">
+                  Tap to view portfolio
+                </p>
+              )}
+            </div>
           </div>
-          {/* Action buttons */}
-          <div className="flex items-center gap-1.5 pb-1 shrink-0">
-            <FavouriteHeartButton
-              artistId={artist.id}
-              isFavourited={isFavourited}
-              onToggle={onToggleFavourite}
-            />
-            <button
-              onClick={() => toggle("consultation")}
-              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all ${
-                expanded === "consultation"
-                  ? "bg-primary text-white border-primary"
-                  : "bg-secondary/50 text-white border-border"
-              }`}
-            >
-              <CalendarPlus className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleMessage}
-              disabled={getOrCreate.isPending || !clientId}
-              className="w-9 h-9 rounded-full bg-secondary/50 text-white border border-border flex items-center justify-center disabled:opacity-50"
-            >
-              {getOrCreate.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageCircle className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Keywords */}
-        {keywordList.length > 0 && (
-          <div
-            className="flex flex-wrap gap-1.5 px-4 pb-3"
-            onClick={e => e.stopPropagation()}
+        </button>
+        {/* These sibling controls never toggle the portfolio. */}
+        <div className="absolute right-4 top-3 flex items-center gap-1.5">
+          <FavouriteHeartButton
+            artistId={artist.id}
+            isFavourited={isFavourited}
+            onToggle={onToggleFavourite}
+            className="w-11 h-11"
+          />
+          <button
+            type="button"
+            aria-label={`${expanded === "consultation" ? "Hide consultation" : "Request consultation"} with ${displayName}`}
+            aria-expanded={expanded === "consultation"}
+            onClick={() => toggle("consultation")}
+            className={`w-11 h-11 rounded-full border flex items-center justify-center transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              expanded === "consultation"
+                ? "bg-primary text-white border-primary"
+                : "bg-secondary/50 text-white border-border"
+            }`}
           >
-            {keywordList.slice(0, 4).map((kw: string) => (
-              <span key={kw} className="px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-medium">
-                {kw}
-              </span>
-            ))}
-          </div>
-        )}
-      </button>
+            <CalendarPlus className="w-4 h-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label={
+              isOpeningChat ? "Opening chat" : `Chat with ${displayName}`
+            }
+            aria-busy={isOpeningChat}
+            onClick={handleMessage}
+            disabled={isOpeningChat}
+            className="w-11 h-11 rounded-full bg-secondary/50 text-white border border-border flex items-center justify-center disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            {isOpeningChat ? (
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <MessageCircle className="w-4 h-4" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Keywords */}
+      {keywordList.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 px-4 pb-3">
+          {keywordList.slice(0, 4).map((kw: string) => (
+            <span
+              key={kw}
+              className="px-2.5 py-0.5 rounded-full bg-card border border-border text-card-foreground text-[11px] font-medium"
+            >
+              {kw}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {chatError && (
+        <div className="px-3 py-2 border-t border-border bg-card text-card-foreground">
+          <p role="alert" className="text-sm text-[var(--v3-red)]">
+            {chatError}
+          </p>
+          <button
+            type="button"
+            onClick={handleMessage}
+            className="min-h-11 text-sm font-semibold text-primary"
+          >
+            Retry chat
+          </button>
+        </div>
+      )}
 
       {/* Expandable sections */}
       <AnimatePresence initial={false}>
@@ -394,9 +470,27 @@ function DiscoverArtistCard({
             <PortfolioExpand
               artistId={artist.id}
               artistName={displayName}
-              onMessage={handleMessage}
-              showMessageCTA={!!clientId}
+              showMessageCTA={false}
             />
+            <div className="px-3 pb-4">
+              <button
+                type="button"
+                onClick={handleMessage}
+                disabled={isOpeningChat}
+                aria-busy={isOpeningChat}
+                className="w-full flex items-center justify-center gap-2 min-h-11 rounded-xl bg-primary text-white font-semibold text-sm disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                {isOpeningChat ? (
+                  <Loader2
+                    className="w-4 h-4 animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                )}
+                {isOpeningChat ? "Opening chat…" : `Message ${displayName}`}
+              </button>
+            </div>
           </motion.div>
         )}
         {expanded === "consultation" && (

@@ -299,7 +299,9 @@ export function Thread({
         </form>
         {c.sendMessageMutation.error && (
           <p role="alert">
-            Couldn’t send. Your message is still here—try again.
+            {c.sendMessageMutation.variables?.messageType === "image"
+              ? "Couldn’t send the photo. Attach it again to retry."
+              : "Couldn’t send. Your message is still here—try again."}
           </p>
         )}
         <SheetShell

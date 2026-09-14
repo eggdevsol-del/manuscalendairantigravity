@@ -1,0 +1,195 @@
+[
+  {
+    "role": "artist",
+    "passed": true,
+    "assertions": [
+      "Required fields block empty submission",
+      "Create persists price, stock and shipping",
+      "Create/edit failure retains entered data for retry",
+      "Variant price, quantity and publishing are editable; image removal persists",
+      "Artist makes no merchant-only profile request",
+      "Paid order fulfilment survives failed-save retry",
+      "Artist-as-client sees client booking actions; provider-only Book and private records are hidden"
+    ],
+    "mutations": [
+      {
+        "name": "storefront.createProduct",
+        "input": {
+          "title": "Botanical postcard",
+          "description": "",
+          "priceCents": 1250,
+          "inventoryCount": 8,
+          "shippingCents": 200,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": null
+        }
+      },
+      {
+        "name": "storefront.createProduct",
+        "input": {
+          "title": "Botanical postcard",
+          "description": "",
+          "priceCents": 1250,
+          "inventoryCount": 8,
+          "shippingCents": 200,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": null
+        }
+      },
+      {
+        "name": "storefront.updateProduct",
+        "input": {
+          "title": "Botanical print",
+          "description": "Fine art print",
+          "priceCents": 3950,
+          "inventoryCount": 24,
+          "shippingCents": 500,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": [
+            {
+              "id": 11,
+              "priceCents": 3950,
+              "inventoryCount": 12
+            }
+          ],
+          "id": 1,
+          "imageUrl": null
+        }
+      },
+      {
+        "name": "storefront.updateProduct",
+        "input": {
+          "title": "Botanical print",
+          "description": "Fine art print",
+          "priceCents": 3950,
+          "inventoryCount": 24,
+          "shippingCents": 500,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": [
+            {
+              "id": 11,
+              "priceCents": 3950,
+              "inventoryCount": 12
+            }
+          ],
+          "id": 1,
+          "imageUrl": null
+        }
+      },
+      {
+        "name": "storefront.updateOrderStatus",
+        "input": {
+          "orderId": 1,
+          "status": "fulfilled"
+        }
+      },
+      {
+        "name": "storefront.updateOrderStatus",
+        "input": {
+          "orderId": 1,
+          "status": "fulfilled"
+        }
+      }
+    ]
+  },
+  {
+    "role": "merchant",
+    "passed": true,
+    "assertions": [
+      "Required fields block empty submission",
+      "Create persists price, stock and shipping",
+      "Create/edit failure retains entered data for retry",
+      "Variant price, quantity and publishing are editable; image removal persists",
+      "Artist makes no merchant-only profile request",
+      "Paid order fulfilment survives failed-save retry"
+    ],
+    "mutations": [
+      {
+        "name": "storefront.createProduct",
+        "input": {
+          "title": "Botanical postcard",
+          "description": "",
+          "priceCents": 1250,
+          "inventoryCount": 8,
+          "shippingCents": 200,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": null
+        }
+      },
+      {
+        "name": "storefront.createProduct",
+        "input": {
+          "title": "Botanical postcard",
+          "description": "",
+          "priceCents": 1250,
+          "inventoryCount": 8,
+          "shippingCents": 200,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": null
+        }
+      },
+      {
+        "name": "storefront.updateProduct",
+        "input": {
+          "title": "Botanical print",
+          "description": "Fine art print",
+          "priceCents": 3950,
+          "inventoryCount": 24,
+          "shippingCents": 500,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": [
+            {
+              "id": 11,
+              "priceCents": 3950,
+              "inventoryCount": 12
+            }
+          ],
+          "id": 1,
+          "imageUrl": null
+        }
+      },
+      {
+        "name": "storefront.updateProduct",
+        "input": {
+          "title": "Botanical print",
+          "description": "Fine art print",
+          "priceCents": 3950,
+          "inventoryCount": 24,
+          "shippingCents": 500,
+          "fulfillmentType": "delivery",
+          "isActive": true,
+          "variants": [
+            {
+              "id": 11,
+              "priceCents": 3950,
+              "inventoryCount": 12
+            }
+          ],
+          "id": 1,
+          "imageUrl": null
+        }
+      },
+      {
+        "name": "storefront.updateOrderStatus",
+        "input": {
+          "orderId": 1,
+          "status": "fulfilled"
+        }
+      },
+      {
+        "name": "storefront.updateOrderStatus",
+        "input": {
+          "orderId": 1,
+          "status": "fulfilled"
+        }
+      }
+    ]
+  }
+]

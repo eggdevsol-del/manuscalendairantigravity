@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "assertions": [
+    "booking keyboard focus remains inside portalled dialog",
+    "Escape dismisses only the nested booking",
+    "nested close restores focus to booking trigger",
+    "failed booking preserves draft",
+    "success action fits above the iPhone home indicator",
+    "retry sends one request per attempt and closes on acknowledgement",
+    "profile artwork like calls persistent mutation",
+    "Escape leaves artwork view inside profile",
+    "Discover scroll position restored after profile and focus exit",
+    "header continues responding after focus unmount",
+    "no browser exceptions"
+  ]
+}

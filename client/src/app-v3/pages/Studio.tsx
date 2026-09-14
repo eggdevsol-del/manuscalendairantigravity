@@ -114,6 +114,16 @@ function StudioWorkspace() {
     <Screen
       title={current?.name || "Your studio"}
       subtitle="A shared schedule. An independent practice."
+      subheader={
+        current && (
+          <Tabs
+            label="Studio sections"
+            items={["Schedule", "Team", "Billing"] as const}
+            value={tab}
+            onChange={next => go(`/studio?view=${next}`)}
+          />
+        )
+      }
       back="/business"
       wide
     >
@@ -162,12 +172,6 @@ function StudioWorkspace() {
       )}
       {current && (
         <>
-          <Tabs
-            label="Studio sections"
-            items={["Schedule", "Team", "Billing"] as const}
-            value={tab}
-            onChange={next => go(`/studio?view=${next}`)}
-          />
           {tab === "Schedule" && (
             <>
               <div className="v3-inline">

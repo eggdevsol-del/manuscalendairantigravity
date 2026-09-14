@@ -1,0 +1,545 @@
+[
+  {
+    "id": "flow-booking-client",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "New booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-booking-service",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "New booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-booking-frequency",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "New booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-booking-review",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "New booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-new-client",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Add client",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-booking-single",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "New booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-client-detail",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-client-forms",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-client-notes",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-private-notes",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-design-brief",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-services",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-service-editor",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Add service",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-portfolio-upload",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Add to your portfolio",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-travel-add",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Travel dates",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-studio-remove",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Remove Oliver Grant?",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-consent-template",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-medical-template",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-past-bookings",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-deposit-review",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Review your booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-client-consent",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Consent forms",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-order-detail",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-product-details",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-archive-request",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Archive this request?",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-idea",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-placement",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-reference",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-placement-photo",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-details",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-intake-review",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Request a booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-notification-template",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Add template",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-consent-signature",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Consent forms",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-refund-review",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Review refund",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-session-reschedule",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Reschedule session",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-session-cancel",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Cancel session",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-portfolio",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-session-finish",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Finish session",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-portfolio-view",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Your work",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-import-mapping",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-payment-confirming",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-shop-cart",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Your cart",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "flow-balance-confirming",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-discovery-home",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-discovery-focus",
+    "width": 390,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "flow-event-create",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Create an event",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "calendar-details-820",
+    "width": 820,
+    "dialogs": [],
+    "errors": []
+  },
+  {
+    "id": "calendar-details-390",
+    "width": 390,
+    "dialogs": [
+      {
+        "index": 0,
+        "title": "Booking",
+        "closeCount": 1,
+        "labels": [
+          "Close"
+        ]
+      }
+    ],
+    "errors": []
+  }
+]

@@ -1,0 +1,7700 @@
+[
+  {
+    "id": "public-sign-in",
+    "role": "public",
+    "path": "/login",
+    "title": "Sign in",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Forgot password?",
+        "href": "/forgot-password"
+      },
+      {
+        "text": "Create an account",
+        "href": "/signup"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-client-sign-up",
+    "role": "public",
+    "path": "/signup",
+    "title": "Client sign up",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Client",
+        "href": "/signup?role=client"
+      },
+      {
+        "text": "Artist",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Supplier",
+        "href": "/signup?role=supplier"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-artist-sign-up",
+    "role": "public",
+    "path": "/signup?role=artist",
+    "title": "Artist sign up",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Client",
+        "href": "/signup?role=client"
+      },
+      {
+        "text": "Artist",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Supplier",
+        "href": "/signup?role=supplier"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-set-password",
+    "role": "public",
+    "path": "/set-password?token=preview",
+    "title": "Set password",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Request a new link",
+        "href": "/forgot-password"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-supplier-sign-up",
+    "role": "public",
+    "path": "/signup?role=merchant",
+    "title": "Supplier sign up",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Client",
+        "href": "/signup?role=client"
+      },
+      {
+        "text": "Artist",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Supplier",
+        "href": "/signup?role=supplier"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-password-recovery",
+    "role": "public",
+    "path": "/forgot-password",
+    "title": "Password recovery",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Back to sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-magic-link",
+    "role": "public",
+    "path": "/auth/magic?token=preview",
+    "title": "Magic link",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      },
+      {
+        "text": "Back to sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-public-artist",
+    "role": "public",
+    "path": "/ella-morgan",
+    "title": "Public artist",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      },
+      {
+        "text": "Selected work by Ella Morgan",
+        "href": "/__ivory_artwork.png"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-booking-intake",
+    "role": "public",
+    "path": "/start/ella-morgan",
+    "title": "Booking intake",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      },
+      {
+        "text": "Botanical study",
+        "href": "/__ivory_artwork.png"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-booking-link",
+    "role": "public",
+    "path": "/book/ella-morgan",
+    "title": "Booking link",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      },
+      {
+        "text": "Botanical study",
+        "href": "/__ivory_artwork.png"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-public-studio",
+    "role": "public",
+    "path": "/studio/northside",
+    "title": "Public studio",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      },
+      {
+        "text": "EM\nElla Morgan\nFine-line botanicals. Thoughtfully made, just for you.",
+        "href": "/start/ella-morgan"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-public-shop",
+    "role": "public",
+    "path": "/shop/ella-morgan",
+    "title": "Public shop",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/ella-morgan"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-deposit-link",
+    "role": "public",
+    "path": "/deposit/preview",
+    "title": "Deposit link",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-public-events",
+    "role": "public",
+    "path": "/events/ella-morgan",
+    "title": "Public events",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/ella-morgan"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-balance-link",
+    "role": "public",
+    "path": "/balance/101",
+    "title": "Balance link",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "public-payment-request",
+    "role": "public",
+    "path": "/pay/preview",
+    "title": "Payment request",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Sign in",
+        "href": "/login"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-discover",
+    "role": "client",
+    "path": "/discover",
+    "title": "Discover",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": null,
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-bookings",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Upcoming",
+          "x": 4,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        },
+        {
+          "text": "Past",
+          "x": 197,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-booking-overview",
+    "role": "client",
+    "path": "/projects/12",
+    "title": "Booking overview",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-booking-messages",
+    "role": "client",
+    "path": "/projects/12?view=Messages",
+    "title": "Booking messages",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "All conversations",
+        "href": "/conversations"
+      },
+      {
+        "text": "Open booking",
+        "href": "/projects/12"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-booking-files",
+    "role": "client",
+    "path": "/projects/12?view=Files",
+    "title": "Booking files",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Share photos in Messages",
+        "href": "/projects/12?session=101&view=Messages"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-booking-payments",
+    "role": "client",
+    "path": "/projects/12?view=Payments",
+    "title": "Booking payments",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-inbox",
+    "role": "client",
+    "path": "/conversations",
+    "title": "Inbox",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "EM\nElla Morgan\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-conversation",
+    "role": "client",
+    "path": "/chat/12",
+    "title": "Conversation",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "All conversations",
+        "href": "/conversations"
+      },
+      {
+        "text": "Open booking",
+        "href": "/projects/12"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-client-profile",
+    "role": "client",
+    "path": "/profile",
+    "title": "Client profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Edit your details",
+        "href": "/profile?edit=true"
+      },
+      {
+        "text": "Your purchases",
+        "href": "/purchases"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-client-documents",
+    "role": "client",
+    "path": "/profile?tab=forms",
+    "title": "Client documents",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/profile"
+      },
+      {
+        "text": "Settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Your purchases",
+        "href": "/purchases"
+      },
+      {
+        "text": "Cancellation offers",
+        "href": "/waitlist"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-earlier-appointments",
+    "role": "client",
+    "path": "/waitlist",
+    "title": "Earlier appointments",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-purchases",
+    "role": "client",
+    "path": "/purchases",
+    "title": "Purchases",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/profile"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-complete-profile",
+    "role": "client",
+    "path": "/complete-profile",
+    "title": "Complete profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "For artists",
+        "href": "/signup?role=artist"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-today",
+    "role": "artist",
+    "path": "/dashboard",
+    "title": "Today",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "View booking",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-business",
+    "role": "artist",
+    "path": "/business",
+    "title": "Business",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Money\nIncome, balances and payouts",
+        "href": "/money"
+      },
+      {
+        "text": "Working hours & services\nAvailability, session lengths and pricing",
+        "href": "/work-hours"
+      },
+      {
+        "text": "Your profile & booking link\nThe front door for your clients",
+        "href": "/artist-profile"
+      },
+      {
+        "text": "Cancellation waitlist\nFill available appointments",
+        "href": "/waitlist"
+      },
+      {
+        "text": "Your products\nCatalogue and availability",
+        "href": "/products"
+      },
+      {
+        "text": "Store orders\nPayment and fulfilment",
+        "href": "/store-orders"
+      },
+      {
+        "text": "Workshops & events\nCreate an event and review registrations",
+        "href": "/artist-events"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-products",
+    "role": "artist",
+    "path": "/products",
+    "title": "Artist products",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-events",
+    "role": "artist",
+    "path": "/artist-events",
+    "title": "Artist events",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/artist-profile"
+      },
+      {
+        "text": "Preview events page",
+        "href": "/events/ella-morgan"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-store-orders",
+    "role": "artist",
+    "path": "/store-orders",
+    "title": "Store orders",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "To fulfil",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Fulfilled",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/artist-profile"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-money",
+    "role": "artist",
+    "path": "/money",
+    "title": "Money",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "7 days",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "30 days",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "90 days",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "All time",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Manage payouts",
+        "href": "/bank-payouts"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-calendar",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-inbox",
+    "role": "artist",
+    "path": "/conversations",
+    "title": "Inbox",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Clients",
+          "x": 4,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        },
+        {
+          "text": "Contacts",
+          "x": 197,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "MC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-overview",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Project overview",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-conversation",
+    "role": "artist",
+    "path": "/chat/12",
+    "title": "Conversation",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "subheader": false,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "All conversations",
+        "href": "/conversations"
+      },
+      {
+        "text": "Open booking",
+        "href": "/projects/12"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-files",
+    "role": "artist",
+    "path": "/projects/12?view=Files",
+    "title": "Project files",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Share photos in Messages",
+        "href": "/projects/12?session=101&view=Messages"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-payments",
+    "role": "artist",
+    "path": "/projects/12?view=Payments",
+    "title": "Project payments",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 100.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 197,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 293.5,
+          "y": 262,
+          "width": 92.5,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-clients",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-booking-request",
+    "role": "artist",
+    "path": "/lead/1",
+    "title": "Booking request",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/conversations"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Client reference 1",
+        "href": "/__ivory_artwork.png"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-cancellation-waitlist",
+    "role": "artist",
+    "path": "/waitlist",
+    "title": "Cancellation waitlist",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-portfolio",
+    "role": "artist",
+    "path": "/artist-profile?view=Portfolio",
+    "title": "Artist portfolio",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Profile",
+          "x": 4,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        },
+        {
+          "text": "Portfolio",
+          "x": 197,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business"
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan"
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link"
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Instagram import",
+        "href": "/settings?section=instagram"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-profile",
+    "role": "artist",
+    "path": "/artist-profile",
+    "title": "Artist profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Profile",
+          "x": 4,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        },
+        {
+          "text": "Portfolio",
+          "x": 197,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business"
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan"
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link"
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-working-hours",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Availability",
+          "x": 4,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        },
+        {
+          "text": "Services",
+          "x": 197,
+          "y": 262,
+          "width": 189,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-supply-orders",
+    "role": "artist",
+    "path": "/supply-orders",
+    "title": "Supply orders",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/supplies"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-supplies",
+    "role": "artist",
+    "path": "/supplies",
+    "title": "Supplies",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Your supply orders",
+        "href": "/supply-orders"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-purchases",
+    "role": "artist",
+    "path": "/purchases",
+    "title": "Purchases",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-bank-payouts",
+    "role": "artist",
+    "path": "/bank-payouts",
+    "title": "Bank payouts",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/money"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-payout-history",
+    "role": "artist",
+    "path": "/payout-history",
+    "title": "Payout history",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/money"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-notifications",
+    "role": "artist",
+    "path": "/notifications-management",
+    "title": "Notifications",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-plans",
+    "role": "artist",
+    "path": "/subscriptions",
+    "title": "Plans",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-schedule",
+    "role": "artist",
+    "path": "/studio",
+    "title": "Studio schedule",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-team",
+    "role": "artist",
+    "path": "/studio?view=Team",
+    "title": "Studio team",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-invitations",
+    "role": "artist",
+    "path": "/studio?view=invitations",
+    "title": "Studio invitations",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/studio"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-billing",
+    "role": "artist",
+    "path": "/studio?view=Billing",
+    "title": "Studio billing",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-settings",
+    "role": "client",
+    "path": "/settings",
+    "title": "Settings",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "MC\nMia Chen",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Profile\nName, photo and contact details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Notifications\nDevice alerts for updates and messages",
+        "href": "/settings?section=notifications"
+      },
+      {
+        "text": "Guided walkthroughs\nLearn each workflow",
+        "href": "/settings?section=how-tos"
+      },
+      {
+        "text": "Delete account\nAccount and data removal",
+        "href": "/settings?section=danger-zone"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-settings-profile",
+    "role": "client",
+    "path": "/settings?section=profile",
+    "title": "Settings profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-settings-notifications",
+    "role": "client",
+    "path": "/settings?section=notifications",
+    "title": "Settings notifications",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-settings-how-tos",
+    "role": "client",
+    "path": "/settings?section=how-tos",
+    "title": "Settings how-tos",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-settings-danger-zone",
+    "role": "client",
+    "path": "/settings?section=danger-zone",
+    "title": "Settings danger-zone",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings",
+    "role": "artist",
+    "path": "/settings",
+    "title": "Settings",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "EM\nElla Morgan",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Profile\nName, photo and contact details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Notifications\nDevice alerts and saved message templates",
+        "href": "/settings?section=notifications"
+      },
+      {
+        "text": "Business details\nLocation, contact information and licence",
+        "href": "/settings?section=business"
+      },
+      {
+        "text": "Working hours & services\nAvailability, duration and pricing",
+        "href": "/work-hours"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-how-tos",
+    "role": "artist",
+    "path": "/settings?section=how-tos",
+    "title": "Settings how-tos",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-notifications",
+    "role": "artist",
+    "path": "/settings?section=notifications",
+    "title": "Settings notifications",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-profile",
+    "role": "artist",
+    "path": "/settings?section=profile",
+    "title": "Settings profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-danger-zone",
+    "role": "artist",
+    "path": "/settings?section=danger-zone",
+    "title": "Settings danger-zone",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-settings",
+    "role": "merchant",
+    "path": "/account-settings",
+    "title": "Settings",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "SS\nStudio Supply",
+        "href": "/account-settings?section=profile"
+      },
+      {
+        "text": "Profile\nName, photo and contact details",
+        "href": "/account-settings?section=profile"
+      },
+      {
+        "text": "Notifications\nDevice alerts for updates and messages",
+        "href": "/account-settings?section=notifications"
+      },
+      {
+        "text": "Guided walkthroughs\nLearn each workflow",
+        "href": "/account-settings?section=how-tos"
+      },
+      {
+        "text": "Delete account\nAccount and data removal",
+        "href": "/account-settings?section=danger-zone"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-settings-profile",
+    "role": "merchant",
+    "path": "/account-settings?section=profile",
+    "title": "Settings profile",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/account-settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-settings-notifications",
+    "role": "merchant",
+    "path": "/account-settings?section=notifications",
+    "title": "Settings notifications",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/account-settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-settings-how-tos",
+    "role": "merchant",
+    "path": "/account-settings?section=how-tos",
+    "title": "Settings how-tos",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/account-settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-settings-danger-zone",
+    "role": "merchant",
+    "path": "/account-settings?section=danger-zone",
+    "title": "Settings danger-zone",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/account-settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-business",
+    "role": "artist",
+    "path": "/settings?section=business",
+    "title": "Settings business",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-booking-link",
+    "role": "artist",
+    "path": "/settings?section=booking-link",
+    "title": "Settings booking-link",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-regulation",
+    "role": "artist",
+    "path": "/settings?section=regulation",
+    "title": "Settings regulation",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Procedure log",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Medical",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "Consent",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-travel",
+    "role": "artist",
+    "path": "/settings?section=travel",
+    "title": "Settings travel",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Manage working hours",
+        "href": "/work-hours"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-data-import",
+    "role": "artist",
+    "path": "/settings?section=data-import",
+    "title": "Settings data-import",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-instagram",
+    "role": "artist",
+    "path": "/settings?section=instagram",
+    "title": "Settings instagram",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Open your portfolio",
+        "href": "/artist-profile?view=Portfolio"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-settings-consultations",
+    "role": "artist",
+    "path": "/settings?section=consultations",
+    "title": "Settings consultations",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-home",
+    "role": "merchant",
+    "path": "/dashboard",
+    "title": "Supplier home",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "2 orders to fulfil\nPaid orders ready for their next step",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "3 products running low\nCheck availability and stock levels",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "Catalogue & stock\nManage products available to artists",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "Shopify connection\nImport and review your catalogue",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-orders",
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Supplier orders",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "To fulfil",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Fulfilled",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-products",
+    "role": "merchant",
+    "path": "/merchant/products",
+    "title": "Supplier products",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Review Shopify connection",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-store-settings",
+    "role": "merchant",
+    "path": "/settings",
+    "title": "Store settings",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-inbox",
+    "role": "merchant",
+    "path": "/conversations",
+    "title": "Supplier inbox",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "MC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-purchases",
+    "role": "merchant",
+    "path": "/purchases",
+    "title": "Supplier purchases",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/settings"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-conversation",
+    "role": "merchant",
+    "path": "/chat/12",
+    "title": "Supplier conversation",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "All conversations",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "admin-operations",
+    "role": "admin",
+    "path": "/admin/operations",
+    "title": "Operations",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Error reports",
+        "href": "/admin/errors"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "admin-error-reports",
+    "role": "admin",
+    "path": "/admin/errors",
+    "title": "Error reports",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 390,
+      "height": 52,
+      "items": [
+        {
+          "text": "Unresolved",
+          "x": 4,
+          "y": 262,
+          "width": 124.65625,
+          "height": 44
+        },
+        {
+          "text": "Resolved",
+          "x": 132.65625,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 261.328125,
+          "y": 262,
+          "width": 124.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/admin/operations"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-not-found",
+    "role": "client",
+    "path": "/not/a/route",
+    "title": "Not found",
+    "width": 390,
+    "height": 844,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 390,
+      "height": 204
+    },
+    "subheader": null,
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Return to your home",
+        "href": "/"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-today",
+    "role": "artist",
+    "path": "/dashboard",
+    "title": "Today",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 109.328125,
+          "y": 262,
+          "width": 101.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 214.671875,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "View booking",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-clients",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 109.328125,
+          "y": 262,
+          "width": 101.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 214.671875,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-supplies",
+    "role": "artist",
+    "path": "/supplies",
+    "title": "Supplies",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 109.328125,
+          "y": 262,
+          "width": 101.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 214.671875,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Your supply orders",
+        "href": "/supply-orders"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-overview",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Project overview",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 83,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 162,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 241,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-bookings",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Upcoming",
+          "x": 4,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        },
+        {
+          "text": "Past",
+          "x": 162,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-money",
+    "role": "artist",
+    "path": "/money",
+    "title": "Money",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "7 days",
+          "x": 4,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "30 days",
+          "x": 83,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "90 days",
+          "x": 162,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        },
+        {
+          "text": "All time",
+          "x": 241,
+          "y": 262,
+          "width": 75,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Manage payouts",
+        "href": "/bank-payouts"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-schedule",
+    "role": "artist",
+    "path": "/studio",
+    "title": "Studio schedule",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 4,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 109.328125,
+          "y": 262,
+          "width": 101.34375,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 214.671875,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-inbox",
+    "role": "artist",
+    "path": "/conversations",
+    "title": "Inbox",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Clients",
+          "x": 4,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        },
+        {
+          "text": "Contacts",
+          "x": 162,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "MC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-working-hours",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Availability",
+          "x": 4,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        },
+        {
+          "text": "Services",
+          "x": 162,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-profile",
+    "role": "artist",
+    "path": "/artist-profile",
+    "title": "Artist profile",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "Profile",
+          "x": 4,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        },
+        {
+          "text": "Portfolio",
+          "x": 162,
+          "y": 262,
+          "width": 154,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business"
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan"
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link"
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-orders",
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Supplier orders",
+    "width": 320,
+    "height": 874,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 320,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 320,
+      "height": 52,
+      "items": [
+        {
+          "text": "To fulfil",
+          "x": 4,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        },
+        {
+          "text": "Fulfilled",
+          "x": 109.328125,
+          "y": 262,
+          "width": 101.34375,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 214.671875,
+          "y": 262,
+          "width": 101.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-today",
+    "role": "artist",
+    "path": "/dashboard",
+    "title": "Today",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 149.328125,
+          "y": 262,
+          "width": 141.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 294.671875,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "View booking",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "10:00\nMia Chen\nBotanical sleeve · Confirmed",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-clients",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 149.328125,
+          "y": 262,
+          "width": 141.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 294.671875,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-supplies",
+    "role": "artist",
+    "path": "/supplies",
+    "title": "Supplies",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 4,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 149.328125,
+          "y": 262,
+          "width": 141.34375,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 294.671875,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Your supply orders",
+        "href": "/supply-orders"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-overview",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Project overview",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 4,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 113,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 222,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 331,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-bookings",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Upcoming",
+          "x": 4,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        },
+        {
+          "text": "Past",
+          "x": 222,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-money",
+    "role": "artist",
+    "path": "/money",
+    "title": "Money",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "7 days",
+          "x": 4,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "30 days",
+          "x": 113,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "90 days",
+          "x": 222,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        },
+        {
+          "text": "All time",
+          "x": 331,
+          "y": 262,
+          "width": 105,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Manage payouts",
+        "href": "/bank-payouts"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-schedule",
+    "role": "artist",
+    "path": "/studio",
+    "title": "Studio schedule",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 4,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 149.328125,
+          "y": 262,
+          "width": 141.34375,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 294.671875,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-inbox",
+    "role": "artist",
+    "path": "/conversations",
+    "title": "Inbox",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Clients",
+          "x": 4,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        },
+        {
+          "text": "Contacts",
+          "x": 222,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "MC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-working-hours",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Availability",
+          "x": 4,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        },
+        {
+          "text": "Services",
+          "x": 222,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-profile",
+    "role": "artist",
+    "path": "/artist-profile",
+    "title": "Artist profile",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "Profile",
+          "x": 4,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        },
+        {
+          "text": "Portfolio",
+          "x": 222,
+          "y": 262,
+          "width": 214,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business"
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan"
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link"
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-orders",
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Supplier orders",
+    "width": 440,
+    "height": 874,
+    "theme": "dark",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 440,
+      "height": 204
+    },
+    "subheader": {
+      "x": 0,
+      "y": 258,
+      "width": 440,
+      "height": 52,
+      "items": [
+        {
+          "text": "To fulfil",
+          "x": 4,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        },
+        {
+          "text": "Fulfilled",
+          "x": 149.328125,
+          "y": 262,
+          "width": 141.34375,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 294.671875,
+          "y": 262,
+          "width": 141.328125,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-today",
+    "role": "artist",
+    "path": "/dashboard",
+    "title": "Today",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 36,
+          "y": 262,
+          "width": 246.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 286.65625,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 537.328125,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "View booking",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "10:00\nMia Chen\nBotanical sleeve · Confirmed",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "14:00\nMia Chen\nGeometric shoulder · Confirmed",
+        "href": "/projects/12?session=102"
+      },
+      {
+        "text": "Open calendar",
+        "href": "/calendar?date=2026-09-10"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-clients",
+    "role": "artist",
+    "path": "/clients",
+    "title": "Clients",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 36,
+          "y": 262,
+          "width": 246.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 286.65625,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 537.328125,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-supplies",
+    "role": "artist",
+    "path": "/supplies",
+    "title": "Supplies",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Today",
+          "x": 36,
+          "y": 262,
+          "width": 246.65625,
+          "height": 44
+        },
+        {
+          "text": "Clients",
+          "x": 286.65625,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        },
+        {
+          "text": "Supplies",
+          "x": 537.328125,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Clients",
+        "href": "/clients"
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies"
+      },
+      {
+        "text": "Your supply orders",
+        "href": "/supply-orders"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-project-overview",
+    "role": "artist",
+    "path": "/projects/12",
+    "title": "Project overview",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Overview",
+          "x": 36,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "Messages",
+          "x": 224,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "Files",
+          "x": 412,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "Payments",
+          "x": 600,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/calendar"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Message Mia Chen",
+        "href": "/projects/12?session=101&view=Messages"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "client-bookings",
+    "role": "client",
+    "path": "/bookings",
+    "title": "Bookings",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Upcoming",
+          "x": 36,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        },
+        {
+          "text": "Past",
+          "x": 412,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/bookings"
+      },
+      {
+        "text": "Your profile",
+        "href": "/profile"
+      },
+      {
+        "text": "Complete sitting 2 forms",
+        "href": "/projects/12?session=101&action=forms"
+      },
+      {
+        "text": "Sitting 2 · Confirmed\nThu, 10 Sept, 10:00 am",
+        "href": "/projects/12?session=101"
+      },
+      {
+        "text": "Message Ella Morgan",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Discover",
+        "href": "/discover"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings"
+      },
+      {
+        "text": "Profile",
+        "href": "/profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-money",
+    "role": "artist",
+    "path": "/money",
+    "title": "Money",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "7 days",
+          "x": 36,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "30 days",
+          "x": 224,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "90 days",
+          "x": 412,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        },
+        {
+          "text": "All time",
+          "x": 600,
+          "y": 262,
+          "width": 184,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Manage payouts",
+        "href": "/bank-payouts"
+      },
+      {
+        "text": "View payout history",
+        "href": "/payout-history"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-studio-schedule",
+    "role": "artist",
+    "path": "/studio",
+    "title": "Studio schedule",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Schedule",
+          "x": 36,
+          "y": 262,
+          "width": 246.65625,
+          "height": 44
+        },
+        {
+          "text": "Team",
+          "x": 286.65625,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        },
+        {
+          "text": "Billing",
+          "x": 537.328125,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Your invitations",
+        "href": "/studio?view=invitations"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-inbox",
+    "role": "artist",
+    "path": "/conversations",
+    "title": "Inbox",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Clients",
+          "x": 36,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        },
+        {
+          "text": "Contacts",
+          "x": 412,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "MC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2",
+        "href": "/chat/12"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-working-hours",
+    "role": "artist",
+    "path": "/work-hours",
+    "title": "Working hours",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Availability",
+          "x": 36,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        },
+        {
+          "text": "Services",
+          "x": 412,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/business"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "artist-artist-profile",
+    "role": "artist",
+    "path": "/artist-profile",
+    "title": "Artist profile",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "Profile",
+          "x": 36,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        },
+        {
+          "text": "Portfolio",
+          "x": 412,
+          "y": 262,
+          "width": 372,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "Back",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Your business",
+        "href": "/business"
+      },
+      {
+        "text": "Business settings & payouts",
+        "href": "/business"
+      },
+      {
+        "text": "Preview booking page",
+        "href": "/book/ella-morgan"
+      },
+      {
+        "text": "Share your booking link",
+        "href": "/settings?section=booking-link"
+      },
+      {
+        "text": "Photo & personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Edit personal details",
+        "href": "/settings?section=profile"
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      },
+      {
+        "text": "Calendar",
+        "href": "/calendar"
+      },
+      {
+        "text": "Profile",
+        "href": "/artist-profile"
+      }
+    ],
+    "errors": []
+  },
+  {
+    "id": "merchant-supplier-orders",
+    "role": "merchant",
+    "path": "/merchant/orders",
+    "title": "Supplier orders",
+    "width": 820,
+    "height": 1180,
+    "theme": "light",
+    "overflow": false,
+    "header": {
+      "x": 0,
+      "y": 54,
+      "width": 820,
+      "height": 204
+    },
+    "subheader": {
+      "x": 32,
+      "y": 258,
+      "width": 756,
+      "height": 52,
+      "items": [
+        {
+          "text": "To fulfil",
+          "x": 36,
+          "y": 262,
+          "width": 246.65625,
+          "height": 44
+        },
+        {
+          "text": "Fulfilled",
+          "x": 286.65625,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        },
+        {
+          "text": "All",
+          "x": 537.328125,
+          "y": 262,
+          "width": 246.671875,
+          "height": 44
+        }
+      ]
+    },
+    "boundary": false,
+    "invalidNumbers": false,
+    "unnamedButtons": [],
+    "smallControls": [],
+    "links": [
+      {
+        "text": "tattoi",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Store settings",
+        "href": "/settings"
+      },
+      {
+        "text": "Home",
+        "href": "/dashboard"
+      },
+      {
+        "text": "Orders",
+        "href": "/merchant/orders"
+      },
+      {
+        "text": "Products",
+        "href": "/merchant/products"
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations"
+      }
+    ],
+    "errors": []
+  }
+]

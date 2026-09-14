@@ -54,10 +54,10 @@ function Directory() {
     <Screen
       title="Supplies"
       subtitle="Find what you need for the next session."
+      subheader={<HomeTabs />}
       back="/dashboard"
     >
       <ActionLink href="/supply-orders">Your supply orders</ActionLink>
-      <HomeTabs />
       <SearchField
         value={search}
         onChange={setSearch}

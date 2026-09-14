@@ -3,7 +3,7 @@
  * Full-screen artist map overlay.
  *
  * Fixes applied:
- * - Search bar + chips shifted down 25px (no X-button overlap)
+ * - Close, search and filter controls respect shared native safe-area offsets
  * - "Search this area" re-filters by map bounds
  * - Tap backdrop closes artist popup
  * - Artist card sits above bottom nav (pb-[77px] safe area)
@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { MapContainer, TileLayer, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -27,44 +28,90 @@ import { useLocation } from "wouter";
 // ── Leaflet default icon fix ─────────────────────────────────
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
 const STYLE_FILTERS = [
-  "All Styles", "Realism", "Portrait", "Black & Grey", "Colour",
-  "Tāmoko", "Traditional", "Neo-Trad", "Geometric", "Watercolour",
-  "Fine Line", "Blackwork", "Japanese", "Minimalist",
+  "All Styles",
+  "Realism",
+  "Portrait",
+  "Black & Grey",
+  "Colour",
+  "Tāmoko",
+  "Traditional",
+  "Neo-Trad",
+  "Geometric",
+  "Watercolour",
+  "Fine Line",
+  "Blackwork",
+  "Japanese",
+  "Minimalist",
 ];
 
 // ── Avatar marker factory ────────────────────────────────────
-function createArtistMarker(avatarUrl: string | null, name: string, isMyArtist: boolean) {
+function createArtistMarker(
+  avatarUrl: string | null,
+  name: string,
+  isMyArtist: boolean
+) {
   const initial = (name || "?").charAt(0).toUpperCase();
-  const ring = isMyArtist ? "#7c6aff" : "#10b981";
+  const ring = isMyArtist ? "var(--primary)" : "var(--v3-green)";
+  const marker = document.createElement("div");
+  Object.assign(marker.style, {
+    width: "44px",
+    height: "52px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  });
+  const avatar = document.createElement("div");
+  Object.assign(avatar.style, {
+    width: "44px",
+    height: "44px",
+    borderRadius: "50%",
+    border: `3px solid ${ring}`,
+    boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+    overflow: "hidden",
+    background: "var(--card)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  });
+  if (avatarUrl) {
+    const image = document.createElement("img");
+    image.src = avatarUrl;
+    image.alt = "";
+    Object.assign(image.style, {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+    });
+    avatar.append(image);
+  } else {
+    const label = document.createElement("span");
+    label.textContent = initial;
+    Object.assign(label.style, {
+      color: "var(--foreground)",
+      fontSize: "18px",
+      fontWeight: "700",
+    });
+    avatar.append(label);
+  }
+  const tip = document.createElement("div");
+  Object.assign(tip.style, {
+    width: "0",
+    height: "0",
+    borderLeft: "6px solid transparent",
+    borderRight: "6px solid transparent",
+    borderTop: `8px solid ${ring}`,
+  });
+  marker.append(avatar, tip);
 
   return L.divIcon({
-    html: `
-      <div style="width:44px;height:52px;display:flex;flex-direction:column;align-items:center;">
-        <div style="
-          width:44px;height:44px;border-radius:50%;
-          border:3px solid ${ring};
-          box-shadow:0 2px 10px rgba(0,0,0,0.55);
-          overflow:hidden;background:#1e1b2e;
-          display:flex;align-items:center;justify-content:center;
-        ">
-          ${avatarUrl
-            ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;" />`
-            : `<span style="color:white;font-size:18px;font-weight:700;">${initial}</span>`
-          }
-        </div>
-        <div style="
-          width:0;height:0;
-          border-left:6px solid transparent;
-          border-right:6px solid transparent;
-          border-top:8px solid ${ring};
-        "></div>
-      </div>`,
+    html: marker,
     className: "",
     iconSize: [44, 52],
     iconAnchor: [22, 52],
@@ -73,21 +120,32 @@ function createArtistMarker(avatarUrl: string | null, name: string, isMyArtist: 
 }
 
 // ── Map event hook — fires after user pans/zooms ─────────────
-function MapEventTracker({ onMoved }: { onMoved: (b: L.LatLngBounds) => void }) {
+function MapEventTracker({
+  onMoved,
+}: {
+  onMoved: (b: L.LatLngBounds) => void;
+}) {
   const isFirst = useRef(true);
   useMapEvents({
     moveend(e) {
-      if (isFirst.current) { isFirst.current = false; return; }
+      if (isFirst.current) {
+        isFirst.current = false;
+        return;
+      }
       onMoved(e.target.getBounds());
     },
-    zoomend(e) { onMoved(e.target.getBounds()); },
+    zoomend(e) {
+      onMoved(e.target.getBounds());
+    },
   });
   return null;
 }
 
 // ── Imperative marker renderer ───────────────────────────────
 function ArtistPins({
-  artists, myArtistIds, onPinClick,
+  artists,
+  myArtistIds,
+  onPinClick,
 }: {
   artists: any[];
   myArtistIds: Set<string>;
@@ -112,13 +170,19 @@ function ArtistPins({
         artist.displayName || artist.name || "",
         isMyArtist
       );
-      const marker = L.marker([lat, lng], { icon });
+      const marker = L.marker([lat, lng], {
+        icon,
+        title: artist.displayName || artist.name || "Artist",
+        alt: artist.displayName || artist.name || "Artist",
+      });
       marker.on("click", () => onPinClick(artist));
       marker.addTo(map);
       markersRef.current.push(marker);
     });
 
-    return () => { markersRef.current.forEach(m => m.remove()); };
+    return () => {
+      markersRef.current.forEach(m => m.remove());
+    };
   }, [artists, myArtistIds, map, onPinClick]);
 
   return null;
@@ -130,7 +194,10 @@ interface ArtistMapOverlayProps {
   conversations: any[];
 }
 
-export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayProps) {
+export function ArtistMapOverlay({
+  onClose,
+  conversations,
+}: ArtistMapOverlayProps) {
   const { user } = useAuth();
   const { isFavourited, toggleFavourite } = useFavourites();
   const [activeFilter, setActiveFilter] = useState("All Styles");
@@ -144,14 +211,17 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
 
   // IDs of artists the client already talks to
   const myArtistIds = useMemo(
-    () => new Set(conversations.map((c: any) => c.otherUser?.id).filter(Boolean)),
+    () =>
+      new Set(conversations.map((c: any) => c.otherUser?.id).filter(Boolean)),
     [conversations]
   );
 
   // Lookup conv by artistId
   const convByArtistId = useMemo(() => {
     const m = new Map<string, any>();
-    conversations.forEach(c => { if (c.otherUser?.id) m.set(c.otherUser.id, c); });
+    conversations.forEach(c => {
+      if (c.otherUser?.id) m.set(c.otherUser.id, c);
+    });
     return m;
   }, [conversations]);
 
@@ -160,31 +230,40 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
     return (allArtists as any[]).filter(artist => {
       if (!artist.lat || !artist.lng) return false;
 
-      const keywords   = (artist.keywords     || "").toLowerCase();
-      const name       = (artist.name          || "").toLowerCase();
-      const dispName   = (artist.displayName   || "").toLowerCase();
-      const bizName    = (artist.businessName  || "").toLowerCase();
-      const email      = (artist.email         || "").toLowerCase();
-      const q          = searchText.trim().toLowerCase();
+      const keywords = (artist.keywords || "").toLowerCase();
+      const name = (artist.name || "").toLowerCase();
+      const dispName = (artist.displayName || "").toLowerCase();
+      const bizName = (artist.businessName || "").toLowerCase();
+      const email = (artist.email || "").toLowerCase();
+      const q = searchText.trim().toLowerCase();
 
-      const matchesSearch = !q ||
-        name.includes(q) || dispName.includes(q) ||
-        bizName.includes(q) || email.includes(q) || keywords.includes(q);
+      const matchesSearch =
+        !q ||
+        name.includes(q) ||
+        dispName.includes(q) ||
+        bizName.includes(q) ||
+        email.includes(q) ||
+        keywords.includes(q);
 
-      const matchesStyle = activeFilter === "All Styles" ||
+      const matchesStyle =
+        activeFilter === "All Styles" ||
         keywords.includes(activeFilter.toLowerCase());
 
-      const matchesBounds = !mapBounds ||
+      const matchesBounds =
+        !mapBounds ||
         mapBounds.contains([parseFloat(artist.lat), parseFloat(artist.lng)]);
 
       return matchesSearch && matchesStyle && matchesBounds;
     });
   }, [allArtists, searchText, activeFilter, mapBounds]);
 
-  const handlePinClick = useCallback((artist: any) => {
-    const conv = convByArtistId.get(artist.id);
-    setSelectedArtist(conv ? { ...artist, _conv: conv } : artist);
-  }, [convByArtistId]);
+  const handlePinClick = useCallback(
+    (artist: any) => {
+      const conv = convByArtistId.get(artist.id);
+      setSelectedArtist(conv ? { ...artist, _conv: conv } : artist);
+    },
+    [convByArtistId]
+  );
 
   const handleMapMoved = useCallback((bounds: L.LatLngBounds) => {
     boundsRef.current = bounds;
@@ -199,12 +278,17 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
   const popupConv = useMemo(() => {
     if (!selectedArtist) return null;
     if (selectedArtist._conv) return selectedArtist._conv;
-    return { id: null, otherUser: selectedArtist, unreadCount: 0, _isDiscovery: true };
+    return {
+      id: null,
+      otherUser: selectedArtist,
+      unreadCount: 0,
+      _isDiscovery: true,
+    };
   }, [selectedArtist]);
 
   const defaultCenter: [number, number] = [-27.4705, 153.026];
 
-  return (
+  return createPortal(
     <motion.div
       className="fixed inset-0 z-[200] flex flex-col bg-background"
       initial={{ y: "100%" }}
@@ -234,34 +318,58 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
         </MapContainer>
 
         {/* ── Top bar: back + title ─────────────────────────── */}
-        <div className="absolute top-0 left-0 right-0 z-[500] flex items-center gap-3 px-4 pt-[max(16px,env(safe-area-inset-top))] pb-3 bg-gradient-to-b from-background/95 to-transparent pointer-events-none">
+        <div
+          className="absolute top-0 left-0 right-0 z-[500] flex items-center gap-3 pb-3 bg-gradient-to-b from-background/95 to-transparent pointer-events-none"
+          style={{
+            paddingTop: "calc(var(--app-safe-top, 0px) + 12px)",
+            paddingLeft: "calc(var(--app-safe-left, 0px) + 16px)",
+            paddingRight: "calc(var(--app-safe-right, 0px) + 16px)",
+          }}
+        >
           <button
+            type="button"
+            aria-label="Close artist map"
             onClick={onClose}
-            className="pointer-events-auto w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center shadow-lg"
+            className="pointer-events-auto w-11 h-11 rounded-full bg-card border border-border flex items-center justify-center shadow-lg"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="flex-1">
             <p className="text-sm font-bold">Discover Artists</p>
-            <p className="text-xs text-muted-foreground">{visibleArtists.length} artists in view</p>
+            <p className="text-xs text-muted-foreground">
+              {visibleArtists.length} artists in view
+            </p>
           </div>
         </div>
 
-        {/* ── Search bar — shifted down 25px from previous pos ─ */}
-        {/* Previous: top-[80px] → now top-[105px] */}
-        <div className="absolute top-[105px] left-4 right-4 z-[500]">
+        {/* Search sits below the shared 44px close/header row. */}
+        <div
+          className="absolute z-[500]"
+          style={{
+            top: "calc(var(--app-safe-top, 0px) + 74px)",
+            left: "calc(var(--app-safe-left, 0px) + 16px)",
+            right: "calc(var(--app-safe-right, 0px) + 16px)",
+          }}
+        >
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
+              aria-label="Search artists on map"
               value={searchText}
-              onChange={e => { setSearchText(e.target.value); setMapBounds(null); setShowSearchArea(false); }}
+              onChange={e => {
+                setSearchText(e.target.value);
+                setMapBounds(null);
+                setShowSearchArea(false);
+              }}
               placeholder="Search by name, style, suburb..."
-              className="w-full h-10 pl-9 pr-9 rounded-full bg-card/95 border border-border shadow-lg text-sm outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full h-11 pl-9 pr-11 rounded-full bg-card/95 border border-border shadow-lg text-sm outline-none focus:ring-2 focus:ring-primary/50"
             />
             {searchText && (
               <button
+                type="button"
+                aria-label="Clear artist search"
                 onClick={() => setSearchText("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-muted-foreground"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -269,14 +377,23 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
           </div>
         </div>
 
-        {/* ── Style filter chips — shifted down 25px too ───────── */}
-        {/* Previous: top-[130px] → now top-[155px] */}
-        <div className="absolute top-[155px] left-0 right-0 z-[500] px-4">
+        {/* Style filters remain below search at every safe-area inset. */}
+        <div
+          className="absolute left-0 right-0 z-[500]"
+          style={{
+            top: "calc(var(--app-safe-top, 0px) + 126px)",
+            paddingLeft: "calc(var(--app-safe-left, 0px) + 16px)",
+            paddingRight: "calc(var(--app-safe-right, 0px) + 16px)",
+          }}
+        >
           <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
             {STYLE_FILTERS.map(filter => (
               <button
                 key={filter}
-                onClick={() => { setActiveFilter(filter); setMapBounds(null); }}
+                onClick={() => {
+                  setActiveFilter(filter);
+                  setMapBounds(null);
+                }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border shadow transition-all ${
                   activeFilter === filter
                     ? "bg-primary text-white border-primary"
@@ -293,7 +410,8 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
         <AnimatePresence>
           {showSearchArea && !selectedArtist && (
             <motion.div
-              className="absolute bottom-[200px] left-1/2 -translate-x-1/2 z-[500]"
+              className="absolute left-1/2 -translate-x-1/2 z-[500]"
+              style={{ bottom: "calc(var(--app-safe-bottom, 0px) + 200px)" }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
@@ -310,13 +428,19 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
         </AnimatePresence>
 
         {/* ── Legend ───────────────────────────────────────────── */}
-        <div className="absolute bottom-[200px] right-4 z-[500] flex flex-col gap-1.5 bg-card/90 border border-border rounded-xl px-3 py-2 shadow-lg">
+        <div
+          className="absolute z-[500] flex flex-col gap-1.5 bg-card/90 border border-border rounded-xl px-3 py-2 shadow-lg"
+          style={{
+            bottom: "calc(var(--app-safe-bottom, 0px) + 200px)",
+            right: "calc(var(--app-safe-right, 0px) + 16px)",
+          }}
+        >
           <div className="flex items-center gap-2 text-xs">
             <div className="w-3 h-3 rounded-full bg-primary" />
             <span>My Artists</span>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <div className="w-3 h-3 rounded-full bg-[var(--color-success)]" />
+            <div className="w-3 h-3 rounded-full bg-[var(--v3-green)]" />
             <span>Nearby</span>
           </div>
         </div>
@@ -340,7 +464,12 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
         {popupConv && (
           <motion.div
             className="absolute bottom-0 left-0 right-0 z-[600] px-4 pt-4 bg-background/98 backdrop-blur-xl border-t border-border rounded-t-3xl shadow-2xl"
-            style={{ paddingBottom: "calc(77px + max(12px, env(safe-area-inset-bottom)))" }}
+            style={{
+              paddingBottom:
+                "calc(77px + max(12px, var(--app-safe-bottom, 0px)))",
+              paddingLeft: "calc(var(--app-safe-left, 0px) + 16px)",
+              paddingRight: "calc(var(--app-safe-right, 0px) + 16px)",
+            }}
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
@@ -371,13 +500,18 @@ export function ArtistMapOverlay({ onClose, conversations }: ArtistMapOverlayPro
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
 // ── Discovery artist popup (no conversation yet) ─────────────
 function DiscoveryArtistPopup({
-  artist, clientId, onDismiss, isFavourited, onToggleFavourite,
+  artist,
+  clientId,
+  onDismiss,
+  isFavourited,
+  onToggleFavourite,
 }: {
   artist: any;
   clientId: string;
@@ -388,39 +522,73 @@ function DiscoveryArtistPopup({
   const utils = trpc.useUtils();
   const [, setLocation] = useLocation();
 
-  const getOrCreate = trpc.conversations.getOrCreate.useMutation({
-    onSuccess: (conv) => {
-      utils.conversations.list.invalidate();
-      onDismiss();
-      if (conv) setLocation(`/chat/${conv.id}`);
-    },
-  });
+  const getOrCreate = trpc.conversations.getOrCreate.useMutation();
+  const openingChat = useRef(false);
+  const [isOpeningChat, setIsOpeningChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
 
-  const displayName = artist.displayName || artist.businessName || artist.name || "Artist";
+  const openChat = async () => {
+    if (!clientId || openingChat.current) return;
+    openingChat.current = true;
+    setIsOpeningChat(true);
+    setChatError(null);
+    try {
+      const conversation = await getOrCreate.mutateAsync({
+        artistId: artist.id,
+        clientId,
+      });
+      if (!conversation?.id) throw new Error("Conversation was not returned");
+      void utils.conversations.list.invalidate();
+      onDismiss();
+      setLocation(`/chat/${conversation.id}`);
+    } catch {
+      setChatError("Chat couldn't open. Please try again.");
+    } finally {
+      openingChat.current = false;
+      setIsOpeningChat(false);
+    }
+  };
+
+  const displayName =
+    artist.displayName || artist.businessName || artist.name || "Artist";
   const avatarUrl = artist.avatar || null;
   const bannerUrl = artist.funnelBannerUrl || null;
-  const keywordList = (artist.keywords || "").split(",").map((k: string) => k.trim()).filter(Boolean);
+  const keywordList = (artist.keywords || "")
+    .split(",")
+    .map((k: string) => k.trim())
+    .filter(Boolean);
 
   return (
     <div className="w-full rounded-2xl overflow-hidden bg-[#111] border border-border">
       <div className="relative h-[80px]">
-        {bannerUrl
-          ? <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
-          : <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/20" />}
+        {bannerUrl ? (
+          <img src={bannerUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/30 to-accent/20" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent" />
       </div>
 
       <div className="relative -mt-6 flex items-end gap-3 px-4 pb-2">
         <div className="w-12 h-12 rounded-full border-2 border-primary overflow-hidden bg-secondary/50 shadow-lg shrink-0">
-          {avatarUrl
-            ? <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
-                <span className="text-white font-bold text-lg">{displayName.charAt(0)}</span>
-              </div>
-          }
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent">
+              <span className="text-white font-bold text-lg">
+                {displayName.charAt(0)}
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex-1 min-w-0 pb-1">
-          <p className="text-white font-bold text-base truncate">{displayName}</p>
+          <p className="text-white font-bold text-base truncate">
+            {displayName}
+          </p>
           {artist.city && (
             <div className="flex items-center gap-1">
               <MapPin className="w-3 h-3 text-muted-foreground" />
@@ -433,11 +601,23 @@ function DiscoveryArtistPopup({
       {keywordList.length > 0 && (
         <div className="flex flex-wrap gap-1.5 px-4 pb-2">
           {keywordList.slice(0, 4).map((kw: string) => (
-            <span key={kw} className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-medium">
+            <span
+              key={kw}
+              className="px-2 py-0.5 rounded-full bg-card border border-border text-card-foreground text-[11px] font-medium"
+            >
               {kw}
             </span>
           ))}
         </div>
+      )}
+
+      {chatError && (
+        <p
+          role="alert"
+          className="px-4 pb-2 text-sm text-[var(--color-danger)]"
+        >
+          {chatError}
+        </p>
       )}
 
       <div className="flex gap-2 px-4 pb-3">
@@ -447,18 +627,24 @@ function DiscoveryArtistPopup({
           onToggle={onToggleFavourite}
         />
         <button
-          onClick={() => clientId && getOrCreate.mutate({ artistId: artist.id, clientId })}
-          disabled={getOrCreate.isPending || !clientId}
-          className="flex-1 h-10 rounded-xl bg-primary text-white font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-1"
+          type="button"
+          onClick={openChat}
+          disabled={isOpeningChat || !clientId}
+          aria-busy={isOpeningChat}
+          className="flex-1 min-h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-1"
         >
-          💬 {getOrCreate.isPending ? "Connecting..." : "Message"}
+          {isOpeningChat
+            ? "Opening chat…"
+            : chatError
+              ? "Retry chat"
+              : "Message"}
         </button>
         {artist.publicSlug && (
           <a
             href={`/${artist.publicSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 h-10 rounded-xl bg-secondary text-foreground font-semibold text-sm border border-border flex items-center justify-center gap-1"
+            className="flex-1 min-h-11 rounded-xl bg-secondary text-foreground font-semibold text-sm border border-border flex items-center justify-center gap-1"
           >
             🛍 Shopfront
           </a>

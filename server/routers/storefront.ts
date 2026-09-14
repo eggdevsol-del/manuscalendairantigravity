@@ -101,7 +101,7 @@ export const storefrontRouter = router({
         shippingCents: z.number().int().min(0).optional(),
         inventoryCount: z.number().int().min(0),
         fulfillmentType: z.enum(["pickup", "delivery", "both", "digital"]),
-        imageUrl: z.string().url().optional(),
+        imageUrl: z.string().url().nullable().optional(),
         isActive: z.boolean().optional(),
         variants: z
           .array(

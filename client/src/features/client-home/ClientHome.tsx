@@ -82,10 +82,6 @@ export default function ClientHome() {
       // Hide header, show immersive view
       setHeaderHidden(true);
       setBottomNavHidden(true);
-      // Scroll to top for the artist feed
-      if (scrollRef.current) {
-        scrollRef.current.scrollTop = 0;
-      }
     },
     [setBottomNavHidden]
   );
@@ -93,6 +89,8 @@ export default function ClientHome() {
   // Open artist profile directly (from tapping artist name/avatar in feed)
   const handleArtistProfileTap = useCallback(
     (card: FeedCardData) => {
+      if (scrollRef.current)
+        mainFeedScrollPos.current = scrollRef.current.scrollTop;
       setFocusedArtist({
         id: card.artistId,
         name: card.artistName,
@@ -115,6 +113,7 @@ export default function ClientHome() {
     setShowProfile(false);
     setHeaderHidden(false);
     setBottomNavHidden(false);
+    lastScrollY.current = mainFeedScrollPos.current;
     // Restore scroll position
     requestAnimationFrame(() => {
       if (scrollRef.current) {
@@ -128,35 +127,39 @@ export default function ClientHome() {
   }, [setBottomNavHidden]);
 
   // Auto-hide header + bottom nav on scroll
-  const handleScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    if (isExitingRef.current) return;
+  const handleScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const el = event.currentTarget;
+      if (isExitingRef.current) return;
 
-    const currentY = el.scrollTop;
-    const delta = currentY - lastScrollY.current;
+      const currentY = el.scrollTop;
+      const delta = currentY - lastScrollY.current;
 
-    // Only trigger after meaningful scroll
-    if (Math.abs(delta) > 8) {
-      if (delta > 0 && currentY > 60) {
-        // Scrolling down — hide both
-        setHeaderHidden(true);
-        setBottomNavHidden(true);
-      } else {
-        // Scrolling up — show both
-        setHeaderHidden(false);
-        setBottomNavHidden(false);
+      // Only trigger after meaningful scroll
+      if (Math.abs(delta) > 8) {
+        if (delta > 0 && currentY > 60) {
+          // Scrolling down — hide both
+          setHeaderHidden(true);
+          setBottomNavHidden(true);
+        } else {
+          // Scrolling up — show both
+          setHeaderHidden(false);
+          setBottomNavHidden(false);
+        }
       }
-    }
 
-    lastScrollY.current = currentY;
-  }, [setBottomNavHidden]);
+      lastScrollY.current = currentY;
+    },
+    [setBottomNavHidden]
+  );
 
   // Reset header + bottom nav when switching views
   useEffect(() => {
     setHeaderHidden(false);
     setBottomNavHidden(false);
     setFocusedArtist(null);
+    setShowProfile(false);
+    lastScrollY.current = 0;
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
     }
@@ -178,6 +181,8 @@ export default function ClientHome() {
       {/* ── Auto-hide Header ── */}
       <header
         className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}
+        inert={headerHidden}
+        aria-hidden={headerHidden}
       >
         {focusedArtist ? (
           /* Focus mode header — mirrors the pill layout */
@@ -280,7 +285,8 @@ export default function ClientHome() {
       {/* ── Content ── */}
       <div
         className={`client-home-content${view === "discovery" ? " snap-scroll ivory-discovery-feed" : ""}`}
-        ref={!focusedArtist ? scrollRef : undefined}
+        ref={scrollRef}
+        inert={focusedArtist !== null}
         onScroll={!focusedArtist ? handleScroll : undefined}
       >
         <div className="client-home-content-inner">
@@ -315,7 +321,6 @@ export default function ClientHome() {
           <motion.div
             key="artist-focus-overlay"
             className="client-home-content snap-scroll"
-            ref={scrollRef}
             onScroll={handleScroll}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}

@@ -33,16 +33,18 @@ export default function Forms() {
       title="Forms & procedure records"
       subtitle="Keep your paperwork close to the booking."
       back="/settings"
+      subheader={
+        <Tabs
+          label="Form sections"
+          items={["Procedure log", "Medical", "Consent"] as const}
+          value={tab}
+          onChange={next => {
+            setTab(next);
+            setSelected(null);
+          }}
+        />
+      }
     >
-      <Tabs
-        label="Form sections"
-        items={["Procedure log", "Medical", "Consent"] as const}
-        value={tab}
-        onChange={next => {
-          setTab(next);
-          setSelected(null);
-        }}
-      />
       {tab === "Procedure log" ? (
         <>
           <SearchField

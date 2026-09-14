@@ -3,18 +3,18 @@
     "id": "public-sign-in",
     "role": "public",
     "path": "/login",
-    "title": "Welcome back",
+    "title": "Sign in",
     "overflow": false,
-    "text": "tattoi\nFor artists\nWelcome back\n\nYour work. Your people. Right where you left them.\n\nEmail address\nPassword\nForgot password?\nKeep me signed in\nSign in\n\nNew to Tattoi? Create an account\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nWelcome back\n\nYour work. Your people. Right where you left them.\n\nEmail address\nPassword\nForgot password?\nKeep me signed in\nSign in\n\nNew to Tattoi? Create an account\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -22,9 +22,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -32,9 +32,9 @@
         "href": "/forgot-password",
         "rect": [
           41,
-          405.609375,
+          441.328125,
           172.203125,
-          50.390625
+          50
         ]
       },
       {
@@ -42,16 +42,16 @@
         "href": "/signup",
         "rect": [
           154.078125,
-          576.390625,
+          609.328125,
           139.25,
-          20
+          44
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -65,18 +65,18 @@
     "id": "public-client-sign-up",
     "role": "public",
     "path": "/signup",
-    "title": "Your booking, together",
+    "title": "Client sign up",
     "overflow": false,
-    "text": "tattoi\nFor artists\nYour booking, together\n\nKeep your artist, messages and appointments in one place.\n\nClient\nArtist\nSupplier\n\nHave your artist\u2019s booking link? You can send your request there first and create your password afterwards.\n\nFull name\nEmail address\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nYour booking, together\n\nKeep your artist, messages and appointments in one place.\n\nClient\nArtist\nSupplier\n\nHave your artist’s booking link? You can send your request there first and create your password afterwards.\n\nFull name\nEmail address\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -84,9 +84,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -94,7 +94,7 @@
         "href": "/signup?role=client",
         "rect": [
           45,
-          267.578125,
+          283,
           98.65625,
           48
         ]
@@ -104,7 +104,7 @@
         "href": "/signup?role=artist",
         "rect": [
           151.65625,
-          267.578125,
+          283,
           98.671875,
           48
         ]
@@ -114,7 +114,7 @@
         "href": "/signup?role=supplier",
         "rect": [
           258.328125,
-          267.578125,
+          283,
           98.671875,
           48
         ]
@@ -124,16 +124,16 @@
         "href": "/login",
         "rect": [
           240.21875,
-          787,
+          800.03125,
           51.203125,
-          20
+          44
         ]
       }
     ],
     "scroll": [
       {
-        "height": 631,
-        "full": 744
+        "height": 616,
+        "full": 763
       }
     ],
     "errors": [],
@@ -149,18 +149,18 @@
     "id": "public-artist-sign-up",
     "role": "public",
     "path": "/signup?role=artist",
-    "title": "Make room for your craft",
+    "title": "Artist sign up",
     "overflow": false,
-    "text": "tattoi\nFor artists\nMake room for your craft\n\nStart with your account. Set up the details as you go.\n\nClient\nArtist\nSupplier\nFull name\nEmail address\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nMake room for your craft\n\nStart with your account. Set up the details as you go.\n\nClient\nArtist\nSupplier\nFull name\nEmail address\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -168,9 +168,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -178,7 +178,7 @@
         "href": "/signup?role=client",
         "rect": [
           45,
-          286.875,
+          283,
           98.65625,
           48
         ]
@@ -188,7 +188,7 @@
         "href": "/signup?role=artist",
         "rect": [
           151.65625,
-          286.875,
+          283,
           98.671875,
           48
         ]
@@ -198,7 +198,7 @@
         "href": "/signup?role=supplier",
         "rect": [
           258.328125,
-          286.875,
+          283,
           98.671875,
           48
         ]
@@ -208,16 +208,16 @@
         "href": "/login",
         "rect": [
           240.21875,
-          708.375,
+          702.109375,
           51.203125,
-          20
+          44
         ]
       }
     ],
     "scroll": [
       {
-        "height": 612,
-        "full": 646
+        "height": 616,
+        "full": 665
       }
     ],
     "errors": [],
@@ -231,18 +231,18 @@
     "id": "public-supplier-sign-up",
     "role": "public",
     "path": "/signup?role=merchant",
-    "title": "Supply the craft",
+    "title": "Supplier sign up",
     "overflow": false,
-    "text": "tattoi\nFor artists\nSupply the craft\n\nManage your products, orders and artist customers.\n\nClient\nArtist\nSupplier\nFull name\nEmail address\nBusiness name\nBusiness country\nAustralia\nNew Zealand\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nSupply the craft\n\nManage your products, orders and artist customers.\n\nClient\nArtist\nSupplier\nFull name\nEmail address\nBusiness name\nBusiness country\nAustralia\nNew Zealand\nCreate password\nAt least 8 characters.\nCreate account\n\nAlready have an account? Sign in\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -250,9 +250,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -260,7 +260,7 @@
         "href": "/signup?role=client",
         "rect": [
           45,
-          247.28125,
+          283,
           98.65625,
           48
         ]
@@ -270,7 +270,7 @@
         "href": "/signup?role=artist",
         "rect": [
           151.65625,
-          247.28125,
+          283,
           98.671875,
           48
         ]
@@ -280,7 +280,7 @@
         "href": "/signup?role=supplier",
         "rect": [
           258.328125,
-          247.28125,
+          283,
           98.671875,
           48
         ]
@@ -290,16 +290,16 @@
         "href": "/login",
         "rect": [
           240.21875,
-          827.46875,
+          860.796875,
           51.203125,
-          20
+          44
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 805
+        "height": 616,
+        "full": 824
       }
     ],
     "errors": [],
@@ -315,18 +315,18 @@
     "id": "public-password-recovery",
     "role": "public",
     "path": "/forgot-password",
-    "title": "Let\u2019s get you back in",
+    "title": "Password recovery",
     "overflow": false,
-    "text": "tattoi\nFor artists\nLet\u2019s get you back in\n\nWe\u2019ll email you a secure link to reset your password.\n\nEmail address\nSend reset link\nBack to sign in\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nLet’s get you back in\n\nWe’ll email you a secure link to reset your password.\n\nEmail address\nSend reset link\nBack to sign in\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -334,9 +334,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -344,16 +344,16 @@
         "href": "/login",
         "rect": [
           41,
-          395.609375,
+          430.9375,
           320,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -367,18 +367,18 @@
     "id": "public-set-password",
     "role": "public",
     "path": "/set-password?token=preview",
-    "title": "Choose a new password",
+    "title": "Set password",
     "overflow": false,
-    "text": "tattoi\nFor artists\nChoose a new password\n\nThis link can only be used once.\n\nNew password\nAt least 8 characters.\nSave new password\nRequest a new link\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nChoose a new password\n\nThis link can only be used once.\n\nNew password\nAt least 8 characters.\nSave new password\nRequest a new link\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -386,9 +386,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -396,16 +396,16 @@
         "href": "/forgot-password",
         "rect": [
           41,
-          424.90625,
+          460.234375,
           320,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -419,18 +419,18 @@
     "id": "public-magic-link",
     "role": "public",
     "path": "/auth/magic?token=preview",
-    "title": "Your secure sign-in link",
+    "title": "Magic link",
     "overflow": false,
-    "text": "tattoi\nFor artists\nYour secure sign-in link\n\nContinue to your Tattoi account.\n\nContinue to my account\nBack to sign in\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nYour secure sign-in link\n\nContinue to your Tattoi account.\n\nContinue to my account\nBack to sign in\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -438,9 +438,9 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       },
       {
@@ -448,16 +448,16 @@
         "href": "/login",
         "rect": [
           41,
-          349.671875,
+          385,
           320,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -471,18 +471,18 @@
     "id": "public-public-artist",
     "role": "public",
     "path": "/ella-morgan",
-    "title": "Ella Morgan",
+    "title": "Public artist",
     "overflow": false,
-    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nSelected work by Ella Morgan\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nSelected work by Ella Morgan\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -490,9 +490,9 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       },
       {
@@ -500,7 +500,7 @@
         "href": "/__ivory_artwork.png",
         "rect": [
           20,
-          222.28125,
+          258,
           362,
           452.5
         ]
@@ -510,7 +510,7 @@
         "href": "/__ivory_artwork.png",
         "rect": [
           20,
-          1030.234375,
+          1065.5625,
           175,
           175
         ]
@@ -518,8 +518,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 1188
+        "height": 616,
+        "full": 1187
       }
     ],
     "errors": [],
@@ -529,25 +529,26 @@
     ],
     "bottom": true,
     "parts": [
-      "public-public-artist-part-2.png"
+      "public-public-artist-part-2.png",
+      "public-public-artist-part-3.png"
     ]
   },
   {
     "id": "public-booking-intake",
     "role": "public",
     "path": "/start/ella-morgan",
-    "title": "Ella Morgan",
+    "title": "Booking intake",
     "overflow": false,
-    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 1 of 6 \u00b7 Your idea\nYour idea\nWhat would you like tattooed?\nStyle \u00b7 choose any that fit\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nNot sure yet\nContinue\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 1 of 6 · Your idea\nYour idea\nWhat would you like tattooed?\nStyle · choose any that fit\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nNot sure yet\nContinue\n\nThere’s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -555,9 +556,9 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       },
       {
@@ -565,7 +566,7 @@
         "href": "/__ivory_artwork.png",
         "rect": [
           20,
-          553.734375,
+          589.0625,
           175,
           175
         ]
@@ -573,7 +574,7 @@
     ],
     "scroll": [
       {
-        "height": 652,
+        "height": 616,
         "full": 711
       },
       {
@@ -595,18 +596,18 @@
     "id": "public-booking-link",
     "role": "public",
     "path": "/book/ella-morgan",
-    "title": "Ella Morgan",
+    "title": "Booking link",
     "overflow": false,
-    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 1 of 6 \u00b7 Your idea\nYour idea\nWhat would you like tattooed?\nStyle \u00b7 choose any that fit\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nNot sure yet\nContinue\n\nThere\u2019s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nElla Morgan\n\nTell your artist what you have in mind\n\nEM\nElla Morgan\n@ella-morgan\n\nFine-line botanicals. Thoughtfully made, just for you.\n\nFine Line\n\nRequest a booking\nSelected work\n\nBookings with Tattoi\n\nRequest a booking\n\nElla Morgan\n\nStep 1 of 6 · Your idea\nYour idea\nWhat would you like tattooed?\nStyle · choose any that fit\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nNot sure yet\nContinue\n\nThere’s no payment at this stage. Your artist will review your request first.\n\nClose\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -614,9 +615,9 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       },
       {
@@ -624,7 +625,7 @@
         "href": "/__ivory_artwork.png",
         "rect": [
           20,
-          553.734375,
+          589.0625,
           175,
           175
         ]
@@ -632,7 +633,7 @@
     ],
     "scroll": [
       {
-        "height": 652,
+        "height": 616,
         "full": 711
       },
       {
@@ -654,18 +655,18 @@
     "id": "public-public-studio",
     "role": "public",
     "path": "/studio/northside",
-    "title": "Northside Studio",
+    "title": "Public studio",
     "overflow": false,
-    "text": "tattoi\nSign in\nNorthside Studio\n\nFind your artist. Start your next tattoo.\n\nNS\nNorthside Studio\nChoose your artist\nEM\nElla Morgan\nFine-line botanicals. Thoughtfully made, just for you.\n\nSend your idea first. Your artist will review your request before you choose dates or pay a deposit.\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nNorthside Studio\n\nFind your artist. Start your next tattoo.\n\nNS\nNorthside Studio\nChoose your artist\nEM\nElla Morgan\nFine-line botanicals. Thoughtfully made, just for you.\n\nSend your idea first. Your artist will review your request before you choose dates or pay a deposit.\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -673,9 +674,9 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       },
       {
@@ -683,7 +684,7 @@
         "href": "/start/ella-morgan",
         "rect": [
           20,
-          397.53125,
+          433.25,
           362,
           98.1875
         ]
@@ -691,8 +692,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -707,16 +708,16 @@
     "id": "public-public-shop",
     "role": "public",
     "path": "/shop/ella-morgan",
-    "title": "Ella Morgan",
+    "title": "Public shop",
     "overflow": false,
-    "text": "Cart \u00b7 0\nElla Morgan\n\nShop essentials, aftercare and original work.\n\nSearch this store\nBotanical art print\nAbout this product\n\nStudio pickup\n\n$45.00 AUD\nAdd to cart\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Cart · 0\nElla Morgan\n\nShop essentials, aftercare and original work.\n\nSearch this store\nBotanical art print\nAbout this product\n\nStudio pickup\n\n$45.00 AUD\nAdd to cart\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/ella-morgan",
         "rect": [
           20,
-          67.1875,
+          65,
           44,
           44
         ]
@@ -724,8 +725,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 778
+        "height": 616,
+        "full": 798
       }
     ],
     "errors": [],
@@ -742,16 +743,16 @@
     "id": "public-public-events",
     "role": "public",
     "path": "/events/ella-morgan",
-    "title": "Events & workshops",
+    "title": "Public events",
     "overflow": false,
-    "text": "Events & workshops\n\nLearn from your artist, in person or online.\n\nThere are no upcoming events at the moment.\n\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Events & workshops\n\nLearn from your artist, in person or online.\n\nThere are no upcoming events at the moment.\n\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/ella-morgan",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -761,7 +762,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -769,8 +770,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -785,18 +786,18 @@
     "id": "public-deposit-link",
     "role": "public",
     "path": "/deposit/preview",
-    "title": "Secure your booking",
+    "title": "Deposit link",
     "overflow": false,
-    "text": "tattoi\nSign in\nSecure your booking\n\nElla Morgan\n\nBotanical sleeve\nDeposit\n$150.00\nCard platform fee\n$5.10\nCard total \u00b7 AUD\n$155.10\nPay securely by card\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nSecure your booking\n\nElla Morgan\n\nBotanical sleeve\nDeposit\n$150.00\nCard platform fee\n$5.10\nCard total · AUD\n$155.10\nPay securely by card\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -804,16 +805,16 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -828,18 +829,18 @@
     "id": "public-balance-link",
     "role": "public",
     "path": "/balance/101",
-    "title": "Your session balance",
+    "title": "Balance link",
     "overflow": false,
-    "text": "tattoi\nSign in\nYour session balance\n\nElla Morgan\n\nBotanical sleeve\nBalance\n$450.00\nCard platform fee\n$15.30\nCard total \u00b7 AUD\n$465.30\nPay securely by card\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nYour session balance\n\nElla Morgan\n\nBotanical sleeve\nBalance\n$450.00\nCard platform fee\n$15.30\nCard total · AUD\n$465.30\nPay securely by card\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -847,16 +848,16 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -871,18 +872,18 @@
     "id": "public-payment-request",
     "role": "public",
     "path": "/pay/preview",
-    "title": "Review your payment",
+    "title": "Payment request",
     "overflow": false,
-    "text": "tattoi\nSign in\nReview your payment\n\nElla Morgan\n\nYour appointment\n\nRequested payment\n$450.00\nPlatform fee\n$15.30\nTotal \u00b7 AUD\n$465.30\nContinue to secure checkout\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSign in\nReview your payment\n\nElla Morgan\n\nYour appointment\n\nRequested payment\n$450.00\nPlatform fee\n$15.30\nTotal · AUD\n$465.30\nContinue to secure checkout\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -890,16 +891,16 @@
         "href": "/login",
         "rect": [
           293.40625,
-          64,
+          62,
           88.59375,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -911,21 +912,95 @@
     "parts": []
   },
   {
+    "id": "client-discover",
+    "role": "client",
+    "path": "/discover",
+    "title": "Discover",
+    "overflow": false,
+    "text": "M\ntattoi\nView artwork by Ella Morgan\nElla Morgan\n\nBrisbane · Fine Line\n\nView artist\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
+    "links": [
+      {
+        "text": "Discover",
+        "href": "/discover",
+        "rect": [
+          18,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "2\nMessages",
+        "href": "/conversations",
+        "rect": [
+          110,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Bookings",
+        "href": "/bookings",
+        "rect": [
+          202,
+          776,
+          90,
+          58
+        ]
+      },
+      {
+        "text": "Profile",
+        "href": "/profile",
+        "rect": [
+          294,
+          776,
+          90,
+          58
+        ]
+      }
+    ],
+    "scroll": [
+      {
+        "height": 874,
+        "full": 946
+      }
+    ],
+    "errors": [],
+    "calls": [
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "feed.getDiscoverFeed",
+      "clientProfile.getProfile",
+      "clientProfile.getSpendSummary",
+      "clientProfile.getHistory",
+      "clientProfile.getBoards",
+      "clientProfile.getPhotos",
+      "clientProfile.getUpcoming",
+      "clientProfile.getConsentForms",
+      "favourites.list",
+      "conversations.list"
+    ],
+    "bottom": false,
+    "parts": []
+  },
+  {
     "id": "client-bookings",
     "role": "client",
     "path": "/bookings",
     "title": "Bookings",
     "overflow": false,
-    "text": "tattoi\nBookings\n\nYour tattoos, sittings and next steps\n\nUpcoming\nPast\nBooking proposal\n\nElla Morgan \u00b7 1 sittings\n\nReview your proposed dates and deposit before confirming.\n\nSitting 1\nThu, 10 Sept, 10:00 am\nReview $155.10 deposit & fee\nBotanical sleeve\n\nElla Morgan \u00b7 1 sitting\n\nNext: sitting 2 \u00b7 Thu, 10 Sept, 10:00 am\n\n1 form to complete\n$0.00 paid\nComplete sitting 2 forms\nSitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am\n\nDeposit received \u00b7 $450.00 remaining \u00b7 1 form to complete\n\nMessage Ella Morgan\nMore options\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nBookings\n\nYour tattoos, sittings and next steps\n\nUpcoming\nPast\nBooking proposal\n\nElla Morgan · 1 sittings\n\nReview your proposed dates and deposit before confirming.\n\nSitting 1\nThu, 10 Sept, 10:00 am\nReview $155.10 deposit & fee\nBotanical sleeve\n\nElla Morgan · 1 sitting\n\nNext: sitting 2 · Thu, 10 Sept, 10:00 am\n\n1 form to complete\n$0.00 paid\nComplete sitting 2 forms\nSitting 2 · Confirmed\nThu, 10 Sept, 10:00 am\n\nDeposit received · $450.00 remaining · 1 form to complete\n\nMessage Ella Morgan\nMore options\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/bookings",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -933,7 +1008,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -943,17 +1018,17 @@
         "href": "/projects/12?session=101&action=forms",
         "rect": [
           41,
-          774.15625,
+          807.875,
           320,
-          50.390625
+          50
         ]
       },
       {
-        "text": "Sitting 2 \u00b7 Confirmed\nThu, 10 Sept, 10:00 am",
+        "text": "Sitting 2 · Confirmed\nThu, 10 Sept, 10:00 am",
         "href": "/projects/12?session=101",
         "rect": [
           56,
-          849.546875,
+          882.875,
           292,
           68
         ]
@@ -963,9 +1038,9 @@
         "href": "/chat/12",
         "rect": [
           41,
-          985.328125,
+          1018.65625,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -973,7 +1048,7 @@
         "href": "/waitlist",
         "rect": [
           20,
-          1148.71875,
+          1157.84375,
           362,
           68
         ]
@@ -983,7 +1058,7 @@
         "href": "/purchases",
         "rect": [
           20,
-          1216.71875,
+          1225.84375,
           362,
           68
         ]
@@ -993,7 +1068,7 @@
         "href": "/discover",
         "rect": [
           20,
-          1284.71875,
+          1293.84375,
           362,
           68
         ]
@@ -1041,8 +1116,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1089
+        "height": 548,
+        "full": 988
       }
     ],
     "errors": [],
@@ -1063,16 +1138,16 @@
     "id": "client-booking-overview",
     "role": "client",
     "path": "/projects/12",
-    "title": "Tattoo project",
+    "title": "Booking overview",
     "overflow": false,
-    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nComplete your consent forms\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nReview balance\nMessage Ella Morgan\nChange this sitting\n\nSend a request to your artist. Your appointment stays booked until they confirm a change. Their cancellation policy applies.\n\nRequest a date changeRequest cancellation\nWant an earlier appointment?\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nElla Morgan · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nComplete your consent forms\nPayment · AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nReview balance\nMessage Ella Morgan\nChange this sitting\n\nSend a request to your artist. Your appointment stays booked until they confirm a change. Their cancellation policy applies.\n\nRequest a date changeRequest cancellation\nWant an earlier appointment?\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -1082,7 +1157,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1092,9 +1167,9 @@
         "href": "/projects/12?session=101&view=Messages",
         "rect": [
           20,
-          1040.890625,
+          1074.21875,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -1140,8 +1215,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1339
+        "height": 548,
+        "full": 1238
       }
     ],
     "errors": [],
@@ -1163,16 +1238,16 @@
     "id": "client-booking-messages",
     "role": "client",
     "path": "/projects/12?view=Messages",
-    "title": "Tattoo project",
+    "title": "Booking messages",
     "overflow": false,
-    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nElla Morgan\nOpen booking\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nElla Morgan · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nElla Morgan\nOpen booking\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I’ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -1182,7 +1257,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1192,7 +1267,7 @@
         "href": "/conversations",
         "rect": [
           20,
-          295.25,
+          339.046875,
           44,
           44
         ]
@@ -1202,9 +1277,9 @@
         "href": "/projects/12",
         "rect": [
           76,
-          319.984375,
+          352.09375,
           106.96875,
-          20
+          44
         ]
       },
       {
@@ -1250,8 +1325,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 713
+        "height": 548,
+        "full": 637
       }
     ],
     "errors": [],
@@ -1268,23 +1343,25 @@
       "conversations.markAsRead",
       "artistSettings.getPublicByArtistId"
     ],
-    "bottom": false,
-    "parts": []
+    "bottom": true,
+    "parts": [
+      "client-booking-messages-part-2.png"
+    ]
   },
   {
     "id": "client-booking-files",
     "role": "client",
     "path": "/projects/12?view=Files",
-    "title": "Tattoo project",
+    "title": "Booking files",
     "overflow": false,
-    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject reference images\n\nNo references are linked to this project yet. Older, unassigned references remain available in Messages.\n\nOlder conversation references \u00b7 unassigned\nShare photos in Messages\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nElla Morgan · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject reference images\n\nNo references are linked to this project yet. Older, unassigned references remain available in Messages.\n\nOlder conversation references · unassigned\nShare photos in Messages\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -1294,7 +1371,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1304,9 +1381,9 @@
         "href": "/projects/12?session=101&view=Messages",
         "rect": [
           20,
-          514.0625,
+          524.359375,
           234.703125,
-          50.390625
+          50
         ]
       },
       {
@@ -1352,8 +1429,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -1372,16 +1449,16 @@
     "id": "client-booking-payments",
     "role": "client",
     "path": "/projects/12?view=Payments",
-    "title": "Tattoo project",
+    "title": "Booking payments",
     "overflow": false,
-    "text": "Tattoo project\n\nElla Morgan \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject payment history \u00b7 AUD\n\nSession totals can include imported payments without a linked transaction.\n\nNo linked transactions recorded.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nElla Morgan · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject payment history · AUD\n\nSession totals can include imported payments without a linked transaction.\n\nNo linked transactions recorded.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -1391,7 +1468,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1439,8 +1516,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -1459,18 +1536,18 @@
     "id": "client-inbox",
     "role": "client",
     "path": "/conversations",
-    "title": "Messages",
+    "title": "Inbox",
     "overflow": false,
-    "text": "tattoi\nMessages\nSearch conversations\nEM\nElla Morgan\nI love the peonies. Could we leave room to extend it later?\n2\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nMessages\n\n \n\nSearch conversations\nEM\nElla Morgan\nI love the peonies. Could we leave room to extend it later?\n2\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/bookings",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -1478,7 +1555,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1488,7 +1565,7 @@
         "href": "/chat/12",
         "rect": [
           20,
-          251.59375,
+          320,
           362,
           99.1875
         ]
@@ -1536,8 +1613,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 637
       }
     ],
     "errors": [],
@@ -1554,9 +1631,9 @@
     "id": "client-conversation",
     "role": "client",
     "path": "/chat/12",
-    "title": "Messages",
+    "title": "Conversation",
     "overflow": false,
-    "text": "Ella Morgan\nOpen booking\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Ella Morgan\nOpen booking\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I’ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
@@ -1593,7 +1670,7 @@
         "href": "/conversations",
         "rect": [
           20,
-          69.359375,
+          79.046875,
           44,
           44
         ]
@@ -1603,9 +1680,9 @@
         "href": "/projects/12",
         "rect": [
           76,
-          94.09375,
+          92.09375,
           106.96875,
-          20
+          44
         ]
       },
       {
@@ -1674,18 +1751,18 @@
     "id": "client-client-profile",
     "role": "client",
     "path": "/profile",
-    "title": "Your profile",
+    "title": "Client profile",
     "overflow": false,
-    "text": "tattoi\nSettings\nYour profile\n\nYour details and booking documents\n\nMC\nMia Chen\nPersonal details\nPhone\nNot added\nLocation\nNot added\nEdit your details\nYour consent forms\n\nForms from your artist will appear here when they\u2019re ready.\n\nYour purchases\nCancellation offers\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nSettings\nYour profile\n\nYour details and booking documents\n\nMC\nMia Chen\nPersonal details\nPhone\nNot added\nLocation\nNot added\nEdit your details\nYour consent forms\n\nForms from your artist will appear here when they’re ready.\n\nYour purchases\nCancellation offers\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/bookings",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -1693,9 +1770,9 @@
         "href": "/settings",
         "rect": [
           252.4375,
-          64,
+          62,
           129.5625,
-          50.390625
+          50
         ]
       },
       {
@@ -1703,9 +1780,9 @@
         "href": "/profile?edit=true",
         "rect": [
           20,
-          513.3125,
+          549.03125,
           187.59375,
-          50.390625
+          50
         ]
       },
       {
@@ -1713,7 +1790,7 @@
         "href": "/purchases",
         "rect": [
           20,
-          741.234375,
+          776.5625,
           362,
           68
         ]
@@ -1723,7 +1800,7 @@
         "href": "/waitlist",
         "rect": [
           20,
-          833.234375,
+          868.5625,
           362,
           68
         ]
@@ -1771,7 +1848,7 @@
     ],
     "scroll": [
       {
-        "height": 652,
+        "height": 616,
         "full": 835
       }
     ],
@@ -1792,16 +1869,16 @@
     "id": "client-client-documents",
     "role": "client",
     "path": "/profile?tab=forms",
-    "title": "Your consent forms",
+    "title": "Client documents",
     "overflow": false,
-    "text": "Settings\nYour consent forms\n\nReview the documents for your appointments\n\nMC\nMia Chen\nYour consent forms\n\nForms from your artist will appear here when they\u2019re ready.\n\nYour purchases\nCancellation offers\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Settings\nYour consent forms\n\nReview the documents for your appointments\n\nMC\nMia Chen\nYour consent forms\n\nForms from your artist will appear here when they’re ready.\n\nYour purchases\nCancellation offers\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/profile",
         "rect": [
           20,
-          67.1875,
+          65,
           44,
           44
         ]
@@ -1811,9 +1888,9 @@
         "href": "/settings",
         "rect": [
           252.4375,
-          64,
+          62,
           129.5625,
-          50.390625
+          50
         ]
       },
       {
@@ -1821,7 +1898,7 @@
         "href": "/purchases",
         "rect": [
           20,
-          476.8125,
+          512.53125,
           362,
           68
         ]
@@ -1831,7 +1908,7 @@
         "href": "/waitlist",
         "rect": [
           20,
-          568.8125,
+          604.53125,
           362,
           68
         ]
@@ -1879,8 +1956,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -1900,14 +1977,14 @@
     "path": "/waitlist",
     "title": "Earlier appointments",
     "overflow": false,
-    "text": "Earlier appointments\n\nOffers from your artist when a space opens up.\n\nOpen your booking workspace to join your artist\u2019s cancellation waitlist.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Earlier appointments\n\nOffers from your artist when a space opens up.\n\nOpen your booking workspace to join your artist’s cancellation waitlist.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -1917,7 +1994,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -1965,8 +2042,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -1984,16 +2061,16 @@
     "id": "client-purchases",
     "role": "client",
     "path": "/purchases",
-    "title": "Your purchases",
+    "title": "Purchases",
     "overflow": false,
-    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/profile",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -2003,7 +2080,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2051,8 +2128,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -2070,18 +2147,18 @@
     "id": "client-complete-profile",
     "role": "client",
     "path": "/complete-profile",
-    "title": "A few details",
+    "title": "Complete profile",
     "overflow": false,
-    "text": "tattoi\nFor artists\nA few details\n\nHelp your artist keep your booking details together.\n\nFull name\nPhone\nDate of birth (optional)\nSave and continue\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nFor artists\nA few details\n\nHelp your artist keep your booking details together.\n\nFull name\nPhone\nDate of birth (optional)\nSave and continue\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/bookings",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -2089,16 +2166,16 @@
         "href": "/signup?role=artist",
         "rect": [
           267.75,
-          64,
+          62,
           114.25,
-          50.390625
+          50
         ]
       }
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -2116,16 +2193,16 @@
     "path": "/dashboard",
     "title": "Today",
     "overflow": false,
-    "text": "tattoi\nToday\n\nThursday 10 September\n\nToday\nClients\nSupplies\nNothing needs your attention\nUp next\n\n10:00\u201313:00\n\nMia Chen\n\nBotanical sleeve \u00b7 Session 2 of 3\n\nPayment received\nForms signed\nDesign brief\n\u2304\nView booking\nYour week\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nThursday 10 September\n10:00\nMia Chen\nBotanical sleeve \u00b7 Confirmed\n14:00\nMia Chen\nGeometric shoulder \u00b7 Confirmed\nExpand full weekOpen calendar\nYour money\nAvailable for payout\n$1,240.00\nPending\n$450.00\nPayments & payouts\nSupplies\n\nBuy from your suppliers without leaving your working day.\n\nBrowse suppliers\nYour orders\nTrack deliveries and reorder\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nToday\n\nThursday 10 September\n\nToday\nClients\nSupplies\nNothing needs your attention\nUp next\n\n10:00–13:00\n\nMia Chen\n\nBotanical sleeve · Session 2 of 3\n\nPayment received\nForms signed\nDesign brief\n⌄\nView booking\nYour week\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nThursday 10 September\n10:00\nMia Chen\nBotanical sleeve · Confirmed\n14:00\nMia Chen\nGeometric shoulder · Confirmed\nExpand full weekOpen calendar\nYour money\nAvailable for payout\n$1,240.00\nPending\n$450.00\nPayments & payouts\nSupplies\n\nBuy from your suppliers without leaving your working day.\n\nBrowse suppliers\nYour orders\nTrack deliveries and reorder\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -2133,7 +2210,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2142,30 +2219,30 @@
         "text": "Today",
         "href": "/dashboard",
         "rect": [
-          24,
-          219.890625,
-          72.5625,
-          42.296875
+          4,
+          262,
+          128.65625,
+          44
         ]
       },
       {
         "text": "Clients",
         "href": "/clients",
         "rect": [
-          100.5625,
-          219.890625,
-          72.578125,
-          42.296875
+          136.65625,
+          262,
+          128.671875,
+          44
         ]
       },
       {
         "text": "Supplies",
         "href": "/supplies",
         "rect": [
-          177.140625,
-          219.890625,
-          72.578125,
-          42.296875
+          269.328125,
+          262,
+          128.671875,
+          44
         ]
       },
       {
@@ -2173,27 +2250,27 @@
         "href": "/projects/12?session=101",
         "rect": [
           41,
-          605.515625,
+          641.328125,
           320,
-          50.390625
+          50
         ]
       },
       {
-        "text": "10:00\nMia Chen\nBotanical sleeve \u00b7 Confirmed",
+        "text": "10:00\nMia Chen\nBotanical sleeve · Confirmed",
         "href": "/projects/12?session=101",
         "rect": [
           20,
-          815.796875,
+          851.21875,
           362,
           78.890625
         ]
       },
       {
-        "text": "14:00\nMia Chen\nGeometric shoulder \u00b7 Confirmed",
+        "text": "14:00\nMia Chen\nGeometric shoulder · Confirmed",
         "href": "/projects/12?session=102",
         "rect": [
           20,
-          894.6875,
+          930.109375,
           362,
           78.890625
         ]
@@ -2203,9 +2280,9 @@
         "href": "/calendar?date=2026-09-10",
         "rect": [
           184.390625,
-          973.578125,
+          1009,
           147.390625,
-          50.390625
+          50
         ]
       },
       {
@@ -2213,9 +2290,9 @@
         "href": "/money",
         "rect": [
           41,
-          1364.359375,
+          1399.390625,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -2223,9 +2300,9 @@
         "href": "/supplies",
         "rect": [
           41,
-          1609.921875,
+          1644.5625,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -2233,7 +2310,7 @@
         "href": "/supply-orders",
         "rect": [
           41,
-          1678.3125,
+          1712.5625,
           320,
           78.890625
         ]
@@ -2281,8 +2358,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1718
+        "height": 548,
+        "full": 1642
       }
     ],
     "errors": [],
@@ -2301,7 +2378,8 @@
     "bottom": true,
     "parts": [
       "artist-today-part-2.png",
-      "artist-today-part-3.png"
+      "artist-today-part-3.png",
+      "artist-today-part-4.png"
     ]
   },
   {
@@ -2310,16 +2388,16 @@
     "path": "/business",
     "title": "Business",
     "overflow": false,
-    "text": "tattoi\nBusiness\n\nMore time for the work you love\n\nYour studio day\nMoney\nIncome, balances and payouts\nWorking hours & services\nAvailability, session lengths and pricing\nYour profile & booking link\nThe front door for your clients\nCancellation waitlist\nFill available appointments\nShop & events\nYour products\nCatalogue and availability\nStore orders\nPayment and fulfilment\nWorkshops & events\nCreate an event and review registrations\nBehind the scenes\nSupplies\nStock and supplier orders\nStudio\nPeople and shared workspace\nSettings\nYour account, business and preferences\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nBusiness\n\nMore time for the work you love\n\nYour studio day\nMoney\nIncome, balances and payouts\nWorking hours & services\nAvailability, session lengths and pricing\nYour profile & booking link\nThe front door for your clients\nCancellation waitlist\nFill available appointments\nShop & events\nYour products\nCatalogue and availability\nStore orders\nPayment and fulfilment\nWorkshops & events\nCreate an event and review registrations\nBehind the scenes\nSupplies\nStock and supplier orders\nStudio\nPeople and shared workspace\nSettings\nYour account, business and preferences\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -2327,7 +2405,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2337,7 +2415,7 @@
         "href": "/money",
         "rect": [
           20,
-          248.140625,
+          290.25,
           362,
           78.890625
         ]
@@ -2347,7 +2425,7 @@
         "href": "/work-hours",
         "rect": [
           20,
-          327.03125,
+          369.140625,
           362,
           78.890625
         ]
@@ -2357,7 +2435,7 @@
         "href": "/artist-profile",
         "rect": [
           20,
-          405.921875,
+          448.03125,
           362,
           78.890625
         ]
@@ -2367,7 +2445,7 @@
         "href": "/waitlist",
         "rect": [
           20,
-          484.8125,
+          526.921875,
           362,
           77.890625
         ]
@@ -2377,7 +2455,7 @@
         "href": "/products",
         "rect": [
           20,
-          622.953125,
+          665.0625,
           362,
           78.890625
         ]
@@ -2387,7 +2465,7 @@
         "href": "/store-orders",
         "rect": [
           20,
-          701.84375,
+          743.953125,
           362,
           78.890625
         ]
@@ -2397,7 +2475,7 @@
         "href": "/artist-events",
         "rect": [
           20,
-          780.734375,
+          822.84375,
           362,
           77.890625
         ]
@@ -2407,7 +2485,7 @@
         "href": "/supplies",
         "rect": [
           20,
-          918.875,
+          960.984375,
           362,
           78.890625
         ]
@@ -2417,7 +2495,7 @@
         "href": "/studio",
         "rect": [
           20,
-          997.765625,
+          1039.875,
           362,
           78.890625
         ]
@@ -2427,7 +2505,7 @@
         "href": "/settings",
         "rect": [
           20,
-          1076.65625,
+          1118.765625,
           362,
           77.890625
         ]
@@ -2475,7 +2553,7 @@
     ],
     "scroll": [
       {
-        "height": 658,
+        "height": 616,
         "full": 1095
       }
     ],
@@ -2495,38 +2573,18 @@
     "id": "artist-artist-products",
     "role": "artist",
     "path": "/products",
-    "title": "Products",
+    "title": "Artist products",
     "overflow": false,
-    "text": "tattoi\nProducts\n\nYour Shopify catalogue on Tattoi\n\nManage products, variants and stock in Shopify. Review the imported catalogue here.\n\nReview Shopify connection\nSearch products\nCartridge needles\n\n$32.00\n\nPublished\n\n24 in stock\n\nView 1 variants\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Add product\nProducts\n\nYour catalogue, ready for your customers\n\nSet your Tattoi prices, available stock and publishing status here.\n\nSearch products\nCartridge needles\n\n$32.00\n\nPublished\n\n24 in stock\n\nView 1 variants\nEdit product\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
-      {
-        "text": "tattoi",
-        "href": "/dashboard",
-        "rect": [
-          20,
-          70,
-          66.515625,
-          32
-        ]
-      },
       {
         "text": "",
         "href": "/business",
         "rect": [
-          338,
-          64,
+          20,
+          65,
           44,
           44
-        ]
-      },
-      {
-        "text": "Review Shopify connection",
-        "href": "/settings",
-        "rect": [
-          20,
-          289.171875,
-          362,
-          50.390625
         ]
       },
       {
@@ -2572,8 +2630,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -2581,7 +2639,6 @@
       "auth.me",
       "auth.refreshToken",
       "storefront.getProducts",
-      "merchantAuth.getMerchantProfile",
       "conversations.list",
       "appointments.getArtistCalendar"
     ],
@@ -2592,16 +2649,16 @@
     "id": "artist-artist-events",
     "role": "artist",
     "path": "/artist-events",
-    "title": "Your events",
+    "title": "Artist events",
     "overflow": false,
-    "text": "Create event\nYour events\n\nWorkshops and seminars, in person or online.\n\nPreview events page\n\nCreate your first workshop when you\u2019re ready to take registrations.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Create event\nYour events\n\nWorkshops and seminars, in person or online.\n\nPreview events page\n\nCreate your first workshop when you’re ready to take registrations.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/artist-profile",
         "rect": [
           20,
-          67.1875,
+          65,
           44,
           44
         ]
@@ -2611,9 +2668,9 @@
         "href": "/events/ella-morgan",
         "rect": [
           20,
-          222.28125,
+          258,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -2659,8 +2716,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -2679,16 +2736,16 @@
     "id": "artist-store-orders",
     "role": "artist",
     "path": "/store-orders",
-    "title": "Orders",
+    "title": "Store orders",
     "overflow": false,
-    "text": "Orders\n\nFrom paid to delivered\n\nTo fulfil\nFulfilled\nAll\nSearch orders\nOrder #1\nElla Morgan \u00b7 $32.00\nPaid in full\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Orders\n\nFrom paid to delivered\n\nTo fulfil\nFulfilled\nAll\nSearch orders\nOrder #1\nElla Morgan · $32.00\nPaid in full\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/artist-profile",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -2698,7 +2755,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2746,8 +2803,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -2767,14 +2824,14 @@
     "path": "/money",
     "title": "Money",
     "overflow": false,
-    "text": "Money\n\nKnow what\u2019s paid and what\u2019s on its way\n\n7 days\n30 days\n90 days\nAll time\nYour balance\n$1,240.00\n\nAvailable balance\n\nPending\n$450.00\nManage payouts\nEarnings\nClients paid you\n$600.00\nYour platform fee\n\u2212$0.00\nRefunds\n\u2212$0.00\nYou earned\n$600.00\nProcessing paid by clients\n$20.40\nRecent transactions\ndeposit \u00b7 Mia Chen\nWed, 9 Sept, 10:00 am\n$150.00\nView payout history\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Money\n\nKnow what’s paid and what’s on its way\n\n7 days\n30 days\n90 days\nAll time\nYour balance\n$1,240.00\n\nAvailable balance\n\nPending\n$450.00\nManage payouts\nEarnings\nClients paid you\n$600.00\nYour platform fee\n−$0.00\nRefunds\n−$0.00\nYou earned\n$600.00\nProcessing paid by clients\n$20.40\nRecent transactions\ndeposit · Mia Chen\nWed, 9 Sept, 10:00 am\n$150.00\nView payout history\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -2784,7 +2841,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2794,9 +2851,9 @@
         "href": "/bank-payouts",
         "rect": [
           41,
-          468.96875,
+          503.078125,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -2804,9 +2861,9 @@
         "href": "/payout-history",
         "rect": [
           20,
-          1000.5,
+          1022.21875,
           214.984375,
-          50.390625
+          50
         ]
       },
       {
@@ -2852,8 +2909,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 991
+        "height": 548,
+        "full": 902
       }
     ],
     "errors": [],
@@ -2872,100 +2929,21 @@
     ]
   },
   {
-    "id": "artist-calendar",
-    "role": "artist",
-    "path": "/calendar",
-    "title": "Calendar",
-    "overflow": false,
-    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep \u00b7 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
-    "links": [
-      {
-        "text": "tattoi",
-        "href": "/dashboard",
-        "rect": [
-          20,
-          73.1875,
-          66.515625,
-          32
-        ]
-      },
-      {
-        "text": "Today",
-        "href": "/dashboard",
-        "rect": [
-          18,
-          776,
-          90,
-          58
-        ]
-      },
-      {
-        "text": "2\nMessages",
-        "href": "/conversations",
-        "rect": [
-          110,
-          776,
-          90,
-          58
-        ]
-      },
-      {
-        "text": "Calendar",
-        "href": "/calendar",
-        "rect": [
-          202,
-          776,
-          90,
-          58
-        ]
-      },
-      {
-        "text": "Profile",
-        "href": "/artist-profile",
-        "rect": [
-          294,
-          776,
-          90,
-          58
-        ]
-      }
-    ],
-    "scroll": [
-      {
-        "height": 652,
-        "full": 652
-      }
-    ],
-    "errors": [],
-    "calls": [
-      "auth.me",
-      "auth.refreshToken",
-      "studios.getCurrentStudio",
-      "appointments.getArtistCalendar",
-      "artistSettings.get",
-      "conversations.list",
-      "studios.getStudioMembers",
-      "appointments.getStudioCalendar"
-    ],
-    "bottom": false,
-    "parts": []
-  },
-  {
     "id": "artist-inbox",
     "role": "artist",
     "path": "/conversations",
-    "title": "Messages",
+    "title": "Inbox",
     "overflow": false,
-    "text": "tattoi\nMessages\nSearch conversations\nClients\nContacts\nMC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nMessages\n\n \n\nClients\nContacts\nSearch conversations\nMC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -2973,7 +2951,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -2983,7 +2961,7 @@
         "href": "/chat/12",
         "rect": [
           20,
-          317.59375,
+          388,
           362,
           99.1875
         ]
@@ -3031,8 +3009,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 548,
+        "full": 637
       }
     ],
     "errors": [],
@@ -3044,16 +3022,18 @@
       "consultations.list",
       "appointments.getArtistCalendar"
     ],
-    "bottom": false,
-    "parts": []
+    "bottom": true,
+    "parts": [
+      "artist-inbox-part-2.png"
+    ]
   },
   {
     "id": "artist-conversation",
     "role": "artist",
     "path": "/chat/12",
-    "title": "Messages",
+    "title": "Conversation",
     "overflow": false,
-    "text": "Mia Chen\nOpen booking\nBook\nDetails\nDesign brief\n\u2304\nClient records & private notes\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Mia Chen\nOpen booking\nBook\nDetails\nDesign brief\n⌄\nClient records & private notes\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I’ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
@@ -3100,9 +3080,9 @@
         "href": "/projects/12",
         "rect": [
           76,
-          94.09375,
-          61.21875,
-          44.640625
+          92.09375,
+          87.203125,
+          49.28125
         ]
       },
       {
@@ -3166,18 +3146,18 @@
     "calls": [
       "auth.me",
       "auth.refreshToken",
-      "designBrief.get",
       "conversations.getById",
       "messages.list",
-      "quickActions.list",
-      "artistSettings.get",
       "consultations.list",
       "conversations.list",
       "funnel.getLeads",
       "appointments.getArtistCalendar",
       "conversations.markAsRead",
+      "designBrief.get",
       "clientProfile.getClientNotes",
-      "projects.summary"
+      "projects.summary",
+      "quickActions.list",
+      "artistSettings.get"
     ],
     "bottom": false,
     "parts": []
@@ -3186,16 +3166,16 @@
     "id": "artist-project-overview",
     "role": "artist",
     "path": "/projects/12",
-    "title": "Tattoo project",
+    "title": "Project overview",
     "overflow": false,
-    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nPayment \u00b7 AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nMessage Mia Chen\nReschedule\nMore session options\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nMia Chen · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nConfirmed\nThu, 10 Sept, 10:00 am\nTimes in Australia/Brisbane\nNorthside Studio, Brisbane\nReady for the session\nPayment received\n$150.00\nProcedure consent\nAwaiting confirmation\nPayment · AUD\nSession estimate\n$600.00\nRecorded paid\n$150.00\nBalance due\n$450.00\nMessage Mia Chen\nReschedule\nMore session options\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/calendar",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3205,7 +3185,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3215,9 +3195,9 @@
         "href": "/projects/12?session=101&view=Messages",
         "rect": [
           20,
-          939.109375,
+          973.21875,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -3263,8 +3243,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1080
+        "height": 548,
+        "full": 979
       }
     ],
     "errors": [],
@@ -3284,16 +3264,16 @@
     "id": "artist-project-files",
     "role": "artist",
     "path": "/projects/12?view=Files",
-    "title": "Tattoo project",
+    "title": "Project files",
     "overflow": false,
-    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject reference images\n\nNo references are linked to this project yet. Older, unassigned references remain available in Messages.\n\nOlder conversation references \u00b7 unassigned\nShare photos in Messages\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nMia Chen · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject reference images\n\nNo references are linked to this project yet. Older, unassigned references remain available in Messages.\n\nOlder conversation references · unassigned\nShare photos in Messages\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/calendar",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3303,7 +3283,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3313,9 +3293,9 @@
         "href": "/projects/12?session=101&view=Messages",
         "rect": [
           20,
-          514.0625,
+          524.359375,
           234.703125,
-          50.390625
+          50
         ]
       },
       {
@@ -3361,8 +3341,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -3380,16 +3360,16 @@
     "id": "artist-project-payments",
     "role": "artist",
     "path": "/projects/12?view=Payments",
-    "title": "Tattoo project",
+    "title": "Project payments",
     "overflow": false,
-    "text": "Tattoo project\n\nMia Chen \u00b7 Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject payment history \u00b7 AUD\n\nSession totals can include imported payments without a linked transaction.\n\nNo linked transactions recorded.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Tattoo project\n\nMia Chen · Session 2 of 3\n\nOverview\nMessages\nFiles\nPayments\nProject payment history · AUD\n\nSession totals can include imported payments without a linked transaction.\n\nNo linked transactions recorded.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/calendar",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3399,7 +3379,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3447,8 +3427,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -3468,46 +3448,46 @@
     "path": "/clients",
     "title": "Clients",
     "overflow": false,
-    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nSearch clients\nMC\nMia Chen\nView client\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nAdd client\nClients\n\nYour people and their pieces\n\nToday\nClients\nSupplies\nSearch clients\nMC\nMia Chen\nView client\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          73.1875,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
         "text": "Today",
         "href": "/dashboard",
         "rect": [
-          24,
-          226.28125,
-          72.5625,
-          42.296875
+          4,
+          262,
+          128.65625,
+          44
         ]
       },
       {
         "text": "Clients",
         "href": "/clients",
         "rect": [
-          100.5625,
-          226.28125,
-          72.578125,
-          42.296875
+          136.65625,
+          262,
+          128.671875,
+          44
         ]
       },
       {
         "text": "Supplies",
         "href": "/supplies",
         "rect": [
-          177.140625,
-          226.28125,
-          72.578125,
-          42.296875
+          269.328125,
+          262,
+          128.671875,
+          44
         ]
       },
       {
@@ -3553,8 +3533,8 @@
     ],
     "scroll": [
       {
-        "height": 652,
-        "full": 652
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -3574,14 +3554,14 @@
     "path": "/lead/1",
     "title": "Booking request",
     "overflow": false,
-    "text": "Booking request\n\nMia Chen\n\nMC\nMia Chen\nnew\nTheir idea\n\nFine-line peonies for my forearm, with room to extend later.\n\nPlacement\nForearm\nStyles\nFine Line\nReferences & placement\nNext step\n\nDiscuss the idea with your client, then send a booking plan when the details are agreed.\n\nOpen conversation\nEmail Mia Chen\nArchive request\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Booking request\n\nMia Chen\n\nMC\nMia Chen\nnew\nTheir idea\n\nFine-line peonies for my forearm, with room to extend later.\n\nPlacement\nForearm\nStyles\nFine Line\nReferences & placement\nNext step\n\nDiscuss the idea with your client, then send a booking plan when the details are agreed.\n\nOpen conversation\nEmail Mia Chen\nArchive request\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/conversations",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3591,7 +3571,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3601,7 +3581,7 @@
         "href": "/__ivory_artwork.png",
         "rect": [
           20,
-          584.359375,
+          626.46875,
           175,
           175
         ]
@@ -3611,9 +3591,9 @@
         "href": "mailto:undefined?subject=Your%20tattoo%20booking%20request",
         "rect": [
           41,
-          979.109375,
+          1020.828125,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -3659,8 +3639,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1057
+        "height": 616,
+        "full": 1056
       }
     ],
     "errors": [],
@@ -3682,14 +3662,14 @@
     "path": "/waitlist",
     "title": "Cancellation waitlist",
     "overflow": false,
-    "text": "Cancellation waitlist\n\nOffer a space to a client who\u2019s ready for it.\n\nNo clients have joined yet. Clients can opt in from their booking workspace.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Cancellation waitlist\n\nOffer a space to a client who’s ready for it.\n\nNo clients have joined yet. Clients can opt in from their booking workspace.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3699,7 +3679,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3747,8 +3727,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -3767,16 +3747,16 @@
     "id": "artist-artist-profile",
     "role": "artist",
     "path": "/artist-profile",
-    "title": "Profile",
+    "title": "Artist profile",
     "overflow": false,
-    "text": "Profile\n\nA clear introduction to you and your work.\n\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nProfile\nPortfolio\nWhat clients see\nArtist display name\nWebsite\nShow email\nShow phone\nShow city\nShow website\nSave public profile\n\nUpdate your bio, contact details and profile photo in Personal details.\n\nEdit personal details\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Profile\n\nA clear introduction to you and your work.\n\nProfile\nPortfolio\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nWhat clients see\nArtist display name\nWebsite\nShow email\nShow phone\nShow city\nShow website\nSave public profile\n\nUpdate your bio, contact details and profile photo in Personal details.\n\nEdit personal details\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/dashboard",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3786,7 +3766,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3796,9 +3776,9 @@
         "href": "/business",
         "rect": [
           20,
-          318.78125,
+          428.890625,
           249.15625,
-          50.390625
+          50
         ]
       },
       {
@@ -3806,9 +3786,9 @@
         "href": "/book/ella-morgan",
         "rect": [
           20,
-          379.171875,
+          488.890625,
           203.15625,
-          50.390625
+          50
         ]
       },
       {
@@ -3816,9 +3796,9 @@
         "href": "/settings?section=booking-link",
         "rect": [
           20,
-          439.5625,
+          548.890625,
           213.703125,
-          50.390625
+          50
         ]
       },
       {
@@ -3826,9 +3806,9 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          499.953125,
+          608.890625,
           220.453125,
-          50.390625
+          50
         ]
       },
       {
@@ -3836,9 +3816,9 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          1154.140625,
+          1186.296875,
           190.046875,
-          50.390625
+          50
         ]
       },
       {
@@ -3884,8 +3864,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1145
+        "height": 548,
+        "full": 1066
       }
     ],
     "errors": [],
@@ -3898,23 +3878,24 @@
     ],
     "bottom": true,
     "parts": [
-      "artist-artist-profile-part-2.png"
+      "artist-artist-profile-part-2.png",
+      "artist-artist-profile-part-3.png"
     ]
   },
   {
     "id": "artist-artist-portfolio",
     "role": "artist",
     "path": "/artist-profile?view=Portfolio",
-    "title": "Profile",
+    "title": "Artist portfolio",
     "overflow": false,
-    "text": "Profile\n\nA clear introduction to you and your work.\n\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nProfile\nPortfolio\nPortfolio\nAdd photo\nInstagram import\nSelect Botanical study\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Profile\n\nA clear introduction to you and your work.\n\nProfile\nPortfolio\nEM\nElla Morgan\nAdd your location in profile details\nBusiness settings & payouts\nPreview booking page\nShare your booking link\nPhoto & personal details\nPortfolio\nAdd photo\nInstagram import\nSelect Botanical study\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/dashboard",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -3924,7 +3905,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -3934,9 +3915,9 @@
         "href": "/business",
         "rect": [
           20,
-          318.78125,
+          428.890625,
           249.15625,
-          50.390625
+          50
         ]
       },
       {
@@ -3944,9 +3925,9 @@
         "href": "/book/ella-morgan",
         "rect": [
           20,
-          379.171875,
+          488.890625,
           203.15625,
-          50.390625
+          50
         ]
       },
       {
@@ -3954,9 +3935,9 @@
         "href": "/settings?section=booking-link",
         "rect": [
           20,
-          439.5625,
+          548.890625,
           213.703125,
-          50.390625
+          50
         ]
       },
       {
@@ -3964,9 +3945,9 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          499.953125,
+          608.890625,
           220.453125,
-          50.390625
+          50
         ]
       },
       {
@@ -3974,9 +3955,9 @@
         "href": "/settings?section=instagram",
         "rect": [
           20,
-          712.734375,
+          744.890625,
           167.109375,
-          50.390625
+          50
         ]
       },
       {
@@ -4022,8 +4003,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 920
+        "height": 548,
+        "full": 842
       }
     ],
     "errors": [],
@@ -4044,16 +4025,16 @@
     "id": "artist-working-hours",
     "role": "artist",
     "path": "/work-hours",
-    "title": "Working hours & services",
+    "title": "Working hours",
     "overflow": false,
-    "text": "Working hours & services\n\nMake your availability work for you\n\nAvailability\nServices\n\nYour regular week. Design and personal days stay separate from tattooing availability.\n\nMonday\nmonday start\nto\nmonday end\nmonday type\nTattooing\nDesign\nPersonal\nAdd monday break\nTuesday\nDay off\nWednesday\nDay off\nThursday\nthursday start\nto\nthursday end\nthursday type\nTattooing\nDesign\nPersonal\nAdd thursday break\nFriday\nDay off\nSaturday\nDay off\nSunday\nDay off\nSave availability\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Working hours & services\n\nMake your availability work for you\n\nAvailability\nServices\n\nYour regular week. Design and personal days stay separate from tattooing availability.\n\nMonday\nmonday start\nto\nmonday end\nmonday type\nTattooing\nDesign\nPersonal\nAdd monday break\nTuesday\nDay off\nWednesday\nDay off\nThursday\nthursday start\nto\nthursday end\nthursday type\nTattooing\nDesign\nPersonal\nAdd thursday break\nFriday\nDay off\nSaturday\nDay off\nSunday\nDay off\nSave availability\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4063,7 +4044,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4111,8 +4092,8 @@
     ],
     "scroll": [
       {
-        "height": 619,
-        "full": 1146
+        "height": 548,
+        "full": 1069
       }
     ],
     "errors": [],
@@ -4125,7 +4106,8 @@
     ],
     "bottom": true,
     "parts": [
-      "artist-working-hours-part-2.png"
+      "artist-working-hours-part-2.png",
+      "artist-working-hours-part-3.png"
     ]
   },
   {
@@ -4134,14 +4116,14 @@
     "path": "/supplies",
     "title": "Supplies",
     "overflow": false,
-    "text": "Supplies\n\nFind what you need for the next session.\n\nYour supply orders\nToday\nClients\nSupplies\nSearch suppliers\n\nNo suppliers match your search.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Supplies\n\nFind what you need for the next session.\n\nToday\nClients\nSupplies\nYour supply orders\nSearch suppliers\n\nNo suppliers match your search.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/dashboard",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4151,8 +4133,38 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
+        "rect": [
+          4,
+          262,
+          128.65625,
+          44
+        ]
+      },
+      {
+        "text": "Clients",
+        "href": "/clients",
+        "rect": [
+          136.65625,
+          262,
+          128.671875,
+          44
+        ]
+      },
+      {
+        "text": "Supplies",
+        "href": "/supplies",
+        "rect": [
+          269.328125,
+          262,
+          128.671875,
           44
         ]
       },
@@ -4161,39 +4173,9 @@
         "href": "/supply-orders",
         "rect": [
           20,
-          215.890625,
+          326,
           362,
-          50.390625
-        ]
-      },
-      {
-        "text": "Today",
-        "href": "/dashboard",
-        "rect": [
-          24,
-          294.28125,
-          72.5625,
-          42.296875
-        ]
-      },
-      {
-        "text": "Clients",
-        "href": "/clients",
-        "rect": [
-          100.5625,
-          294.28125,
-          72.578125,
-          42.296875
-        ]
-      },
-      {
-        "text": "Supplies",
-        "href": "/supplies",
-        "rect": [
-          177.140625,
-          294.28125,
-          72.578125,
-          42.296875
+          50
         ]
       },
       {
@@ -4239,8 +4221,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -4260,14 +4242,14 @@
     "path": "/supply-orders",
     "title": "Supply orders",
     "overflow": false,
-    "text": "Supply orders\n\nPayment and supplier handoff, kept separate.\n\nSearch supply orders\n\nNo matching supply orders.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Supply orders\n\nPayment and supplier handoff, kept separate.\n\nSearch supply orders\n\nNo matching supply orders.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/supplies",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4277,7 +4259,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4325,8 +4307,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -4344,16 +4326,16 @@
     "id": "artist-purchases",
     "role": "artist",
     "path": "/purchases",
-    "title": "Your purchases",
+    "title": "Purchases",
     "overflow": false,
-    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4363,7 +4345,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4411,8 +4393,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -4430,16 +4412,16 @@
     "id": "artist-bank-payouts",
     "role": "artist",
     "path": "/bank-payouts",
-    "title": "Bank & payouts",
+    "title": "Bank payouts",
     "overflow": false,
-    "text": "Bank & payouts\n\nYour payment account, in one place.\n\nGet paid for your work\n\nConnect your bank and verify your details to receive booking payments. Stripe securely collects the information it needs.\n\nConnect your bank\nRefresh status\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Bank & payouts\n\nYour payment account, in one place.\n\nGet paid for your work\n\nConnect your bank and verify your details to receive booking payments. Stripe securely collects the information it needs.\n\nConnect your bank\nRefresh status\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/money",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4449,7 +4431,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4497,8 +4479,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -4516,16 +4498,16 @@
     "id": "artist-payout-history",
     "role": "artist",
     "path": "/payout-history",
-    "title": "Payment history",
+    "title": "Payout history",
     "overflow": false,
-    "text": "Payment history\n\nClient payments, refunds and transfers to your bank.\n\nBank payouts\n$600.00\nFri, 11 Sept, 10:00 am \u00b7 Bank ending 1234\npaid\nPayment ledger\n\nAmounts below are recorded in AUD. Open a refund to verify the original charge and its currency.\n\nMia Chen\ndeposit \u00b7 Wed, 9 Sept, 10:00 am\n$150.00\nPlatform fee\n$5.10\nArtist fee\n$0.00\nReview refund\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Payment history\n\nClient payments, refunds and transfers to your bank.\n\nBank payouts\n$600.00\nFri, 11 Sept, 10:00 am · Bank ending 1234\npaid\nPayment ledger\n\nAmounts below are recorded in AUD. Open a refund to verify the original charge and its currency.\n\nMia Chen\ndeposit · Wed, 9 Sept, 10:00 am\n$150.00\nPlatform fee\n$5.10\nArtist fee\n$0.00\nReview refund\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/money",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4535,7 +4517,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4583,7 +4565,7 @@
     ],
     "scroll": [
       {
-        "height": 658,
+        "height": 616,
         "full": 752
       }
     ],
@@ -4606,14 +4588,14 @@
     "path": "/notifications-management",
     "title": "Notifications",
     "overflow": false,
-    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you\u2019re away from the app.\n\nEnable notifications\nSaved message templates\nAdd template\n\nPrepare reusable wording for your client communications. Saving a template does not schedule a delivery.\n\nAdd your first template for confirmations, preparation or aftercare.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you’re away from the app.\n\nEnable notifications\nSaved message templates\nAdd template\n\nPrepare reusable wording for your client communications. Saving a template does not schedule a delivery.\n\nAdd your first template for confirmations, preparation or aftercare.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4623,7 +4605,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4671,8 +4653,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 633
       }
     ],
     "errors": [],
@@ -4690,16 +4672,16 @@
     "id": "artist-plans",
     "role": "artist",
     "path": "/subscriptions",
-    "title": "Your plan",
+    "title": "Plans",
     "overflow": false,
-    "text": "Your plan\n\nLess admin. More time for your work.\n\nCurrent plan\nFree\n\n$0.00 AUD / month\n\nCalendar, bookings and client messaging\nDeposits and client records\n25% deposit\n2% Tattoi artist fee\n\nCancel renewal in billing to return to Free after your paid period.\n\nPro\n\n$99.00 AUD / month\n\nEverything in Free\nNo Tattoi artist fee on new payments\nChoose your deposit percentage\nOffer payment in full\nChoose Pro\nStudio\n\n$499.00 AUD / month\n\nPro benefits for up to 10 active artists\nShared studio schedule\nTeam invitations and access controls\nYour clients stay yours\nSet up Studio\nWhen Pro makes sense\n\nAt $4,950.00 in monthly artist payments, Free\u2019s artist fees equal Pro\u2019s monthly price. Above that, Pro reduces your Tattoi artist fees.\n\nFree\u2019s artist fee is deducted when payment is collected, before bank payout. Upgrading applies to new payments and does not refund past fees.\n\nPayment fees\n\nClients pay a 3.4% platform fee, with a $5.00 minimum per payment, on every plan. Checkout shows the total before payment.\n\nMonthly subscriptions renew until cancelled. Studio covers up to 10 active artists, including its owner. Checkout confirms the final subscription amount.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your plan\n\nLess admin. More time for your work.\n\nCurrent plan\nFree\n\n$0.00 AUD / month\n\nCalendar, bookings and client messaging\nDeposits and client records\n25% deposit\n2% Tattoi artist fee\n\nCancel renewal in billing to return to Free after your paid period.\n\nPro\n\n$99.00 AUD / month\n\nEverything in Free\nNo Tattoi artist fee on new payments\nChoose your deposit percentage\nOffer payment in full\nChoose Pro\nStudio\n\n$499.00 AUD / month\n\nPro benefits for up to 10 active artists\nShared studio schedule\nTeam invitations and access controls\nYour clients stay yours\nSet up Studio\nWhen Pro makes sense\n\nAt $4,950.00 in monthly artist payments, Free’s artist fees equal Pro’s monthly price. Above that, Pro reduces your Tattoi artist fees.\n\nFree’s artist fee is deducted when payment is collected, before bank payout. Upgrading applies to new payments and does not refund past fees.\n\nPayment fees\n\nClients pay a 3.4% platform fee, with a $5.00 minimum per payment, on every plan. Checkout shows the total before payment.\n\nMonthly subscriptions renew until cancelled. Studio covers up to 10 active artists, including its owner. Checkout confirms the final subscription amount.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4709,7 +4691,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4719,9 +4701,9 @@
         "href": "/studio",
         "rect": [
           41,
-          1389,
+          1430.71875,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -4767,8 +4749,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1925
+        "height": 616,
+        "full": 1924
       }
     ],
     "errors": [],
@@ -4791,16 +4773,16 @@
     "id": "artist-studio-schedule",
     "role": "artist",
     "path": "/studio",
-    "title": "Northside Studio",
+    "title": "Studio schedule",
     "overflow": false,
-    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nYour invitations\nSchedule\nTeam\nBilling\nPrevious week\nThis week\nNext week\nArtist\nAll artists\nElla Morgan\nOliver Grant\n10 Sept \u2013 16 Sept\nBotanical sleeve\nThu, 10 Sept, 10:00 am \u00b7 Ella Morgan \u00b7 Mia Chen\nconfirmed\nGeometric shoulder\nThu, 10 Sept, 2:00 pm \u00b7 Ella Morgan \u00b7 Oliver James\nconfirmed\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nSchedule\nTeam\nBilling\nYour invitations\nPrevious week\nThis week\nNext week\nArtist\nAll artists\nElla Morgan\nOliver Grant\n10 Sept – 16 Sept\nBotanical sleeve\nThu, 10 Sept, 10:00 am · Ella Morgan · Mia Chen\nconfirmed\nGeometric shoulder\nThu, 10 Sept, 2:00 pm · Ella Morgan · Oliver James\nconfirmed\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4810,7 +4792,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4820,9 +4802,9 @@
         "href": "/studio?view=invitations",
         "rect": [
           20,
-          215.890625,
+          326,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -4868,8 +4850,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 774
+        "height": 548,
+        "full": 696
       }
     ],
     "errors": [],
@@ -4892,16 +4874,16 @@
     "id": "artist-studio-team",
     "role": "artist",
     "path": "/studio?view=Team",
-    "title": "Northside Studio",
+    "title": "Studio team",
     "overflow": false,
-    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nYour invitations\nSchedule\nTeam\nBilling\nYour team\nEM\nElla Morgan\nowner \u00b7 Active\nLeave\nOG\nOliver Grant\nartist \u00b7 Active\nRemove\nInvite an artist\n\nUse their existing Tattoi artist email. The invitation appears in their studio invitations and chat.\n\nArtist email\nRole\nArtist\nManager\nManagers can invite artists and view the studio schedule.\nSend invitation\n\nArtists keep their personal clients and booking history if they leave. Removing a member ends their access to this studio.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nSchedule\nTeam\nBilling\nYour invitations\nYour team\nEM\nElla Morgan\nowner · Active\nLeave\nOG\nOliver Grant\nartist · Active\nRemove\nInvite an artist\n\nUse their existing Tattoi artist email. The invitation appears in their studio invitations and chat.\n\nArtist email\nRole\nArtist\nManager\nManagers can invite artists and view the studio schedule.\nSend invitation\n\nArtists keep their personal clients and booking history if they leave. Removing a member ends their access to this studio.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -4911,7 +4893,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -4921,9 +4903,9 @@
         "href": "/studio?view=invitations",
         "rect": [
           20,
-          215.890625,
+          326,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -4969,8 +4951,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1028
+        "height": 548,
+        "full": 951
       }
     ],
     "errors": [],
@@ -4993,16 +4975,16 @@
     "id": "artist-studio-billing",
     "role": "artist",
     "path": "/studio?view=Billing",
-    "title": "Northside Studio",
+    "title": "Studio billing",
     "overflow": false,
-    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nYour invitations\nSchedule\nTeam\nBilling\nStudio membership\nActive\n\nOne subscription includes Pro payment benefits for up to 10 active artists, including the owner.\n\nActivating Studio cancels separate Pro renewals for active members. Already-paid Pro periods remain available.\n\nManage Studio billingRefresh billing status\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Northside Studio\n\nA shared schedule. An independent practice.\n\nSchedule\nTeam\nBilling\nYour invitations\nStudio membership\nActive\n\nOne subscription includes Pro payment benefits for up to 10 active artists, including the owner.\n\nActivating Studio cancels separate Pro renewals for active members. Already-paid Pro periods remain available.\n\nManage Studio billingRefresh billing status\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5012,7 +4994,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5022,9 +5004,9 @@
         "href": "/studio?view=invitations",
         "rect": [
           20,
-          215.890625,
+          326,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -5070,8 +5052,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 690
+        "height": 548,
+        "full": 613
       }
     ],
     "errors": [],
@@ -5094,14 +5076,14 @@
     "path": "/studio?view=invitations",
     "title": "Studio invitations",
     "overflow": false,
-    "text": "Studio invitations\n\nNo pending invitations.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Studio invitations\n\n \n\nNo pending invitations.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/studio",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5111,7 +5093,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5159,8 +5141,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -5180,14 +5162,14 @@
     "path": "/settings",
     "title": "Settings",
     "overflow": false,
-    "text": "Settings\nMC\nMia Chen\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts for updates and messages\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Settings\n\n \n\nMC\nMia Chen\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts for updates and messages\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/bookings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5197,7 +5179,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5207,7 +5189,7 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          189.59375,
+          258,
           362,
           77
         ]
@@ -5217,7 +5199,7 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          394.84375,
+          463.25,
           362,
           78.890625
         ]
@@ -5227,7 +5209,7 @@
         "href": "/settings?section=notifications",
         "rect": [
           20,
-          473.734375,
+          542.140625,
           362,
           77.890625
         ]
@@ -5237,7 +5219,7 @@
         "href": "/settings?section=how-tos",
         "rect": [
           20,
-          607.875,
+          676.28125,
           362,
           78.890625
         ]
@@ -5247,7 +5229,7 @@
         "href": "/settings?section=danger-zone",
         "rect": [
           20,
-          686.765625,
+          755.171875,
           362,
           77.890625
         ]
@@ -5295,8 +5277,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 1023
+        "height": 616,
+        "full": 1022
       }
     ],
     "errors": [],
@@ -5315,16 +5297,16 @@
     "id": "client-settings-profile",
     "role": "client",
     "path": "/settings?section=profile",
-    "title": "Your profile",
+    "title": "Settings profile",
     "overflow": false,
-    "text": "Your profile\nMC\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your profile\n\n \n\nMC\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5334,7 +5316,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5382,7 +5364,7 @@
     ],
     "scroll": [
       {
-        "height": 684,
+        "height": 616,
         "full": 1235
       }
     ],
@@ -5395,23 +5377,24 @@
     ],
     "bottom": true,
     "parts": [
-      "client-settings-profile-part-2.png"
+      "client-settings-profile-part-2.png",
+      "client-settings-profile-part-3.png"
     ]
   },
   {
     "id": "client-settings-notifications",
     "role": "client",
     "path": "/settings?section=notifications",
-    "title": "Notifications",
+    "title": "Settings notifications",
     "overflow": false,
-    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you\u2019re away from the app.\n\nEnable notifications\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you’re away from the app.\n\nEnable notifications\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5421,7 +5404,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5469,8 +5452,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -5487,16 +5470,16 @@
     "id": "client-settings-how-tos",
     "role": "client",
     "path": "/settings?section=how-tos",
-    "title": "Guided walkthroughs",
+    "title": "Settings how-tos",
     "overflow": false,
-    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nFollow your booking\n2 steps \u00b7 no changes made automatically\nTalk with your artist\n2 steps \u00b7 no changes made automatically\nPrepare for your appointment\n2 steps \u00b7 no changes made automatically\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nFollow your booking\n2 steps · no changes made automatically\nTalk with your artist\n2 steps · no changes made automatically\nPrepare for your appointment\n2 steps · no changes made automatically\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5506,7 +5489,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5554,8 +5537,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -5572,16 +5555,16 @@
     "id": "client-settings-danger-zone",
     "role": "client",
     "path": "/settings?section=danger-zone",
-    "title": "Delete your account",
+    "title": "Settings danger-zone",
     "overflow": false,
-    "text": "Delete your account\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Delete your account\n\n \n\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5591,7 +5574,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5639,8 +5622,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -5659,14 +5642,14 @@
     "path": "/settings",
     "title": "Settings",
     "overflow": false,
-    "text": "Settings\nEM\nElla Morgan\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts and saved message templates\nYour business\nBusiness details\nLocation, contact information and licence\nWorking hours & services\nAvailability, duration and pricing\nBooking link\nClient entry and intake settings\nTravel & guest spots\nDates, destinations and nearby clients\nForms & consent\nConsent and medical templates\nBank payouts\nPayment account and verification\nYour plan\nFree, Pro and Studio\nStudio\nTeam and shared workspace\nConnections\nImport clients\nBring your existing records\nInstagram import\nManage connected portfolio media\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Settings\n\n \n\nEM\nElla Morgan\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts and saved message templates\nYour business\nBusiness details\nLocation, contact information and licence\nWorking hours & services\nAvailability, duration and pricing\nBooking link\nClient entry and intake settings\nTravel & guest spots\nDates, destinations and nearby clients\nForms & consent\nConsent and medical templates\nBank payouts\nPayment account and verification\nYour plan\nFree, Pro and Studio\nStudio\nTeam and shared workspace\nConnections\nImport clients\nBring your existing records\nInstagram import\nManage connected portfolio media\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5676,7 +5659,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5686,7 +5669,7 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          189.59375,
+          258,
           362,
           77
         ]
@@ -5696,7 +5679,7 @@
         "href": "/settings?section=profile",
         "rect": [
           20,
-          394.84375,
+          463.25,
           362,
           78.890625
         ]
@@ -5706,7 +5689,7 @@
         "href": "/settings?section=notifications",
         "rect": [
           20,
-          473.734375,
+          542.140625,
           362,
           98.1875
         ]
@@ -5716,7 +5699,7 @@
         "href": "/settings?section=business",
         "rect": [
           20,
-          628.171875,
+          696.578125,
           362,
           78.890625
         ]
@@ -5726,7 +5709,7 @@
         "href": "/work-hours",
         "rect": [
           20,
-          707.0625,
+          775.46875,
           362,
           78.890625
         ]
@@ -5736,7 +5719,7 @@
         "href": "/settings?section=booking-link",
         "rect": [
           20,
-          785.953125,
+          854.359375,
           362,
           78.890625
         ]
@@ -5746,7 +5729,7 @@
         "href": "/settings?section=travel",
         "rect": [
           20,
-          864.84375,
+          933.25,
           362,
           78.890625
         ]
@@ -5756,7 +5739,7 @@
         "href": "/settings?section=regulation",
         "rect": [
           20,
-          943.734375,
+          1012.140625,
           362,
           78.890625
         ]
@@ -5766,7 +5749,7 @@
         "href": "/bank-payouts",
         "rect": [
           20,
-          1022.625,
+          1091.03125,
           362,
           78.890625
         ]
@@ -5776,7 +5759,7 @@
         "href": "/subscriptions",
         "rect": [
           20,
-          1101.515625,
+          1169.921875,
           362,
           78.890625
         ]
@@ -5786,7 +5769,7 @@
         "href": "/studio",
         "rect": [
           20,
-          1180.40625,
+          1248.8125,
           362,
           77.890625
         ]
@@ -5796,7 +5779,7 @@
         "href": "/settings?section=data-import",
         "rect": [
           20,
-          1314.546875,
+          1382.953125,
           362,
           78.890625
         ]
@@ -5806,7 +5789,7 @@
         "href": "/settings?section=instagram",
         "rect": [
           20,
-          1393.4375,
+          1461.84375,
           362,
           77.890625
         ]
@@ -5816,7 +5799,7 @@
         "href": "/settings?section=how-tos",
         "rect": [
           20,
-          1527.578125,
+          1595.984375,
           362,
           78.890625
         ]
@@ -5826,7 +5809,7 @@
         "href": "/settings?section=danger-zone",
         "rect": [
           20,
-          1606.46875,
+          1674.875,
           362,
           77.890625
         ]
@@ -5874,8 +5857,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 1943
+        "height": 616,
+        "full": 1942
       }
     ],
     "errors": [],
@@ -5896,16 +5879,16 @@
     "id": "artist-settings-profile",
     "role": "artist",
     "path": "/settings?section=profile",
-    "title": "Your profile",
+    "title": "Settings profile",
     "overflow": false,
-    "text": "Your profile\nEM\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your profile\n\n \n\nEM\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -5915,7 +5898,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -5963,7 +5946,7 @@
     ],
     "scroll": [
       {
-        "height": 684,
+        "height": 616,
         "full": 1235
       }
     ],
@@ -5976,23 +5959,24 @@
     ],
     "bottom": true,
     "parts": [
-      "artist-settings-profile-part-2.png"
+      "artist-settings-profile-part-2.png",
+      "artist-settings-profile-part-3.png"
     ]
   },
   {
     "id": "artist-settings-notifications",
     "role": "artist",
     "path": "/settings?section=notifications",
-    "title": "Notifications",
+    "title": "Settings notifications",
     "overflow": false,
-    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you\u2019re away from the app.\n\nEnable notifications\nSaved message templates\nAdd template\n\nPrepare reusable wording for your client communications. Saving a template does not schedule a delivery.\n\nAdd your first template for confirmations, preparation or aftercare.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you’re away from the app.\n\nEnable notifications\nSaved message templates\nAdd template\n\nPrepare reusable wording for your client communications. Saving a template does not schedule a delivery.\n\nAdd your first template for confirmations, preparation or aftercare.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6002,7 +5986,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6050,8 +6034,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 633
       }
     ],
     "errors": [],
@@ -6069,16 +6053,16 @@
     "id": "artist-settings-how-tos",
     "role": "artist",
     "path": "/settings?section=how-tos",
-    "title": "Guided walkthroughs",
+    "title": "Settings how-tos",
     "overflow": false,
-    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nRun your day\n2 steps \u00b7 no changes made automatically\nPlan a booking\n3 steps \u00b7 no changes made automatically\nTurn an enquiry into a booking\n2 steps \u00b7 no changes made automatically\nKeep client details together\n2 steps \u00b7 no changes made automatically\nSet working hours and services\n2 steps \u00b7 no changes made automatically\nShare your booking link\n2 steps \u00b7 no changes made automatically\nTrack payments and refunds\n2 steps \u00b7 no changes made automatically\nSet up bank payouts\n2 steps \u00b7 no changes made automatically\nManage forms and consent\n2 steps \u00b7 no changes made automatically\nFill a cancellation\n2 steps \u00b7 no changes made automatically\nWork as a studio\n3 steps \u00b7 no changes made automatically\nPlan a guest spot\n2 steps \u00b7 no changes made automatically\nImport existing client records\n2 steps \u00b7 no changes made automatically\nImport Instagram work\n2 steps \u00b7 no changes made automatically\nOrder studio supplies\n2 steps \u00b7 no changes made automatically\nManage reminders and message templates\n2 steps \u00b7 no changes made automatically\nChoose your artist plan\n2 steps \u00b7 no changes made automatically\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nRun your day\n2 steps · no changes made automatically\nPlan a booking\n3 steps · no changes made automatically\nTurn an enquiry into a booking\n2 steps · no changes made automatically\nKeep client details together\n2 steps · no changes made automatically\nSet working hours and services\n2 steps · no changes made automatically\nShare your booking link\n2 steps · no changes made automatically\nTrack payments and refunds\n2 steps · no changes made automatically\nSet up bank payouts\n2 steps · no changes made automatically\nManage forms and consent\n2 steps · no changes made automatically\nFill a cancellation\n2 steps · no changes made automatically\nWork as a studio\n3 steps · no changes made automatically\nPlan a guest spot\n2 steps · no changes made automatically\nImport existing client records\n2 steps · no changes made automatically\nImport Instagram work\n2 steps · no changes made automatically\nOrder studio supplies\n2 steps · no changes made automatically\nManage reminders and message templates\n2 steps · no changes made automatically\nChoose your artist plan\n2 steps · no changes made automatically\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6088,7 +6072,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6136,7 +6120,7 @@
     ],
     "scroll": [
       {
-        "height": 658,
+        "height": 616,
         "full": 1622
       }
     ],
@@ -6157,16 +6141,16 @@
     "id": "artist-settings-danger-zone",
     "role": "artist",
     "path": "/settings?section=danger-zone",
-    "title": "Delete your account",
+    "title": "Settings danger-zone",
     "overflow": false,
-    "text": "Delete your account\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Delete your account\n\n \n\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6176,7 +6160,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6224,8 +6208,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -6244,14 +6228,14 @@
     "path": "/account-settings",
     "title": "Settings",
     "overflow": false,
-    "text": "Settings\nSS\nStudio Supply\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts for updates and messages\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Settings\n\n \n\nSS\nStudio Supply\nFind a setting\nYour account\nProfile\nName, photo and contact details\nNotifications\nDevice alerts for updates and messages\nHelp & account controls\nGuided walkthroughs\nLearn each workflow\nDelete account\nAccount and data removal\nPreferences\nDark appearance\nOff\nOff\nCheck for updates\nVersion 3.2.3\nSign out\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6261,7 +6245,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6271,7 +6255,7 @@
         "href": "/account-settings?section=profile",
         "rect": [
           20,
-          189.59375,
+          258,
           362,
           77
         ]
@@ -6281,7 +6265,7 @@
         "href": "/account-settings?section=profile",
         "rect": [
           20,
-          394.84375,
+          463.25,
           362,
           78.890625
         ]
@@ -6291,7 +6275,7 @@
         "href": "/account-settings?section=notifications",
         "rect": [
           20,
-          473.734375,
+          542.140625,
           362,
           77.890625
         ]
@@ -6301,7 +6285,7 @@
         "href": "/account-settings?section=how-tos",
         "rect": [
           20,
-          607.875,
+          676.28125,
           362,
           78.890625
         ]
@@ -6311,7 +6295,7 @@
         "href": "/account-settings?section=danger-zone",
         "rect": [
           20,
-          686.765625,
+          755.171875,
           362,
           77.890625
         ]
@@ -6359,8 +6343,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 1023
+        "height": 616,
+        "full": 1022
       }
     ],
     "errors": [],
@@ -6378,16 +6362,16 @@
     "id": "merchant-settings-profile",
     "role": "merchant",
     "path": "/account-settings?section=profile",
-    "title": "Your profile",
+    "title": "Settings profile",
     "overflow": false,
-    "text": "Your profile\nSS\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your profile\n\n \n\nSS\nProfile photo\nFull name\nPhone\nCity\nCountry\nDate of birth\nGender\nNot set\nFemale\nMale\nOther\nPrefer not to say\nAbout you\nInstagram username\nSave profile\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/account-settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6397,7 +6381,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6445,7 +6429,7 @@
     ],
     "scroll": [
       {
-        "height": 684,
+        "height": 616,
         "full": 1235
       }
     ],
@@ -6457,23 +6441,24 @@
     ],
     "bottom": true,
     "parts": [
-      "merchant-settings-profile-part-2.png"
+      "merchant-settings-profile-part-2.png",
+      "merchant-settings-profile-part-3.png"
     ]
   },
   {
     "id": "merchant-settings-notifications",
     "role": "merchant",
     "path": "/account-settings?section=notifications",
-    "title": "Notifications",
+    "title": "Settings notifications",
     "overflow": false,
-    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you\u2019re away from the app.\n\nEnable notifications\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Notifications\n\nStay up to date with your bookings\n\nThis device\nPush notifications\nOff\n\nBooking updates and messages, even when you’re away from the app.\n\nEnable notifications\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/account-settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6483,7 +6468,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6531,8 +6516,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -6548,16 +6533,16 @@
     "id": "merchant-settings-how-tos",
     "role": "merchant",
     "path": "/account-settings?section=how-tos",
-    "title": "Guided walkthroughs",
+    "title": "Settings how-tos",
     "overflow": false,
-    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nReview your store day\n2 steps \u00b7 no changes made automatically\nReview your Shopify catalogue\n2 steps \u00b7 no changes made automatically\nFulfil an order\n2 steps \u00b7 no changes made automatically\nConnect supplier payments\n2 steps \u00b7 no changes made automatically\nImport your Shopify catalogue\n2 steps \u00b7 no changes made automatically\nUpdate your business details\n2 steps \u00b7 no changes made automatically\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Guided walkthroughs\n\nA little guidance, right where you work.\n\nFind a walkthrough\nChoose a workflow\nReview your store day\n2 steps · no changes made automatically\nReview your Shopify catalogue\n2 steps · no changes made automatically\nFulfil an order\n2 steps · no changes made automatically\nConnect supplier payments\n2 steps · no changes made automatically\nImport your Shopify catalogue\n2 steps · no changes made automatically\nUpdate your business details\n2 steps · no changes made automatically\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/account-settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6567,7 +6552,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6615,7 +6600,7 @@
     ],
     "scroll": [
       {
-        "height": 658,
+        "height": 616,
         "full": 733
       }
     ],
@@ -6625,23 +6610,25 @@
       "auth.refreshToken",
       "conversations.list"
     ],
-    "bottom": false,
-    "parts": []
+    "bottom": true,
+    "parts": [
+      "merchant-settings-how-tos-part-2.png"
+    ]
   },
   {
     "id": "merchant-settings-danger-zone",
     "role": "merchant",
     "path": "/account-settings?section=danger-zone",
-    "title": "Delete your account",
+    "title": "Settings danger-zone",
     "overflow": false,
-    "text": "Delete your account\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Delete your account\n\n \n\nThis cannot be undone\n\nDeleting your account removes your Tattoi profile and access to its bookings and conversations. Export any records you need before continuing.\n\nResolve any active subscriptions, orders and payments first. Account deletion does not issue a Stripe refund.\n\nType DELETE to confirm\nPermanently delete account\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/account-settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6651,7 +6638,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6699,8 +6686,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -6716,16 +6703,16 @@
     "id": "artist-settings-business",
     "role": "artist",
     "path": "/settings?section=business",
-    "title": "Business details",
+    "title": "Settings business",
     "overflow": false,
-    "text": "Business details\nWhere you work\nBusiness name\nPublic display name\nBusiness email\nStudio address\nCountry\nAustralia\nNew Zealand\nBooking details\nLicence number\nReschedule notice \u00b7 hours\nSave business details\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Business details\n\n \n\nWhere you work\nBusiness name\nPublic display name\nBusiness email\nStudio address\nCountry\nAustralia\nNew Zealand\nBooking details\nLicence number\nReschedule notice · hours\nSave business details\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6735,7 +6722,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6783,7 +6770,7 @@
     ],
     "scroll": [
       {
-        "height": 684,
+        "height": 616,
         "full": 1042
       }
     ],
@@ -6804,16 +6791,16 @@
     "id": "artist-settings-booking-link",
     "role": "artist",
     "path": "/settings?section=booking-link",
-    "title": "Your booking link",
+    "title": "Settings booking-link",
     "overflow": false,
-    "text": "Your booking link\n\nFrom their first idea to a booking request.\n\nClients open your profile and submit their request first. They create a password afterwards, so an account never stands between them and their first enquiry.\n\nLink name\nUse 3\u201350 lowercase letters, numbers or hyphens.\nSave booking link\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your booking link\n\nFrom their first idea to a booking request.\n\nClients open your profile and submit their request first. They create a password afterwards, so an account never stands between them and their first enquiry.\n\nLink name\nUse 3–50 lowercase letters, numbers or hyphens.\nSave booking link\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6823,7 +6810,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6871,8 +6858,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -6890,16 +6877,16 @@
     "id": "artist-settings-regulation",
     "role": "artist",
     "path": "/settings?section=regulation",
-    "title": "Forms & procedure records",
+    "title": "Settings regulation",
     "overflow": false,
-    "text": "Forms & procedure records\n\nKeep your paperwork close to the booking.\n\nProcedure log\nMedical\nConsent\nSearch procedure records\n\nNo matching procedure records.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Forms & procedure records\n\nKeep your paperwork close to the booking.\n\nProcedure log\nMedical\nConsent\nSearch procedure records\n\nNo matching procedure records.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6909,7 +6896,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -6957,8 +6944,8 @@
     ],
     "scroll": [
       {
-        "height": 619,
-        "full": 619
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -6977,16 +6964,16 @@
     "id": "artist-settings-travel",
     "role": "artist",
     "path": "/settings?section=travel",
-    "title": "Travel & guest spots",
+    "title": "Settings travel",
     "overflow": false,
-    "text": "Travel & guest spots\n\nYour itinerary and clients at each destination.\n\nSave your guest spots and find existing clients in the same city or country. Saving a trip does not send messages or change your booking availability.\n\nManage working hours\nYour itinerary\nAdd trip\n\nNo travel dates yet.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Travel & guest spots\n\nYour itinerary and clients at each destination.\n\nSave your guest spots and find existing clients in the same city or country. Saving a trip does not send messages or change your booking availability.\n\nManage working hours\nYour itinerary\nAdd trip\n\nNo travel dates yet.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -6996,7 +6983,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7006,9 +6993,9 @@
         "href": "/work-hours",
         "rect": [
           41,
-          351.453125,
+          393.5625,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -7054,8 +7041,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -7073,16 +7060,16 @@
     "id": "artist-settings-data-import",
     "role": "artist",
     "path": "/settings?section=data-import",
-    "title": "Import your data",
+    "title": "Settings data-import",
     "overflow": false,
-    "text": "Import your data\n\nReview matches and duplicates before adding anything.\n\nChoose your file\nWhat are you importing?\nClients\nAppointments\nCSV file\nUp to 500 rows and 5 MB.\n\nEach client needs an email or phone. Use YYYY-MM-DD or DD/MM/YYYY dates and HH:mm or h:mm AM/PM times. Appointment imports use Australia/Brisbane time.\n\nConnect an external calendar\nCalendar feed URL\n\nExternal events appear alongside your Tattoi calendar. Edit those events in their original calendar.\n\nSave calendar link\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Import your data\n\nReview matches and duplicates before adding anything.\n\nChoose your file\nWhat are you importing?\nClients\nAppointments\nCSV file\nUp to 500 rows and 5 MB.\n\nEach client needs an email or phone. Use YYYY-MM-DD or DD/MM/YYYY dates and HH:mm or h:mm AM/PM times. Appointment imports use Australia/Brisbane time.\n\nConnect an external calendar\nCalendar feed URL\n\nExternal events appear alongside your Tattoi calendar. Edit those events in their original calendar.\n\nSave calendar link\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -7092,7 +7079,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7140,8 +7127,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 776
+        "height": 616,
+        "full": 775
       }
     ],
     "errors": [],
@@ -7161,16 +7148,16 @@
     "id": "artist-settings-instagram",
     "role": "artist",
     "path": "/settings?section=instagram",
-    "title": "Instagram import",
+    "title": "Settings instagram",
     "overflow": false,
-    "text": "Instagram import\n\nBring your existing work into your portfolio.\n\nThe current importer copies media into your Tattoi portfolio, including hosted copies for reliable playback. It does not use native Instagram embeds.\n\nOpen your portfolio\nImport your public account\nInstagram username\nCheck account\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Instagram import\n\nBring your existing work into your portfolio.\n\nThe current importer copies media into your Tattoi portfolio, including hosted copies for reliable playback. It does not use native Instagram embeds.\n\nOpen your portfolio\nImport your public account\nInstagram username\nCheck account\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -7180,7 +7167,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7190,9 +7177,9 @@
         "href": "/artist-profile?view=Portfolio",
         "rect": [
           41,
-          351.453125,
+          393.5625,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -7238,8 +7225,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -7257,16 +7244,16 @@
     "id": "artist-settings-consultations",
     "role": "artist",
     "path": "/settings?section=consultations",
-    "title": "Consultation requests",
+    "title": "Settings consultations",
     "overflow": false,
-    "text": "Consultation requests\n\nThe idea behind the appointment.\n\nNew client requests will appear in your inbox.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Consultation requests\n\nThe idea behind the appointment.\n\nNew client requests will appear in your inbox.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -7276,7 +7263,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7324,8 +7311,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -7343,18 +7330,18 @@
     "id": "merchant-supplier-home",
     "role": "merchant",
     "path": "/dashboard",
-    "title": "Home",
+    "title": "Supplier home",
     "overflow": false,
-    "text": "tattoi\nHome\n\nStudio Supply\n\nNeeds you\n2 orders to fulfil\nPaid orders ready for their next step\n3 products running low\nCheck availability and stock levels\nTattoi sales\n$4,500.00\n\nRecorded paid and fulfilled orders, before fees.\n\nTotal orders\n16\nManage your sales channel\nCatalogue & stock\nManage products available to artists\nShopify connection\nImport and review your catalogue\nArtist conversations\nHelp customers with their orders\nPayments & payouts\nSet up payments\n\nComplete your business verification with Stripe to accept payments.\n\nConnect StripeCheck payment status\nStore settings\nBusiness details, account and integrations\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nHome\n\nStudio Supply\n\nNeeds you\n2 orders to fulfil\nPaid orders ready for their next step\n3 products running low\nCheck availability and stock levels\nTattoi sales\n$4,500.00\n\nRecorded paid and fulfilled orders, before fees.\n\nTotal orders\n16\nManage your sales channel\nCatalogue & stock\nManage products available to artists\nShopify connection\nImport and review your catalogue\nArtist conversations\nHelp customers with their orders\nPayments & payouts\nSet up payments\n\nComplete your business verification with Stripe to accept payments.\n\nConnect StripeCheck payment status\nStore settings\nBusiness details, account and integrations\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -7362,7 +7349,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7372,7 +7359,7 @@
         "href": "/merchant/orders",
         "rect": [
           20,
-          248.140625,
+          290.25,
           362,
           78.890625
         ]
@@ -7382,7 +7369,7 @@
         "href": "/merchant/products",
         "rect": [
           20,
-          327.03125,
+          369.140625,
           362,
           77.890625
         ]
@@ -7392,7 +7379,7 @@
         "href": "/merchant/products",
         "rect": [
           20,
-          711.140625,
+          753.25,
           362,
           78.890625
         ]
@@ -7402,7 +7389,7 @@
         "href": "/settings",
         "rect": [
           20,
-          790.03125,
+          832.140625,
           362,
           78.890625
         ]
@@ -7412,7 +7399,7 @@
         "href": "/conversations",
         "rect": [
           20,
-          868.921875,
+          911.03125,
           362,
           77.890625
         ]
@@ -7422,7 +7409,7 @@
         "href": "/settings",
         "rect": [
           20,
-          1281.5625,
+          1322.890625,
           362,
           78.890625
         ]
@@ -7470,8 +7457,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1301
+        "height": 616,
+        "full": 1300
       }
     ],
     "errors": [],
@@ -7493,18 +7480,18 @@
     "id": "merchant-supplier-orders",
     "role": "merchant",
     "path": "/merchant/orders",
-    "title": "Orders",
+    "title": "Supplier orders",
     "overflow": false,
-    "text": "tattoi\nOrders\n\nFrom paid to delivered\n\nTo fulfil\nFulfilled\nAll\nSearch orders\nOrder #1\nElla Morgan \u00b7 $32.00\nPaid in full\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nOrders\n\nFrom paid to delivered\n\nTo fulfil\nFulfilled\nAll\nSearch orders\nOrder #1\nElla Morgan · $32.00\nPaid in full\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -7512,7 +7499,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7560,8 +7547,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -7578,27 +7565,17 @@
     "id": "merchant-supplier-products",
     "role": "merchant",
     "path": "/merchant/products",
-    "title": "Products",
+    "title": "Supplier products",
     "overflow": false,
-    "text": "tattoi\nProducts\n\nYour Shopify catalogue on Tattoi\n\nManage products, variants and stock in Shopify. Review the imported catalogue here.\n\nReview Shopify connection\nSearch products\nCartridge needles\n\n$32.00\n\nPublished\n\n24 in stock\n\nView 1 variants\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nAdd product\nProducts\n\nYour catalogue, ready for your customers\n\nSet your Tattoi prices, available stock and publishing status here.\n\nReview Shopify connection\nSearch products\nCartridge needles\n\n$32.00\n\nPublished\n\n24 in stock\n\nView 1 variants\nEdit product\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
-        ]
-      },
-      {
-        "text": "",
-        "href": "/settings",
-        "rect": [
-          338,
-          64,
-          44,
           44
         ]
       },
@@ -7607,9 +7584,9 @@
         "href": "/settings",
         "rect": [
           20,
-          289.171875,
+          331.28125,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -7655,8 +7632,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 647
       }
     ],
     "errors": [],
@@ -7676,16 +7653,16 @@
     "path": "/settings",
     "title": "Store settings",
     "overflow": false,
-    "text": "tattoi\nStore settings\n\nYour business, payments and connections\n\nBusiness name\nContact name\nPhone\nBusiness address\nSave business details\nPayments & payouts\nSet up payments\n\nComplete your business verification with Stripe to accept payments.\n\nConnect StripeCheck payment status\nShopify\nShopify catalogue\n\nImport products and variants. New products start hidden so you can review pricing and delivery before publishing.\n\nStock is copied on first import. Later imports update catalogue details without replenishing sold or reserved stock. Manage your Tattoi allocation in Products.\n\nStore domain\nAdmin API token\n\nProduct-read permission is needed for catalogue imports. Supplier draft-order handoff also needs draft-order permission.\n\nVerify and save\nAccount, notifications & sign out\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nStore settings\n\nYour business, payments and connections\n\nBusiness name\nContact name\nPhone\nBusiness address\nSave business details\nPayments & payouts\nSet up payments\n\nComplete your business verification with Stripe to accept payments.\n\nConnect StripeCheck payment status\nShopify\nShopify catalogue\n\nImport products and variants. New products start hidden so you can review pricing and delivery before publishing.\n\nStock is copied on first import. Later imports update catalogue details without replenishing sold or reserved stock. Manage your Tattoi allocation in Products.\n\nStore domain\nAdmin API token\n\nProduct-read permission is needed for catalogue imports. Supplier draft-order handoff also needs draft-order permission.\n\nVerify and save\nAccount, notifications & sign out\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -7693,7 +7670,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7703,9 +7680,9 @@
         "href": "/account-settings",
         "rect": [
           20,
-          1553.953125,
+          1594.5,
           362,
-          50.390625
+          50
         ]
       },
       {
@@ -7751,8 +7728,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 1544
+        "height": 616,
+        "full": 1543
       }
     ],
     "errors": [],
@@ -7774,18 +7751,18 @@
     "id": "merchant-supplier-inbox",
     "role": "merchant",
     "path": "/conversations",
-    "title": "Messages",
+    "title": "Supplier inbox",
     "overflow": false,
-    "text": "tattoi\nMessages\nSearch conversations\nMC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nMessages\n\n \n\nSearch conversations\nMC\nMia Chen\nI love the peonies. Could we leave room to extend it later?\n2\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/dashboard",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -7793,7 +7770,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -7803,7 +7780,7 @@
         "href": "/chat/12",
         "rect": [
           20,
-          251.59375,
+          320,
           362,
           99.1875
         ]
@@ -7851,8 +7828,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 637
       }
     ],
     "errors": [],
@@ -7868,9 +7845,9 @@
     "id": "merchant-supplier-conversation",
     "role": "merchant",
     "path": "/chat/12",
-    "title": "Messages",
+    "title": "Supplier conversation",
     "overflow": false,
-    "text": "Mia Chen\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I\u2019ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Mia Chen\n\nI love the peonies. Could we leave room to extend it later?\n\nWed, 9 Sept, 10:00 am\n\nAbsolutely. I’ll build that space into the design.\n\nWed, 9 Sept, 10:05 am\nMessage\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
@@ -7976,16 +7953,16 @@
     "id": "merchant-supplier-purchases",
     "role": "merchant",
     "path": "/purchases",
-    "title": "Your purchases",
+    "title": "Supplier purchases",
     "overflow": false,
-    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nHome\nOrders\nProducts\n2\nMessages\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Your purchases\n\nOrders and event registrations.\n\nSearch purchases\n\nNo purchases yet.\n\nPaid orders placed while signed in appear here. For guest purchases, use the confirmation page saved at checkout.\n\nHome\nOrders\nProducts\n2\nMessages\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/settings",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -7995,7 +7972,7 @@
         "href": "/settings",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -8043,8 +8020,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -8063,14 +8040,14 @@
     "path": "/admin/operations",
     "title": "Operations",
     "overflow": false,
-    "text": "Operations\n\nPayment confirmation, delivery and outstanding forms.\n\nRefresh\nError reports\nCheckouts awaiting confirmation\n\nNo unconfirmed checkouts.\n\nFailed notifications\n\nNo failed deliveries.\n\nOutstanding forms\n\nNo pending forms.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Operations\n\nPayment confirmation, delivery and outstanding forms.\n\nRefresh\nError reports\nCheckouts awaiting confirmation\n\nNo unconfirmed checkouts.\n\nFailed notifications\n\nNo failed deliveries.\n\nOutstanding forms\n\nNo pending forms.\n\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/business",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -8080,7 +8057,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -8090,9 +8067,9 @@
         "href": "/admin/errors",
         "rect": [
           126.046875,
-          215.890625,
+          258,
           134.140625,
-          50.390625
+          50
         ]
       },
       {
@@ -8138,8 +8115,8 @@
     ],
     "scroll": [
       {
-        "height": 658,
-        "full": 658
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -8158,14 +8135,14 @@
     "path": "/admin/errors",
     "title": "Error reports",
     "overflow": false,
-    "text": "Error reports\nUnresolved\nResolved\nAll\n\nNo error reports in this view.\n\nPrevious\nPage 1\nNext\nRecord cleanup\nClear resolved reports older than 30 daysClear all resolved reports\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "Error reports\n\n \n\nUnresolved\nResolved\nAll\n\nNo error reports in this view.\n\nPrevious\nPage 1\nNext\nRecord cleanup\nClear resolved reports older than 30 daysClear all resolved reports\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "",
         "href": "/admin/operations",
         "rect": [
           20,
-          64,
+          65,
           44,
           44
         ]
@@ -8175,7 +8152,7 @@
         "href": "/business",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -8223,8 +8200,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 548,
+        "full": 548
       }
     ],
     "errors": [],
@@ -8241,18 +8218,18 @@
     "id": "client-not-found",
     "role": "client",
     "path": "/not/a/route",
-    "title": "Page not found",
+    "title": "Not found",
     "overflow": false,
-    "text": "tattoi\nPage not found\n\nThis page may have moved, or the link may be incomplete.\n\nReturn to your home\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nPage not found\n\n \n\nThis page may have moved, or the link may be incomplete.\n\nReturn to your home\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n••• ▰",
     "links": [
       {
         "text": "tattoi",
         "href": "/bookings",
         "rect": [
           20,
-          70,
+          65,
           66.515625,
-          32
+          44
         ]
       },
       {
@@ -8260,7 +8237,7 @@
         "href": "/profile",
         "rect": [
           338,
-          64,
+          65,
           44,
           44
         ]
@@ -8270,9 +8247,9 @@
         "href": "/",
         "rect": [
           41,
-          275.875,
+          344.28125,
           320,
-          50.390625
+          50
         ]
       },
       {
@@ -8318,8 +8295,8 @@
     ],
     "scroll": [
       {
-        "height": 684,
-        "full": 684
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
@@ -8333,15 +8310,26 @@
     "parts": []
   },
   {
-    "id": "client-discover",
-    "role": "client",
-    "path": "/discover",
+    "id": "artist-calendar",
+    "role": "artist",
+    "path": "/calendar",
+    "title": "Calendar",
     "overflow": false,
-    "text": "M\ntattoi\nElla Morgan\n\nBrisbane \u00b7 Fine Line\n\nView artist\nDiscover\n2\nMessages\nBookings\nProfile\n9:41\n\u2022\u2022\u2022 \u25b0",
+    "text": "tattoi\nNew booking\nCalendar\n\nThursday, 10 September\n\nToday\nAll artists\nElla Morgan\nOliver Grant\nMon\n7\nTue\n8\nWed\n9\nThu\n10\nFri\n11\nSat\n12\nSun\n13\nSeptember 2026\nExpand agenda\nSUN\n6 September\n+\n\nNo sessions booked\n\nMON\n7 September\n+\n\nNo sessions booked\n\nTUE\n8 September\n+\n\nNo sessions booked\n\nWED\n9 September\n+\n\nNo sessions booked\n\nTHU\n10 September\n+\nToday\n10:00\n13:00\nMia Chen\nBotanical sleeve\n14:00\n16:00\nMia Chen\nGeometric shoulder\nFRI\n11 September\n+\n\nNo sessions booked\n\nSAT\n12 September\n+\n\nNo sessions booked\n\nSUN\n13 September\n+\n\nNo sessions booked\n\nMON\n14 September\n+\n\nNo sessions booked\n\nTUE\n15 September\n+\n\nNo sessions booked\n\nThu 10 Sep · 2 sessions\nExpand agenda\nToday\n2\nMessages\nCalendar\nProfile\n9:41\n••• ▰",
     "links": [
       {
-        "text": "Discover",
-        "href": "/discover",
+        "text": "tattoi",
+        "href": "/dashboard",
+        "rect": [
+          20,
+          65,
+          66.515625,
+          44
+        ]
+      },
+      {
+        "text": "Today",
+        "href": "/dashboard",
         "rect": [
           18,
           776,
@@ -8360,8 +8348,8 @@
         ]
       },
       {
-        "text": "Bookings",
-        "href": "/bookings",
+        "text": "Calendar",
+        "href": "/calendar",
         "rect": [
           202,
           776,
@@ -8371,7 +8359,7 @@
       },
       {
         "text": "Profile",
-        "href": "/profile",
+        "href": "/artist-profile",
         "rect": [
           294,
           776,
@@ -8382,28 +8370,22 @@
     ],
     "scroll": [
       {
-        "height": 874,
-        "full": 946
+        "height": 616,
+        "full": 616
       }
     ],
     "errors": [],
     "calls": [
       "auth.me",
-      "clientProfile.getMyPaymentRequests",
       "auth.refreshToken",
-      "feed.getDiscoverFeed",
-      "clientProfile.getProfile",
-      "clientProfile.getSpendSummary",
-      "clientProfile.getHistory",
-      "clientProfile.getBoards",
-      "clientProfile.getPhotos",
-      "clientProfile.getUpcoming",
-      "clientProfile.getConsentForms",
-      "favourites.list",
-      "conversations.list"
+      "studios.getCurrentStudio",
+      "appointments.getArtistCalendar",
+      "artistSettings.get",
+      "conversations.list",
+      "studios.getStudioMembers",
+      "appointments.getStudioCalendar"
     ],
     "bottom": false,
-    "parts": [],
-    "title": "Client Discover"
+    "parts": []
   }
 ]

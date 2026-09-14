@@ -59,8 +59,7 @@ export default function Today() {
       ? `/projects/${s.conversationId}?session=${s.id}`
       : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`;
   return (
-    <Screen title="Today" subtitle={date} wide>
-      <HomeTabs />
+    <Screen title="Today" subtitle={date} wide subheader={<HomeTabs />}>
       <div className="v3-home-workspace">
         <div className="v3-home-main">
           <Panel>

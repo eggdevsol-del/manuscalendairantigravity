@@ -1,6 +1,6 @@
 # Tattoi — Ivory implementation review
 
-Open `index.html` for the searchable screen library and nine guided click-through journeys. Screenshots render actual app components using isolated sample data. The source implementation is in the accompanying Tattoi workspace; this collection is its review package.
+Open `index.html` for the searchable screen library and nine guided click-through journeys. Screenshots render actual app components using isolated sample data. The source implementation is in the accompanying Tattoi workspace; this collection is its review package. The latest cohesion audit standardises full-width subheaders and repairs verified interaction defects. See `audit/AUDIT.md` for the audit report.
 
 - `DESIGN-SYSTEM.md`: foundations, interaction rules and implementation notes.
 - `COVERAGE.md`: captured pages, nested flow states and verification scope.

@@ -1,0 +1,14 @@
+[
+  {
+    "width": 390,
+    "checks": 15,
+    "errors": [],
+    "passed": true
+  },
+  {
+    "width": 820,
+    "checks": 15,
+    "errors": [],
+    "passed": true
+  }
+]

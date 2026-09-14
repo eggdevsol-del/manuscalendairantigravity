@@ -48,7 +48,20 @@ export default function Inbox() {
       `${r.name} ${r.subject}`.toLowerCase().includes(search.toLowerCase())
   );
   return (
-    <Screen title="Messages" wide>
+    <Screen
+      title="Messages"
+      wide
+      subheader={
+        isArtist && (
+          <Tabs
+            items={["Clients", "Contacts"] as const}
+            value={tab}
+            onChange={setTab}
+            label="Inbox views"
+          />
+        )
+      }
+    >
       <div className={`v3-inbox ${selected ? "has-selection" : ""}`}>
         <section className="v3-inbox-list">
           <SearchField
@@ -56,18 +69,14 @@ export default function Inbox() {
             onChange={setSearch}
             label="Search conversations"
           />
-          {isArtist && (
-            <Tabs
-              items={["Clients", "Contacts"] as const}
-              value={tab}
-              onChange={setTab}
-              label="Inbox views"
-            />
-          )}
           <Feedback
             loading={query.isLoading || requests.isLoading}
-            error={query.error || create.error}
-            onRetry={() => query.refetch()}
+            error={query.error || requests.error || create.error}
+            onRetry={() => {
+              create.reset();
+              void query.refetch();
+              void requests.refetch();
+            }}
           />
           {leads.length > 0 && (
             <Section title="New requests">
@@ -114,6 +123,7 @@ export default function Inbox() {
           ))}
           {!query.isLoading &&
             !query.error &&
+            !requests.error &&
             !requests.isLoading &&
             !leads.length &&
             !conversations.length && (

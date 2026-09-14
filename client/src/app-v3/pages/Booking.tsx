@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isConversationClient } from "@/features/chat/conversationRole";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { InlineFormSigning } from "@/features/booking/components/InlineFormSigning";
 import { SessionPlanCheckoutSheet } from "./Checkout";
@@ -47,12 +48,12 @@ export default function Booking() {
       ? active
       : "Overview";
   const { user } = useAuth();
-  const client = user?.role === "client";
   const query = trpc.projects.summary.useQuery(
     { conversationId: id },
     { enabled: id > 0 }
   );
   const data = query.data;
+  const client = isConversationClient(user, data?.client?.id);
   const session = selectedId
     ? data?.sessions.find(s => s.id === selectedId)
     : data?.sessions.find(
@@ -157,7 +158,23 @@ export default function Booking() {
     <Screen
       title={session?.projectName || "Tattoo project"}
       subtitle={subtitle}
-      back={client ? "/bookings" : "/calendar"}
+      back={
+        client
+          ? user?.role === "client"
+            ? "/bookings"
+            : "/conversations"
+          : "/calendar"
+      }
+      subheader={
+        data && (
+          <Tabs
+            items={["Overview", "Messages", "Files", "Payments"] as const}
+            value={tab}
+            onChange={t => navigate(t)}
+            label="Booking sections"
+          />
+        )
+      }
     >
       <Feedback
         loading={query.isLoading}
@@ -172,12 +189,6 @@ export default function Booking() {
       )}
       {data && (
         <>
-          <Tabs
-            items={["Overview", "Messages", "Files", "Payments"] as const}
-            value={tab}
-            onChange={t => navigate(t)}
-            label="Booking sections"
-          />
           {groups.length > 1 && (
             <div className="v3-form">
               <label>

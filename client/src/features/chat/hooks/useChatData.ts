@@ -1,6 +1,10 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useEffect, useState, useMemo } from "react";
+import {
+  isConversationArtist,
+  isConversationClient,
+} from "../conversationRole";
 
 export function useChatData(conversationId: number) {
   const { user, loading: authLoading } = useAuth();
@@ -14,6 +18,8 @@ export function useChatData(conversationId: number) {
   } = trpc.conversations.getById.useQuery(conversationId, {
     enabled: !!user && conversationId > 0,
   });
+  const isArtist = isConversationArtist(user, conversation);
+  const isClient = isConversationClient(user, conversation?.clientId);
 
   const {
     data: messages,
@@ -28,11 +34,11 @@ export function useChatData(conversationId: number) {
   );
 
   const { data: quickActions } = trpc.quickActions.list.useQuery(undefined, {
-    enabled: !!user && (user.role === "artist" || user.role === "admin"),
+    enabled: isArtist,
   });
 
   const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
-    enabled: !!user && (user.role === "artist" || user.role === "admin"),
+    enabled: isArtist,
   });
 
   // For clients: fetch artist's public settings (businessAddress) via conversation's artistId
@@ -40,7 +46,7 @@ export function useChatData(conversationId: number) {
     trpc.artistSettings.getPublicByArtistId.useQuery(
       { artistId: conversation?.artistId || "" },
       {
-        enabled: !!user && user.role === "client" && !!conversation?.artistId,
+        enabled: isClient && !!conversation?.artistId,
       }
     );
 
@@ -61,10 +67,10 @@ export function useChatData(conversationId: number) {
     c => c.id === targetConsultationId
   );
 
-  const isArtist = user?.role === "artist" || user?.role === "admin";
-  const otherUserId = isArtist
-    ? conversation?.clientId
-    : conversation?.artistId;
+  const otherUserId =
+    conversation?.artistId === user?.id
+      ? conversation?.clientId
+      : conversation?.artistId;
   const otherUserName =
     (conversation?.otherUser as any)?.name || "Unknown User";
 
@@ -85,12 +91,8 @@ export function useChatData(conversationId: number) {
   const memoizedArtistSettings = useMemo(() => {
     if (isArtist) return artistSettings;
     return {
-      ...artistSettings,
-      businessAddress:
-        artistPublicSettings?.businessAddress ??
-        artistSettings?.businessAddress,
-      businessName:
-        artistPublicSettings?.businessName ?? artistSettings?.businessName,
+      businessAddress: artistPublicSettings?.businessAddress,
+      businessName: artistPublicSettings?.businessName,
     };
   }, [isArtist, artistSettings, artistPublicSettings]);
 

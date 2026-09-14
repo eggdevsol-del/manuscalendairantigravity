@@ -17,10 +17,11 @@ export default function DiscoverFeed() {
     isFetchingNextPage,
     isLoading,
     isError,
+    refetch,
   } = trpc.feed.getDiscoverFeed.useInfiniteQuery(
     { limit: 10 },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      getNextPageParam: lastPage => lastPage.nextCursor ?? undefined,
       initialCursor: 0,
     }
   );
@@ -33,7 +34,7 @@ export default function DiscoverFeed() {
     if (!el) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
@@ -46,15 +47,15 @@ export default function DiscoverFeed() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggleLikeMutation = trpc.portfolio.toggleLike.useMutation({
-    onError: () => {
-      // Revert optimistic update by refetching
+    onSettled: () => {
       utils.feed.getDiscoverFeed.invalidate();
+      utils.feed.getArtistFeed.invalidate();
     },
   });
 
   const handleLike = useCallback(
     (id: number) => {
-      toggleLikeMutation.mutate({ portfolioId: id });
+      return toggleLikeMutation.mutateAsync({ portfolioId: id });
     },
     [toggleLikeMutation]
   );
@@ -70,10 +71,13 @@ export default function DiscoverFeed() {
     [setLocation]
   );
 
-  const allCards = data?.pages.flatMap((page) => page.cards.map(card => ({
-    ...card,
-    videoUrl: (card as any).videoUrl || null,
-  }))) ?? [];
+  const allCards =
+    data?.pages.flatMap(page =>
+      page.cards.map(card => ({
+        ...card,
+        videoUrl: (card as any).videoUrl || null,
+      }))
+    ) ?? [];
 
   if (isLoading) {
     return (
@@ -87,6 +91,12 @@ export default function DiscoverFeed() {
     return (
       <div className="discover-feed-empty">
         <p>Something went wrong loading the feed.</p>
+        <button
+          className="v3-action v3-action-primary"
+          onClick={() => refetch()}
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -105,7 +115,7 @@ export default function DiscoverFeed() {
     <div className="discover-feed snap-scroll">
       {/* Header */}
       <div className="discover-feed-header">
-        <span className="discover-feed-logo">d.o.t.s</span>
+        <span className="discover-feed-logo">tattoi</span>
       </div>
 
       {/* Feed cards */}

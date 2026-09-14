@@ -48,6 +48,7 @@ export default function Calendar() {
   const [bookingDateValue, setBookingDateValue] = useState<Date | null>(null);
   const [agendaExpanded, setAgendaExpanded] = useState(false);
   const [artist, setArtist] = useState("");
+  const [navigationKey, setNavigationKey] = useState(0);
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const monday = startOfWeek(c.activeDate, { weekStartsOn: 1 });
   const events = useMemo(
@@ -69,6 +70,7 @@ export default function Calendar() {
     .sort((a, b) => +instant(a.startTime) - +instant(b.startTime));
   const goDay = (date: Date) => {
     c.handleDateTap(date);
+    setNavigationKey(key => key + 1);
     setSelectedId(null);
   };
   function select(a: any) {
@@ -131,6 +133,8 @@ export default function Calendar() {
         {Array.from({ length: 7 }, (_, i) => addDays(monday, i)).map(date => (
           <button
             key={date.toISOString()}
+            type="button"
+            aria-label={format(date, "EEEE, d MMMM yyyy")}
             aria-pressed={
               format(date, "yyyy-MM-dd") === format(c.activeDate, "yyyy-MM-dd")
             }
@@ -146,6 +150,7 @@ export default function Calendar() {
         <CalendarTimeline
           events={events}
           date={c.activeDate}
+          navigationKey={navigationKey}
           onDate={c.setActiveDate}
           onSelect={select}
           selectedId={selectedId}
@@ -230,6 +235,8 @@ export default function Calendar() {
               appointment={selected}
               onChange={c.refetch}
               onClose={() => setSelectedId(null)}
+              // The enclosing sheet owns dismissal on iPhone.
+              showCloseButton={false}
             />
           )}
         </SheetShell>
@@ -257,10 +264,12 @@ function BookingInspector({
   appointment: a,
   onClose,
   onChange,
+  showCloseButton = true,
 }: {
   appointment: any;
   onChange: () => unknown;
   onClose: () => void;
+  showCloseButton?: boolean;
 }) {
   const summary = trpc.projects.summary.useQuery(
     { conversationId: a.conversationId || 0 },
@@ -280,13 +289,16 @@ function BookingInspector({
         <h2 className="v3-detail-title">
           {a.client?.name || a.clientName || a.title}
         </h2>
-        <button
-          className="v3-icon-button"
-          onClick={onClose}
-          aria-label="Close booking details"
-        >
-          <X />
-        </button>
+        {showCloseButton && (
+          <button
+            type="button"
+            className="v3-icon-button"
+            onClick={onClose}
+            aria-label="Close booking details"
+          >
+            <X />
+          </button>
+        )}
       </div>
       <p className="v3-muted">
         {a.title}

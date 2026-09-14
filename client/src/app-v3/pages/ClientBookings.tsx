@@ -80,14 +80,16 @@ export default function ClientBookings() {
     <Screen
       title="Bookings"
       subtitle="Your tattoos, sittings and next steps"
+      subheader={
+        <Tabs
+          items={["Upcoming", "Past"] as const}
+          value={tab}
+          onChange={setTab}
+          label="Your bookings"
+        />
+      }
       wide
     >
-      <Tabs
-        items={["Upcoming", "Past"] as const}
-        value={tab}
-        onChange={setTab}
-        label="Your bookings"
-      />
       <Feedback
         loading={bookings.isLoading || (tab === "Upcoming" && plans.isLoading)}
         error={bookings.error || (tab === "Upcoming" ? plans.error : undefined)}

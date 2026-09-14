@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export interface InboxRequest {
   type: "lead" | "consultation";
@@ -22,28 +22,37 @@ export function useInboxRequests() {
   const isArtist = user?.role === "artist" || user?.role === "admin";
 
   // 1. Fetch Leads
-  const { data: leadsData, isLoading: leadsLoading } =
-    trpc.funnel.getLeads.useQuery(
-      { status: "new", limit: 50, offset: 0 },
-      {
-        enabled: !!user && isArtist,
-        refetchInterval: 10000,
-      }
-    );
+  const {
+    data: leadsData,
+    isLoading: leadsLoading,
+    error: leadsError,
+    refetch: refetchLeads,
+  } = trpc.funnel.getLeads.useQuery(
+    { status: "new", limit: 50, offset: 0 },
+    {
+      enabled: !!user && isArtist,
+      refetchInterval: 10000,
+    }
+  );
 
   // 2. Fetch Pending Consultations
-  const { data: consultationsData, isLoading: consultationsLoading } =
-    trpc.consultations.list.useQuery(
-      { status: "pending" },
-      {
-        enabled: !!user && isArtist,
-        refetchInterval: 10000,
-      }
-    );
+  const {
+    data: consultationsData,
+    isLoading: consultationsLoading,
+    error: consultationsError,
+    refetch: refetchConsultations,
+  } = trpc.consultations.list.useQuery(
+    { status: "pending" },
+    {
+      enabled: !!user && isArtist,
+      refetchInterval: 10000,
+    }
+  );
 
   // 3. Centralized Derivation (SSOT)
   const requestItems = useMemo(() => {
     const items: InboxRequest[] = [];
+    if (!isArtist) return items;
 
     // Add leads
     if (leadsData?.leads) {
@@ -97,15 +106,29 @@ export function useInboxRequests() {
       const dateB = b.date ? new Date(b.date).getTime() : 0;
       return dateB - dateA;
     });
-  }, [leadsData, consultationsData]);
+  }, [leadsData, consultationsData, isArtist]);
+
+  const refetch = useCallback(async () => {
+    if (isArtist) await Promise.all([refetchLeads(), refetchConsultations()]);
+  }, [isArtist, refetchLeads, refetchConsultations]);
 
   const value = useMemo(
     () => ({
       requestItems,
       isLoading: leadsLoading || consultationsLoading,
       isArtist,
+      error: isArtist ? leadsError || consultationsError : null,
+      refetch,
     }),
-    [requestItems, leadsLoading, consultationsLoading, isArtist]
+    [
+      requestItems,
+      leadsLoading,
+      consultationsLoading,
+      isArtist,
+      leadsError,
+      consultationsError,
+      refetch,
+    ]
   );
 
   return value;

@@ -119,14 +119,16 @@ export function Money() {
     <Screen
       title="Money"
       subtitle="Know what’s paid and what’s on its way"
+      subheader={
+        <Tabs
+          items={["7 days", "30 days", "90 days", "All time"] as const}
+          value={period}
+          onChange={setPeriod}
+          label="Earnings period"
+        />
+      }
       back="/business"
     >
-      <Tabs
-        items={["7 days", "30 days", "90 days", "All time"] as const}
-        value={period}
-        onChange={setPeriod}
-        label="Earnings period"
-      />
       <div className="v3-grid">
         <Section title="Your balance">
           <Feedback

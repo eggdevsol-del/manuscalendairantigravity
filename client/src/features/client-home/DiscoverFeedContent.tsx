@@ -32,6 +32,7 @@ export default function DiscoverFeedContent({
     isFetchingNextPage,
     isLoading,
     isError,
+    refetch,
   } = trpc.feed.getDiscoverFeed.useInfiniteQuery(
     { limit: 10, tag: activeTag || undefined },
     {
@@ -61,14 +62,15 @@ export default function DiscoverFeedContent({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggleLikeMutation = trpc.portfolio.toggleLike.useMutation({
-    onError: () => {
+    onSettled: () => {
       utils.feed.getDiscoverFeed.invalidate();
+      utils.feed.getArtistFeed.invalidate();
     },
   });
 
   const handleLike = useCallback(
     (id: number) => {
-      toggleLikeMutation.mutate({ portfolioId: id });
+      return toggleLikeMutation.mutateAsync({ portfolioId: id });
     },
     [toggleLikeMutation]
   );
@@ -117,8 +119,14 @@ export default function DiscoverFeedContent({
 
   if (isError) {
     return (
-      <div style={{ textAlign: "center", padding: "60px 0", color: "#666" }}>
+      <div className="discover-feed-empty" role="alert">
         <p>Something went wrong loading the feed.</p>
+        <button
+          className="v3-action v3-action-primary"
+          onClick={() => refetch()}
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -127,8 +135,20 @@ export default function DiscoverFeedContent({
     return (
       <div className="discover-feed-empty" style={{ minHeight: "60vh" }}>
         <div className="discover-feed-empty-icon">🎨</div>
-        <h2>No artists yet</h2>
-        <p>When artists upload their portfolio, their work will appear here.</p>
+        <h2>{activeTag ? `No work tagged ${activeTag}` : "No artists yet"}</h2>
+        <p>
+          {activeTag
+            ? "Try another style or see all artists."
+            : "When artists upload their portfolio, their work will appear here."}
+        </p>
+        {activeTag && (
+          <button
+            className="v3-action v3-action-primary"
+            onClick={() => setActiveTag(null)}
+          >
+            Clear filter
+          </button>
+        )}
       </div>
     );
   }
@@ -150,16 +170,18 @@ export default function DiscoverFeedContent({
           }}
         >
           <button
+            aria-label={`Clear ${activeTag} filter`}
             onClick={() => setActiveTag(null)}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
-              background: "rgba(123, 92, 245, 0.15)",
-              color: "rgba(123, 92, 245, 1)",
-              border: "1px solid rgba(123, 92, 245, 0.3)",
+              background: "var(--secondary)",
+              color: "var(--foreground)",
+              border: "1px solid var(--border)",
               borderRadius: 100,
               padding: "5px 12px",
+              minHeight: 44,
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",

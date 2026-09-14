@@ -1,0 +1,27 @@
+{
+  "profileFocus": {
+    "tag": "BUTTON",
+    "text": "back",
+    "label": null
+  },
+  "profileHeader": {
+    "x": 0,
+    "y": 0,
+    "width": 390,
+    "height": 115
+  },
+  "headerStyle": {
+    "paddingTop": "62px",
+    "back": {
+      "x": 20,
+      "y": 62,
+      "width": 44,
+      "height": 44,
+      "top": 62,
+      "right": 64,
+      "bottom": 106,
+      "left": 20
+    },
+    "safe": "54px"
+  }
+}

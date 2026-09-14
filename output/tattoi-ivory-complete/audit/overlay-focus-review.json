@@ -1,0 +1,28 @@
+{
+  "profileFocus": {
+    "tag": "BUTTON",
+    "text": "back",
+    "label": null
+  },
+  "profileHeader": {
+    "x": 0,
+    "y": 0,
+    "width": 390,
+    "height": 61
+  },
+  "bookingFocus": {
+    "tag": "BUTTON",
+    "text": "",
+    "label": "Close booking request"
+  },
+  "afterBookingClose": {
+    "tag": "BUTTON",
+    "text": "Book Consult",
+    "label": null
+  },
+  "afterProfileClose": {
+    "tag": "BUTTON",
+    "text": "View Profile",
+    "label": null
+  }
+}

@@ -1,9 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, type Dispatch, type SetStateAction } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
+// Server message IDs are positive; local pending IDs remain unique across threads.
+let nextOptimisticMessageId = -Date.now();
+
 interface ChatState {
-  setMessageText: (text: string) => void;
+  setMessageText: Dispatch<SetStateAction<string>>;
   setShowClientConfirmDialog: (show: boolean) => void;
   setUploadingImage: (uploading: boolean) => void;
 }
@@ -40,7 +43,7 @@ export function useChatMutations(
       const previousMessages = utils.messages.list.getData({ conversationId });
 
       const optimisticMessage = {
-        id: Date.now(),
+        id: nextOptimisticMessageId--,
         conversationId: newMessage.conversationId,
         senderId: user?.id || "",
         content: newMessage.content,
@@ -60,19 +63,26 @@ export function useChatMutations(
         old ? [...old, optimisticMessage] : [optimisticMessage]
       );
 
-      return { previousMessages };
+      return { previousMessages, optimisticId: optimisticMessage.id };
     },
     onError: (error: any, newMessage, context) => {
-      if (context?.previousMessages) {
-        utils.messages.list.setData(
-          { conversationId },
-          context.previousMessages
+      if (context) {
+        utils.messages.list.setData({ conversationId }, (current: any) =>
+          current
+            ? current.filter(
+                (message: { id: number }) => message.id !== context.optimisticId
+              )
+            : context.previousMessages || []
         );
       }
       toast.error("Failed to send message: " + error.message);
     },
-    onSuccess: async () => {
-      state.setMessageText("");
+    onSuccess: async (_data, sentMessage) => {
+      if (!sentMessage.messageType || sentMessage.messageType === "text") {
+        state.setMessageText(current =>
+          current === sentMessage.content ? "" : current
+        );
+      }
       await utils.messages.list.invalidate({ conversationId });
     },
   });

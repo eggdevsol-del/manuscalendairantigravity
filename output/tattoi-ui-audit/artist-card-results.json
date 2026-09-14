@@ -1,0 +1,137 @@
+[
+  {
+    "scenario": "existing-chat",
+    "width": 390,
+    "checks": 5,
+    "assertions": [
+      "existing Chat preserves the conversation destination",
+      "existing Chat makes no create request",
+      "Chat never toggles portfolio",
+      "no synthetic conversation route is used",
+      "no unhandled browser errors"
+    ],
+    "requests": [],
+    "errors": [],
+    "passed": true
+  },
+  {
+    "scenario": "favourite-retry",
+    "width": 390,
+    "checks": 12,
+    "assertions": [
+      "card Chat is disabled while creating",
+      "Chat does not expand portfolio",
+      "pending request stays on Home",
+      "failed creation stays on Home",
+      "failed creation exposes Retry chat",
+      "Retry chat maintains readable text contrast",
+      "retry opens the returned conversation",
+      "retry makes exactly one additional request",
+      "Chat never toggles portfolio",
+      "creation uses the authenticated client and selected artist",
+      "no synthetic conversation route is used",
+      "no unhandled browser errors"
+    ],
+    "requests": [
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      },
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  {
+    "scenario": "favourite-portfolio-message",
+    "width": 390,
+    "checks": 8,
+    "assertions": [
+      "portfolio Message is disabled while creating",
+      "card Chat shares the pending guard",
+      "portfolio remains expanded while creating",
+      "portfolio Message opens the returned conversation",
+      "portfolio Message creates once",
+      "creation uses the authenticated client and selected artist",
+      "no synthetic conversation route is used",
+      "no unhandled browser errors"
+    ],
+    "requests": [
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  {
+    "scenario": "nearby-map-retry",
+    "width": 390,
+    "checks": 11,
+    "assertions": [
+      "nearby Message is disabled while creating",
+      "nearby pending request stays on map",
+      "nearby failure keeps the popup visible",
+      "nearby failure does not navigate",
+      "Fine Line chip contrast is at least 4.5:1 (measured 15.28:1)",
+      "nearby retry opens returned conversation",
+      "nearby retry makes exactly one additional request",
+      "nearby success dismisses popup",
+      "creation uses the authenticated client and selected artist",
+      "no synthetic conversation route is used",
+      "no unhandled browser errors"
+    ],
+    "requests": [
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      },
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      }
+    ],
+    "errors": [],
+    "passed": true
+  },
+  {
+    "scenario": "discovery-card-retry",
+    "width": 390,
+    "checks": 17,
+    "assertions": [
+      "nearby consultation opens independently",
+      "consultation does not open portfolio",
+      "nearby consultation toggles closed",
+      "nearby Chat and consultation keep 44px targets",
+      "card Chat is disabled while creating",
+      "Chat does not expand portfolio",
+      "pending request stays on Home",
+      "failed creation stays on Home",
+      "failed creation exposes Retry chat",
+      "Retry chat maintains readable text contrast",
+      "Fine Line chip contrast is at least 4.5:1 (measured 15.28:1)",
+      "retry opens the returned conversation",
+      "retry makes exactly one additional request",
+      "Chat never toggles portfolio",
+      "creation uses the authenticated client and selected artist",
+      "no synthetic conversation route is used",
+      "no unhandled browser errors"
+    ],
+    "requests": [
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      },
+      {
+        "artistId": "artist-test",
+        "clientId": "client-test"
+      }
+    ],
+    "errors": [],
+    "passed": true
+  }
+]

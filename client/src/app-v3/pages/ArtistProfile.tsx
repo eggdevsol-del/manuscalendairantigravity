@@ -32,6 +32,17 @@ export default function ArtistProfile() {
     <Screen
       title="Profile"
       subtitle="A clear introduction to you and your work."
+      subheader={
+        settings.data &&
+        user && (
+          <Tabs
+            items={["Profile", "Portfolio"] as const}
+            value={tab}
+            onChange={value => go(`/artist-profile?view=${value}`)}
+            label="Artist profile sections"
+          />
+        )
+      }
       back="/dashboard"
       wide
     >
@@ -63,12 +74,6 @@ export default function ArtistProfile() {
               Photo & personal details
             </ActionLink>
           </div>
-          <Tabs
-            items={["Profile", "Portfolio"] as const}
-            value={tab}
-            onChange={value => go(`/artist-profile?view=${value}`)}
-            label="Artist profile sections"
-          />
           {tab === "Portfolio" ? (
             <Portfolio />
           ) : (

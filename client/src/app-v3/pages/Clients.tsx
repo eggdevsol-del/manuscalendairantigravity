@@ -49,6 +49,7 @@ export default function Clients() {
     <Screen
       title="Clients"
       subtitle="Your people and their pieces"
+      subheader={<HomeTabs />}
       wide
       action={
         <Action
@@ -62,7 +63,6 @@ export default function Clients() {
         </Action>
       }
     >
-      <HomeTabs />
       <div className={`v3-client-layout ${selected ? "has-selection" : ""}`}>
         <section className="v3-client-list">
           <SearchField
