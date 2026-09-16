@@ -1,0 +1,1438 @@
+scenario,role,path,context,label,element,href,disabled,checked,evidence
+public-sign-in,public,/login,Welcome back,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,Show password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,Forgot password?,A,/forgot-password,False,,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,Keep me signed in,INPUT,,False,True,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,Sign in,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-sign-in,public,/login,Welcome back,Create an account,A,/signup,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Client,A,/signup?role=client,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Artist,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Supplier,A,/signup?role=supplier,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Show password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Create account,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-artist-sign-up,public,/signup?role=artist,Make room for your craft,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Client,A,/signup?role=client,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Artist,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Supplier,A,/signup?role=supplier,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Show password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Create account,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-client-sign-up,public,/signup,"Your booking, together",Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Client,A,/signup?role=client,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Artist,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Supplier,A,/signup?role=supplier,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Business country,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Show password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Create account,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-supplier-sign-up,public,/signup?role=merchant,Supply the craft,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-set-password,public,/set-password?token=preview,Choose a new password,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-set-password,public,/set-password?token=preview,Choose a new password,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-set-password,public,/set-password?token=preview,Choose a new password,Show password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-set-password,public,/set-password?token=preview,Choose a new password,Save new password,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-set-password,public,/set-password?token=preview,Choose a new password,Request a new link,A,/forgot-password,False,,Rendered with isolated fixtures; not an individual click pass
+public-password-recovery,public,/forgot-password,Let’s get you back in,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-password-recovery,public,/forgot-password,Let’s get you back in,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-password-recovery,public,/forgot-password,Let’s get you back in,Send reset link,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-password-recovery,public,/forgot-password,Let’s get you back in,Back to sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-magic-link,public,/auth/magic?token=preview,Your secure sign-in link,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-magic-link,public,/auth/magic?token=preview,Your secure sign-in link,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+public-magic-link,public,/auth/magic?token=preview,Your secure sign-in link,Continue to my account,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-magic-link,public,/auth/magic?token=preview,Your secure sign-in link,Back to sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-artist,public,/ella-morgan,Ella Morgan,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-artist,public,/ella-morgan,Ella Morgan,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-artist,public,/ella-morgan,Ella Morgan,Selected work by Ella Morgan,A,/__ivory_artwork.png,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-artist,public,/ella-morgan,Ella Morgan,Request a booking,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-artist,public,/ella-morgan,Selected work,,A,/__ivory_artwork.png,False,,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Neo-Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Realism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Black & Grey,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Japanese,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Geometric,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Watercolour,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Minimalist,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Dotwork,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Tribal,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Script/Lettering,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Illustrative,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Surrealism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Trash Polka,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Fine Line,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Other,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Your idea,Not sure yet,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-booking-intake,public,/start/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Neo-Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Realism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Black & Grey,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Japanese,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Geometric,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Watercolour,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Minimalist,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Dotwork,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Tribal,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Script/Lettering,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Illustrative,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Surrealism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Trash Polka,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Fine Line,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Other,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Your idea,Not sure yet,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-booking-link,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-studio,public,/studio/northside,Northside Studio,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-studio,public,/studio/northside,Northside Studio,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-studio,public,/studio/northside,Choose your artist,"EM
+Ella Morgan
+Fine-line botanicals. Thoughtfully made, just for you.",A,/start/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-shop,public,/shop/ella-morgan,Ella Morgan,Back,A,/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-shop,public,/shop/ella-morgan,Ella Morgan,Cart · 0,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-shop,public,/shop/ella-morgan,Ella Morgan,Add to cart,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-events,public,/events/ella-morgan,Events & workshops,Back,A,/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+public-public-events,public,/events/ella-morgan,Events & workshops,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+public-deposit-link,public,/deposit/preview,Secure your booking,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-deposit-link,public,/deposit/preview,Secure your booking,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-deposit-link,public,/deposit/preview,Secure your booking,Pay securely by card,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-balance-link,public,/balance/101,Your session balance,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-balance-link,public,/balance/101,Your session balance,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-balance-link,public,/balance/101,Your session balance,Pay securely by card,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+public-payment-request,public,/pay/preview,Review your payment,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+public-payment-request,public,/pay/preview,Review your payment,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+public-payment-request,public,/pay/preview,Review your payment,Continue to secure checkout,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Your profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Discover artists,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Your artists and bookings,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,View artwork by Ella Morgan,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,View artist,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Like artwork,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Share artwork,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-discover,client,/discover,,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Upcoming,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Past,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Review $155.10 deposit & fee,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Complete sitting 2 forms,A,/projects/12?session=101&action=forms,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,"Sitting 2 · Confirmed
+Thu, 10 Sept, 10:00 am",A,/projects/12?session=101,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Message Ella Morgan,A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,,A,/waitlist,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,,A,/purchases,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-bookings,client,/bookings,Bookings,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Ready for the session,"Payment received
+$150.00",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Ready for the session,"Procedure consent
+Awaiting confirmation",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Ready for the session,Complete your consent forms,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Payment · AUD,Review balance,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Message Ella Morgan,A,/projects/12?session=101&view=Messages,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Change this sitting,Request a date change,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Change this sitting,Request cancellation,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-overview,client,/projects/12,Tattoo project,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Open booking,A,/projects/12,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-messages,client,/projects/12?view=Messages,Tattoo project,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Project reference images,Share photos in Messages,A,/projects/12?session=101&view=Messages,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-files,client,/projects/12?view=Files,Tattoo project,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-booking-payments,client,/projects/12?view=Payments,Tattoo project,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,"EM
+Ella Morgan
+I love the peonies. Could we leave room to extend it later?
+2",A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-inbox,client,/conversations,Messages,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-conversation,client,/chat/12,Ella Morgan,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-conversation,client,/chat/12,Ella Morgan,Open booking,A,/projects/12,False,,Rendered with isolated fixtures; not an individual click pass
+client-conversation,client,/chat/12,Ella Morgan,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-conversation,client,/chat/12,Ella Morgan,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Personal details,Edit your details,A,/profile?edit=true,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Your purchases,A,/purchases,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Cancellation offers,A,/waitlist,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-profile,client,/profile,Your profile,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Back,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Your purchases,A,/purchases,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Cancellation offers,A,/waitlist,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-client-documents,client,/profile?tab=forms,Your consent forms,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-earlier-appointments,client,/waitlist,Earlier appointments,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,Back,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-purchases,client,/purchases,Your purchases,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-complete-profile,client,/complete-profile,A few details,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-complete-profile,client,/complete-profile,A few details,For artists,A,/signup?role=artist,False,,Rendered with isolated fixtures; not an individual click pass
+client-complete-profile,client,/complete-profile,A few details,Save and continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Nothing needs your attention,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,"Design brief
+⌄",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Refresh design brief,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Up next,View booking,A,/projects/12?session=101,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Monday, 7 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Tuesday, 8 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Wednesday, 9 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Thursday, 10 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Friday, 11 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Saturday, 12 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"Sunday, 13 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"10:00
+Mia Chen
+Botanical sleeve · Confirmed",A,/projects/12?session=101,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,"14:00
+Mia Chen
+Geometric shoulder · Confirmed",A,/projects/12?session=102,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,Expand full week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Your week,Open calendar,A,/calendar?date=2026-09-10,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Payments & payouts,A,/money,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Browse suppliers,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,"Your orders
+Track deliveries and reorder",A,/supply-orders,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-today,artist,/dashboard,Today,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Your studio day,"Money
+Income, balances and payouts",A,/money,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Your studio day,"Working hours & services
+Availability, session lengths and pricing",A,/work-hours,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Your studio day,"Your profile & booking link
+The front door for your clients",A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Your studio day,"Cancellation waitlist
+Fill available appointments",A,/waitlist,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Shop & events,"Your products
+Catalogue and availability",A,/products,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Shop & events,"Store orders
+Payment and fulfilment",A,/store-orders,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Shop & events,"Workshops & events
+Create an event and review registrations",A,/artist-events,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Behind the scenes,"Supplies
+Stock and supplier orders",A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Behind the scenes,"Studio
+People and shared workspace",A,/studio,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Behind the scenes,"Settings
+Your account, business and preferences",A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-business,artist,/business,Business,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Add product,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Edit Cartridge needles,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-products,artist,/products,Products,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Back,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Create event,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Preview events page,A,/events/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-events,artist,/artist-events,Your events,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,New booking,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Previous week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Next week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Today,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Calendar artist,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Monday, 7 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Tuesday, 8 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Wednesday, 9 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Thursday, 10 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Friday, 11 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Saturday, 12 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Sunday, 13 September 2026",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"SUN
+6 September
++",Expand agenda,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"SUN
+6 September
++",Book on 6 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"MON
+7 September
++",Book on 7 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"TUE
+8 September
++",Book on 8 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"WED
+9 September
++",Book on 9 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"THU
+10 September
++
+Today",Book on 10 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"THU
+10 September
++
+Today","10:00
+13:00
+Mia Chen
+Botanical sleeve",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"THU
+10 September
++
+Today","14:00
+16:00
+Mia Chen
+Geometric shoulder",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"FRI
+11 September
++",Book on 11 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"SAT
+12 September
++",Book on 12 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"SUN
+13 September
++",Book on 13 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"MON
+14 September
++",Book on 14 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,"TUE
+15 September
++",Book on 15 September 2026,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"Thu 10 Sep · 2 sessions
+Expand agenda",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-calendar,artist,/calendar,Calendar,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Back,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,To fulfil,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Fulfilled,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,All,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,"Order #1
+Ella Morgan · $32.00
+Paid in full",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-store-orders,artist,/store-orders,Orders,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,7 days,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,30 days,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,90 days,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,All time,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Your balance,Manage payouts,A,/bank-payouts,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Recent transactions,View payout history,A,/payout-history,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-money,artist,/money,Money,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,Open booking,A,/projects/12,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,Book,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,Client details and media,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Messages,"Design brief
+⌄",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Messages,Refresh design brief,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-conversation,artist,/chat/12,Mia Chen,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Clients,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Contacts,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,"MC
+Mia Chen
+I love the peonies. Could we leave room to extend it later?
+2",A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-inbox,artist,/conversations,Messages,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Back,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Ready for the session,"Payment received
+$150.00",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Message Mia Chen,A,/projects/12?session=101&view=Messages,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Reschedule,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-overview,artist,/projects/12,Tattoo project,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Back,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Project reference images,Share photos in Messages,A,/projects/12?session=101&view=Messages,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-files,artist,/projects/12?view=Files,Tattoo project,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Add client,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,"MC
+Mia Chen
+View client",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-clients,artist,/clients,Clients,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Back,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Overview,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Messages,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Files,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Payments,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-project-payments,artist,/projects/12?view=Payments,Tattoo project,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,Back,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,References & placement,,A,/__ivory_artwork.png,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Next step,Open conversation,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Next step,Email Mia Chen,A,mailto:undefined?subject=Your%20tattoo%20booking%20request,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Next step,Archive request,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-booking-request,artist,/lead/1,Booking request,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-cancellation-waitlist,artist,/waitlist,Cancellation waitlist,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Back,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Profile,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Portfolio,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Business settings & payouts,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Preview booking page,A,/book/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Share your booking link,A,/settings?section=booking-link,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Photo & personal details,A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Show email,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Show phone,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Show city,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Show website,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Save public profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,What clients see,Edit personal details,A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-profile,artist,/artist-profile,Profile,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Back,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Profile,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Portfolio,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Business settings & payouts,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Preview booking page,A,/book/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Share your booking link,A,/settings?section=booking-link,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Photo & personal details,A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Add photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Instagram import,A,/settings?section=instagram,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,View Botanical study,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Select Botanical study,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-artist-portfolio,artist,/artist-profile?view=Portfolio,Profile,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Availability,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Services,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Monday,INPUT,,False,True,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,monday type,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Add monday break,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Tuesday,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Wednesday,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Thursday,INPUT,,False,True,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,thursday type,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Add thursday break,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Friday,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Saturday,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Sunday,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Save availability,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-working-hours,artist,/work-hours,Working hours & services,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Back,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Your supply orders,A,/supply-orders,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supplies,artist,/supplies,Supplies,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,Back,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-supply-orders,artist,/supply-orders,Supply orders,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-purchases,artist,/purchases,Your purchases,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Back,A,/money,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Connect your bank,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Refresh status,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-bank-payouts,artist,/bank-payouts,Bank & payouts,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,Back,A,/money,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment ledger,Review refund,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-payout-history,artist,/payout-history,Payment history,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,This device,Enable notifications,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Saved message templates,Add template,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-notifications,artist,/notifications-management,Notifications,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Choose Pro,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Set up Studio,A,/studio,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-plans,artist,/subscriptions,Your plan,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Schedule,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Team,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Billing,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Your invitations,A,/studio?view=invitations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Previous week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,This week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Next week,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,"Artist
+All artists
+Ella Morgan
+Oliver Grant",SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,10 Sept – 16 Sept,"Botanical sleeve
+Thu, 10 Sept, 10:00 am · Ella Morgan · Mia Chen
+confirmed",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,10 Sept – 16 Sept,"Geometric shoulder
+Thu, 10 Sept, 2:00 pm · Ella Morgan · Oliver James
+confirmed",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-schedule,artist,/studio,Northside Studio,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Schedule,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Team,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Billing,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Your invitations,A,/studio?view=invitations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Your team,Leave,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Your team,Remove,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Invite an artist,"Role
+Artist
+Manager
+Managers can invite artists and view the studio schedule.",SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Invite an artist,Send invitation,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-team,artist,/studio?view=Team,Northside Studio,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Schedule,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Team,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Billing,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Your invitations,A,/studio?view=invitations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Studio membership,Manage Studio billing,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Studio membership,Refresh billing status,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-billing,artist,/studio?view=Billing,Northside Studio,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,Back,A,/studio,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-studio-invitations,artist,/studio?view=invitations,Studio invitations,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Gender,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Save profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-profile,client,/settings?section=profile,Your profile,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Back,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,"MC
+Mia Chen",A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Your account,"Profile
+Name, photo and contact details",A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Your account,"Notifications
+Device alerts for updates and messages",A,/settings?section=notifications,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Help & account controls,"Guided walkthroughs
+Learn each workflow",A,/settings?section=how-tos,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Help & account controls,"Delete account
+Account and data removal",A,/settings?section=danger-zone,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Preferences,Dark appearance,switch,,False,false,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Preferences,"Check for updates
+Version 3.2.3",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Sign out,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings,client,/settings,Settings,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,This device,Enable notifications,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-notifications,client,/settings?section=notifications,Notifications,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Choose a workflow,"Follow your booking
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Choose a workflow,"Talk with your artist
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Choose a workflow,"Prepare for your appointment
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-how-tos,client,/settings?section=how-tos,Guided walkthroughs,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Permanently delete account,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-settings-danger-zone,client,/settings?section=danger-zone,Delete your account,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,"EM
+Ella Morgan",A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your account,"Profile
+Name, photo and contact details",A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your account,"Notifications
+Device alerts and saved message templates",A,/settings?section=notifications,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Business details
+Location, contact information and licence",A,/settings?section=business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Working hours & services
+Availability, duration and pricing",A,/work-hours,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Booking link
+Client entry and intake settings",A,/settings?section=booking-link,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Travel & guest spots
+Dates, destinations and nearby clients",A,/settings?section=travel,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Forms & consent
+Consent and medical templates",A,/settings?section=regulation,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Bank payouts
+Payment account and verification",A,/bank-payouts,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Your plan
+Free, Pro and Studio",A,/subscriptions,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Your business,"Studio
+Team and shared workspace",A,/studio,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Connections,"Import clients
+Bring your existing records",A,/settings?section=data-import,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Connections,"Instagram import
+Manage connected portfolio media",A,/settings?section=instagram,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Help & account controls,"Guided walkthroughs
+Learn each workflow",A,/settings?section=how-tos,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Help & account controls,"Delete account
+Account and data removal",A,/settings?section=danger-zone,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Preferences,Dark appearance,switch,,False,false,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Preferences,"Check for updates
+Version 3.2.3",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Sign out,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings,artist,/settings,Settings,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Gender,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Save profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-profile,artist,/settings?section=profile,Your profile,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,This device,Enable notifications,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Saved message templates,Add template,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-notifications,artist,/settings?section=notifications,Notifications,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Run your day
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Plan a booking
+3 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Turn an enquiry into a booking
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Keep client details together
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Set working hours and services
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Share your booking link
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Track payments and refunds
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Set up bank payouts
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Manage forms and consent
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Fill a cancellation
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Work as a studio
+3 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Plan a guest spot
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Import existing client records
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Import Instagram work
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Order studio supplies
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Manage reminders and message templates
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Choose a workflow,"Choose your artist plan
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-how-tos,artist,/settings?section=how-tos,Guided walkthroughs,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Permanently delete account,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-danger-zone,artist,/settings?section=danger-zone,Delete your account,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,"SS
+Studio Supply",A,/account-settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Your account,"Profile
+Name, photo and contact details",A,/account-settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Your account,"Notifications
+Device alerts for updates and messages",A,/account-settings?section=notifications,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Help & account controls,"Guided walkthroughs
+Learn each workflow",A,/account-settings?section=how-tos,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Help & account controls,"Delete account
+Account and data removal",A,/account-settings?section=danger-zone,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Preferences,Dark appearance,switch,,False,false,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Preferences,"Check for updates
+Version 3.2.3",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Sign out,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings,merchant,/account-settings,Settings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Back,A,/account-settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Gender,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Save profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-profile,merchant,/account-settings?section=profile,Your profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,Back,A,/account-settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,This device,Enable notifications,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-notifications,merchant,/account-settings?section=notifications,Notifications,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,Back,A,/account-settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Review your store day
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Review your Shopify catalogue
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Fulfil an order
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Connect supplier payments
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Import your Shopify catalogue
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Choose a workflow,"Update your business details
+2 steps · no changes made automatically",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-how-tos,merchant,/account-settings?section=how-tos,Guided walkthroughs,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Back,A,/account-settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Permanently delete account,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-settings-danger-zone,merchant,/account-settings?section=danger-zone,Delete your account,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Save booking link,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-booking-link,artist,/settings?section=booking-link,Your booking link,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Where you work,"Country
+Australia
+New Zealand",SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Save business details,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-business,artist,/settings?section=business,Business details,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Procedure log,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Medical,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Consent,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-regulation,artist,/settings?section=regulation,Forms & procedure records,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Manage working hours,A,/work-hours,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Your itinerary,Add trip,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-travel,artist,/settings?section=travel,Travel & guest spots,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Choose your file,What are you importing?,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Connect an external calendar,Save calendar link,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-data-import,artist,/settings?section=data-import,Import your data,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Open your portfolio,A,/artist-profile?view=Portfolio,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Import your public account,Check account,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-instagram,artist,/settings?section=instagram,Instagram import,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+artist-settings-consultations,artist,/settings?section=consultations,Consultation requests,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Needs you,"2 orders to fulfil
+Paid orders ready for their next step",A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Needs you,"3 products running low
+Check availability and stock levels",A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Manage your sales channel,"Catalogue & stock
+Manage products available to artists",A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Manage your sales channel,"Shopify connection
+Import and review your catalogue",A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Manage your sales channel,"Artist conversations
+Help customers with their orders",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Payments & payouts,Connect Stripe,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Payments & payouts,Check payment status,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,"Store settings
+Business details, account and integrations",A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-home,merchant,/dashboard,Home,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,To fulfil,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,Fulfilled,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,All,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,"Order #1
+Ella Morgan · $32.00
+Paid in full",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-orders,merchant,/merchant/orders,Orders,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Add product,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Review Shopify connection,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Edit Cartridge needles,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-products,merchant,/merchant/products,Products,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,Save business details,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Payments & payouts,Connect Stripe,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Payments & payouts,Check payment status,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Shopify catalogue,Verify and save,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,"Account, notifications & sign out",A,/account-settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-store-settings,merchant,/settings,Store settings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,"MC
+Mia Chen
+I love the peonies. Could we leave room to extend it later?
+2",A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-inbox,merchant,/conversations,Messages,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-purchases,merchant,/purchases,Your purchases,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-conversation,merchant,/chat/12,Mia Chen,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-conversation,merchant,/chat/12,Mia Chen,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+merchant-supplier-conversation,merchant,/chat/12,Mia Chen,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Refresh,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Error reports,A,/admin/errors,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+admin-operations,admin,/admin/operations,Operations,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,Return to your home,A,/,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+client-not-found,client,/not/a/route,Page not found,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-client,artist,/calendar,Who are you booking?,Mia Chen,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-client,artist,/calendar,New booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Back,A,/admin/operations,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Unresolved,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Resolved,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,All,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Previous,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Next,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Record cleanup,Clear resolved reports older than 30 days,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Record cleanup,Clear all resolved reports,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+admin-error-reports,admin,/admin/errors,Error reports,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-service,artist,/calendar,What are we planning?,"Full day
+1 sitting · 180 minutes per sitting
+$600.00",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-service,artist,/calendar,What are we planning?,"Botanical sleeve
+3 sittings · 180 minutes per sitting
+$600.00",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-service,artist,/calendar,What are we planning?,Back to clients,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-service,artist,/calendar,New booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Consecutive working days,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Weekly,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Every two weeks,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Monthly,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Find available dates,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Choose dates myself,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,Let’s find your dates,Back to services,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-frequency,artist,/calendar,New booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-review,artist,/calendar,New booking,Send proposal,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-review,artist,/calendar,New booking,Edit details,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-review,artist,/calendar,New booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-new-client,artist,/clients,Add client,Add client,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-new-client,artist,/clients,Add client,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-single,artist,/calendar,New booking,"Full day
+Mia Chen",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-single,artist,/calendar,New booking,Find dates automatically,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-single,artist,/calendar,New booking,Add another session,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-single,artist,/calendar,New booking,Review proposal,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-booking-single,artist,/calendar,New booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Add client,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Back to all clients,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,mia@example.test,A,mailto:mia@example.test,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,0400000000,A,tel:0400000000,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Message Mia,A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Bookings,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Forms,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Notes,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Session history,"Botanical sleeve
+Thu, 10 Sept, 10:00 am · Confirmed
+$0.00 paid",A,/projects/12?session=101,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Session history,"Geometric shoulder
+Thu, 10 Sept, 2:00 pm · Confirmed
+$0.00 paid",A,/projects/12?session=102,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-detail,artist,/clients,Clients,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Add client,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Back to all clients,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,mia@example.test,A,mailto:mia@example.test,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,0400000000,A,tel:0400000000,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Message Mia,A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Bookings,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Forms,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Notes,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-forms,artist,/clients,Clients,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Open booking,A,/projects/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Book,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Client details and media,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Messages,"Design brief
+⌄",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Messages,Refresh design brief,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Save note,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-private-notes,artist,/chat/12,Mia Chen,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Add client,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Clients,A,/clients,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Supplies,A,/supplies,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Back to all clients,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,mia@example.test,A,mailto:mia@example.test,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,0400000000,A,tel:0400000000,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Message Mia,A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Bookings,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Forms,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Notes,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Save note,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-notes,artist,/clients,Clients,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,All conversations,A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,Open booking,A,/projects/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,Book,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,Client details and media,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Messages,"Design brief
+⌃",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Messages,Refresh design brief,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,Attach photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-design-brief,artist,/chat/12,Mia Chen,Send message,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Back,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Availability,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Services,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Services,Add service,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Services,"Full day
+180 minutes · $600.00 · 1 session",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Services,"Botanical sleeve
+180 minutes · $600.00 · 3 sessions",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-services,artist,/work-hours,Working hours & services,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-service-editor,artist,/work-hours,Add service, Show on your booking page,INPUT,,False,True,Rendered with isolated fixtures; not an individual click pass
+flow-service-editor,artist,/work-hours,Add service,Save service,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-service-editor,artist,/work-hours,Add service,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio-upload,artist,/artist-profile?view=Portfolio,Add to your portfolio,Add photo,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio-upload,artist,/artist-profile?view=Portfolio,Add to your portfolio,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-travel-add,artist,/settings?section=travel,Travel dates,Save trip,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-travel-add,artist,/settings?section=travel,Travel dates,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-studio-remove,artist,/studio?view=Team,Remove Oliver Grant?,Remove member,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-studio-remove,artist,/studio?view=Team,Remove Oliver Grant?,Keep membership,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-studio-remove,artist,/studio?view=Team,Remove Oliver Grant?,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Procedure log,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Medical,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Consent,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Consent template,Save template,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-template,artist,/settings?section=regulation,Forms & procedure records,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Procedure log,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Medical,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Consent,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Medical template,Save template,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-medical-template,artist,/settings?section=regulation,Forms & procedure records,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,tattoi,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Your profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Upcoming,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Past,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Complete sitting 2 forms,A,/projects/12?session=101&action=forms,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,"Sitting 2 · Confirmed
+Thu, 10 Sept, 10:00 am",A,/projects/12?session=101,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Message Ella Morgan,A,/chat/12,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,,A,/waitlist,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,,A,/purchases,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-past-bookings,client,/bookings,Bookings,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-deposit-review,client,/bookings,Review your booking,Continue to secure checkout,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-deposit-review,client,/bookings,Review your booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-consent,client,/bookings,Consent forms,Continue to signature,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-consent,client,/bookings,Consent forms,Finish later,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-client-consent,client,/bookings,Consent forms,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Store settings,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,To fulfil,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Fulfilled,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,All,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,All orders,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Mark fulfilled,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+flow-order-detail,merchant,/merchant/orders,Orders,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Add product,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Review Shopify connection,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Edit Cartridge needles,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Home,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Orders,A,/merchant/orders,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,Products,A,/merchant/products,False,,Rendered with isolated fixtures; not an individual click pass
+flow-product-details,merchant,/merchant/products,Products,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-archive-request,artist,/lead/1,Archive this request?,Archive request,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-archive-request,artist,/lead/1,Archive this request?,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Neo-Traditional,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Realism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Black & Grey,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Japanese,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Geometric,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Watercolour,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Minimalist,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Dotwork,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Tribal,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Script/Lettering,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Illustrative,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Surrealism,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Trash Polka,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Fine Line,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Other,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Your idea,Not sure yet,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-idea,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement,public,/book/ella-morgan,Placement & timing,Approximate size,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement,public,/book/ella-morgan,Placement & timing,Preferred timeframe,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement,public,/book/ella-morgan,Request a booking,Back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-reference,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-reference,public,/book/ella-morgan,Request a booking,Back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-reference,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement-photo,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement-photo,public,/book/ella-morgan,Request a booking,Back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-placement-photo,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-details,public,/book/ella-morgan,Your details,Gender,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-details,public,/book/ella-morgan,Request a booking,Continue,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-details,public,/book/ella-morgan,Request a booking,Back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-details,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-review,public,/book/ella-morgan,Request a booking,Send booking request,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-review,public,/book/ella-morgan,Request a booking,Back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-intake-review,public,/book/ella-morgan,Request a booking,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-notification-template,artist,/notifications-management,Add template,Purpose,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-notification-template,artist,/notifications-management,Add template,Enable template,INPUT,,False,True,Rendered with isolated fixtures; not an individual click pass
+flow-notification-template,artist,/notifications-management,Add template,Save template,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-notification-template,artist,/notifications-management,Add template,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,Review form again,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,I allow my artist to publish photos of this tattoo. Optional; leaving this unchecked does not affect my booking.,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,I have read this form and my answers are accurate. I agree to sign this version.,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,Clear signature,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,Sign this form,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-consent-signature,client,/bookings,Consent forms,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-refund-review,artist,/payout-history,Review refund,I’ve checked the amount and want to issue this refund.,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-refund-review,artist,/payout-history,Review refund,Refund $155.10,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-refund-review,artist,/payout-history,Review refund,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-reschedule,artist,/projects/12,Reschedule session,Save new time,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-reschedule,artist,/projects/12,Reschedule session,Go back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-reschedule,artist,/projects/12,Reschedule session,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-cancel,artist,/projects/12,Cancel session,Confirm cancellation,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-cancel,artist,/projects/12,Cancel session,Go back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-cancel,artist,/projects/12,Cancel session,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-finish,artist,/projects/12,Finish session,Send payment request,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-finish,artist,/projects/12,Finish session,Go back,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-session-finish,artist,/projects/12,Finish session,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Back,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Profile,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Portfolio,tab,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Business settings & payouts,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Preview booking page,A,/book/ella-morgan,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Share your booking link,A,/settings?section=booking-link,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Photo & personal details,A,/settings?section=profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Add photo,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Instagram import,A,/settings?section=instagram,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,View Botanical study,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Portfolio,Select Botanical study,INPUT,,False,False,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio,artist,/artist-profile?view=Portfolio,Profile,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,Back,A,/settings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,Your business,A,/business,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Choose your file,What are you importing?,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Match your columns,Map Client name,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Match your columns,Map Email,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Match your columns,Map Phone,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Match your columns,Review matches & duplicates,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Connect an external calendar,Save calendar link,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,Today,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,Calendar,A,/calendar,False,,Rendered with isolated fixtures; not an individual click pass
+flow-import-mapping,artist,/settings?section=data-import,Import your data,Profile,A,/artist-profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-portfolio-view,artist,/artist-profile?view=Portfolio,Your work,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Decrease Botanical art print,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Increase Botanical art print,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Remove,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Delivery method,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Continue to payment,BUTTON,,True,,Rendered with isolated fixtures; not an individual click pass
+flow-shop-cart,public,/shop/ella-morgan,Your cart,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-balance-confirming,public,/balance/101?status=success,Confirming your payment,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-balance-confirming,public,/balance/101?status=success,Confirming your payment,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+flow-balance-confirming,public,/balance/101?status=success,Confirming your payment,Check confirmation,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-balance-confirming,public,/balance/101?status=success,Confirming your payment,Open my bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-payment-confirming,public,/deposit/preview?status=success,Confirming your payment,tattoi,A,/dashboard,False,,Rendered with isolated fixtures; not an individual click pass
+flow-payment-confirming,public,/deposit/preview?status=success,Confirming your payment,Sign in,A,/login,False,,Rendered with isolated fixtures; not an individual click pass
+flow-payment-confirming,public,/deposit/preview?status=success,Confirming your payment,Check confirmation,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-payment-confirming,public,/deposit/preview?status=success,Confirming your payment,Open my bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Your profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Discover artists,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Your artists and bookings,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,View Ella Morgan's portfolio,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Chat with Ella Morgan,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Add to favourites,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,"See Artist Map
+
+0 artists near Brisbane",BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,All Artists,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Near Me,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Popular,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,All,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Realism,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Portrait,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Black & Grey,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Colour,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Tāmoko,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Traditional,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Neo-Trad,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Geometric,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Watercolour,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Fine Line,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Blackwork,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Japanese,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-home,client,/discover,,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Your profile,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Discover artists,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Your artists and bookings,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,View artwork by Ella Morgan,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,View artist,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Like artwork,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Share artwork,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Discover,A,/discover,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,"2
+Messages",A,/conversations,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Bookings,A,/bookings,False,,Rendered with isolated fixtures; not an individual click pass
+flow-discovery-focus,client,/discover,,Profile,A,/profile,False,,Rendered with isolated fixtures; not an individual click pass
+flow-event-create,artist,/artist-events,Create an event,Event format,SELECT,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-event-create,artist,/artist-events,Create an event,Publish event,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass
+flow-event-create,artist,/artist-events,Create an event,Close,BUTTON,,False,,Rendered with isolated fixtures; not an individual click pass

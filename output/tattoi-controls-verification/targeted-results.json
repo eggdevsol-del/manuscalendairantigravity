@@ -1,0 +1,66 @@
+[
+  {
+    "id": "storefront-cart-fees",
+    "role": "public",
+    "filter": true,
+    "search": true,
+    "stock": true,
+    "variants": true,
+    "quantity": true,
+    "delivery": true,
+    "platformFee": true,
+    "checkoutRequest": {
+      "items": [
+        {
+          "productId": 1,
+          "variantId": 11,
+          "quantity": 1
+        }
+      ],
+      "fulfillmentMethod": "pickup"
+    },
+    "stripeLiveConfirmation": "not configured",
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "legacy-decline-wired",
+    "role": "client",
+    "declineMutation": true,
+    "dialogClosed": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "legacy-edit-opens",
+    "role": "artist",
+    "editorVisible": true,
+    "priceAndBatchControls": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "service-choice-reaches-request",
+    "role": "client",
+    "selectedServiceSubmitted": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "arrival-snooze",
+    "role": "artist",
+    "snoozed": true,
+    "returnedAfterTenMinutes": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "legacy-deposit-total",
+    "role": "client",
+    "serverTotalDisplayed": 15510,
+    "platformFeeDisplayed": 510,
+    "noPrematureConfirmation": true,
+    "completed": true,
+    "pageErrors": []
+  }
+]

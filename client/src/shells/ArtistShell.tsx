@@ -87,6 +87,13 @@ export default function ArtistShell() {
 
 function ArrivalOverlay() {
   const [dismissed, setDismissed] = React.useState<number | null>(null);
+  const snoozeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  React.useEffect(
+    () => () => {
+      if (snoozeTimer.current) clearTimeout(snoozeTimer.current);
+    },
+    []
+  );
   const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
 
   const activeId = activeCheckIn?.appointment?.id;
@@ -130,7 +137,17 @@ function ArrivalOverlay() {
         });
         setDismissed(appointment.id);
       }}
-      onDismiss={() => setDismissed(appointment.id)}
+      onDismiss={() => {
+        setDismissed(appointment.id);
+        if (snoozeTimer.current) clearTimeout(snoozeTimer.current);
+        snoozeTimer.current = setTimeout(
+          () =>
+            setDismissed(current =>
+              current === appointment.id ? null : current
+            ),
+          10 * 60 * 1000
+        );
+      }}
     />
   );
 }

@@ -126,7 +126,7 @@ export async function createStorefrontPaymentIntent(opts: {
   stripeConnectAccountId?: string;
   clientEmail?: string;
 }): Promise<{ clientSecret: string; paymentIntentId: string }> {
-  const applicationFeeCents = opts.platformFeeCents;
+  const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
 
   const itemsSummary = opts.items
     .map(i => `${i.quantity}x ${i.productName}`)

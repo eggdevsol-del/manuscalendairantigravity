@@ -1,3 +1,4 @@
+import { revisedBookingPrice } from "../domain/paymentState";
 import {
   DEFAULT_CONSENT_TEMPLATE,
   DEFAULT_MEDICAL_TEMPLATE,
@@ -178,7 +179,7 @@ export async function updateAppointment(
   performedBy: string
 ) {
   return withDatabaseTransaction(async db => {
-    const oldAppt = await getAppointment(id);
+    let oldAppt = await getAppointment(id);
     if (!oldAppt) throw new Error("Appointment not found");
     if (
       updates.startTime ||
@@ -196,6 +197,17 @@ export async function updateAppointment(
         throw new Error("Invalid appointment interval");
       if (await checkAppointmentOverlap(oldAppt.artistId, start, end, id))
         throw new Error("This time is already booked.");
+    }
+
+    if (updates.price !== undefined && updates.price !== null) {
+      const [locked] = await db
+        .select()
+        .from(appointments)
+        .where(eq(appointments.id, id))
+        .for("update");
+      if (!locked) throw new Error("Appointment not found");
+      oldAppt = normalizeAppointment(locked);
+      updates = { ...updates, ...revisedBookingPrice(locked, updates.price) };
     }
 
     if (updates.status === "completed" && !oldAppt.completedAt) {

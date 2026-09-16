@@ -1,0 +1,128 @@
+[
+  {
+    "id": "legacy-proposal-decline",
+    "role": "client",
+    "label": "Decline",
+    "unchanged": true,
+    "newMutations": [],
+    "dialogStillOpen": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "legacy-proposal-edit",
+    "role": "artist",
+    "label": "Edit Booking",
+    "unchanged": true,
+    "newMutations": [],
+    "editFields": 0,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "check-for-updates",
+    "role": "artist",
+    "label": "Check for updates",
+    "cacheBefore": [
+      "label-audit-fixture"
+    ],
+    "cacheAfter": [],
+    "url": "http://127.0.0.1:5196/settings?_v=1789463059932",
+    "hasUpdateAvailabilityResult": 0,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "dark-appearance",
+    "role": "client",
+    "label": "Dark appearance",
+    "darkApplied": true,
+    "persisted": "true",
+    "restoredLight": true,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "map-shopfront",
+    "role": "client",
+    "label": "Shopfront",
+    "href": "/ella-morgan",
+    "url": "http://127.0.0.1:5196/ella-morgan",
+    "bookingCTA": 1,
+    "cartButtons": 0,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "book-consult-profile",
+    "role": "client",
+    "label": "Book Consult",
+    "dialogText": "Book with Ella Morgan\nDescribe your idea *\nAt least 10 characters, then choose one or more styles.\nStyle *\nTraditional\nNeo-Traditional\nRealism\nBlack & Grey\nJapanese\nGeometric\nWatercolour\nMinimalist\nDotwork\nTribal\nScript/Lettering\nIllustrative\nSurrealism\nTrash Polka\nFine Line\nOther\nPlacement\nSize\nSelect size\nTiny (< 5cm)\nSmall (5-10cm)\nMedium (10-20cm)\nLarge (20-30cm)\nExtra Large (30cm+)\nFull sleeve\nHalf sleeve\nWhen?\nAs soon as possible\nWithin 1 month\nWithin 3 months\nWithin 6 months\nNo rush — flexible\nReference images\n+\nPlacement photos\n+\nSend Request",
+    "calls": [
+      "auth.me",
+      "auth.me",
+      "clientProfile.getMyPaymentRequests",
+      "auth.refreshToken",
+      "feed.getDiscoverFeed",
+      "auth.me",
+      "clientProfile.getProfile",
+      "clientProfile.getSpendSummary",
+      "clientProfile.getHistory",
+      "clientProfile.getBoards",
+      "clientProfile.getPhotos",
+      "clientProfile.getUpcoming",
+      "clientProfile.getConsentForms",
+      "favourites.list",
+      "conversations.list",
+      "feed.getArtistFeed",
+      "feed.getArtistPublicProfile",
+      "auth.me"
+    ],
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "waitlist-review-mutates",
+    "role": "client",
+    "label": "Review dates & deposit",
+    "newMutations": [
+      {
+        "name": "waitlist.accept",
+        "method": "POST",
+        "input": {
+          "id": 5
+        }
+      }
+    ],
+    "dialogText": "Review your booking\nEM\nElla Morgan\n1 session\nYour sessions\nSession 1\nThu, 10 Sept, 10:00 am · 180 minutes\n$150.00 deposit\nSession estimate\n$600.00\nDeposit due now\n$150.00\nPlatform fee\n$5.10\nTotal due today\n$155.10\n\nDeposits are non-refundable under the booking terms. The estimated session balance after this deposit is $450.00. Each session’s balance is requested separately.\n\nContinue to secure checkout\nClose",
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "arrival-later",
+    "role": "artist",
+    "label": "Later / Remind me about arrival later",
+    "visibleAfterTwentyMinutes": 0,
+    "newMutations": [],
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "public-contact-visibility",
+    "role": "public",
+    "label": "Show email / Show phone / Show website",
+    "contactLinks": 0,
+    "bookingCTA": 1,
+    "completed": true,
+    "pageErrors": []
+  },
+  {
+    "id": "booking-page-service-visibility",
+    "role": "artist",
+    "label": "Show on your booking page",
+    "checkboxVisible": true,
+    "dialogText": "Add service\nService name\nService colour\nUsed as an accent on calendar sessions.\nDescription\nDuration per session · minutes\nPrice per session · AUD\nNumber of sessions\n Show on your booking page\nSave service\nClose",
+    "completed": true,
+    "pageErrors": []
+  }
+]

@@ -641,7 +641,7 @@ function DiscoveryArtistPopup({
         </button>
         {artist.publicSlug && (
           <a
-            href={`/${artist.publicSlug}`}
+            href={`/shop/${encodeURIComponent(artist.publicSlug)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 min-h-11 rounded-xl bg-secondary text-foreground font-semibold text-sm border border-border flex items-center justify-center gap-1"

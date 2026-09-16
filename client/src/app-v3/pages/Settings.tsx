@@ -226,7 +226,7 @@ export default function Settings() {
           }
         />
         <Row
-          title="Check for updates"
+          title="Reload latest version"
           detail={`Version ${APP_VERSION}`}
           icon={<RefreshCw />}
           onClick={() => forceUpdate()}

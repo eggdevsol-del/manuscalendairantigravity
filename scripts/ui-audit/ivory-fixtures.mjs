@@ -160,7 +160,7 @@ export function response(name, role) {
           priceCents: 4500,
           inventoryCount: 12,
           isActive: true,
-          fulfillmentType: "shipping",
+          fulfillmentType: "delivery",
           imageUrl: photo,
           variants: [],
         },

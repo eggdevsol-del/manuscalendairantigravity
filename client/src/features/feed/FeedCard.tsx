@@ -613,7 +613,7 @@ export function FeedCard({
           className="feed-card-book-btn"
           onClick={() => card.artistSlug && onArtistTap(card.artistSlug)}
         >
-          Book Consult
+          View artist
         </button>
       )}
     </div>

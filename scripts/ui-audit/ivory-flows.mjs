@@ -260,6 +260,7 @@ flow(
   ]
 );
 flow("shop-cart", "public", "/shop/ella-morgan", "Shop / cart", [
+  click("View Botanical art print"),
   click("Add to cart"),
 ]);
 flow(

@@ -1,0 +1,115 @@
+scenario,label,type,state changed
+public-sign-in,Keep me signed in,checkbox,True
+public-supplier-sign-up,Business country,select-one,True
+public-booking-intake,Traditional,checkbox,True
+public-booking-intake,Neo-Traditional,checkbox,True
+public-booking-intake,Realism,checkbox,True
+public-booking-intake,Black & Grey,checkbox,True
+public-booking-intake,Japanese,checkbox,True
+public-booking-intake,Geometric,checkbox,True
+public-booking-intake,Watercolour,checkbox,True
+public-booking-intake,Minimalist,checkbox,True
+public-booking-intake,Dotwork,checkbox,True
+public-booking-intake,Tribal,checkbox,True
+public-booking-intake,Script/Lettering,checkbox,True
+public-booking-intake,Illustrative,checkbox,True
+public-booking-intake,Surrealism,checkbox,True
+public-booking-intake,Trash Polka,checkbox,True
+public-booking-intake,Fine Line,checkbox,True
+public-booking-intake,Other,checkbox,True
+public-booking-intake,Not sure yet,checkbox,True
+public-booking-link,Traditional,checkbox,True
+public-booking-link,Neo-Traditional,checkbox,True
+public-booking-link,Realism,checkbox,True
+public-booking-link,Black & Grey,checkbox,True
+public-booking-link,Japanese,checkbox,True
+public-booking-link,Geometric,checkbox,True
+public-booking-link,Watercolour,checkbox,True
+public-booking-link,Minimalist,checkbox,True
+public-booking-link,Dotwork,checkbox,True
+public-booking-link,Tribal,checkbox,True
+public-booking-link,Script/Lettering,checkbox,True
+public-booking-link,Illustrative,checkbox,True
+public-booking-link,Surrealism,checkbox,True
+public-booking-link,Trash Polka,checkbox,True
+public-booking-link,Fine Line,checkbox,True
+public-booking-link,Other,checkbox,True
+public-booking-link,Not sure yet,checkbox,True
+client-bookings,More options,SUMMARY,True
+client-booking-overview,Want an earlier appointment?,SUMMARY,True
+client-booking-files,Older conversation references · unassigned,SUMMARY,True
+artist-artist-products,View 1 variants,SUMMARY,True
+artist-money,"deposit · Mia Chen
+Wed, 9 Sept, 10:00 am
+$150.00",SUMMARY,True
+artist-calendar,Calendar artist,select-one,True
+artist-conversation,Client records & private notes,SUMMARY,True
+artist-project-overview,More session options,SUMMARY,True
+artist-project-files,Older conversation references · unassigned,SUMMARY,True
+artist-artist-profile,Show email,checkbox,True
+artist-artist-profile,Show phone,checkbox,True
+artist-artist-profile,Show city,checkbox,True
+artist-artist-profile,Show website,checkbox,True
+artist-artist-portfolio,Select Botanical study,checkbox,True
+artist-working-hours,Monday,checkbox,True
+artist-working-hours,Tuesday,checkbox,True
+artist-working-hours,Wednesday,checkbox,True
+artist-working-hours,Thursday,checkbox,True
+artist-working-hours,Friday,checkbox,True
+artist-working-hours,Saturday,checkbox,True
+artist-working-hours,Sunday,checkbox,True
+artist-studio-schedule,"Artist
+All artists
+Ella Morgan
+Oliver Grant",select-one,True
+artist-studio-team,"Role
+Artist
+Manager
+Managers can invite artists and view the studio schedule.",select-one,True
+client-settings-profile,Gender,select-one,True
+client-settings,Dark appearance,submit,True
+artist-settings,Dark appearance,submit,True
+artist-settings-profile,Gender,select-one,True
+merchant-settings-profile,Gender,select-one,True
+merchant-settings,Dark appearance,submit,True
+artist-settings-business,"Country
+Australia
+New Zealand",select-one,True
+artist-settings-data-import,What are you importing?,select-one,True
+merchant-supplier-products,View 1 variants,SUMMARY,True
+flow-private-notes,Client records & private notes,SUMMARY,True
+flow-design-brief,Client records & private notes,SUMMARY,True
+flow-service-editor, Show on your booking page,checkbox,True
+flow-past-bookings,More options,SUMMARY,True
+flow-product-details,View 1 variants,SUMMARY,True
+flow-intake-placement,Approximate size,select-one,True
+flow-intake-placement,Preferred timeframe,select-one,True
+flow-intake-idea,Traditional,checkbox,True
+flow-intake-idea,Neo-Traditional,checkbox,True
+flow-intake-idea,Realism,checkbox,True
+flow-intake-idea,Black & Grey,checkbox,True
+flow-intake-idea,Japanese,checkbox,True
+flow-intake-idea,Geometric,checkbox,True
+flow-intake-idea,Watercolour,checkbox,True
+flow-intake-idea,Minimalist,checkbox,True
+flow-intake-idea,Dotwork,checkbox,True
+flow-intake-idea,Tribal,checkbox,True
+flow-intake-idea,Script/Lettering,checkbox,True
+flow-intake-idea,Illustrative,checkbox,True
+flow-intake-idea,Surrealism,checkbox,True
+flow-intake-idea,Trash Polka,checkbox,True
+flow-intake-idea,Fine Line,checkbox,True
+flow-intake-idea,Other,checkbox,True
+flow-intake-idea,Not sure yet,checkbox,True
+flow-intake-details,Gender,select-one,True
+flow-notification-template,Purpose,select-one,True
+flow-notification-template,Enable template,checkbox,True
+flow-consent-signature,I allow my artist to publish photos of this tattoo. Optional; leaving this unchecked does not affect my booking.,checkbox,True
+flow-consent-signature,I have read this form and my answers are accurate. I agree to sign this version.,checkbox,True
+flow-refund-review,I’ve checked the amount and want to issue this refund.,checkbox,True
+flow-portfolio,Select Botanical study,checkbox,True
+flow-import-mapping,What are you importing?,select-one,True
+flow-import-mapping,Map Client name,select-one,True
+flow-import-mapping,Map Email,select-one,True
+flow-import-mapping,Map Phone,select-one,True
+flow-event-create,Event format,select-one,True

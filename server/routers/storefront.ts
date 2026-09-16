@@ -515,7 +515,10 @@ export const storefrontRouter = router({
         return {
           ...session,
           orderId,
-          totalCents: subtotal + shipping + fees.platformFeeCents,
+          totalCents: fees.clientTotalCents,
+          subtotalCents: subtotal,
+          shippingCents: shipping,
+          platformFeeCents: fees.platformFeeCents,
           currency: seller.currency,
         };
       })

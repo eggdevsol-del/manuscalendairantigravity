@@ -21,6 +21,7 @@ import {
   Screen,
   SearchField,
   Status,
+  Tabs,
 } from "../design/primitives";
 type Store = NonNullable<
   inferRouterOutputs<AppRouter>["storefront"]["getArtistStorefront"]
@@ -57,18 +58,37 @@ export function PublicStorefront() {
 function StoreContent({ store, slug }: { store: Store; slug: string }) {
   const [search, setSearch] = useState("");
   const cart = useCart();
+  const [filter, setFilter] = useState<"All products" | "In stock">(
+    "All products"
+  );
+  const [selected, setSelected] = useState<Store["products"][number] | null>(
+    null
+  );
   const currency = store.currency || "AUD";
-  const products = store.products.filter(product =>
-    `${product.title} ${product.description || ""}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
+  const products = store.products.filter(
+    product =>
+      (filter === "All products" ||
+        (product.variants.length
+          ? product.variants.some(v => v.inventoryCount > 0)
+          : product.inventoryCount > 0)) &&
+      `${product.title} ${product.description || ""}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
   );
   return (
     <Screen
       publicView
       wide
-      title={store.artistName}
-      subtitle="Shop essentials, aftercare and original work."
+      title="Shopfront"
+      subtitle={store.artistName}
+      subheader={
+        <Tabs
+          items={["All products", "In stock"] as const}
+          value={filter}
+          onChange={setFilter}
+          label="Shop products"
+        />
+      }
       back={
         slug.startsWith("supplier-")
           ? undefined
@@ -80,6 +100,17 @@ function StoreContent({ store, slug }: { store: Store; slug: string }) {
         </Action>
       }
     >
+      <section className="ivory-shop-intro">
+        <span className="v3-eyebrow">Selected by {store.artistName}</span>
+        <h2>
+          A little of the studio.
+          <br />
+          Yours to keep.
+        </h2>
+        <p>
+          Original work, everyday essentials and care for your next chapter.
+        </p>
+      </section>
       <SearchField
         value={search}
         onChange={setSearch}
@@ -96,9 +127,54 @@ function StoreContent({ store, slug }: { store: Store; slug: string }) {
       )}
       <div className="v3-shop-grid">
         {products.map(product => (
-          <Product key={product.id} product={product} currency={currency} />
+          <button
+            key={product.id}
+            type="button"
+            className="ivory-shop-product"
+            onClick={() => setSelected(product)}
+            aria-label={`View ${product.title}`}
+          >
+            <div className="ivory-shop-product-image">
+              {product.imageUrl ? (
+                <img src={product.imageUrl} alt="" loading="lazy" />
+              ) : (
+                <span aria-hidden="true">tattoi</span>
+              )}
+            </div>
+            <span className="ivory-shop-product-name">{product.title}</span>
+            <span className="v3-muted">
+              {product.variants.length > 1 ? "From " : ""}
+              {money(
+                product.variants.length
+                  ? Math.min(...product.variants.map(v => v.priceCents))
+                  : product.priceCents,
+                currency
+              )}
+            </span>
+            {(product.variants.length
+              ? product.variants.every(v => v.inventoryCount <= 0)
+              : product.inventoryCount <= 0) && <Status>Sold out</Status>}
+          </button>
         ))}
       </div>
+      <p className="v3-muted ivory-shop-fee-note">
+        Product prices exclude delivery and the platform fee. Both are shown in
+        your cart before payment.
+      </p>
+      <SheetShell
+        isOpen={!!selected}
+        onClose={() => setSelected(null)}
+        title={selected?.title || "Product details"}
+      >
+        {selected && (
+          <Product
+            key={selected.id}
+            product={selected}
+            currency={currency}
+            onAdded={() => setSelected(null)}
+          />
+        )}
+      </SheetShell>
       <StorefrontCheckoutFAB
         artistId={store.artistId}
         artistSlug={slug}
@@ -111,16 +187,21 @@ function StoreContent({ store, slug }: { store: Store; slug: string }) {
 function Product({
   product,
   currency,
+  onAdded,
 }: {
   product: Store["products"][number];
   currency: string;
+  onAdded: () => void;
 }) {
   const { items, addItem } = useCart();
   const [variantId, setVariantId] = useState(product.variants[0]?.id);
   const variant =
     product.variants.find(item => item.id === variantId) || product.variants[0];
   const price = variant?.priceCents ?? product.priceCents;
-  const inventory = variant?.inventoryCount ?? product.inventoryCount;
+  const inventory = Math.min(
+    variant?.inventoryCount ?? product.inventoryCount,
+    100
+  );
   const quantity =
     items.find(
       item => item.productId === product.id && item.variantId === variant?.id
@@ -176,7 +257,7 @@ function Product({
         </strong>
         <Action
           disabled={inventory <= quantity}
-          onClick={() =>
+          onClick={() => {
             addItem({
               productId: product.id,
               variantId: variant?.id,
@@ -188,8 +269,9 @@ function Product({
               fulfillmentType: product.fulfillmentType,
               maxInventory: inventory,
               artistId: product.artistId,
-            })
-          }
+            });
+            onAdded();
+          }}
         >
           {inventory <= 0
             ? "Sold out"

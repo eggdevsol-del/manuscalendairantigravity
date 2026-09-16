@@ -200,10 +200,21 @@ export function DotsCheckout({
   if (!clientSecret) return null;
   if (!stripePromise)
     return (
-      <p role="alert" className="p-5">
-        Card payments are temporarily unavailable. Please contact your artist or
-        try again later.
-      </p>
+      <div className="v3-stack">
+        <p role="alert" className="p-5">
+          Card payments are temporarily unavailable. Please contact your artist
+          or try again later.
+        </p>
+        {onBack && (
+          <button
+            type="button"
+            className="v3-action v3-action-secondary"
+            onClick={onBack}
+          >
+            Back to checkout
+          </button>
+        )}
+      </div>
     );
   if (clientSecret.startsWith("cs_"))
     return (
@@ -254,6 +265,7 @@ function CheckoutForm({
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const submitting = useRef(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -263,8 +275,8 @@ function CheckoutForm({
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      if (!stripe || !elements) return;
-
+      if (!stripe || !elements || submitting.current) return;
+      submitting.current = true;
       setIsProcessing(true);
       setErrorMessage(null);
 
@@ -294,6 +306,7 @@ function CheckoutForm({
         setErrorMessage(msg);
         onError?.(msg);
       } finally {
+        submitting.current = false;
         setIsProcessing(false);
       }
     },

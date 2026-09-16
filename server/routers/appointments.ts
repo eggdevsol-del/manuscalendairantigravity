@@ -1,3 +1,5 @@
+import { revisedBookingPrice } from "../domain/paymentState";
+import { withDatabaseTransaction as priceTransaction } from "../services/core";
 import { selectBookingProjects } from "../../shared/clientBookingGroups";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { requireArtist, requireConversationAccess } from "../services/access";
@@ -9,7 +11,7 @@ import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
-import { eq, sql, and, gte, lte, inArray, not } from "drizzle-orm";
+import { eq, sql, and, or, gte, lte, inArray, not } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { canAccessFeature, getFeatureLimit } from "../_core/tierPermissions";
 
@@ -1107,6 +1109,7 @@ export const appointmentsRouter = router({
         clientId: z.string(),
         artistId: z.string(),
         price: z.number().min(0),
+        appointmentId: z.number().int().positive().optional(),
         serviceName: z.string().optional(),
       })
     )
@@ -1118,30 +1121,50 @@ export const appointmentsRouter = router({
         });
       }
 
-      const database = await db.getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-      const nowString = new Date().toISOString().slice(0, 19).replace("T", " ");
-
-      const { and, eq, gte } = await import("drizzle-orm");
-
-      const payload: any = { price: input.price };
-      if (input.serviceName) {
-        payload.serviceName = input.serviceName;
-      }
-
-      await database
-        .update(schema.appointments)
-        .set(payload)
-        .where(
-          and(
-            eq(schema.appointments.clientId, input.clientId),
-            eq(schema.appointments.artistId, input.artistId),
-            gte(schema.appointments.startTime, nowString)
+      return priceTransaction(async database => {
+        const nowString = new Date()
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ");
+        const rows = await database
+          .select()
+          .from(schema.appointments)
+          .where(
+            and(
+              eq(schema.appointments.clientId, input.clientId),
+              eq(schema.appointments.artistId, input.artistId),
+              inArray(schema.appointments.status, ["pending", "confirmed"]),
+              input.appointmentId
+                ? or(
+                    gte(schema.appointments.startTime, nowString),
+                    eq(schema.appointments.id, input.appointmentId)
+                  )
+                : gte(schema.appointments.startTime, nowString)
+            )
           )
-        );
-
-      return { success: true };
+          .for("update");
+        if (
+          input.appointmentId &&
+          !rows.some(row => row.id === input.appointmentId)
+        )
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This session is no longer editable.",
+          });
+        const changes = rows.map(row => ({
+          id: row.id,
+          values: {
+            ...revisedBookingPrice(row, input.price),
+            ...(input.serviceName ? { serviceName: input.serviceName } : {}),
+          },
+        }));
+        for (const change of changes)
+          await database
+            .update(schema.appointments)
+            .set(change.values)
+            .where(eq(schema.appointments.id, change.id));
+        return { success: true };
+      });
     }),
 
   /**

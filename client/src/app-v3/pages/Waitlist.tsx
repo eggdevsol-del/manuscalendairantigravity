@@ -153,7 +153,7 @@ export default function Waitlist() {
               >
                 {accept.isPending
                   ? "Checking availability…"
-                  : "Review dates & deposit"}
+                  : "Accept offer & review deposit"}
               </Action>
             )}
             {!artist &&

@@ -70,7 +70,7 @@ export function CartProvider({
       return valid
         .filter(
           (item, index) =>
-            item.artistId === valid[0]?.artistId &&
+            item.artistId === (storeId || valid[0]?.artistId) &&
             valid.findIndex(other => other.cartItemId === item.cartItemId) ===
               index
         )
@@ -91,6 +91,7 @@ export function CartProvider({
   }, [items]);
 
   const addItem = (newItem: Omit<CartItem, "quantity" | "cartItemId">) => {
+    if (newItem.maxInventory <= 0 || (storeId && newItem.artistId !== storeId)) return;
     const cartItemId = `${newItem.productId}-${newItem.variantId || "base"}`;
     setItems(prev => {
       // If adding from a different artist, we must clear the cart first
@@ -107,7 +108,7 @@ export function CartProvider({
       if (existing) {
         return currentCart.map(i =>
           i.cartItemId === cartItemId
-            ? { ...i, quantity: Math.min(i.quantity + 1, i.maxInventory) }
+            ? { ...i, quantity: Math.min(i.quantity + 1, newItem.maxInventory, 100) }
             : i
         );
       }
@@ -127,7 +128,7 @@ export function CartProvider({
           if (i.cartItemId === cartItemId) {
             const newQ = Math.max(
               0,
-              Math.min(i.quantity + delta, i.maxInventory)
+              Math.min(i.quantity + delta, i.maxInventory, 100)
             );
             return { ...i, quantity: newQ };
           }

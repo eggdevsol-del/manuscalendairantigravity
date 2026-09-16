@@ -1,3 +1,4 @@
+import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
 import { DesignBrief } from "../design/DesignBrief";
 import { ClientNotes } from "../design/ClientNotes";
@@ -49,6 +50,45 @@ export function Thread({
   const [notesDraft, setNotesDraft] = useState("");
   const [contextOpen, setContextOpen] = useState(false);
   const [booking, setBooking] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<any>(null);
+  const [proposalError, setProposalError] = useState("");
+  const [loadingEdit, setLoadingEdit] = useState(false);
+  const declineLegacy = trpc.messages.declineProposal.useMutation({
+    onSuccess: () => {
+      refresh();
+      c.setSelectedProposal(null);
+      setBooking(false);
+    },
+  });
+  async function editLegacyBooking() {
+    if (loadingEdit) return;
+    setLoadingEdit(true);
+    setProposalError("");
+    try {
+      const rows = await utils.appointments.getByConversation.fetch(id);
+      const meta = c.selectedProposal?.metadata;
+      const ids = Array.isArray(meta?.appointmentIds)
+        ? meta.appointmentIds
+        : [meta?.appointmentId || meta?.id];
+      const appointment = rows.find(row => ids.includes(row.id));
+      if (!appointment) {
+        setProposalError(
+          "This proposal has no editable session. Revoke it and send a new proposal from Book."
+        );
+        return;
+      }
+      setBooking(false);
+      setEditingAppointment(appointment);
+    } catch (error) {
+      setProposalError(
+        error instanceof Error
+          ? error.message
+          : "Couldn’t load the booking. Try again."
+      );
+    } finally {
+      setLoadingEdit(false);
+    }
+  }
   const sharedMedia = (c.messages || []).flatMap(message =>
     mediaUrls(objectFromJson(message.content))
   );
@@ -327,6 +367,12 @@ export function Thread({
           title={c.selectedProposal ? "Review booking" : "New booking"}
         >
           <>
+            {(proposalError || declineLegacy.error) && (
+              <p role="alert">
+                {proposalError || declineLegacy.error?.message}
+              </p>
+            )}
+            {loadingEdit && <p role="status">Loading booking…</p>}
             {!c.selectedProposal ? (
               <BookingComposer
                 conversationId={id}
@@ -337,6 +383,14 @@ export function Thread({
               />
             ) : (
               <BookingWizardContent
+                onRejectProposal={() =>
+                  c.selectedProposal &&
+                  declineLegacy.mutate({
+                    messageId: c.selectedProposal.message.id,
+                  })
+                }
+                onEditBooking={() => void editLegacyBooking()}
+                isPendingProposalAction={declineLegacy.isPending || loadingEdit}
                 conversationId={id}
                 artistServices={c.availableServices}
                 artistSettings={c.artistSettings}
@@ -373,6 +427,19 @@ export function Thread({
           </>
         </SheetShell>
       </div>
+      {editingAppointment && (
+        <EditBookingModal
+          key={editingAppointment.id}
+          isOpen
+          onClose={() => setEditingAppointment(null)}
+          appointment={editingAppointment}
+          client={c.conversation?.otherUser}
+          onSuccess={() => {
+            setEditingAppointment(null);
+            refresh();
+          }}
+        />
+      )}
       {c.isArtist && c.conversation?.clientId && (
         <ConversationContext
           id={id}

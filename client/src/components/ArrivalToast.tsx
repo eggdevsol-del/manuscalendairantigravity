@@ -89,9 +89,9 @@ export function ArrivalToast({
             <button
               onClick={onDismiss}
               className="min-h-11 px-2 text-xs text-muted-foreground"
-              aria-label="Remind me about arrival later"
+              aria-label="Remind me about arrival in 10 minutes"
             >
-              Later
+              In 10 min
             </button>
             {/* Buttons */}
             {confirmingNoShow ? (

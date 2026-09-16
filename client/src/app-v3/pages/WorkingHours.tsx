@@ -27,6 +27,7 @@ export default function WorkingHours() {
   const save = trpc.artistSettings.upsert.useMutation({
     onSuccess: () => {
       void utils.artistSettings.invalidate();
+      void utils.feed.invalidate();
     },
   });
   const [tab, setTab] = useState<"Availability" | "Services">("Availability");

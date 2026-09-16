@@ -1,3 +1,4 @@
+import { calculateTransactionFees, type TransactionFees } from "@shared/fees";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Clock,
@@ -74,6 +75,7 @@ interface BookingWizardContentProps {
     finalAmount: number;
   }) => void;
   onRejectProposal?: () => void;
+  onEditBooking?: () => void;
   onCancelProposal?: () => void;
   onUpdateProposalState?: (newMetadata: any) => void;
   isPendingProposalAction?: boolean;
@@ -158,6 +160,7 @@ export function BookingWizardContent({
   clientNameOverride,
   onAcceptProposal,
   onRejectProposal,
+  onEditBooking,
   onCancelProposal,
   onUpdateProposalState,
   isPendingProposalAction,
@@ -227,6 +230,23 @@ export function BookingWizardContent({
   const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>(null);
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null);
   const [checkoutBalanceClientSecret, setCheckoutBalanceClientSecret] = useState<string | null>(null);
+  const [checkoutFees, setCheckoutFees] = useState<TransactionFees | null>(null);
+  const [balanceCheckoutFees, setBalanceCheckoutFees] = useState<TransactionFees | null>(null);
+  const paymentSubmitted = () => {
+    if (conversationId) {
+      void utils.messages.list.invalidate({ conversationId });
+      void utils.projects.summary.invalidate({ conversationId });
+    }
+    void utils.appointments.invalidate();
+    toast.info("Payment submitted. Checking confirmation…");
+    onClose();
+    setLocation(conversationId ? `/projects/${conversationId}?view=Payments` : "/bookings");
+  };
+  const feeSummary = (fees: TransactionFees | null) => fees && <dl className="v3-facts" aria-label="Payment total">
+    <div><dt>Amount</dt><dd>${(fees.baseAmountCents / 100).toFixed(2)}</dd></div>
+    <div><dt>Platform fee</dt><dd>${(fees.platformFeeCents / 100).toFixed(2)}</dd></div>
+    <div><dt>Total · AUD</dt><dd>${(fees.clientTotalCents / 100).toFixed(2)}</dd></div>
+  </dl>;
 
   const [selectedService, setSelectedService] = useState<any>(null);
   const [requiredSittings, setRequiredSittings] = useState<number>(1);
@@ -653,7 +673,7 @@ export function BookingWizardContent({
 
   // Balance payment: include platform fee (3.4%, min $5) in display
   const balanceCents = selectedAppointmentRaw?.remainingBalanceCents || 0;
-  const balanceFeeCents = balanceCents > 0 ? Math.max(Math.round(balanceCents * 0.034), 500) : 0;
+  const balanceFeeCents = balanceCents > 0 ? calculateTransactionFees(balanceCents, "free").platformFeeCents : 0;
   const balanceTotalDollars = ((balanceCents + balanceFeeCents) / 100).toFixed(2);
 
 
@@ -903,7 +923,7 @@ export function BookingWizardContent({
                       ? Number(perSittingDeposit)
                       : Number(proposalMeta.depositAmount || 0);
                     const depositCents = Math.round(depositDollars * 100);
-                    const feeCents = Math.max(Math.round(depositCents * 0.034), 500);
+                    const feeCents = calculateTransactionFees(depositCents, "free").platformFeeCents;
                     const totalDollars = (depositCents + feeCents) / 100;
                     return (
                       <div className="flex justify-between text-[11px]">
@@ -955,6 +975,7 @@ export function BookingWizardContent({
                           returnUrl: window.location.href,
                         });
                         if (checkoutResult?.clientSecret) {
+                          setCheckoutFees(checkoutResult.fees);
                           setCheckoutClientSecret(checkoutResult.clientSecret);
                         } else if (checkoutResult?.url) {
                           // Fallback
@@ -984,14 +1005,8 @@ export function BookingWizardContent({
                 {/* ── Custom Checkout Component ── */}
                 {checkoutClientSecret && (
                   <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <DotsCheckout clientSecret={checkoutClientSecret} amountCents={0} onComplete={() => {
-                      if (conversationId) {
-                        utils.messages.list.invalidate({ conversationId });
-                      }
-                      utils.appointments.getClientBookings.invalidate();
-                      toast.success("Deposit paid! Your sessions are confirmed.");
-                    }} />
-                  </div>
+                    {feeSummary(checkoutFees)}
+                    <DotsCheckout clientSecret={checkoutClientSecret} amountCents={checkoutFees?.clientTotalCents || 0} onComplete={paymentSubmitted} onBack={() => { setCheckoutClientSecret(null); setPaymentMethod(null); }} />                  </div>
                 )}
               </motion.div>
             )}
@@ -1125,6 +1140,7 @@ export function BookingWizardContent({
                               returnUrl: window.location.href,
                             });
                             if (checkoutResult?.clientSecret) {
+                              setBalanceCheckoutFees(checkoutResult.fees);
                               setCheckoutBalanceClientSecret(checkoutResult.clientSecret);
                             } else if (checkoutResult?.url) {
                               window.location.href = checkoutResult.url;
@@ -1146,14 +1162,8 @@ export function BookingWizardContent({
                       </button>
                     ) : (
                       <div className="mt-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        <DotsCheckout clientSecret={checkoutBalanceClientSecret} amountCents={0} onComplete={() => {
-                      if (conversationId) {
-                        utils.messages.list.invalidate({ conversationId });
-                      }
-                      utils.appointments.getClientBookings.invalidate();
-                      toast.success("Balance paid!");
-                    }} />
-                      </div>
+                        {feeSummary(balanceCheckoutFees)}
+                        <DotsCheckout clientSecret={checkoutBalanceClientSecret} amountCents={balanceCheckoutFees?.clientTotalCents || 0} onComplete={paymentSubmitted} onBack={() => { setCheckoutBalanceClientSecret(null); setIsClientPayingBalance(false); }} />                      </div>
                     )}
                   </div>
                 ) : (
@@ -1319,7 +1329,7 @@ export function BookingWizardContent({
             {isArtist && (
               <motion.div variants={fab.animation.item} className="pt-1">
                 <button
-                  onClick={() => setShowEditBookingModal(true)}
+                  onClick={onEditBooking || (() => setShowEditBookingModal(true))}
                   className={cn(
                     card.base,
                     card.bg,
@@ -1568,7 +1578,7 @@ export function BookingWizardContent({
           {isArtist && (
             <motion.div variants={fab.animation.item} className="pt-1">
               <button
-                onClick={() => setShowEditBookingModal(true)}
+                onClick={onEditBooking || (() => setShowEditBookingModal(true))}
                 className={cn(
                   card.base,
                   card.bg,

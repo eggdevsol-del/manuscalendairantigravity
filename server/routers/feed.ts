@@ -1,3 +1,4 @@
+import { publicServices } from "../../shared/publicServices";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
@@ -422,6 +423,7 @@ export const feedRouter = router({
         bio: user.bio,
         showCity: !!settings.showCity,
         bookingEnabled: !!settings.funnelEnabled,
+        services: publicServices(settings.services),
         keywords: keywordsArray,
         portfolio: portfolioItems.map(p => ({
           id: p.id,

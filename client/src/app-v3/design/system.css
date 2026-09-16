@@ -2046,3 +2046,16 @@ body:has(.tattoi-notice) .v3-scroll {
     grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   }
 }
+
+/* Shopfront shares the app header and full-width segmented-control geometry. */
+.ivory-shop-intro { padding: 12px 0 22px; max-width: 640px; }
+.ivory-shop-intro h2 { font-family: Georgia, serif; font-weight: 400; font-size: clamp(30px, 6vw, 46px); line-height: 1.12; letter-spacing: -1px; margin: 14px 0; }
+.ivory-shop-intro p { color: var(--v3-muted); max-width: 38ch; line-height: 1.6; }
+.ivory-shop-product { appearance: none; background: transparent; border: 0; color: var(--v3-ink); padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; min-width: 0; cursor: pointer; }
+.ivory-shop-product:focus-visible { outline: 2px solid var(--v3-ink); outline-offset: 5px; border-radius: var(--v3-radius); }
+.ivory-shop-product-image { width: 100%; aspect-ratio: 4 / 5; border-radius: var(--v3-radius); overflow: hidden; background: var(--v3-paper); display: grid; place-items: center; }
+.ivory-shop-product-image img { width: 100%; height: 100%; object-fit: contain; }
+.ivory-shop-product-image span { font-family: Georgia, serif; color: var(--v3-muted); font-size: 26px; }
+.ivory-shop-product-name { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
+.ivory-shop-fee-note { font-size: 12px; line-height: 1.5; margin-top: 24px; }
+@media (max-width: 500px) { .v3-shop-grid:has(.ivory-shop-product) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }

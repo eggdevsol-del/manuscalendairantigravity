@@ -141,3 +141,74 @@ describe("Custom checkout server contract", () => {
     });
   });
 });
+
+describe("storefront fee collection", () => {
+  it.each(["aud", "nzd"])(
+    "collects the exact displayed %s total, including delivery and the platform fee",
+    async currency => {
+      const create = vi
+        .spyOn(stripe.checkout.sessions, "create")
+        .mockResolvedValue({
+          id: "cs_fees",
+          client_secret: "cs_fees_secret",
+          url: null,
+        } as any);
+      const { calculateTransactionFees } = await import("../../shared/fees");
+      const fees = calculateTransactionFees(21000, "free");
+      await createStorefrontCheckoutSession({
+        orderId: 5,
+        items: [{ productName: "Print", priceCents: 10000, quantity: 2 }],
+        artistName: "Artist",
+        clientTotalCents: fees.clientTotalCents,
+        platformFeeCents: fees.platformFeeCents,
+        artistFeeCents: fees.artistFeeCents,
+        shippingCostCents: 1000,
+        fulfillmentMethod: "delivery",
+        stripeConnectAccountId: "acct_artist",
+        slug: "artist",
+        currency,
+      });
+      const config = create.mock.calls[0][0]!;
+      const itemsTotal = config.line_items!.reduce(
+        (sum, item) => sum + item.price_data!.unit_amount! * item.quantity!,
+        0
+      );
+      const shipping =
+        config.shipping_options![0].shipping_rate_data!.fixed_amount.amount;
+      expect(itemsTotal + shipping).toBe(21714);
+      expect(
+        config.line_items!.filter(
+          item => item.price_data!.product_data!.name === "Platform fee"
+        )
+      ).toHaveLength(1);
+      expect(config.payment_intent_data!.application_fee_amount).toBe(1134);
+      expect(21714 - config.payment_intent_data!.application_fee_amount!).toBe(
+        20580
+      );
+      expect(config.payment_intent_data!.transfer_data!.destination).toBe(
+        "acct_artist"
+      );
+      expect(
+        config.line_items!.every(item => item.price_data!.currency === currency)
+      ).toBe(true);
+    }
+  );
+  it("rejects a mismatched total before creating any Stripe session", async () => {
+    const create = vi.spyOn(stripe.checkout.sessions, "create");
+    await expect(
+      createStorefrontCheckoutSession({
+        orderId: 1,
+        items: [{ productName: "Print", priceCents: 1000, quantity: 1 }],
+        artistName: "Artist",
+        clientTotalCents: 1000,
+        platformFeeCents: 500,
+        artistFeeCents: 20,
+        shippingCostCents: 0,
+        fulfillmentMethod: "pickup",
+        stripeConnectAccountId: "acct_artist",
+        slug: "artist",
+      })
+    ).rejects.toThrow("inconsistent");
+    expect(create).not.toHaveBeenCalled();
+  });
+});

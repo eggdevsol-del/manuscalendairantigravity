@@ -380,7 +380,39 @@ export async function createStorefrontCheckoutSession(opts: {
   const baseUrl =
     process.env.APP_URL || process.env.VITE_APP_URL || "https://www.tattoi.app";
 
-  // If using connect, GST/platform fee goes to platform account
+  // Refuse inconsistent totals before creating a payable Stripe session.
+  const amounts = [
+    opts.clientTotalCents,
+    opts.platformFeeCents,
+    opts.artistFeeCents,
+    opts.shippingCostCents,
+  ];
+  const subtotal = opts.items.reduce(
+    (sum, item) => sum + item.priceCents * item.quantity,
+    0
+  );
+  const expectedTotal =
+    subtotal +
+    opts.platformFeeCents +
+    (opts.fulfillmentMethod === "delivery" ? opts.shippingCostCents : 0);
+  if (
+    !opts.items.length ||
+    amounts.some(value => !Number.isSafeInteger(value) || value < 0) ||
+    opts.items.some(
+      item =>
+        !Number.isSafeInteger(item.priceCents) ||
+        item.priceCents <= 0 ||
+        !Number.isSafeInteger(item.quantity) ||
+        item.quantity <= 0
+    ) ||
+    expectedTotal !== opts.clientTotalCents ||
+    opts.artistFeeCents > subtotal + opts.shippingCostCents ||
+    (opts.fulfillmentMethod !== "delivery" && opts.shippingCostCents !== 0)
+  ) {
+    throw new Error(
+      "Checkout amounts are inconsistent. Refresh your cart before paying."
+    );
+  }
   const applicationFeeCents = opts.platformFeeCents + opts.artistFeeCents;
 
   const line_items = opts.items.map(item => ({

@@ -126,8 +126,8 @@ export const authRouter = router({
         let distance: number | null = null;
 
         if (
-          input?.lat &&
-          input?.lng &&
+          input?.lat != null &&
+          input?.lng != null &&
           artist.lat != null &&
           artist.lng != null
         ) {

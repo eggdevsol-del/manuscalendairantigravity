@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "./CartContext";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
@@ -37,6 +37,13 @@ export function StorefrontCheckoutFAB({
   const [identity, setIdentity] = useState<OrderIdentity | null>(returnedOrder);
   const [secret, setSecret] = useState<string | null>(null);
   const [chargedTotal, setChargedTotal] = useState(0);
+  const [confirmedQuote, setConfirmedQuote] = useState<{
+    subtotal: number;
+    shipping: number;
+    fee: number;
+    currency: string;
+  } | null>(null);
+  const preparing = useRef(false);
   const available = (["pickup", "delivery", "digital"] as const).filter(
     method =>
       items.every(
@@ -64,7 +71,9 @@ export function StorefrontCheckoutFAB({
     if (identity) setIsCartOpen(true);
   }, []);
   const pay = async () => {
-    if (!method || checkout.isPending || cancel.isPending) return;
+    if (!method || preparing.current || checkout.isPending || cancel.isPending)
+      return;
+    preparing.current = true;
     try {
       const result = await checkout.mutateAsync({
         items: items.map(item => ({
@@ -76,12 +85,20 @@ export function StorefrontCheckoutFAB({
       });
       setIdentity({ orderId: result.orderId, sessionId: result.sessionId });
       setChargedTotal(result.totalCents);
+      setConfirmedQuote({
+        subtotal: result.subtotalCents,
+        shipping: result.shippingCents,
+        fee: result.platformFeeCents,
+        currency: result.currency,
+      });
       if (result.clientSecret) {
         setSecret(result.clientSecret);
         setStep("payment");
       } else if (result.url) window.location.assign(result.url);
     } catch {
       /* Mutation error is rendered below. */
+    } finally {
+      preparing.current = false;
     }
   };
   const edit = async () => {
@@ -153,7 +170,8 @@ export function StorefrontCheckoutFAB({
                       tone="secondary"
                       aria-label={`Increase ${item.title}`}
                       disabled={
-                        checkout.isPending || item.quantity >= item.maxInventory
+                        checkout.isPending ||
+                        item.quantity >= Math.min(item.maxInventory, 100)
                       }
                       onClick={() => updateQuantity(item.cartItemId, 1)}
                     >
@@ -236,10 +254,42 @@ export function StorefrontCheckoutFAB({
       )}
       {step === "payment" && secret && (
         <div className="min-h-[500px]">
+          {confirmedQuote && (
+            <dl className="v3-facts" aria-label="Confirmed checkout total">
+              <div>
+                <dt>Items</dt>
+                <dd>
+                  {new Intl.NumberFormat("en-AU", {
+                    style: "currency",
+                    currency: confirmedQuote.currency,
+                  }).format(confirmedQuote.subtotal / 100)}
+                </dd>
+              </div>
+              <div>
+                <dt>Shipping</dt>
+                <dd>
+                  {new Intl.NumberFormat("en-AU", {
+                    style: "currency",
+                    currency: confirmedQuote.currency,
+                  }).format(confirmedQuote.shipping / 100)}
+                </dd>
+              </div>
+              <div>
+                <dt>Platform fee</dt>
+                <dd>
+                  {new Intl.NumberFormat("en-AU", {
+                    style: "currency",
+                    currency: confirmedQuote.currency,
+                  }).format(confirmedQuote.fee / 100)}
+                </dd>
+              </div>
+            </dl>
+          )}
           <DotsCheckout
             collectPhone
             clientSecret={secret}
             amountCents={chargedTotal}
+            currency={confirmedQuote?.currency || currency}
             onComplete={() => setStep("confirming")}
             onBack={() => void edit()}
           />

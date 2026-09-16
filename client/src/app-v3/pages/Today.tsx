@@ -233,7 +233,7 @@ export default function Today() {
             </ActionLink>
             <Row
               title="Your orders"
-              detail="Track deliveries and reorder"
+              detail="Review orders and payment status"
               href="/supply-orders"
             />
           </Panel>

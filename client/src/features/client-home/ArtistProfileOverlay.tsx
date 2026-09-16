@@ -311,7 +311,7 @@ export default function ArtistProfileOverlay({
                             className="artist-profile-book-btn"
                             onClick={() => setShowBookingForm(true)}
                           >
-                            Book Consult
+                            Request consultation
                           </button>
                         </div>
 

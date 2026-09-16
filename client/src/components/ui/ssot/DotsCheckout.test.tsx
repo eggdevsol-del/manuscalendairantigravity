@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { useEffect } from "react";
 const confirm = vi.fn();
+const confirmIntent = vi.fn();
 const state = {
   type: "success",
   checkout: {
@@ -33,15 +34,16 @@ vi.mock("@stripe/react-stripe-js/checkout", () => ({
   ShippingAddressElement: () => <div>Secure delivery address</div>,
 }));
 vi.mock("@stripe/react-stripe-js", () => ({
-  Elements: () => <div>PaymentIntent Elements</div>,
-  PaymentElement: () => null,
-  useStripe: () => null,
-  useElements: () => null,
+  Elements: ({ children }: any) => <div>PaymentIntent Elements{children}</div>,
+  PaymentElement: ({ onReady }: any) => { useEffect(() => { onReady(); }, []); return <div>Secure intent card fields</div>; },
+  useStripe: () => ({ confirmPayment: confirmIntent }),
+  useElements: () => ({}),
 }));
 import { DotsCheckout } from "./DotsCheckout";
 afterEach(cleanup);
 beforeEach(() => {
   confirm.mockReset();
+  confirmIntent.mockReset();
   state.checkout.recurring = null;
   state.checkout.shippingOptions = [];
 });
@@ -107,4 +109,42 @@ describe("Custom Stripe checkout", () => {
     expect(screen.getByText(/charged monthly until canceled/)).toBeTruthy();
     expect(screen.getByText("Secure delivery address")).toBeTruthy();
   });
+  it("does not submit twice while a payment is processing", async () => {
+    let finish!: (value: unknown) => void;
+    confirm.mockReturnValue(
+      new Promise(resolve => {
+        finish = resolve;
+      })
+    );
+    const complete = vi.fn();
+    render(
+      <DotsCheckout
+        clientSecret="cs_test_secret"
+        amountCents={12345}
+        onComplete={complete}
+      />
+    );
+    const button = screen.getByRole("button", { name: "Pay A$123.45" });
+    fireEvent.submit(button.closest("form")!);
+    fireEvent.submit(button.closest("form")!);
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(complete).not.toHaveBeenCalled();
+    finish({ type: "success" });
+    await waitFor(() => expect(complete).toHaveBeenCalledTimes(1));
+  });
+  it("shows the full deposit including the fee and prevents duplicate PaymentIntent submissions", async () => {
+    let finish!: (value: unknown) => void;
+    confirmIntent.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    const complete = vi.fn();
+    render(<DotsCheckout clientSecret="pi_test_secret" amountCents={15510} onComplete={complete} />);
+    const button = screen.getByRole("button", { name: "Pay A$155.10" });
+    fireEvent.submit(button.closest("form")!);
+    fireEvent.submit(button.closest("form")!);
+    expect(confirmIntent).toHaveBeenCalledTimes(1);
+    expect(complete).not.toHaveBeenCalled();
+    finish({ error: { type: "card_error", message: "Card declined" } });
+    await screen.findByText("Card declined");
+    expect(complete).not.toHaveBeenCalled();
+  });
+
 });

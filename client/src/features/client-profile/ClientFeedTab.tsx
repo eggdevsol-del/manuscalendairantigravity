@@ -626,7 +626,7 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
                 <div className="text-left">
                   <p className="font-semibold text-sm">See Artist Map</p>
                   <p className="text-xs text-muted-foreground">
-                    {(allArtists as any[]).filter((a: any) => a.lat && a.lng).length} artists near Brisbane
+                    {(allArtists as any[]).filter((a: any) => a.lat && a.lng).length} artists on the map
                   </p>
                 </div>
               </div>

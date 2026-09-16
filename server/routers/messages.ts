@@ -1,3 +1,4 @@
+import { declineLegacyProposal } from "../services/declineLegacyProposal";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { eventBus } from "../_core/eventBus";
@@ -7,6 +8,11 @@ import { notificationOutbox, appointments } from "../../drizzle/schema";
 import { and, eq, gt, ne } from "drizzle-orm";
 
 export const messagesRouter = router({
+  declineProposal: protectedProcedure
+    .input(z.object({ messageId: z.number().int().positive() }))
+    .mutation(({ input, ctx }) =>
+      declineLegacyProposal(input.messageId, ctx.user.id)
+    ),
   list: protectedProcedure
     .input(
       z.object({

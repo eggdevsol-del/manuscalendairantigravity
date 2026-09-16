@@ -124,6 +124,14 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
               ? "Bookings are currently closed"
               : "Request a booking"}
           </Action>
+          {artist.slug && (
+            <ActionLink
+              href={`/shop/${encodeURIComponent(artist.slug)}`}
+              tone="secondary"
+            >
+              Shopfront
+            </ActionLink>
+          )}
           {!!artist.portfolio.length && (
             <Section title="Selected work">
               <div className="v3-file-grid">
@@ -166,6 +174,7 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
           <Intake
             artistId={artist.id}
             artistName={artist.displayName}
+            services={artist.services || []}
             slug={artist.slug || params?.slug || ""}
             open={open && artist.bookingEnabled !== false}
             onClose={() => setOpen(false)}
@@ -179,12 +188,14 @@ function Intake({
   artistId,
   artistName,
   slug,
+  services,
   open,
   onClose,
 }: {
   artistId: string;
   artistName: string;
   slug: string;
+  services: { name: string; description: string }[];
   open: boolean;
   onClose: () => void;
 }) {
@@ -201,6 +212,7 @@ function Intake({
     size: "",
     timeframe: "",
   });
+  const [service, setService] = useState("");
   const [step, setStep] = useState(1);
   const [selectedStyles, setStyles] = useState<string[]>([]);
   const [refs, setRefs] = useState<Attachment[]>([]);
@@ -286,6 +298,7 @@ function Intake({
       if (user) {
         const description = [
           draft.description,
+          service && "Requested service: " + service,
           "Style: " + selectedStyles.join(", "),
           draft.size && "Size: " + draft.size,
           draft.placement && "Placement: " + draft.placement,
@@ -311,7 +324,12 @@ function Intake({
           phone: draft.phone.trim(),
           gender: draft.gender as "male" | "female" | "other",
           artistSlug: slug,
-          description: draft.description.trim(),
+          description: [
+            draft.description.trim(),
+            service && "Requested service: " + service,
+          ]
+            .filter(Boolean)
+            .join("\n"),
           styles: selectedStyles,
           referenceUrls,
           placementUrls,
@@ -447,6 +465,32 @@ function Intake({
             {step === 1 && (
               <Section title="Your idea">
                 <div className="v3-form">
+                  {services.length > 0 && (
+                    <label>
+                      Service
+                      <select
+                        aria-label="Service"
+                        value={service}
+                        onChange={event => setService(event.target.value)}
+                      >
+                        <option value="">Help me choose</option>
+                        {services.map(item => (
+                          <option key={item.name} value={item.name}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                      {services.find(item => item.name === service)
+                        ?.description && (
+                        <small>
+                          {
+                            services.find(item => item.name === service)
+                              ?.description
+                          }
+                        </small>
+                      )}
+                    </label>
+                  )}
                   <label>
                     What would you like tattooed?
                     <textarea
@@ -630,6 +674,7 @@ function Intake({
             {step === 6 && (
               <Section title="Review your request">
                 <p>{draft.description}</p>
+                <Row title="Service" detail={service || "Help me choose"} />
                 <Row title="Style" detail={selectedStyles.join(", ")} />
                 <Row
                   title="Placement & size"

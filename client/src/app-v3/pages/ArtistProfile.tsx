@@ -101,7 +101,11 @@ function PublicDetails({ settings }: { settings: Settings }) {
     },
   });
   return (
-    <Section title="What clients see">
+    <Section title="Your in-app profile">
+      <p className="v3-muted">
+        Contact visibility applies to signed-in clients. Your public booking
+        page keeps contact details private.
+      </p>
       <form
         className="v3-form"
         onChange={() => save.reset()}
