@@ -1,3 +1,5 @@
+import { SittingCard } from "../components/SittingCard";
+import { SittingSummary } from "../components/SittingSummary";
 import { HomeTabs } from "../design/HomeTabs";
 import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -219,22 +221,27 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
                 <Feedback empty="No sessions yet. Start a booking from the conversation." />
               )}
               {data.sessions.map(s => (
-                <Row
+                <SittingCard
                   key={s.id}
                   title={s.title}
-                  detail={
+                  detail={`${bookingDate(s.startTime, s.timeZone)} · ${statusLabel(s.status)}`}
+                >
+                  {s.conversationId ? (
+                    <SittingSummary
+                      conversationId={s.conversationId}
+                      appointmentId={s.id}
+                    />
+                  ) : (
                     <>
-                      {bookingDate(s.startTime, s.timeZone)} ·{" "}
-                      {statusLabel(s.status)}
+                      <p>{money(s.paidCents)} paid</p>
+                      <ActionLink
+                        href={`/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`}
+                      >
+                        Open sitting & actions
+                      </ActionLink>
                     </>
-                  }
-                  href={
-                    s.conversationId
-                      ? `/projects/${s.conversationId}?session=${s.id}`
-                      : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`
-                  }
-                  trailing={<span>{money(s.paidCents || 0)} paid</span>}
-                />
+                  )}
+                </SittingCard>
               ))}
             </Section>
           )}

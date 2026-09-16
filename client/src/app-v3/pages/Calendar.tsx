@@ -1,3 +1,4 @@
+import { SittingCard } from "../components/SittingCard";
 import { CalendarTimeline } from "../design/CalendarTimeline";
 import { useState, useMemo } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
@@ -60,7 +61,6 @@ export default function Calendar() {
         ),
     [c.eventsByDay, artist]
   );
-  const selected = events.find(a => a.id === selectedId);
   const dayEvents = events
     .filter(
       a =>
@@ -146,7 +146,10 @@ export default function Calendar() {
         ))}
       </div>
       <Feedback loading={c.isLoading} error={c.error} onRetry={c.refetch} />
-      <div className="v3-calendar-workspace" data-selected={!!selected}>
+      <div
+        className="v3-calendar-workspace v3-calendar-inline"
+        data-selected={selectedId !== null}
+      >
         <CalendarTimeline
           events={events}
           date={c.activeDate}
@@ -154,6 +157,15 @@ export default function Calendar() {
           onDate={c.setActiveDate}
           onSelect={select}
           selectedId={selectedId}
+          onDeselect={() => setSelectedId(null)}
+          renderDetails={appointment => (
+            <BookingInspector
+              appointment={appointment}
+              onChange={c.refetch}
+              onClose={() => setSelectedId(null)}
+              showCloseButton={false}
+            />
+          )}
           zone={zone}
           loading={c.isFetching}
           onBook={setBookingDateValue}
@@ -177,12 +189,18 @@ export default function Calendar() {
             {agendaExpanded && (
               <section className="v3-mobile-agenda" aria-label="Day agenda">
                 {dayEvents.map(a => (
-                  <Row
+                  <SittingCard
                     key={a.id}
                     title={a.client?.name || a.clientName || a.title}
                     detail={`${bookingTime(a.startTime, zone)} · ${a.title} · ${statusLabel(a.status)}`}
-                    onClick={() => select(a)}
-                  />
+                  >
+                    <BookingInspector
+                      appointment={a}
+                      onChange={c.refetch}
+                      onClose={() => {}}
+                      showCloseButton={false}
+                    />
+                  </SittingCard>
                 ))}
                 {!dayEvents.length && (
                   <p className="v3-muted">
@@ -193,54 +211,7 @@ export default function Calendar() {
             )}
           </>
         )}
-        {wide && (
-          <aside
-            className="v3-calendar-inspector"
-            aria-label="Selected booking"
-          >
-            {selected ? (
-              <BookingInspector
-                appointment={selected}
-                onChange={c.refetch}
-                onClose={() => setSelectedId(null)}
-              />
-            ) : (
-              <Section title={format(c.activeDate, "EEEE, d MMMM")}>
-                <p className="v3-muted">
-                  Select a session to see the client, forms and payment actions
-                  here.
-                </p>
-                {dayEvents.map(a => (
-                  <Row
-                    key={a.id}
-                    title={a.client?.name || a.clientName || a.title}
-                    detail={bookingTime(a.startTime, zone)}
-                    onClick={() => select(a)}
-                  />
-                ))}
-                {!dayEvents.length && <p>No sessions booked.</p>}
-              </Section>
-            )}
-          </aside>
-        )}
       </div>
-      {!wide && (
-        <SheetShell
-          isOpen={!!selected}
-          onClose={() => setSelectedId(null)}
-          title="Booking"
-        >
-          {selected && (
-            <BookingInspector
-              appointment={selected}
-              onChange={c.refetch}
-              onClose={() => setSelectedId(null)}
-              // The enclosing sheet owns dismissal on iPhone.
-              showCloseButton={false}
-            />
-          )}
-        </SheetShell>
-      )}
       <SheetShell
         isOpen={!!bookingDateValue}
         onClose={() => setBookingDateValue(null)}

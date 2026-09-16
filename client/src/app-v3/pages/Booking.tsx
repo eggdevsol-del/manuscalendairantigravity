@@ -1,3 +1,4 @@
+import { SittingCard } from "../components/SittingCard";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
@@ -61,6 +62,7 @@ export default function Booking() {
           !["cancelled", "completed", "no-show"].includes(s.status) &&
           instant(s.endsAt) > new Date()
       ) || data?.sessions.at(-1);
+  const [collapsedSitting, setCollapsedSitting] = useState<number | null>(null);
   const [namingFailed, setNamingFailed] = useState(false);
   const [namingRetry, setNamingRetry] = useState(0);
   const [requestDraft, setRequestDraft] = useState("");
@@ -154,6 +156,191 @@ export default function Booking() {
   ]
     .filter(Boolean)
     .join(" · ");
+  const overview = data && (
+    <div className="v3-grid">
+      <div className="v3-stack">
+        {client &&
+          pending.map(p => (
+            <Panel tone="attention" key={p.id}>
+              <h2>{p.projectName || "Review your booking proposal"}</h2>
+              <p>
+                {p.paymentState
+                  ? "Your payment is being checked. Do not pay again while we confirm the booking."
+                  : "Review the dates, terms and deposit to secure your booking."}
+              </p>
+              <Action onClick={() => setPlan(p.id)}>
+                {p.paymentState ? (
+                  "Check payment confirmation"
+                ) : (
+                  <>Review {money(p.depositCents)} deposit</>
+                )}
+              </Action>
+            </Panel>
+          ))}
+        {session ? (
+          <>
+            <div>
+              <Status
+                tone={
+                  session.status === "confirmed" ||
+                  session.status === "completed"
+                    ? "success"
+                    : session.status === "cancelled"
+                      ? "danger"
+                      : "warning"
+                }
+              >
+                {statusLabel(session.status)}
+              </Status>
+            </div>
+            <Row
+              title={bookingDate(session.startsAt, session.timeZone)}
+              detail={`Times in ${session.timeZone.replaceAll("_", " ")}`}
+              icon={<CalendarDays />}
+            />
+            {data.location && <Row title={data.location} icon={<MapPin />} />}
+            <Section title="Ready for the session">
+              <Row
+                title={
+                  session.paidCents > 0
+                    ? "Payment received"
+                    : "Payment outstanding"
+                }
+                detail={money(session.paidCents)}
+                icon={session.paidCents > 0 ? <CheckCircle2 /> : <Circle />}
+                onClick={() => navigate("Payments")}
+              />
+              {data.forms
+                .filter(f => f.appointmentId === session.id)
+                .map(f => (
+                  <Row
+                    key={f.id}
+                    title={f.title}
+                    detail={statusLabel(f.status)}
+                    icon={f.status === "signed" ? <CheckCircle2 /> : <Circle />}
+                    onClick={
+                      client && f.status !== "signed"
+                        ? () => setSign(true)
+                        : undefined
+                    }
+                  />
+                ))}
+              {!data.forms.some(f => f.appointmentId === session.id) && (
+                <p className="v3-muted">No forms attached to this session.</p>
+              )}
+              {client && !!forms.data?.length && (
+                <Action onClick={() => setSign(true)}>
+                  Complete your consent forms
+                </Action>
+              )}
+              <Feedback
+                error={client ? forms.error : undefined}
+                onRetry={() => forms.refetch()}
+              />
+            </Section>
+          </>
+        ) : (
+          <Panel>
+            <h2>Your request is with your artist</h2>
+            <p>
+              Your proposal and appointment details will appear here when ready.
+            </p>
+          </Panel>
+        )}
+        {briefs.length > 0 && (
+          <Section title="Project design notes">
+            <p className="v3-muted">
+              These references are linked to this tattoo project.
+            </p>
+            {briefs.map(b => (
+              <div key={b.id} className="v3-stack">
+                <p style={{ whiteSpace: "pre-wrap" }}>
+                  {b.description || "Discuss your design in Messages."}
+                </p>
+                {b.placement && (
+                  <p className="v3-muted">Placement: {b.placement}</p>
+                )}
+              </div>
+            ))}
+          </Section>
+        )}
+        {session?.status === "completed" && (
+          <Aftercare appointmentId={session.id} />
+        )}
+      </div>
+      <aside className="v3-stack">
+        {session && (
+          <Section title="Payment · AUD">
+            <dl className="v3-facts">
+              <div>
+                <dt>Session estimate</dt>
+                <dd>{money(session.estimateCents)}</dd>
+              </div>
+              <div>
+                <dt>Recorded paid</dt>
+                <dd>{money(session.paidCents)}</dd>
+              </div>
+              <div>
+                <dt>Balance due</dt>
+                <dd>{money(session.remainingCents)}</dd>
+              </div>
+            </dl>
+            {client && session.pendingRequest && (
+              <ActionLink
+                tone="primary"
+                href={`/pay/${session.pendingRequest.token}`}
+              >
+                Review {money(session.pendingRequest.amountCents)} request
+              </ActionLink>
+            )}
+            {client &&
+              !session.pendingRequest &&
+              session.remainingCents > 0 &&
+              !["cancelled", "no-show"].includes(session.status) && (
+                <Action onClick={() => setBalance(true)}>Review balance</Action>
+              )}
+          </Section>
+        )}
+        <ActionLink
+          href={`/projects/${id}?${session ? `session=${session.id}&` : ""}view=Messages`}
+        >
+          <MessageCircle />
+          Message{" "}
+          {client
+            ? data.artist?.name || "your artist"
+            : data.client?.name || "client"}
+        </ActionLink>
+        {!client && session && (
+          <SessionActions session={session} onChange={refresh} />
+        )}{" "}
+        {client &&
+          session &&
+          !["cancelled", "completed", "no-show"].includes(session.status) && (
+            <Section title="Change this sitting">
+              <p className="v3-muted">
+                Send a request to your artist. Your appointment stays booked
+                until they confirm a change. Their cancellation policy applies.
+              </p>
+              {["Request a date change", "Request cancellation"].map(label => (
+                <Action
+                  key={label}
+                  tone="secondary"
+                  onClick={() => {
+                    setRequestDraft(
+                      `${label} for ${session.projectName || "my tattoo project"}, sitting ${session.sessionIndex || 1} on ${bookingDate(session.startsAt, session.timeZone)}. `
+                    );
+                    navigate("Messages");
+                  }}
+                >
+                  {label}
+                </Action>
+              ))}
+            </Section>
+          )}
+        {client && <EarlierAppointment conversationId={id} />}
+      </aside>
+    </div>
+  );
   return (
     <Screen
       title={session?.projectName || "Tattoo project"}
@@ -230,230 +417,33 @@ export default function Booking() {
               </Action>
             </Panel>
           )}
-          {siblings.length > 1 && (
+          {siblings.length > 0 && (
             <Section title="Project sittings">
               <ol className="v3-sitting-list" aria-label="Project sittings">
                 {siblings.map((s, i) => (
                   <li key={s.id} data-next={s.id === session?.id}>
-                    <Row
+                    <SittingCard
                       title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}`}
                       detail={bookingDate(s.startsAt, s.timeZone)}
-                      onClick={() => navigate(tab, s.id)}
-                    />
+                      expanded={
+                        tab === "Overview" &&
+                        s.id === session?.id &&
+                        collapsedSitting !== s.id
+                      }
+                      onExpandedChange={open => {
+                        setCollapsedSitting(open ? null : s.id);
+                        if (open) navigate("Overview", s.id);
+                      }}
+                    >
+                      {s.id === session?.id && overview}
+                    </SittingCard>
                   </li>
                 ))}
               </ol>
             </Section>
           )}
           {tab === "Messages" && <Thread id={id} initialDraft={requestDraft} />}
-          {tab === "Overview" && (
-            <div className="v3-grid">
-              <div className="v3-stack">
-                {client &&
-                  pending.map(p => (
-                    <Panel tone="attention" key={p.id}>
-                      <h2>{p.projectName || "Review your booking proposal"}</h2>
-                      <p>
-                        {p.paymentState
-                          ? "Your payment is being checked. Do not pay again while we confirm the booking."
-                          : "Review the dates, terms and deposit to secure your booking."}
-                      </p>
-                      <Action onClick={() => setPlan(p.id)}>
-                        {p.paymentState ? (
-                          "Check payment confirmation"
-                        ) : (
-                          <>Review {money(p.depositCents)} deposit</>
-                        )}
-                      </Action>
-                    </Panel>
-                  ))}
-                {session ? (
-                  <>
-                    <div>
-                      <Status
-                        tone={
-                          session.status === "confirmed" ||
-                          session.status === "completed"
-                            ? "success"
-                            : session.status === "cancelled"
-                              ? "danger"
-                              : "warning"
-                        }
-                      >
-                        {statusLabel(session.status)}
-                      </Status>
-                    </div>
-                    <Row
-                      title={bookingDate(session.startsAt, session.timeZone)}
-                      detail={`Times in ${session.timeZone.replaceAll("_", " ")}`}
-                      icon={<CalendarDays />}
-                    />
-                    {data.location && (
-                      <Row title={data.location} icon={<MapPin />} />
-                    )}
-                    <Section title="Ready for the session">
-                      <Row
-                        title={
-                          session.paidCents > 0
-                            ? "Payment received"
-                            : "Payment outstanding"
-                        }
-                        detail={money(session.paidCents)}
-                        icon={
-                          session.paidCents > 0 ? <CheckCircle2 /> : <Circle />
-                        }
-                        onClick={() => navigate("Payments")}
-                      />
-                      {data.forms
-                        .filter(f => f.appointmentId === session.id)
-                        .map(f => (
-                          <Row
-                            key={f.id}
-                            title={f.title}
-                            detail={statusLabel(f.status)}
-                            icon={
-                              f.status === "signed" ? (
-                                <CheckCircle2 />
-                              ) : (
-                                <Circle />
-                              )
-                            }
-                            onClick={
-                              client && f.status !== "signed"
-                                ? () => setSign(true)
-                                : undefined
-                            }
-                          />
-                        ))}
-                      {!data.forms.some(
-                        f => f.appointmentId === session.id
-                      ) && (
-                        <p className="v3-muted">
-                          No forms attached to this session.
-                        </p>
-                      )}
-                      {client && !!forms.data?.length && (
-                        <Action onClick={() => setSign(true)}>
-                          Complete your consent forms
-                        </Action>
-                      )}
-                      <Feedback
-                        error={client ? forms.error : undefined}
-                        onRetry={() => forms.refetch()}
-                      />
-                    </Section>
-                  </>
-                ) : (
-                  <Panel>
-                    <h2>Your request is with your artist</h2>
-                    <p>
-                      Your proposal and appointment details will appear here
-                      when ready.
-                    </p>
-                  </Panel>
-                )}
-                {briefs.length > 0 && (
-                  <Section title="Project design notes">
-                    <p className="v3-muted">
-                      These references are linked to this tattoo project.
-                    </p>
-                    {briefs.map(b => (
-                      <div key={b.id} className="v3-stack">
-                        <p style={{ whiteSpace: "pre-wrap" }}>
-                          {b.description || "Discuss your design in Messages."}
-                        </p>
-                        {b.placement && (
-                          <p className="v3-muted">Placement: {b.placement}</p>
-                        )}
-                      </div>
-                    ))}
-                  </Section>
-                )}
-                {session?.status === "completed" && (
-                  <Aftercare appointmentId={session.id} />
-                )}
-              </div>
-              <aside className="v3-stack">
-                {session && (
-                  <Section title="Payment · AUD">
-                    <dl className="v3-facts">
-                      <div>
-                        <dt>Session estimate</dt>
-                        <dd>{money(session.estimateCents)}</dd>
-                      </div>
-                      <div>
-                        <dt>Recorded paid</dt>
-                        <dd>{money(session.paidCents)}</dd>
-                      </div>
-                      <div>
-                        <dt>Balance due</dt>
-                        <dd>{money(session.remainingCents)}</dd>
-                      </div>
-                    </dl>
-                    {client && session.pendingRequest && (
-                      <ActionLink
-                        tone="primary"
-                        href={`/pay/${session.pendingRequest.token}`}
-                      >
-                        Review {money(session.pendingRequest.amountCents)}{" "}
-                        request
-                      </ActionLink>
-                    )}
-                    {client &&
-                      !session.pendingRequest &&
-                      session.remainingCents > 0 &&
-                      !["cancelled", "no-show"].includes(session.status) && (
-                        <Action onClick={() => setBalance(true)}>
-                          Review balance
-                        </Action>
-                      )}
-                  </Section>
-                )}
-                <ActionLink
-                  href={`/projects/${id}?${session ? `session=${session.id}&` : ""}view=Messages`}
-                >
-                  <MessageCircle />
-                  Message{" "}
-                  {client
-                    ? data.artist?.name || "your artist"
-                    : data.client?.name || "client"}
-                </ActionLink>
-                {!client && session && (
-                  <SessionActions session={session} onChange={refresh} />
-                )}{" "}
-                {client &&
-                  session &&
-                  !["cancelled", "completed", "no-show"].includes(
-                    session.status
-                  ) && (
-                    <Section title="Change this sitting">
-                      <p className="v3-muted">
-                        Send a request to your artist. Your appointment stays
-                        booked until they confirm a change. Their cancellation
-                        policy applies.
-                      </p>
-                      {["Request a date change", "Request cancellation"].map(
-                        label => (
-                          <Action
-                            key={label}
-                            tone="secondary"
-                            onClick={() => {
-                              setRequestDraft(
-                                `${label} for ${session.projectName || "my tattoo project"}, sitting ${session.sessionIndex || 1} on ${bookingDate(session.startsAt, session.timeZone)}. `
-                              );
-                              navigate("Messages");
-                            }}
-                          >
-                            {label}
-                          </Action>
-                        )
-                      )}
-                    </Section>
-                  )}
-                {client && <EarlierAppointment conversationId={id} />}
-              </aside>
-            </div>
-          )}
+          {tab === "Overview" && siblings.length === 0 && overview}
           {tab === "Files" && (
             <Section title="Project reference images">
               {!briefs.some(b => b.images.length) && (

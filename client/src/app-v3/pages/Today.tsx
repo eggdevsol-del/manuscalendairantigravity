@@ -1,3 +1,5 @@
+import { SittingCard } from "../components/SittingCard";
+import { SittingSummary } from "../components/SittingSummary";
 import { WeekAgenda } from "../design/WeekAgenda";
 import { HomeTabs } from "../design/HomeTabs";
 import { DesignBrief } from "../design/DesignBrief";
@@ -17,7 +19,6 @@ import {
   money,
   bookingTime,
   instant,
-  statusLabel,
 } from "@/features/workspace/bookingPresentation";
 import {
   Action,
@@ -27,7 +28,6 @@ import {
   Row,
   Screen,
   Section,
-  Status,
 } from "../design/primitives";
 
 export default function Today() {
@@ -44,10 +44,6 @@ export default function Today() {
     sessions.find(
       s => s.status !== "completed" && instant(s.endTime).getTime() > Date.now()
     ) || day.data?.nextAppointment;
-  const forms = (day.data?.readinessForms || []).filter(
-    f => f.appointmentId === next?.id
-  );
-  const signed = forms.length > 0 && forms.every(f => f.status === "signed");
   const date = new Intl.DateTimeFormat("en-AU", {
     weekday: "long",
     day: "numeric",
@@ -143,67 +139,25 @@ export default function Today() {
             <div className="v3-stack">
               <Section title="Up next">
                 {next ? (
-                  <Panel>
-                    <p>
-                      {bookingTime(next.startTime, zone)}–
-                      {bookingTime(next.endTime, zone)}
-                    </p>
-                    <h3 className="v3-next-name">
-                      {next.client?.name || next.title}
-                    </h3>
-                    <p>
-                      {next.title}
-                      {next.sessionIndex
-                        ? ` · Session ${next.sessionIndex}${next.sessionTotal ? ` of ${next.sessionTotal}` : ""}`
-                        : ""}
-                    </p>
-                    <div className="v3-inline" style={{ marginTop: 16 }}>
-                      <Status
-                        tone={
-                          (next.totalPaidAmountCents || 0) > 0 ||
-                          next.paymentStatus === "deposit_paid"
-                            ? "success"
-                            : "warning"
-                        }
-                      >
-                        {(next.totalPaidAmountCents || 0) > 0 ||
-                        next.paymentStatus === "deposit_paid" ? (
-                          <>
-                            <CheckCircle2 />
-                            Payment received
-                          </>
-                        ) : (
-                          "Payment outstanding"
-                        )}
-                      </Status>
-                      <Status
-                        tone={
-                          signed
-                            ? "success"
-                            : forms.length
-                              ? "warning"
-                              : "neutral"
-                        }
-                      >
-                        {signed ? (
-                          <>
-                            <CheckCircle2 />
-                            Forms signed
-                          </>
-                        ) : forms.length ? (
-                          "Forms outstanding"
-                        ) : (
-                          statusLabel(next.status)
-                        )}
-                      </Status>
-                    </div>
+                  <SittingCard
+                    key={next.id}
+                    title={next.client?.name || next.title}
+                    detail={`${bookingTime(next.startTime, zone)}–${bookingTime(next.endTime, zone)} · ${next.title}`}
+                  >
+                    {next.conversationId ? (
+                      <SittingSummary
+                        conversationId={next.conversationId}
+                        appointmentId={next.id}
+                      />
+                    ) : (
+                      <ActionLink href={href(next)} tone="primary">
+                        Open sitting & actions
+                      </ActionLink>
+                    )}
                     {next.conversationId && (
                       <DesignBrief conversationId={next.conversationId} />
                     )}
-                    <ActionLink href={href(next)} tone="primary">
-                      View booking <ArrowRight />
-                    </ActionLink>
-                  </Panel>
+                  </SittingCard>
                 ) : (
                   <Panel>
                     <h3>Room for your next piece</h3>

@@ -1,3 +1,5 @@
+import { SittingCard } from "../components/SittingCard";
+import type { ReactNode } from "react";
 import { useRef, useMemo, useEffect, useLayoutEffect, useState } from "react";
 import {
   addDays,
@@ -21,6 +23,8 @@ export function CalendarTimeline({
   onDate,
   onSelect,
   selectedId,
+  renderDetails,
+  onDeselect,
   zone,
   loading = false,
   onBook,
@@ -32,6 +36,8 @@ export function CalendarTimeline({
   onDate: (date: Date) => void;
   onSelect: (event: any) => void;
   selectedId: number | null;
+  renderDetails?: (event: any) => ReactNode;
+  onDeselect?: () => void;
   zone: string;
   loading?: boolean;
   onBook?: (date: Date) => void;
@@ -74,17 +80,31 @@ export function CalendarTimeline({
       rows.sort((a, b) => +instant(a.startTime) - +instant(b.startTime));
     return result;
   }, [renderedEvents, zone]);
+  const [detailHeights, setDetailHeights] = useState<Record<number, number>>(
+    {}
+  );
+  const selectedEvent = renderedEvents.find(event => event.id === selectedId);
+  const selectedDay =
+    selectedEvent && renderDetails
+      ? formatInTimeZone(instant(selectedEvent.startTime), zone, "yyyy-MM-dd")
+      : null;
+  const extraHeight = selectedId === null ? 0 : detailHeights[selectedId] || 0;
   const offsets = useMemo(() => {
     const positions = [0];
     for (let index = 0; index < windowSize; index++) {
       const count =
         byDay.get(format(addDays(origin, index), "yyyy-MM-dd"))?.length || 0;
       positions.push(
-        positions[index] + 74 + Math.max(1, count) * (expanded ? 112 : 64)
+        positions[index] +
+          74 +
+          Math.max(1, count) * (expanded ? 112 : 64) +
+          (format(addDays(origin, index), "yyyy-MM-dd") === selectedDay
+            ? extraHeight
+            : 0)
       );
     }
     return positions;
-  }, [origin, byDay, expanded]);
+  }, [origin, byDay, expanded, selectedDay, extraHeight]);
   function indexAt(top: number) {
     let low = 0,
       high = windowSize - 1;
@@ -303,37 +323,48 @@ export function CalendarTimeline({
                 </h3>
                 {items.length ? (
                   items.map(event => (
-                    <button
-                      type="button"
+                    <SittingCard
                       key={event.id}
-                      className="v3-timeline-session"
-                      style={{
+                      headerClassName="v3-timeline-session"
+                      headerStyle={{
                         borderLeftColor:
                           services.find(s => s.name === event.title)?.color ||
                           undefined,
                       }}
-                      aria-pressed={selectedId === event.id}
-                      onClick={() => onSelect(event)}
+                      icon={
+                        <time>
+                          {bookingTime(event.startTime, zone)}
+                          <small>{bookingTime(event.endTime, zone)}</small>
+                        </time>
+                      }
+                      title={
+                        event.client?.name || event.clientName || event.title
+                      }
+                      detail={
+                        <>
+                          {event.title}
+                          {expanded && (
+                            <small>
+                              {statusLabel(event.status)} · Booking, forms &
+                              payments
+                            </small>
+                          )}
+                        </>
+                      }
+                      expanded={!!renderDetails && selectedId === event.id}
+                      onExpandedChange={open =>
+                        open ? onSelect(event) : onDeselect?.()
+                      }
+                      onDetailsHeight={height =>
+                        setDetailHeights(previous =>
+                          previous[event.id] === height
+                            ? previous
+                            : { ...previous, [event.id]: height }
+                        )
+                      }
                     >
-                      <time>
-                        {bookingTime(event.startTime, zone)}
-                        <small>{bookingTime(event.endTime, zone)}</small>
-                      </time>
-                      <span>
-                        <strong>
-                          {event.client?.name ||
-                            event.clientName ||
-                            event.title}
-                        </strong>
-                        <span>{event.title}</span>
-                        {expanded && (
-                          <small>
-                            {statusLabel(event.status)} · View booking, forms &
-                            payments
-                          </small>
-                        )}
-                      </span>
-                    </button>
+                      {renderDetails?.(event)}
+                    </SittingCard>
                   ))
                 ) : (
                   <p className="v3-timeline-empty">

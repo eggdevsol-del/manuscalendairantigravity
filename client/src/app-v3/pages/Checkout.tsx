@@ -1,3 +1,4 @@
+import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { useEffect, useState } from "react";
 import { CheckCircle2, LockKeyhole } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -168,19 +169,7 @@ export function SessionPlanCheckoutSheet({
               />
               <Section title="Your sessions">
                 {plan.items.map(item => (
-                  <Row
-                    key={item.id}
-                    title={"Session " + item.sessionIndex}
-                    detail={
-                      bookingDate(item.startsAt) +
-                      " · " +
-                      item.durationMinutes +
-                      " minutes"
-                    }
-                    trailing={
-                      <strong>{money(item.depositCents)} deposit</strong>
-                    }
-                  />
+                  <ProposedSittingCard key={item.id} item={item} />
                 ))}
               </Section>
               <Panel>

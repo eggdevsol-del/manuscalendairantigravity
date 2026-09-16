@@ -1,3 +1,4 @@
+import { sittingFinancials } from "./sittingFinancials";
 import { revisedBookingPrice } from "../domain/paymentState";
 import {
   DEFAULT_CONSENT_TEMPLATE,
@@ -69,24 +70,13 @@ function toMySQL(date: any): string | any {
 function normalizeAppointment(appt: any) {
   if (!appt) return appt;
 
-  // Backfill remainingBalanceCents for legacy appointments
-  let computedBalance = appt.remainingBalanceCents;
-  if (
-    !computedBalance &&
-    computedBalance !== 0 &&
-    appt.paymentStatus !== "fully_paid"
-  ) {
-    const expected =
-      appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
-    const paid =
-      appt.totalPaidAmountCents ||
-      (appt.depositPaid ? (appt.depositAmount || 0) * 100 : 0);
-    computedBalance = Math.max(0, expected - paid);
-  }
+  const financials = sittingFinancials(appt);
 
   return {
     ...appt,
-    remainingBalanceCents: computedBalance,
+    remainingBalanceCents: financials.remainingCents,
+    totalExpectedAmountCents: financials.estimateCents,
+    totalPaidAmountCents: financials.paidCents,
     startTime: toISO(appt.startTime),
     endTime: toISO(appt.endTime),
     actualStartTime: toISO(appt.actualStartTime),

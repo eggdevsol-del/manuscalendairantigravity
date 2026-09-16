@@ -1,3 +1,4 @@
+import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
 import { DesignBrief } from "../design/DesignBrief";
@@ -524,12 +525,7 @@ function PlanMessage({
               : statusLabel(plan.status)}
           </Status>
           {plan.items.map(item => (
-            <Row
-              key={item.id}
-              title={bookingDate(item.startsAt)}
-              detail={`${item.durationMinutes} minutes`}
-              trailing={<strong>{money(item.estimateCents)}</strong>}
-            />
+            <ProposedSittingCard key={item.id} item={item} />
           ))}
           <p>Deposit {money(plan.depositTotalCents)}</p>
           {(plan.requiresDeposit ?? plan.status === "pending") &&

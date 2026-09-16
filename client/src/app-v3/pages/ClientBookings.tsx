@@ -1,3 +1,6 @@
+import { SittingCard } from "../components/SittingCard";
+import { SittingSummary } from "../components/SittingSummary";
+import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { bookingProjectKey } from "../../../../shared/clientBookingGroups";
@@ -129,11 +132,7 @@ export default function ClientBookings() {
           </p>
           <div className="v3-sitting-list">
             {p.items.map(i => (
-              <Row
-                key={i.id}
-                title={`Sitting ${i.sessionIndex}`}
-                detail={bookingDate(i.startsAt)}
-              />
+              <ProposedSittingCard key={i.id} item={i} />
             ))}
           </div>
           <Action
@@ -243,25 +242,37 @@ export default function ClientBookings() {
                       key={a.id}
                       data-next={a.id === next.id && tab === "Upcoming"}
                     >
-                      <Row
+                      <SittingCard
                         title={`Sitting ${a.sessionIndex || index + 1} · ${statusLabel(a.status)}`}
                         detail={bookingDate(a.startsAt, a.timeZone)}
-                        href={a.conversationId ? destination(a) : undefined}
-                      />
-                      <p className="v3-muted">
-                        {a.depositPaidCents > 0
-                          ? "Deposit received"
-                          : "No deposit recorded"}{" "}
-                        · {money(a.balanceDueCents)} remaining
-                        {a.pendingFormCount
-                          ? ` · ${a.pendingFormCount} ${a.pendingFormCount === 1 ? "form" : "forms"} to complete`
-                          : ""}
-                      </p>
-                      {a.paymentRequest && a.id !== requested?.id && (
-                        <ActionLink href={`/pay/${a.paymentRequest.token}`}>
-                          Review {money(a.paymentRequest.amountCents)} request
-                        </ActionLink>
-                      )}
+                      >
+                        {a.conversationId ? (
+                          <SittingSummary
+                            conversationId={a.conversationId}
+                            appointmentId={a.id}
+                          />
+                        ) : (
+                          <>
+                            <p className="v3-muted">
+                              {a.depositPaidCents > 0
+                                ? "Deposit received"
+                                : "No deposit recorded"}{" "}
+                              · {money(a.balanceDueCents)} remaining
+                              {a.pendingFormCount
+                                ? ` · ${a.pendingFormCount} ${a.pendingFormCount === 1 ? "form" : "forms"} to complete`
+                                : ""}
+                            </p>
+                            {a.paymentRequest && a.id !== requested?.id && (
+                              <ActionLink
+                                href={`/pay/${a.paymentRequest.token}`}
+                              >
+                                Review {money(a.paymentRequest.amountCents)}{" "}
+                                request
+                              </ActionLink>
+                            )}
+                          </>
+                        )}
+                      </SittingCard>
                     </li>
                   ))}
                 </ol>

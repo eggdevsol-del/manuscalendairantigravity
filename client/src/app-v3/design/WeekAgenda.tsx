@@ -1,3 +1,5 @@
+import { SittingCard } from "../components/SittingCard";
+import { SittingSummary } from "../components/SittingSummary";
 import { useState } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
@@ -8,7 +10,7 @@ import {
   instant,
   statusLabel,
 } from "@/features/workspace/bookingPresentation";
-import { Action, ActionLink, Feedback, Row, Section } from "./primitives";
+import { Action, ActionLink, Feedback, Section } from "./primitives";
 
 export function WeekAgenda() {
   const { user } = useAuth();
@@ -60,17 +62,24 @@ export function WeekAgenda() {
           <div key={date.toISOString()}>
             <h3>{format(date, "EEEE d MMMM")}</h3>
             {sessions.map(s => (
-              <Row
+              <SittingCard
                 key={s.id}
                 title={s.client?.name || s.clientName || s.title}
-                detail={`${s.title} · ${statusLabel(s.status)}`}
-                icon={<time>{bookingTime(s.startTime, zone)}</time>}
-                href={
-                  s.conversationId
-                    ? `/projects/${s.conversationId}?session=${s.id}`
-                    : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`
-                }
-              />
+                detail={`${bookingTime(s.startTime, zone)} · ${s.title} · ${statusLabel(s.status)}`}
+              >
+                {s.conversationId ? (
+                  <SittingSummary
+                    conversationId={s.conversationId}
+                    appointmentId={s.id}
+                  />
+                ) : (
+                  <ActionLink
+                    href={`/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`}
+                  >
+                    Open sitting & actions
+                  </ActionLink>
+                )}
+              </SittingCard>
             ))}
             {!query.isLoading && !query.error && !sessions.length && (
               <p className="v3-muted">No sessions booked.</p>

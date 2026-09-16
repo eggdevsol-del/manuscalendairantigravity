@@ -82,7 +82,13 @@ export function scanOverlays(root, entry = "client/src/App.tsx") {
   if (!fs.existsSync(start))
     throw Error("Overlay scan entry is missing: " + start);
   visit(start);
-  return { modules: visited.size, violations };
+  return {
+    modules: visited.size,
+    violations,
+    files: [...visited].map(file =>
+      path.relative(root, file).replaceAll("\\", "/")
+    ),
+  };
 }
 if (
   process.argv[1] &&

@@ -1,3 +1,4 @@
+import { sittingFinancials } from "../services/sittingFinancials";
 import {
   paymentProjectKeys,
   briefProjectKeys,
@@ -55,7 +56,10 @@ export const projectsRouter = router({
             timeZone: schema.appointments.timeZone,
             status: schema.appointments.status,
             conversationId: schema.appointments.conversationId,
-            paidCents: schema.appointments.totalPaidAmountCents,
+            totalPaidAmountCents: schema.appointments.totalPaidAmountCents,
+            amountPaid: schema.appointments.amountPaid,
+            depositPaid: schema.appointments.depositPaid,
+            depositAmount: schema.appointments.depositAmount,
           })
           .from(schema.appointments)
           .where(
@@ -93,7 +97,23 @@ export const projectsRouter = router({
       return {
         client: people[0],
         conversationId: relationships[0].id,
-        sessions,
+        sessions: sessions.map(
+          ({
+            totalPaidAmountCents,
+            amountPaid,
+            depositPaid,
+            depositAmount,
+            ...session
+          }) => ({
+            ...session,
+            paidCents: sittingFinancials({
+              totalPaidAmountCents,
+              amountPaid,
+              depositPaid,
+              depositAmount,
+            }).paidCents,
+          })
+        ),
         notes,
         forms,
       };
@@ -181,6 +201,9 @@ export const projectsRouter = router({
             price: schema.appointments.price,
             expected: schema.appointments.totalExpectedAmountCents,
             paid: schema.appointments.totalPaidAmountCents,
+            amountPaid: schema.appointments.amountPaid,
+            depositPaid: schema.appointments.depositPaid,
+            depositAmount: schema.appointments.depositAmount,
             remaining: schema.appointments.remainingBalanceCents,
             paymentStatus: schema.appointments.paymentStatus,
             depositPaymentId: schema.appointments.depositPaymentId,
@@ -317,6 +340,9 @@ export const projectsRouter = router({
             price,
             expected,
             paid,
+            amountPaid,
+            depositPaid,
+            depositAmount,
             remaining,
             ...s
           }) => ({
@@ -330,11 +356,16 @@ export const projectsRouter = router({
               ) || null,
             startsAt: s.startsAt.replace(" ", "T") + "Z",
             endsAt: s.endsAt.replace(" ", "T") + "Z",
-            estimateCents: expected ?? Math.round((price || 0) * 100),
-            paidCents: paid || 0,
-            remainingCents:
-              remaining ??
-              Math.max(0, (expected ?? (price || 0) * 100) - (paid || 0)),
+            ...sittingFinancials({
+              totalExpectedAmountCents: expected,
+              totalPaidAmountCents: paid,
+              remainingBalanceCents: remaining,
+              price,
+              amountPaid,
+              depositPaid,
+              depositAmount,
+              paymentStatus: s.paymentStatus,
+            }),
           })
         ),
         plans: presentedPlans.map(p => ({

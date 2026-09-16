@@ -1,3 +1,4 @@
+import { SittingCard } from "../components/SittingCard";
 import { useMemo, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -232,9 +233,7 @@ function StudioWorkspace() {
                   void team.refetch();
                 }}
               />
-              <div
-                className={`v3-studio-split ${appointment ? "v3-studio-selected" : ""}`}
-              >
+              <div className="v3-stack">
                 <Section
                   title={`${dates.startDate.toLocaleDateString("en-AU", { day: "numeric", month: "short" })} – ${dates.endDate.toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`}
                 >
@@ -249,90 +248,96 @@ function StudioWorkspace() {
                       </Panel>
                     )}
                   {bookings.map(a => (
-                    <Row
+                    <SittingCard
                       key={a.id}
                       title={a.title || a.serviceName || "Tattoo session"}
                       detail={`${bookingDate(a.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone)} · ${team.data?.find(m => m.user.id === a.artistId)?.user.name || "Artist"} · ${a.clientName || "Client"}`}
-                      onClick={() => setSelected(a.id)}
-                      trailing={<Status>{a.status}</Status>}
-                    />
+                      expanded={selected === a.id}
+                      onExpandedChange={open => setSelected(open ? a.id : null)}
+                    >
+                      {appointment?.id === a.id && (
+                        <Panel>
+                          <div className="v3-inline">
+                            <h2>
+                              {appointment.title ||
+                                appointment.serviceName ||
+                                "Session"}
+                            </h2>
+                            <Action
+                              tone="quiet"
+                              onClick={() => setSelected(null)}
+                            >
+                              Close
+                            </Action>
+                          </div>
+                          <p>{appointment.clientName || "Client"}</p>
+                          <dl className="v3-facts">
+                            <div>
+                              <dt>Artist</dt>
+                              <dd>
+                                {team.data?.find(
+                                  m => m.user.id === appointment.artistId
+                                )?.user.name || "Artist"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Starts</dt>
+                              <dd>
+                                {bookingDate(
+                                  appointment.startTime,
+                                  Intl.DateTimeFormat().resolvedOptions()
+                                    .timeZone
+                                )}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Duration</dt>
+                              <dd>
+                                {Math.round(
+                                  (instant(appointment.endTime).getTime() -
+                                    instant(appointment.startTime).getTime()) /
+                                    60000
+                                )}{" "}
+                                minutes
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Payment</dt>
+                              <dd>
+                                {appointment.paymentStatus?.replaceAll(
+                                  "_",
+                                  " "
+                                ) ||
+                                  (appointment.depositPaid
+                                    ? "Deposit paid"
+                                    : "Awaiting deposit")}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt>Collected</dt>
+                              <dd>
+                                {money(appointment.totalPaidAmountCents || 0)}
+                              </dd>
+                            </div>
+                          </dl>
+                          {appointment.artistId === user?.id &&
+                          appointment.conversationId ? (
+                            <ActionLink
+                              href={`/projects/${appointment.conversationId}?session=${appointment.id}`}
+                            >
+                              Open booking workspace
+                            </ActionLink>
+                          ) : (
+                            <p className="v3-muted">
+                              The assigned artist manages this client’s booking
+                              and messages.
+                            </p>
+                          )}
+                        </Panel>
+                      )}
+                    </SittingCard>
                   ))}
                 </Section>
-                {appointment && (
-                  <aside className="v3-studio-inspector">
-                    <Panel>
-                      <div className="v3-inline">
-                        <h2>
-                          {appointment.title ||
-                            appointment.serviceName ||
-                            "Session"}
-                        </h2>
-                        <Action tone="quiet" onClick={() => setSelected(null)}>
-                          Close
-                        </Action>
-                      </div>
-                      <p>{appointment.clientName || "Client"}</p>
-                      <dl className="v3-facts">
-                        <div>
-                          <dt>Artist</dt>
-                          <dd>
-                            {team.data?.find(
-                              m => m.user.id === appointment.artistId
-                            )?.user.name || "Artist"}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Starts</dt>
-                          <dd>
-                            {bookingDate(
-                              appointment.startTime,
-                              Intl.DateTimeFormat().resolvedOptions().timeZone
-                            )}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Duration</dt>
-                          <dd>
-                            {Math.round(
-                              (instant(appointment.endTime).getTime() -
-                                instant(appointment.startTime).getTime()) /
-                                60000
-                            )}{" "}
-                            minutes
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Payment</dt>
-                          <dd>
-                            {appointment.paymentStatus?.replaceAll("_", " ") ||
-                              (appointment.depositPaid
-                                ? "Deposit paid"
-                                : "Awaiting deposit")}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Collected</dt>
-                          <dd>
-                            {money(appointment.totalPaidAmountCents || 0)}
-                          </dd>
-                        </div>
-                      </dl>
-                      {appointment.artistId === user?.id &&
-                      appointment.conversationId ? (
-                        <ActionLink
-                          href={`/projects/${appointment.conversationId}?session=${appointment.id}`}
-                        >
-                          Open booking workspace
-                        </ActionLink>
-                      ) : (
-                        <p className="v3-muted">
-                          The assigned artist manages this client’s booking and
-                          messages.
-                        </p>
-                      )}
-                    </Panel>
-                  </aside>
-                )}
               </div>
             </>
           )}

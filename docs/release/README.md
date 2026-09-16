@@ -12,6 +12,14 @@ The acceptance JSON uses the checklist export structure. Set `meta.build` to the
 
 A new build invalidates old sign-off. Never edit results to make a gate green without performing the test. Native source/config/plugin changes require a new native acceptance run even if web assets are unchanged. Enable the **Release regressions / web-and-contracts** job as a required branch-protection check in the repository settings; repository policy enforcement itself is outside a local code change.
 
+## Sitting data and disclosure safeguards
+
+Confirmed and proposed sitting lists share `SittingCard`. Linked detail disclosures query the authorized `projects.summary` endpoint; proposal rows use server session-plan items. Financial presentation for project, client-booking and normalized calendar records uses `server/services/sittingFinancials.ts`. Canonical cents, including explicit zero, take precedence over legacy dollar fields.
+
+The production-data guard rejects fixture/demo modules in the live import graph. It does not prove that every literal is a valid business default. Local disclosure state, copy, styling and formatting belong in the UI; live appointment values do not. Legacy demo code outside the live graph is not certified for release.
+
+The sitting browser regressions verify project selection for both roles, client bookings/history, studio, calendar agenda and proposal/checkout disclosures. They use isolated synthetic backend responses and never send customer messages or payments.
+
 ## Permanent regressions
 
 - Long threads at 320/390/440/820 widths: bounded message viewport and the newest bubble actually visible; a zero bottom gap alone is insufficient.

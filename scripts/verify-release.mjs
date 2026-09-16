@@ -11,6 +11,7 @@ function run(file, args = []) {
 let preview;
 try {
   run("scripts/check-overlays.js");
+  run("scripts/check-production-data.mjs");
   run("node_modules/typescript/bin/tsc", ["--noEmit"]);
   run("node_modules/vitest/vitest.mjs", ["run"]);
   run("node_modules/vite/bin/vite.js", ["build"]);
@@ -50,6 +51,7 @@ try {
     });
   }
   run("scripts/ui-audit/release-regressions.mjs");
+  run("scripts/ui-audit/sitting-regressions.mjs");
   console.log(
     "Local release regressions passed. Physical-device and service acceptance is still required."
   );

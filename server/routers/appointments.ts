@@ -1,3 +1,4 @@
+import { sittingFinancials } from "../services/sittingFinancials";
 import { revisedBookingPrice } from "../domain/paymentState";
 import { withDatabaseTransaction as priceTransaction } from "../services/core";
 import { selectBookingProjects } from "../../shared/clientBookingGroups";
@@ -1283,7 +1284,13 @@ export const appointmentsRouter = router({
         where: eq(schema.appointments.clientId, ctx.user.id),
         orderBy: (a, { asc }) => [asc(a.startTime)],
       });
-      const selected = selectBookingProjects(rows, input.tab);
+      const selected = selectBookingProjects(
+        rows.map(a => ({
+          ...a,
+          remainingBalanceCents: sittingFinancials(a).remainingCents,
+        })),
+        input.tab
+      );
       const planIds = [
         ...new Set(
           selected.map(a => a.sessionPlanId).filter((id): id is number => !!id)
@@ -1373,6 +1380,7 @@ export const appointmentsRouter = router({
       const timestamp = (value: string) => value.replace(" ", "T") + "Z";
       return {
         appointments: selected.map(a => {
+          const financials = sittingFinancials(a);
           const artist = artists.find(u => u.id === a.artistId);
           const setting = settings.find(s => s.userId === a.artistId);
           const request = requests.find(
@@ -1405,11 +1413,10 @@ export const appointmentsRouter = router({
               id: a.artistId,
               name: setting?.displayName || artist?.name || "Artist",
             },
-            amountPaidCents:
-              a.totalPaidAmountCents ?? (a.amountPaid || 0) * 100,
+            amountPaidCents: financials.paidCents,
             depositPaidCents: a.depositPaid ? (a.depositAmount || 0) * 100 : 0,
-            estimateCents: a.totalExpectedAmountCents ?? (a.price || 0) * 100,
-            balanceDueCents: a.remainingBalanceCents ?? 0,
+            estimateCents: financials.estimateCents,
+            balanceDueCents: financials.remainingCents,
             paymentStatus: a.paymentStatus,
             paymentRequest: request
               ? {

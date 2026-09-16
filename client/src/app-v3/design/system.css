@@ -2042,9 +2042,6 @@ body:has(.tattoi-notice) .v3-scroll {
   .v3-booking-cards > :only-child {
     grid-column: 1 / -1;
   }
-  .v3-booking-cards > :only-child .v3-sitting-list {
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  }
 }
 
 /* Shopfront shares the app header and full-width segmented-control geometry. */
@@ -2093,3 +2090,24 @@ body:has(.tattoi-notice) .v3-scroll {
 }
 .v3-message-stream { display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
 .v3-messages { overflow-anchor: none; touch-action: pan-y; }
+
+/* Keep expanded session content attached to its selected sitting card. */
+.v3-sitting-details {
+  border-top: 1px solid var(--v3-line);
+  margin-top: 8px;
+  padding-top: 16px;
+  min-width: 0;
+}
+
+.v3-sitting-card { min-width: 0; width: 100%; }
+.v3-sitting-card > button { width: 100%; min-height: 44px; }
+.v3-sitting-card > button > svg { flex-shrink: 0; }
+.v3-sitting-card + .v3-sitting-card { border-top: 1px solid var(--v3-line); }
+
+/* Sitting details remain in the virtual day they belong to, at every width. */
+.v3-calendar-workspace.v3-calendar-inline { grid-template-columns: minmax(0, 1fr); }
+.v3-sitting-card > .v3-timeline-session { grid-template-columns: 64px minmax(0, 1fr) auto; }
+.v3-timeline-session[aria-expanded="true"] { background: var(--v3-gold-soft); }
+.v3-timeline-day .v3-sitting-details { padding-left: 12px; padding-right: 12px; }
+
+.v3-timeline-day .v3-sitting-card + .v3-sitting-card { border-top: 0; }
