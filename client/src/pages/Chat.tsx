@@ -3,44 +3,46 @@ import { PageShell, PageHeader } from "@/components/ui/ssot"; // Reuse SSOT
 import { useParams } from "wouter";
 import { ChatInterface } from "@/features/chat/components/ChatInterface";
 import { ConversationsList } from "@/features/chat/components/ConversationsList";
-import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export default function Chat() {
   const { id } = useParams<{ id: string }>();
   const conversationId = parseInt(id || "0");
+  const splitView = useMediaQuery("(min-width: 768px)");
 
   return (
     <PageShell>
-      {/* Mobile: Full Chat */}
-      <div className="md:hidden h-full">
-        <ChatInterface conversationId={conversationId} />
-      </div>
-
-      {/* iPad/Desktop: Split View */}
-      <div className="hidden md:flex h-full overflow-hidden">
-        {/* Left Panel: List (50%) */}
-        <div className="w-[340px] shrink-0 border-r border-border flex flex-col h-full">
-          <PageHeader title="Inbox" className="bg-transparent" />
-          <ConversationsList
-            className="bg-transparent"
-            activeId={conversationId}
-          />
+      {/* Mount one conversation controller at a time across responsive layouts. */}
+      {!splitView ? (
+        <div className="md:hidden h-full">
+          <ChatInterface conversationId={conversationId} />
         </div>
+      ) : (
+        <div className="hidden md:flex h-full overflow-hidden pt-6">
+          {/* Left Panel: List (50%) */}
+          <div className="w-1/2 border-r border-border flex flex-col h-full">
+            <PageHeader title="Messages" className="bg-transparent" />
+            <ConversationsList
+              className="bg-transparent"
+              activeId={conversationId}
+            />
+          </div>
 
-        {/* Right Panel: Chat Interface */}
-        <div className="flex-1 flex flex-col h-full relative">
-          <ChatInterface
-            conversationId={conversationId}
-            className="bg-transparent"
-            onBack={() => {
-              // On iPad, back might mean deselect?
-              // But actually we probably don't show the back button on iPad (handled in ChatInterface logic md:hidden)
-              // If we did, it would likely go back to /conversations
-              window.history.back();
-            }}
-          />
+          {/* Right Panel: Chat Interface */}
+          <div className="flex-1 flex flex-col h-full relative">
+            <ChatInterface
+              conversationId={conversationId}
+              className="bg-transparent"
+              onBack={() => {
+                // On iPad, back might mean deselect?
+                // But actually we probably don't show the back button on iPad (handled in ChatInterface logic md:hidden)
+                // If we did, it would likely go back to /conversations
+                window.history.back();
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </PageShell>
   );
 }

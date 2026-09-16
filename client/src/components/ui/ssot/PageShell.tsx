@@ -23,7 +23,7 @@ interface PageShellProps {
 export function PageShell({ children, className }: PageShellProps) {
   return (
     <div
-      className={cn(tokens.shell.base, className)}
+      className={cn(tokens.shell.base, "original-ivory-page", className)}
       style={{
         // Use dvh for dynamic viewport, fallback to vh
         height: "100dvh",

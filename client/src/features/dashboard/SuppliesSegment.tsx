@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import { SupplierStorefront } from "./SupplierStorefront";
 import { AnimatePresence, motion } from "framer-motion";
-import { DEMO_SUPPLIERS } from "./dashboardDemoData";
 import { useTooltipTarget } from "@/components/tooltip-tour";
 
 // Curated supplier directory
@@ -432,15 +431,7 @@ export function SuppliesSegment({ demoMode = false }: SuppliesSegmentProps) {
   };
 
   // Data
-  const displaySuppliers =
-    demoMode && (!dbSuppliers || dbSuppliers.length === 0)
-      ? DEMO_SUPPLIERS.map(s => ({
-          id: s.id,
-          name: s.name,
-          websiteUrl: s.url,
-          logoUrl: s.logoUrl,
-        }))
-      : dbSuppliers;
+  const displaySuppliers = dbSuppliers;
 
   const hasMySuppliers = displaySuppliers && displaySuppliers.length > 0;
 

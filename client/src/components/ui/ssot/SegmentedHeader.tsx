@@ -26,23 +26,29 @@ export function SegmentedHeader({
   className,
 }: SegmentedHeaderProps) {
   return (
-    <div className={cn("flex w-full items-center gap-1 p-1 rounded-full", className)}
-      style={{ background: "rgba(255,255,255,.04)" }}
+    <div
+      className={cn(
+        "original-ivory-segments flex w-full items-center gap-1 p-1 rounded-[16px]",
+        className
+      )}
+      style={{ background: "var(--secondary)" }}
     >
       {options.map((title, index) => {
         const isActive = index === activeIndex;
         return (
           <button
             key={title}
+            type="button"
+            aria-pressed={isActive}
             onClick={() => onChange(index)}
             className={cn(
-              "flex-1 text-center py-2 rounded-full transition-colors duration-200 outline-none",
+              "flex-1 text-center py-2 rounded-[12px] transition-colors duration-200 outline-none",
               "text-[14.5px] font-semibold tracking-tight",
-              "min-h-[44px]", // §10 touch target
+              "min-h-[44px]" // §10 touch target
             )}
             style={{
-              background: isActive ? "rgba(255,255,255,.1)" : "transparent",
-              color: isActive ? "#f5f5f4" : "rgba(255,255,255,.58)",
+              background: isActive ? "var(--card)" : "transparent",
+              color: isActive ? "var(--foreground)" : "var(--muted-foreground)",
             }}
           >
             {title}
@@ -52,4 +58,3 @@ export function SegmentedHeader({
     </div>
   );
 }
-

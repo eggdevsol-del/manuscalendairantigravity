@@ -78,6 +78,11 @@ export function ChatInterface({
     convLoading,
     messages,
     messagesLoading,
+    hasOlderMessages,
+    loadOlderMessages,
+    loadingOlderMessages,
+    olderMessagesError,
+    setScrollIntent,
     quickActions,
     artistSettings,
     availableServices,
@@ -140,7 +145,7 @@ export function ChatInterface({
   // Persist collapsed/expanded state per conversation in localStorage
   const briefStorageKey = `brief-collapsed-${conversationId}`;
   const [briefCollapsed, setBriefCollapsed] = useState(() => {
-    return localStorage.getItem(briefStorageKey) === 'true';
+    return localStorage.getItem(briefStorageKey) === "true";
   });
   const toggleBrief = useCallback(() => {
     setBriefCollapsed(prev => {
@@ -150,10 +155,11 @@ export function ChatInterface({
     });
   }, [briefStorageKey]);
 
-  const { data: briefData, isLoading: briefLoading } = trpc.designBrief.get.useQuery(
-    { conversationId },
-    { enabled: isArtist, staleTime: 0 }
-  );
+  const { data: briefData, isLoading: briefLoading } =
+    trpc.designBrief.get.useQuery(
+      { conversationId },
+      { enabled: isArtist, staleTime: 0 }
+    );
 
   const refreshBriefMutation = trpc.designBrief.refresh.useMutation({
     onSuccess: () => {
@@ -178,7 +184,11 @@ export function ChatInterface({
           )
             return false;
           if (meta.status === "pending") return true;
-          if (["accepted", "remittance_uploaded", "confirmed"].includes(meta.status)) {
+          if (
+            ["accepted", "remittance_uploaded", "confirmed"].includes(
+              meta.status
+            )
+          ) {
             // Pin until all appointment dates have passed
             const dates = Array.isArray(meta.dates)
               ? meta.dates
@@ -231,7 +241,9 @@ export function ChatInterface({
     message: any;
     metadata: StudioInviteMetadata;
   } | null>(null);
-  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(
+    null
+  );
 
   // Fetch client media (Conditionally enabled, but hook is always called)
   const clientId = conversation?.otherUser?.id?.toString();
@@ -243,10 +255,11 @@ export function ChatInterface({
     }
   );
 
-  const { data: proposalData, isLoading: isLoadingProposalData } = trpc.appointments.getProposalForAppointment.useQuery(
-    selectedAppointment?.id,
-    { enabled: !!selectedAppointment?.id }
-  );
+  const { data: proposalData, isLoading: isLoadingProposalData } =
+    trpc.appointments.getProposalForAppointment.useQuery(
+      selectedAppointment?.id,
+      { enabled: !!selectedAppointment?.id }
+    );
 
   // Register FAB Actions
   const fabContent = useMemo(() => {
@@ -255,56 +268,7 @@ export function ChatInterface({
       return [];
     }
 
-    // Check if we have either an explicit proposal or an appointment with an implicit proposal
-    const effectiveProposal = selectedProposal || proposalData;
-
-    if (showBookingWizard || !!effectiveProposal || !!selectedAppointment) {
-      return (
-        <BookingWizardContent
-          conversationId={conversationId}
-          artistServices={availableServices || []}
-          artistSettings={artistSettings}
-          isArtist={isArtist}
-          onBookingSuccess={() => {
-            toast.success("Booking proposal sent!");
-            setShowBookingWizard(false);
-          }}
-          onClose={() => {
-            setShowBookingWizard(false);
-            setSelectedProposal(null);
-            setSelectedAppointment(null);
-            // By not calling setFABOpen(false), we revert to the items list
-          }}
-          selectedProposal={effectiveProposal}
-          selectedAppointmentRaw={selectedAppointment}
-          onAcceptProposal={promo =>
-            handleClientAcceptProposal(effectiveProposal?.message, promo)
-          }
-          onRejectProposal={() => {
-            setSelectedProposal(null);
-          }}
-          onUpdateProposalState={(newMeta) => {
-            if (effectiveProposal) {
-              // Note: this only updates state if we had an explicit selectedProposal,
-              // but that's fine for accepting/rejecting from the chat interface directly.
-              setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
-            }
-          }}
-          onCancelProposal={() => {
-            if (effectiveProposal)
-              handleCancelProposal(
-                effectiveProposal.message,
-                effectiveProposal.metadata
-              );
-            setSelectedProposal(null);
-          }}
-          isPendingProposalAction={bookProjectMutation.isPending}
-          artistId={conversation?.artistId}
-          isLoadingProposal={isLoadingProposalData}
-        />
-      );
-    }
-
+    // Booking is owned by the dedicated ActionSheet below.
     if (selectedInvite) {
       return [
         {
@@ -385,18 +349,18 @@ export function ChatInterface({
     const userActions: ChatAction[] =
       isAuthorized && quickActions
         ? quickActions.map(qa => {
-          let Icon = Zap;
-          if (qa.actionType === "find_availability") Icon = FileText;
-          else if (qa.actionType === "deposit_info") Icon = Send;
+            let Icon = Zap;
+            if (qa.actionType === "find_availability") Icon = FileText;
+            else if (qa.actionType === "deposit_info") Icon = Send;
 
-          return {
-            id: qa.id,
-            label: qa.label,
-            icon: Icon,
-            onClick: () => handleQuickAction(qa),
-            highlight: false,
-          };
-        })
+            return {
+              id: qa.id,
+              label: qa.label,
+              icon: Icon,
+              onClick: () => handleQuickAction(qa),
+              highlight: false,
+            };
+          })
         : [];
 
     const allActions = [...systemActions, ...userActions];
@@ -409,27 +373,15 @@ export function ChatInterface({
 
   // Sync proposal open state
   useEffect(() => {
-    if (selectedProposal || selectedInvite) {
+    if (selectedInvite) {
       setFABOpen(true);
     }
-  }, [selectedProposal, selectedInvite, setFABOpen]);
+  }, [selectedInvite, setFABOpen]);
 
-  // Reset selection state when FAB is closed manually
-  useEffect(() => {
-    if (!isContextualVisible && !setFABOpen) return; // safety
-    // We only care about when the FAB is CLOSED
-  }, [isContextualVisible]);
-
-  // Better: listen for isFABOpen specifically if we want to reset state on close
   const { isFABOpen } = useBottomNav();
   useEffect(() => {
-    if (!isFABOpen) {
-      setSelectedProposal(null);
-      setShowBookingWizard(false);
-      setSelectedInvite(null);
-      setSelectedAppointment(null);
-    }
-  }, [isFABOpen, setSelectedProposal]);
+    if (!isFABOpen) setSelectedInvite(null);
+  }, [isFABOpen]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -469,9 +421,7 @@ export function ChatInterface({
     <div className={cn("flex flex-col h-full relative", className)}>
       {/* Fixed Header & Consultation Pin */}
       <div className="flex-none z-50 bg-transparent">
-        <header
-          className="app-safe-header sticky top-0 z-50 px-4 py-3 pb-4 bg-background"
-        >
+        <header className="app-safe-header sticky top-0 z-50 px-4 py-3 pb-4 bg-background">
           <div className="flex items-center justify-between">
             {/* Left Group: Back + Avatar + Name */}
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -494,7 +444,13 @@ export function ChatInterface({
                 className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group"
                 onClick={() => isArtist && setShowClientInfo(true)}
               >
-                <UserAvatar name={otherUserName} avatar={conversation?.otherUser?.avatar} size="md" ring className="transition-transform group-active:scale-95" />
+                <UserAvatar
+                  name={otherUserName}
+                  avatar={conversation?.otherUser?.avatar}
+                  size="md"
+                  ring
+                  className="transition-transform group-active:scale-95"
+                />
                 <div className="flex-1 min-w-0">
                   <h1 className="font-bold text-xl leading-tight truncate text-foreground group-hover:text-primary transition-colors">
                     {otherUserName}
@@ -506,7 +462,13 @@ export function ChatInterface({
               </div>
             </div>
 
-            <Button variant="ghost" className="min-h-11 mr-2" onClick={() => setLocation(`/projects/${conversationId}`)}>Details</Button>
+            <Button
+              variant="ghost"
+              className="min-h-11 mr-2"
+              onClick={() => setLocation(`/projects/${conversationId}`)}
+            >
+              Details
+            </Button>
             {/* BOOK button (artist-only) */}
             {isArtist && (
               <button
@@ -578,7 +540,7 @@ export function ChatInterface({
               </span>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={(e) => {
+                  onClick={e => {
                     e.stopPropagation();
                     refreshBriefMutation.mutate({ conversationId });
                   }}
@@ -586,7 +548,12 @@ export function ChatInterface({
                   className="p-1 rounded-md text-primary hover:bg-primary/10 transition-colors"
                   title="Refresh brief"
                 >
-                  <RefreshCw className={cn("w-3 h-3", refreshBriefMutation.isPending && "animate-spin")} />
+                  <RefreshCw
+                    className={cn(
+                      "w-3 h-3",
+                      refreshBriefMutation.isPending && "animate-spin"
+                    )}
+                  />
                 </button>
                 {briefCollapsed ? (
                   <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -599,18 +566,24 @@ export function ChatInterface({
             {!briefCollapsed && (
               <div className="px-4 pb-3 animate-in fade-in slide-in-from-top-1 duration-150">
                 {briefLoading ? (
-                  <p className="text-xs text-muted-foreground animate-pulse">Analysing conversation...</p>
+                  <p className="text-xs text-muted-foreground animate-pulse">
+                    Analysing conversation...
+                  </p>
                 ) : briefData?.brief ? (
                   <div>
                     <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
                       {briefData.brief}
                     </p>
                     {briefData.isStale && (
-                      <p className="text-[10px] text-muted-foreground mt-2">⚠️ Showing cached version</p>
+                      <p className="text-[10px] text-muted-foreground mt-2">
+                        ⚠️ Showing cached version
+                      </p>
                     )}
                   </div>
                 ) : (briefData as any)?.error ? (
-                  <p className="text-xs text-destructive/80 italic">{(briefData as any).error}</p>
+                  <p className="text-xs text-destructive/80 italic">
+                    {(briefData as any).error}
+                  </p>
                 ) : (
                   <p className="text-xs text-muted-foreground italic">
                     Send some messages to generate a conversation brief.
@@ -680,7 +653,27 @@ export function ChatInterface({
           viewportRef={viewportRef}
           onScroll={handleScroll}
         >
-          <div className="space-y-4 pb-[182px] md:pb-24">
+          <div data-message-stream className="space-y-4 pb-[182px]">
+            {hasOlderMessages && (
+              <Button
+                variant="ghost"
+                className="w-full"
+                disabled={loadingOlderMessages}
+                onClick={() => {
+                  setScrollIntent("USER_READING_HISTORY");
+                  void loadOlderMessages();
+                }}
+              >
+                {loadingOlderMessages
+                  ? "Loading earlier messages…"
+                  : "Load earlier messages"}
+              </Button>
+            )}
+            {olderMessagesError && (
+              <p role="alert" className="text-sm text-destructive">
+                {olderMessagesError}
+              </p>
+            )}
             {messages && messages.length > 0 ? (
               messages.map(message => {
                 const isOwn = message.senderId === user?.id;
@@ -691,23 +684,35 @@ export function ChatInterface({
                   metadata = message.metadata
                     ? JSON.parse(message.metadata)
                     : null;
-                } catch (e) { }
+                } catch (e) {}
 
                 const isProjectProposal = metadata?.type === "project_proposal";
                 const isClientConfirmation =
                   metadata?.type === "project_client_confirmation";
                 const isPaymentRequest = metadata?.type === "payment_request";
-                const isRescheduleDeposit = metadata?.type === "reschedule_deposit";
-                const isSessionPlan = metadata?.type === "session_plan" || message.messageType === "session_plan";
-                const isSessionPlanAccepted = metadata?.type === "session_plan_accepted" || message.messageType === "session_plan_accepted";
+                const isRescheduleDeposit =
+                  metadata?.type === "reschedule_deposit";
+                const isSessionPlan =
+                  metadata?.type === "session_plan" ||
+                  message.messageType === "session_plan";
+                const isSessionPlanAccepted =
+                  metadata?.type === "session_plan_accepted" ||
+                  message.messageType === "session_plan_accepted";
                 const isBalancePaid = message.messageType === "balance_paid";
                 const isStudioInvite = message.messageType === "studio_invite";
 
                 // Try to parse as image grid (reference_grid / placement_grid)
-                let gridData: { type: string; images: string[]; label: string } | null = null;
+                let gridData: {
+                  type: string;
+                  images: string[];
+                  label: string;
+                } | null = null;
                 try {
                   const parsed = JSON.parse(message.content);
-                  if (parsed.type === 'reference_grid' || parsed.type === 'placement_grid') {
+                  if (
+                    parsed.type === "reference_grid" ||
+                    parsed.type === "placement_grid"
+                  ) {
                     gridData = parsed;
                   }
                 } catch {}
@@ -715,8 +720,9 @@ export function ChatInterface({
                 return (
                   <div
                     key={message.id}
+                    data-message-id={message.id}
                     id={`message-${message.id}`}
-                    className={`flex ${(isProjectProposal || isPaymentRequest || isRescheduleDeposit || isSessionPlanAccepted || isBalancePaid) ? "justify-center w-full" : isSessionPlan ? "justify-start w-full" : isOwn ? "justify-end" : "justify-start"}`}
+                    className={`flex ${isProjectProposal || isPaymentRequest || isRescheduleDeposit || isSessionPlanAccepted || isBalancePaid ? "justify-center w-full" : isSessionPlan ? "justify-start w-full" : isOwn ? "justify-end" : "justify-start"}`}
                   >
                     {isSessionPlan ? (
                       <SessionPlanCard
@@ -738,7 +744,10 @@ export function ChatInterface({
                           padding: "9px 14px",
                         }}
                       >
-                        <span className="text-[12.5px] font-medium" style={{ color: "#c8f5da" }}>
+                        <span
+                          className="text-[12.5px] font-medium"
+                          style={{ color: "#c8f5da" }}
+                        >
                           {message.content}
                         </span>
                       </div>
@@ -752,7 +761,10 @@ export function ChatInterface({
                           padding: "9px 14px",
                         }}
                       >
-                        <span className="text-[12.5px] font-medium" style={{ color: "#c8f5da" }}>
+                        <span
+                          className="text-[12.5px] font-medium"
+                          style={{ color: "#c8f5da" }}
+                        >
                           {message.content}
                         </span>
                       </div>
@@ -762,10 +774,11 @@ export function ChatInterface({
                           metadata={metadata}
                           isArtist={isArtist}
                           onPress={() => {
-                            const appt = conversationAppointments?.find((a: any) => a.id === metadata.appointmentId);
+                            const appt = conversationAppointments?.find(
+                              (a: any) => a.id === metadata.appointmentId
+                            );
                             if (appt) {
                               setSelectedAppointment(appt);
-                              setFABOpen(true);
                             }
                           }}
                         />
@@ -776,13 +789,14 @@ export function ChatInterface({
                           metadata={metadata}
                           isArtist={isArtist}
                           onPress={() => {
-                            const appt = conversationAppointments?.find((a: any) => a.id === metadata.bookingId);
+                            const appt = conversationAppointments?.find(
+                              (a: any) => a.id === metadata.bookingId
+                            );
                             if (appt) {
-                               setSelectedAppointment(appt);
-                               setFABOpen(true);
+                              setSelectedAppointment(appt);
                             } else {
-                               // Fallback if not found in cache (though it should be for clients in this conversation)
-                               setLocation(`/balance/${metadata.bookingId}`);
+                              // Fallback if not found in cache (though it should be for clients in this conversation)
+                              setLocation(`/balance/${metadata.bookingId}`);
                             }
                           }}
                         />
@@ -805,131 +819,153 @@ export function ChatInterface({
                       (metadata?.status === "canceled" ||
                         metadata?.status === "revoked" ||
                         metadata?.isDeleted) ? null : isProjectProposal ? (
-                        <div className="w-full flex justify-center">
-                          <ProjectProposalMessage
-                            metadata={metadata}
-                            isArtist={isArtist}
-                            variant="portrait"
-                            onPress={() => {
-                              handleViewProposal(message, metadata);
-                              const apptId = metadata.appointmentIds?.[0] || metadata.bookingId;
-                              if (apptId) {
-                                const appt = conversationAppointments?.find((a: any) => a.id === apptId);
-                                if (appt) setSelectedAppointment(appt);
-                              }
-                              setFABOpen(true);
-                            }}
-                            onCancel={() =>
-                              handleCancelProposal(message, metadata)
+                      <div className="w-full flex justify-center">
+                        <ProjectProposalMessage
+                          metadata={metadata}
+                          isArtist={isArtist}
+                          variant="portrait"
+                          onPress={() => {
+                            handleViewProposal(message, metadata);
+                            const apptId =
+                              metadata.appointmentIds?.[0] ||
+                              metadata.bookingId;
+                            if (apptId) {
+                              const appt = conversationAppointments?.find(
+                                (a: any) => a.id === apptId
+                              );
+                              if (appt) setSelectedAppointment(appt);
                             }
-                          />
-                        </div>
-                      ) : gridData ? (
-                        <div className="flex flex-col max-w-[280px]">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                            {gridData.label}
-                          </p>
-                          {(() => {
-                            const images = gridData.images;
-                            const showOverlay = images.length > 9;
-                            const displayImages = showOverlay ? images.slice(0, 8) : images;
-                            const remaining = images.length - 8;
-                            const allDisplay = showOverlay ? [...displayImages, images[images.length - 1]] : displayImages;
-                            const count = allDisplay.length;
-                            const cols = count === 1 ? 'grid-cols-1' : count === 2 ? 'grid-cols-2' : count === 3 ? 'grid-cols-3' : count <= 4 ? 'grid-cols-2' : 'grid-cols-3';
-                            return (
-                              <div className={`grid ${cols} gap-1 rounded-xl overflow-hidden`}>
-                                {allDisplay.map((img, idx) => (
-                                  <div key={idx} className="relative">
-                                    <img
-                                      src={img}
-                                      alt={`${gridData!.label} ${idx + 1}`}
-                                      className="aspect-square object-cover cursor-pointer rounded-none w-full"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedMediaImage(img);
-                                      }}
-                                    />
-                                    {showOverlay && idx === allDisplay.length - 1 && (
+                          }}
+                          onCancel={() =>
+                            handleCancelProposal(message, metadata)
+                          }
+                        />
+                      </div>
+                    ) : gridData ? (
+                      <div className="flex flex-col max-w-[280px]">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                          {gridData.label}
+                        </p>
+                        {(() => {
+                          const images = gridData.images;
+                          const showOverlay = images.length > 9;
+                          const displayImages = showOverlay
+                            ? images.slice(0, 8)
+                            : images;
+                          const remaining = images.length - 8;
+                          const allDisplay = showOverlay
+                            ? [...displayImages, images[images.length - 1]]
+                            : displayImages;
+                          const count = allDisplay.length;
+                          const cols =
+                            count === 1
+                              ? "grid-cols-1"
+                              : count === 2
+                                ? "grid-cols-2"
+                                : count === 3
+                                  ? "grid-cols-3"
+                                  : count <= 4
+                                    ? "grid-cols-2"
+                                    : "grid-cols-3";
+                          return (
+                            <div
+                              className={`grid ${cols} gap-1 rounded-xl overflow-hidden`}
+                            >
+                              {allDisplay.map((img, idx) => (
+                                <div key={idx} className="relative">
+                                  <img
+                                    src={img}
+                                    alt={`${gridData!.label} ${idx + 1}`}
+                                    className="aspect-square object-cover cursor-pointer rounded-none w-full"
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      setSelectedMediaImage(img);
+                                    }}
+                                  />
+                                  {showOverlay &&
+                                    idx === allDisplay.length - 1 && (
                                       <div
                                         className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
-                                        onClick={(e) => {
+                                        onClick={e => {
                                           e.stopPropagation();
                                           setSelectedMediaImage(img);
                                         }}
                                       >
-                                        <span className="text-white text-sm font-semibold">+{remaining} more</span>
+                                        <span className="text-white text-sm font-semibold">
+                                          +{remaining} more
+                                        </span>
                                       </div>
                                     )}
-                                  </div>
-                                ))}
-                              </div>
-                            );
-                          })()}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <p className="text-xs opacity-70 mt-1">
+                          {message.createdAt &&
+                            new Date(message.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col max-w-[85%]">
+                        <div
+                          className={cn(
+                            "rounded-2xl px-4 py-2 overflow-hidden relative",
+                            isOwn
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted",
+                            isArtist &&
+                              !isOwn &&
+                              "cursor-pointer active:scale-[0.98] transition-transform"
+                          )}
+                        >
+                          {isImage ? (
+                            <div className="space-y-2">
+                              <img
+                                src={message.content}
+                                alt="Uploaded image"
+                                className="rounded-lg max-w-full h-auto cursor-pointer"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  window.open(message.content, "_blank");
+                                }}
+                                style={{ maxHeight: "300px" }}
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                              {message.content}
+                            </p>
+                          )}
                           <p className="text-xs opacity-70 mt-1">
                             {message.createdAt &&
-                              new Date(message.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col max-w-[85%]">
-                          <div
-                            className={cn(
-                              "rounded-2xl px-4 py-2 overflow-hidden relative",
-                              isOwn
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted",
-                              isArtist && !isOwn && "cursor-pointer active:scale-[0.98] transition-transform",
-
-                            )}
-
-                          >
-                            {isImage ? (
-                              <div className="space-y-2">
-                                <img
-                                  src={message.content}
-                                  alt="Uploaded image"
-                                  className="rounded-lg max-w-full h-auto cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(message.content, "_blank");
-                                  }}
-                                  style={{ maxHeight: "300px" }}
-                                />
-                              </div>
-                            ) : (
-                              <p className="text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere">
-                                {message.content}
-                              </p>
-                            )}
-                            <p className="text-xs opacity-70 mt-1">
-                              {message.createdAt &&
-                                new Date(message.createdAt).toLocaleTimeString([], {
+                              new Date(message.createdAt).toLocaleTimeString(
+                                [],
+                                {
                                   hour: "2-digit",
                                   minute: "2-digit",
-                                })}
-                            </p>
+                                }
+                              )}
+                          </p>
 
-                            {isArtist && isClientConfirmation && (
-                              <Button
-                                className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
-                                size="sm"
-                                onClick={() => handleArtistBookProject(metadata)}
-                                disabled={bookProjectMutation.isPending}
-                              >
-                                {bookProjectMutation.isPending
-                                  ? "Booking..."
-                                  : "Confirm & Book"}
-                              </Button>
-                            )}
-                          </div>
-
-
+                          {isArtist && isClientConfirmation && (
+                            <Button
+                              className="mt-2 w-full bg-background/20 hover:bg-background/30 text-inherit border-none"
+                              size="sm"
+                              onClick={() => handleArtistBookProject(metadata)}
+                              disabled={bookProjectMutation.isPending}
+                            >
+                              {bookProjectMutation.isPending
+                                ? "Booking..."
+                                : "Confirm & Book"}
+                            </Button>
+                          )}
                         </div>
-                      )}
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -974,12 +1010,20 @@ export function ChatInterface({
           conversation.otherUser &&
           !(conversation.otherUser as any).hasPassword &&
           (conversation.otherUser as any).phone &&
-          !inviteDismissed && (() => {
-            const clientFirst = (conversation.otherUser as any).firstName || (conversation.otherUser as any).name?.split(/\s+/)[0] || "there";
-            const artistHandle = (artistSettings as any)?.publicSlug ? `@${(artistSettings as any).publicSlug}` : (user?.name?.split(/\s+/)[0] || "your artist");
+          !inviteDismissed &&
+          (() => {
+            const clientFirst =
+              (conversation.otherUser as any).firstName ||
+              (conversation.otherUser as any).name?.split(/\s+/)[0] ||
+              "there";
+            const artistHandle = (artistSettings as any)?.publicSlug
+              ? `@${(artistSettings as any).publicSlug}`
+              : user?.name?.split(/\s+/)[0] || "your artist";
             const phone = (conversation.otherUser as any).phone;
             const appUrl = `${window.location.origin}/signup?ref=${user?.id || ""}`;
-            const smsBody = encodeURIComponent(`Hey ${clientFirst}, it's ${artistHandle}! I've just joined d.o.t.s and added you as my client. Sign up to get real-time cancellation alerts, chat with me directly, receive exclusive vouchers & deals, view your full tattoo history, and manage all your appointments in your own calendar: ${appUrl}`);
+            const smsBody = encodeURIComponent(
+              `Hey ${clientFirst}, it's ${artistHandle}! I've just joined d.o.t.s and added you as my client. Sign up to get real-time cancellation alerts, chat with me directly, receive exclusive vouchers & deals, view your full tattoo history, and manage all your appointments in your own calendar: ${appUrl}`
+            );
             const isIOS = /iPhone|iPad/.test(navigator.userAgent);
             const smsHref = `sms:${phone}${isIOS ? "&" : "?"}body=${smsBody}`;
             return (
@@ -1003,7 +1047,10 @@ export function ChatInterface({
             );
           })()}
 
-        <div className="flex items-center gap-2 p-2 rounded-2xl bg-background/80 backdrop-blur-xl border border-border shadow-lg" style={{ transform: 'translate(0px, 21px)' }}>
+        <div
+          className="flex items-center gap-2 p-2 rounded-2xl bg-background/80 backdrop-blur-xl border border-border shadow-lg"
+          style={{ transform: "translate(0px, 21px)" }}
+        >
           <label className="cursor-pointer p-2 hover:bg-secondary/50 rounded-xl transition-colors">
             <input
               type="file"
@@ -1029,6 +1076,7 @@ export function ChatInterface({
             className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
           />
           <Button
+            aria-label="Send message"
             onClick={handleSendMessage}
             disabled={!messageText.trim() || sendMessageMutation.isPending}
             size="icon"
@@ -1084,10 +1132,10 @@ export function ChatInterface({
         <div
           className="fixed z-[100] bg-black/90 flex items-center justify-center p-4"
           style={{
-            top: 'env(safe-area-inset-top, 0px)',
+            top: "env(safe-area-inset-top, 0px)",
             left: 0,
             right: 0,
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            bottom: "calc(env(safe-area-inset-bottom, 0px) + 72px)",
           }}
           onClick={() => setSelectedMediaImage(null)}
         >
@@ -1130,7 +1178,8 @@ export function ChatInterface({
       {/* ── Booking Wizard BottomSheet ─────────────────────── */}
       {(() => {
         const effectiveProposal = selectedProposal || proposalData;
-        const isOpen = showBookingWizard || !!effectiveProposal || !!selectedAppointment;
+        const isOpen =
+          showBookingWizard || !!effectiveProposal || !!selectedAppointment;
         if (!isOpen) return null;
         return (
           <ActionSheet
@@ -1164,9 +1213,12 @@ export function ChatInterface({
               onRejectProposal={() => {
                 setSelectedProposal(null);
               }}
-              onUpdateProposalState={(newMeta) => {
+              onUpdateProposalState={newMeta => {
                 if (effectiveProposal) {
-                  setSelectedProposal({ message: effectiveProposal.message, metadata: newMeta });
+                  setSelectedProposal({
+                    message: effectiveProposal.message,
+                    metadata: newMeta,
+                  });
                 }
               }}
               onCancelProposal={() => {

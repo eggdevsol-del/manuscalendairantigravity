@@ -22,8 +22,8 @@ export function PageHeader({
   const { user } = useAuth();
   const artist = user?.role === "artist" || user?.role === "admin";
   return (
-    <header className={cn("app-safe-header workspace-header", className)}>
-      <div className="workspace-brand-row">
+    <header className={cn("app-safe-header original-ivory-header", className)}>
+      <div className="original-ivory-brand-row">
         {onBack ? (
           <Button
             variant="ghost"
@@ -34,20 +34,20 @@ export function PageHeader({
             <ChevronLeft />
           </Button>
         ) : (
-          <span className="workspace-wordmark">TATTOI</span>
+          <span className="original-ivory-wordmark">tattoi</span>
         )}
         {rightAction ??
           (user && (
             <Link
               href={
                 artist
-                  ? "/business"
+                  ? "/artist-profile"
                   : user.role === "merchant"
                     ? "/settings"
                     : "/profile"
               }
-              className="workspace-avatar"
-              aria-label={artist ? "Business and profile" : "Your profile"}
+              className="original-ivory-avatar"
+              aria-label={artist ? "Your profile" : "Your profile"}
             >
               {user.avatar ? (
                 <img src={user.avatar} alt="" />
@@ -58,7 +58,7 @@ export function PageHeader({
           ))}
       </div>
       <h1>{title}</h1>
-      {subtitle && <p className="workspace-subtitle">{subtitle}</p>}
+      {subtitle && <p className="original-ivory-subtitle">{subtitle}</p>}
     </header>
   );
 }

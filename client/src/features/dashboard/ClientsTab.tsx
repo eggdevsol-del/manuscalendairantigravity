@@ -24,7 +24,6 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTooltipTarget } from "@/components/tooltip-tour";
-import { DEMO_CLIENTS } from "./dashboardDemoData";
 import { format, isPast, isFuture } from "date-fns";
 import {
   tokens,
@@ -188,88 +187,6 @@ function getExceptionFlag(session: SessionData): string | null {
   return null;
 }
 
-// ── Demo data ─────────────────────────────────────────────
-
-const DEMO_GROUPED: GroupedProject[] = [
-  {
-    clientId: "demo-1",
-    clientName: "Sarah Chen",
-    clientAvatar: null,
-    clientEmail: "sarah@example.com",
-    clientPhone: "0412 345 678",
-    clientCity: "Sydney",
-    serviceName: "Full Sleeve",
-    priceEach: 450,
-    project: null,
-    sessions: [
-      {
-        id: 9001,
-        title: "Sleeve 1",
-        serviceName: "Full Sleeve",
-        startTime: new Date(Date.now() - 14 * 86400000).toISOString(),
-        endTime: "",
-        timeZone: "Australia/Brisbane",
-        status: "completed",
-        price: 450,
-        priceCents: 45000,
-        paidCents: 45000,
-        remainingCents: 0,
-        depositAmount: null,
-        depositPaid: null,
-        paymentStatus: "fully_paid",
-      },
-      {
-        id: 9002,
-        title: "Sleeve 2",
-        serviceName: "Full Sleeve",
-        startTime: new Date(Date.now() + 3 * 86400000).toISOString(),
-        endTime: "",
-        timeZone: "Australia/Brisbane",
-        status: "confirmed",
-        price: 450,
-        priceCents: 45000,
-        paidCents: 11200,
-        remainingCents: 33800,
-        depositAmount: null,
-        depositPaid: null,
-        paymentStatus: "deposit_paid",
-      },
-      {
-        id: 9003,
-        title: "Sleeve 3",
-        serviceName: "Full Sleeve",
-        startTime: new Date(Date.now() + 17 * 86400000).toISOString(),
-        endTime: "",
-        timeZone: "Australia/Brisbane",
-        status: "pending",
-        price: 450,
-        priceCents: 45000,
-        paidCents: 0,
-        remainingCents: 45000,
-        depositAmount: null,
-        depositPaid: null,
-        paymentStatus: null,
-      },
-    ],
-    totalValueCents: 135000,
-    collectedCents: 56200,
-    outstandingCents: 78800,
-    paidPct: 42,
-    upcomingSessions: [],
-    completedSessions: [],
-  },
-];
-DEMO_GROUPED[0].upcomingSessions = DEMO_GROUPED[0].sessions.filter(s =>
-  isFuture(new Date(ensureUTC(s.startTime)))
-);
-DEMO_GROUPED[0].completedSessions = DEMO_GROUPED[0].sessions.filter(
-  s => s.status === "completed" || isPast(new Date(ensureUTC(s.startTime)))
-);
-
-// ══════════════════════════════════════════════════════════
-//  MAIN: ClientsTab
-// ══════════════════════════════════════════════════════════
-
 export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -291,7 +208,6 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
   // ── Group sessions by client, derive money ──────────────
   const groupedProjects: GroupedProject[] = useMemo(() => {
-    if (demoMode) return DEMO_GROUPED;
     if (!allSessions || allSessions.length === 0) return [];
 
     const groups = new Map<string, GroupedProject>();
@@ -389,7 +305,6 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
 
   // ── Client list ─────────────────────────────────────────
   const displayClients = useMemo(() => {
-    if (demoMode) return DEMO_CLIENTS;
     return (clients || []).map((c: any) => {
       let status: ClientStatus;
       if (c.hasUpcoming) status = "active";

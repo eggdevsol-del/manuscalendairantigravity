@@ -18,7 +18,7 @@ export function AuthLayout({
 }) {
   return (
     <main
-      className="fixed inset-0 overflow-y-auto bg-background text-foreground px-5 py-7 sm:px-10 lg:px-16"
+      className="original-ivory-auth fixed inset-0 overflow-y-auto bg-background text-foreground px-5 py-7 sm:px-10 lg:px-16"
       style={
         {
           "--muted-foreground":
@@ -34,7 +34,6 @@ export function AuthLayout({
           className="text-2xl font-bold tracking-tight flex items-center gap-2"
           aria-label="Tattoi home"
         >
-          <span className="w-3 h-3 rounded-full bg-primary" />
           tattoi<span className="text-primary">.</span>
         </Link>
         <Link

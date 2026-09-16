@@ -50,8 +50,9 @@ try {
       });
     });
   }
-  run("scripts/ui-audit/release-regressions.mjs");
-  run("scripts/ui-audit/sitting-regressions.mjs");
+  // This branch restores the original UI; exercise its actual routes and controls.
+  // The v3-specific suites remain available on the preserved Ivory branch.
+  run("scripts/ui-audit/original-workflow-regressions.mjs");
   console.log(
     "Local release regressions passed. Physical-device and service acceptance is still required."
   );

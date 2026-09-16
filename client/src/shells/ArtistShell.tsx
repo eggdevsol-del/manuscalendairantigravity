@@ -1,62 +1,52 @@
-import Products from "@/app-v3/pages/Products";
-import Events from "@/app-v3/pages/Events";
-import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
-import Studio from "@/app-v3/pages/Studio";
-import Purchases from "@/app-v3/pages/Purchases";
-import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
-import WaitlistPage from "@/app-v3/pages/Waitlist";
-import ProjectSummary from "@/app-v3/pages/Booking";
+import ProjectSummary from "@/features/bookings/ProjectSummary";
+import WaitlistPage from "@/features/bookings/WaitlistPage";
+import Purchases from "@/features/storefront/Purchases";
+import { StudioDashboardSettings } from "@/components/settings/StudioDashboardSettings";
+import SupplierOrderHistory from "@/features/dashboard/SupplierOrderHistory";
 import React from "react";
-import BusinessPage, { Money as MoneyPage } from "@/app-v3/pages/Business";
-import SuppliesPage from "@/app-v3/pages/Supplies";
 import { Redirect, Route, Switch } from "wouter";
-import BottomNav from "@/app-v3/design/Navigation";
+import BottomNav from "@/components/BottomNav";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
-import Dashboard from "@/app-v3/pages/Today";
-import Conversations from "@/app-v3/pages/Inbox";
-import Chat from "@/app-v3/pages/Inbox";
-import Calendar from "@/app-v3/pages/Calendar";
-import Settings from "@/app-v3/pages/Settings";
-import ArtistProfileTab from "@/app-v3/pages/ArtistProfile";
-import WorkHours from "@/app-v3/pages/WorkingHours";
-import Clients from "@/app-v3/pages/Clients";
-import BankPayoutsPage from "@/app-v3/pages/Bank";
-import PayoutHistory from "@/app-v3/pages/PayoutHistory";
-import NotificationsManagement from "@/app-v3/pages/Notifications";
-import Subscriptions from "@/app-v3/pages/Plans";
-import LeadDetail from "@/app-v3/pages/Lead";
-import {
-  Operations as Reconciliation,
-  ErrorReports as ErrorDashboard,
-} from "@/app-v3/pages/Operations";
+import Dashboard from "@/pages/Dashboard";
+import Conversations from "@/pages/Conversations";
+import Chat from "@/pages/Chat";
+import Calendar from "@/pages/Calendar";
+import Settings from "@/pages/Settings";
+import ArtistProfileTab from "@/pages/ArtistProfileTab";
+import WorkHours from "@/pages/WorkHours";
+import Clients from "@/pages/Clients";
+import BankPayoutsPage from "@/pages/BankPayoutsPage";
+import PayoutHistory from "@/pages/PayoutHistory";
+import NotificationsManagement from "@/pages/NotificationsManagement";
+import Subscriptions from "@/pages/Subscriptions";
+import LeadDetail from "@/pages/LeadDetail";
+import ErrorDashboard from "@/pages/admin/ErrorDashboard";
 import NotFound from "@/pages/NotFound";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { ArrivalToast } from "@/components/ArrivalToast";
 
 export default function ArtistShell() {
   return (
-    <div className="artist-workspace min-h-screen">
+    <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
-          <Route path="/studio" component={Studio} />
+          <Route path="/studio">
+            <StudioDashboardSettings
+              onBack={() => window.location.assign("/settings")}
+            />
+          </Route>
+          <Route path="/supply-orders" component={SupplierOrderHistory} />
+          <Route path="/projects/:id" component={ProjectSummary} />
+          <Route path="/waitlist" component={WaitlistPage} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
             <Redirect to="/dashboard" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/business" component={BusinessPage} />
-          <Route path="/products" component={Products} />
-          <Route path="/artist-events" component={Events} />
-          <Route path="/store-orders" component={StoreOrders} />
-          <Route path="/money" component={MoneyPage} />
-          <Route path="/supplies" component={SuppliesPage} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
-          <Route path="/projects/:id" component={ProjectSummary} />
-          <Route path="/waitlist" component={WaitlistPage} />
-          <Route path="/supply-orders" component={SupplierOrderHistory} />
           <Route path="/calendar" component={Calendar} />
           <Route path="/settings" component={Settings} />
           <Route path="/artist-profile" component={ArtistProfileTab} />
@@ -70,7 +60,6 @@ export default function ArtistShell() {
           />
           <Route path="/subscriptions" component={Subscriptions} />
           <Route path="/lead/:id" component={LeadDetail} />
-          <Route path="/admin/operations" component={Reconciliation} />
           <Route path="/admin/errors" component={ErrorDashboard} />
           <Route component={NotFound} />
         </Switch>
@@ -87,13 +76,6 @@ export default function ArtistShell() {
 
 function ArrivalOverlay() {
   const [dismissed, setDismissed] = React.useState<number | null>(null);
-  const snoozeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  React.useEffect(
-    () => () => {
-      if (snoozeTimer.current) clearTimeout(snoozeTimer.current);
-    },
-    []
-  );
   const { activeCheckIn, updateAppointment } = useAppointmentCheckIn();
 
   const activeId = activeCheckIn?.appointment?.id;
@@ -137,17 +119,7 @@ function ArrivalOverlay() {
         });
         setDismissed(appointment.id);
       }}
-      onDismiss={() => {
-        setDismissed(appointment.id);
-        if (snoozeTimer.current) clearTimeout(snoozeTimer.current);
-        snoozeTimer.current = setTimeout(
-          () =>
-            setDismissed(current =>
-              current === appointment.id ? null : current
-            ),
-          10 * 60 * 1000
-        );
-      }}
+      onDismiss={() => setDismissed(appointment.id)}
     />
   );
 }

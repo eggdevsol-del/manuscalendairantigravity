@@ -48,7 +48,9 @@ export function useMessageScroll(
         ? null
         : new ResizeObserver(restore);
     observer?.observe(el);
-    const stream = el.querySelector(".v3-message-stream");
+    const stream = el.querySelector(
+      "[data-message-stream], .v3-message-stream"
+    );
     if (stream) observer?.observe(stream);
     el.addEventListener("load", restore, true);
     return () => {

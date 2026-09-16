@@ -3,99 +3,105 @@
 // ═══════════════════════════════════════════════════════════
 
 export const typography = {
-  display:     'font-["DM_Sans"] text-[48px] font-bold leading-[1.05] tracking-[-0.02em] uppercase',
-  h1:          'font-["DM_Sans"] text-[28px] font-bold leading-[1.15] tracking-[-0.01em]',
-  h2:          'font-["DM_Sans"] text-[22px] font-bold leading-[1.2]',
-  h3:          'font-["DM_Sans"] text-[18px] font-bold leading-[1.25]',
-  body:        'font-["DM_Sans"] text-[14px] font-normal leading-[1.5]',
-  bodySm:      'font-["DM_Sans"] text-[12px] font-normal leading-[1.4]',
-  label:       'font-["DM_Sans"] text-[11px] font-normal leading-[1.3]',
-  labelValue:  'font-["DM_Sans"] text-[13px] font-semibold leading-[1.3]',
-  eyebrow:     'font-["DM_Sans"] text-[13px] font-normal leading-[1.3] text-muted-foreground',
-  micro:       'font-["DM_Sans"] text-[11px] font-medium',
-  nano:        'font-["DM_Sans"] text-[10px] font-bold uppercase tracking-wider',
-  pico:        'font-["DM_Sans"] text-[9px] font-bold uppercase tracking-widest',
-  sectionLabel:'font-["DM_Sans"] text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground',
-  price:       'font-["DM_Sans"] text-[15px] font-bold leading-[1.2]',
-  tag:         'font-["DM_Sans"] text-[11px] font-medium',
-  link:        'font-["DM_Sans"] text-[13px] font-medium text-primary',
-  cta:         'font-["DM_Sans"] text-[15px] font-semibold leading-[1.0]',
+  display:
+    "font-[family-name:var(--ivory-body)] text-[48px] font-bold leading-[1.05] tracking-[-0.02em] uppercase",
+  h1: "font-[family-name:var(--ivory-display)] text-[28px] font-bold leading-[1.15] tracking-[-0.01em]",
+  h2: "font-[family-name:var(--ivory-display)] text-[22px] font-bold leading-[1.2]",
+  h3: "font-[family-name:var(--ivory-body)] text-[18px] font-bold leading-[1.25]",
+  body: "font-[family-name:var(--ivory-body)] text-[14px] font-normal leading-[1.5]",
+  bodySm:
+    "font-[family-name:var(--ivory-body)] text-[12px] font-normal leading-[1.4]",
+  label:
+    "font-[family-name:var(--ivory-body)] text-[11px] font-normal leading-[1.3]",
+  labelValue:
+    "font-[family-name:var(--ivory-body)] text-[13px] font-semibold leading-[1.3]",
+  eyebrow:
+    "font-[family-name:var(--ivory-body)] text-[13px] font-normal leading-[1.3] text-muted-foreground",
+  micro: "font-[family-name:var(--ivory-body)] text-[11px] font-medium",
+  nano: "font-[family-name:var(--ivory-body)] text-[10px] font-bold uppercase tracking-wider",
+  pico: "font-[family-name:var(--ivory-body)] text-[9px] font-bold uppercase tracking-widest",
+  sectionLabel:
+    "font-[family-name:var(--ivory-body)] text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground",
+  price:
+    "font-[family-name:var(--ivory-body)] text-[15px] font-bold leading-[1.2]",
+  tag: "font-[family-name:var(--ivory-body)] text-[11px] font-medium",
+  link: "font-[family-name:var(--ivory-body)] text-[13px] font-medium text-primary",
+  cta: "font-[family-name:var(--ivory-body)] text-[15px] font-semibold leading-[1.0]",
 } as const;
 
 export const statusColor = {
   success: {
-    bg:     'bg-[var(--color-status-success-bg)]',
-    text:   'text-[var(--color-status-success-text)]',
-    border: 'border-[var(--color-status-success-border)]',
-    full:   'bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)]',
+    bg: "bg-[var(--color-status-success-bg)]",
+    text: "text-[var(--color-status-success-text)]",
+    border: "border-[var(--color-status-success-border)]",
+    full: "bg-[var(--color-status-success-bg)] text-[var(--color-status-success-text)] border border-[var(--color-status-success-border)]",
   },
   warning: {
-    bg:     'bg-[var(--color-status-warning-bg)]',
-    text:   'text-[var(--color-status-warning-text)]',
-    border: 'border-[var(--color-status-warning-border)]',
-    full:   'bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border border-[var(--color-status-warning-border)]',
+    bg: "bg-[var(--color-status-warning-bg)]",
+    text: "text-[var(--color-status-warning-text)]",
+    border: "border-[var(--color-status-warning-border)]",
+    full: "bg-[var(--color-status-warning-bg)] text-[var(--color-status-warning-text)] border border-[var(--color-status-warning-border)]",
   },
   danger: {
-    bg:     'bg-[var(--color-status-danger-bg)]',
-    text:   'text-[var(--color-status-danger-text)]',
-    border: 'border-[var(--color-status-danger-border)]',
-    full:   'bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border border-[var(--color-status-danger-border)]',
+    bg: "bg-[var(--color-status-danger-bg)]",
+    text: "text-[var(--color-status-danger-text)]",
+    border: "border-[var(--color-status-danger-border)]",
+    full: "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)] border border-[var(--color-status-danger-border)]",
   },
   info: {
-    bg:     'bg-[var(--color-status-info-bg)]',
-    text:   'text-[var(--color-status-info-text)]',
-    border: 'border-[var(--color-status-info-border)]',
-    full:   'bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]',
+    bg: "bg-[var(--color-status-info-bg)]",
+    text: "text-[var(--color-status-info-text)]",
+    border: "border-[var(--color-status-info-border)]",
+    full: "bg-[var(--color-status-info-bg)] text-[var(--color-status-info-text)] border border-[var(--color-status-info-border)]",
   },
   neutral: {
-    bg:     'bg-[var(--color-status-neutral-bg)]',
-    text:   'text-[var(--color-status-neutral-text)]',
-    border: 'border-[var(--color-status-neutral-border)]',
-    full:   'bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] border border-[var(--color-status-neutral-border)]',
+    bg: "bg-[var(--color-status-neutral-bg)]",
+    text: "text-[var(--color-status-neutral-text)]",
+    border: "border-[var(--color-status-neutral-border)]",
+    full: "bg-[var(--color-status-neutral-bg)] text-[var(--color-status-neutral-text)] border border-[var(--color-status-neutral-border)]",
   },
 } as const;
 
 export const bookingStatus = {
   confirmed: statusColor.success,
-  accepted:  statusColor.success,
-  pending:   statusColor.warning,
-  paid:      statusColor.info,
-  declined:  statusColor.danger,
+  accepted: statusColor.success,
+  pending: statusColor.warning,
+  paid: statusColor.info,
+  declined: statusColor.danger,
   cancelled: statusColor.danger,
-  neutral:   statusColor.neutral,
+  neutral: statusColor.neutral,
 } as const;
 
 export const settingsIcon = {
-  portfolio:    'bg-[var(--color-accent-dim)] text-primary',
-  storefront:   'bg-[rgba(0,180,150,0.12)] text-[#00B496]',
-  booking:      'bg-[rgba(59,130,246,0.12)] text-[#3B82F6]',
-  business:     'bg-[rgba(249,115,22,0.12)] text-[#F97316]',
-  services:     'bg-[rgba(34,197,94,0.12)] text-[#22C55E]',
-  travel:       'bg-[rgba(14,165,233,0.12)] text-[#0EA5E9]',
-  clients:      'bg-[rgba(168,85,247,0.12)] text-[#A855F7]',
-  import:       'bg-[rgba(234,179,8,0.12)] text-[#EAB308]',
-  regulation:   'bg-[rgba(239,68,68,0.12)] text-[#EF4444]',
-  wallet:       'bg-[rgba(52,199,123,0.12)] text-[var(--color-success)]',
-  calendar:     'bg-[rgba(248,208,87,0.12)] text-primary',
-  profile:      'bg-[rgba(107,114,128,0.12)] text-muted-foreground',
-  theme:        'bg-[rgba(234,179,8,0.12)] text-[#EAB308]',
-  notifications:'bg-[rgba(59,130,246,0.12)] text-[#3B82F6]',
-  danger:       'bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]',
+  portfolio: "bg-[var(--color-accent-dim)] text-primary",
+  storefront: "bg-[rgba(0,180,150,0.12)] text-[#00B496]",
+  booking: "bg-[rgba(59,130,246,0.12)] text-[#3B82F6]",
+  business: "bg-[rgba(249,115,22,0.12)] text-[#F97316]",
+  services: "bg-[rgba(34,197,94,0.12)] text-[#22C55E]",
+  travel: "bg-[rgba(14,165,233,0.12)] text-[#0EA5E9]",
+  clients: "bg-[rgba(168,85,247,0.12)] text-[#A855F7]",
+  import: "bg-[rgba(234,179,8,0.12)] text-[#EAB308]",
+  regulation: "bg-[rgba(239,68,68,0.12)] text-[#EF4444]",
+  wallet: "bg-[rgba(52,199,123,0.12)] text-[var(--color-success)]",
+  calendar: "bg-[rgba(248,208,87,0.12)] text-primary",
+  profile: "bg-[rgba(107,114,128,0.12)] text-muted-foreground",
+  theme: "bg-[rgba(234,179,8,0.12)] text-[#EAB308]",
+  notifications: "bg-[rgba(59,130,246,0.12)] text-[#3B82F6]",
+  danger:
+    "bg-[var(--color-status-danger-bg)] text-[var(--color-status-danger-text)]",
 } as const;
 
 export const tokens = {
   // 1. Backgrounds
   // Exact match from Calendar/Dashboard
-  bgGradient:
-    "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.15),rgba(27,27,27,1)_60%)]",
+  bgGradient: "fixed inset-0 w-full h-[100dvh] bg-background",
 
   // 2. Sheets
   // Main sheet (Dashboard, Calendar)
   sheetMain: {
     container:
       "flex-1 z-20 flex flex-col bg-popover rounded-t-[24px] overflow-hidden relative",
-    highlight:
-      "hidden",
+    highlight: "hidden",
     content: "flex-1 relative w-full overflow-hidden",
   },
 
@@ -110,9 +116,9 @@ export const tokens = {
     scrimBg: "rgba(0,0,0,.62)",
     /** Sheet panel styles */
     panel: "fixed left-0 right-0 flex flex-col",
-    panelBg: "#1B1B1B",
+    panelBg: "var(--card)",
     panelRadius: 20,
-    panelBorder: "1px solid rgba(255,255,255,0.12)",
+    panelBorder: "1px solid var(--border)",
     maxHeight: "85vh",
   },
 
@@ -123,10 +129,8 @@ export const tokens = {
       "app-viewport fixed inset-0 z-[101] w-full h-[100dvh] outline-none flex flex-col gap-0 overflow-hidden bg-background",
     container:
       "flex-1 z-20 flex flex-col bg-popover rounded-t-[24px] overflow-hidden relative will-change-transform",
-    glass:
-      "bg-popover rounded-t-[24px]",
-    highlight:
-      "hidden",
+    glass: "bg-popover rounded-t-[24px]",
+    highlight: "hidden",
     header:
       "shrink-0 pt-6 pb-4 px-4 border-b border-border bg-popover z-10 relative",
   },
@@ -134,22 +138,32 @@ export const tokens = {
   // 3. Cards
   // CalendAIr DS v3.0 — surface token (bg-card = #1A1A1E dark / #FFFFFF light)
   card: {
-    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[16px]", // radius-md = 16px
+    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border rounded-[22px]", // radius-md = 16px
     bg: "bg-card text-card-foreground hover:bg-card/90", // bg-surface in both themes
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
     interactive: "cursor-pointer active:scale-[0.98]",
     leftAccent: "absolute left-0 top-0 bottom-0 w-[3px]", // Shared left accent style
     glow: {
-      high: { line: "bg-[var(--color-status-danger-text)]", gradient: "from-[var(--color-status-danger-bg)]" },
-      medium: { line: "bg-[var(--color-status-warning-text)]", gradient: "from-[var(--color-status-warning-bg)]" },
-      low: { line: "bg-[var(--color-status-success-text)]", gradient: "from-[var(--color-status-success-bg)]" },
+      high: {
+        line: "bg-[var(--color-status-danger-text)]",
+        gradient: "from-[var(--color-status-danger-bg)]",
+      },
+      medium: {
+        line: "bg-[var(--color-status-warning-text)]",
+        gradient: "from-[var(--color-status-warning-bg)]",
+      },
+      low: {
+        line: "bg-[var(--color-status-success-text)]",
+        gradient: "from-[var(--color-status-success-bg)]",
+      },
       default: { line: "bg-primary", gradient: "from-primary/20" },
     },
-    photography: 'relative overflow-hidden rounded-[24px] bg-card',
-    photographyOverlay: 'absolute inset-0 bg-gradient-to-b from-transparent to-black/60',
-    frosted: 'bg-[rgba(255,255,255,0.15)] backdrop-blur-[12px] rounded-[32px]',
-    frostedDark: 'bg-[rgba(0,0,0,0.30)] backdrop-blur-[8px] rounded-[16px]',
+    photography: "relative overflow-hidden rounded-[24px] bg-card",
+    photographyOverlay:
+      "absolute inset-0 bg-gradient-to-b from-transparent to-black/60",
+    frosted: "bg-[rgba(255,255,255,0.15)] backdrop-blur-[12px] rounded-[32px]",
+    frostedDark: "bg-[rgba(0,0,0,0.30)] backdrop-blur-[8px] rounded-[16px]",
   },
 
   // 4. Buttons — CalendAIr DS v3.0: 52px primary, 16px radius, yellow accent
@@ -168,7 +182,8 @@ export const tokens = {
     link: "text-primary underline-offset-4 hover:underline px-0 transition-opacity active:opacity-70",
     icon: "rounded-[16px] bg-secondary hover:bg-secondary/80 text-foreground w-[52px] h-[52px] flex items-center justify-center transition-all duration-[150ms] active:scale-90",
     auth: "w-full h-[52px] rounded-[16px] font-semibold text-[15px] tracking-tight bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
-    authSecondary: "w-full h-[52px] rounded-[16px] border border-border font-semibold text-[15px] bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
+    authSecondary:
+      "w-full h-[52px] rounded-[16px] border border-border font-semibold text-[15px] bg-secondary hover:bg-secondary/80 text-secondary-foreground flex items-center justify-center transition-all duration-[150ms] active:scale-[0.98]",
   },
 
   // 5. FAB Menu — CalendAIr DS v3.0: yellow primary accent only
@@ -215,27 +230,36 @@ export const tokens = {
     base: "flex w-full min-w-0 border bg-card px-4 py-1 text-[15px] transition-[color,box-shadow] duration-[150ms] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm placeholder:text-disabled focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 aria-invalid:ring-destructive/20 aria-invalid:border-destructive file:text-foreground selection:bg-primary selection:text-primary-foreground",
     default: "h-[48px] rounded-[16px]",
     hero: "h-[48px] rounded-[16px] px-5 text-[16px] border-border bg-card hover:bg-card/90 focus-visible:border-primary text-foreground",
-    search: "h-[44px] rounded-full pl-10 pr-4 text-[14px] border-border bg-secondary/50 focus-visible:bg-card placeholder:text-muted-foreground",
+    search:
+      "h-[44px] rounded-full pl-10 pr-4 text-[14px] border-border bg-secondary/50 focus-visible:bg-card placeholder:text-muted-foreground",
   },
 
   // 5c. Auth Flow Components
   authFlow: {
-    iconContainer: "mx-auto w-16 h-16 rounded-[16px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(248,208,87,0.2)]",
-    genderButton: "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
-    genderButtonActive: "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(248,208,87,0.15)]",
+    iconContainer:
+      "mx-auto w-16 h-16 rounded-[16px] bg-primary/20 flex items-center justify-center mb-4 border-2 border-primary/20 shadow-[0_0_15px_rgba(248,208,87,0.2)]",
+    genderButton:
+      "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-border bg-secondary/50 text-foreground hover:bg-secondary/50",
+    genderButtonActive:
+      "h-14 flex items-center justify-center px-3 rounded-[16px] border-2 text-sm font-medium transition-all outline-none border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(248,208,87,0.15)]",
     placesInput: "bg-secondary/50 border-border h-14 rounded-[16px] pl-3",
-    toggleContainer: "flex bg-secondary/50 p-1 rounded-[16px] mb-6 h-14 items-stretch",
-    toggleButton: "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all text-muted-foreground hover:text-foreground",
-    toggleButtonActive: "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all bg-background text-foreground shadow-sm",
+    toggleContainer:
+      "flex bg-secondary/50 p-1 rounded-[16px] mb-6 h-14 items-stretch",
+    toggleButton:
+      "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all text-muted-foreground hover:text-foreground",
+    toggleButtonActive:
+      "flex-1 flex items-center justify-center text-sm font-bold rounded-[16px] transition-all bg-background text-foreground shadow-sm",
   },
 
   // 6. Typography — CalendAIr DS v3.0
   header: {
-    pageTitle: "text-[22px] sm:text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
+    pageTitle:
+      "text-[22px] sm:text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
     pageSubtitle: "ml-2 text-[14px] font-normal text-muted-foreground",
     sectionTitle:
       "text-[11px] font-[500] text-muted-foreground tracking-[0.08em] uppercase",
-    sheetTitle: "text-[20px] sm:text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
+    sheetTitle:
+      "text-[20px] sm:text-[24px] font-bold leading-[1.2] text-foreground tracking-tight",
     sheetSubtitle: "text-[14px] text-muted-foreground mt-1",
     contextTitle: "text-[28px] font-bold text-foreground tracking-tight",
     contextSubtitle: "text-muted-foreground text-[14px] font-normal mt-1",
@@ -252,14 +276,16 @@ export const tokens = {
   // 8. Page Shell
   shell: {
     base: "app-viewport fixed inset-0 w-full h-[100dvh] flex flex-col overflow-hidden bg-background",
-    header: "px-4 py-4 z-10 shrink-0 flex items-center bg-[var(--color-bg-header)]",
+    header:
+      "px-4 py-4 z-10 shrink-0 flex items-center bg-[var(--color-bg-header)]",
   },
 
   // 9. Navigation row — CalendAIr DS v3.0: min-height 56px
   row: {
     base: "flex items-center gap-3 px-4 bg-card text-foreground transition-colors duration-[150ms] cursor-pointer hover:bg-secondary/50 active:bg-secondary",
     height: "min-h-[56px] py-[14px]",
-    iconContainer: "w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0",
+    iconContainer:
+      "w-9 h-9 rounded-[8px] flex items-center justify-center shrink-0",
     label: "text-[15px] font-semibold text-foreground leading-[1.3]",
     description: "text-[12px] text-muted-foreground mt-[2px]",
     chevron: "ml-auto text-disabled",
@@ -276,7 +302,8 @@ export const tokens = {
       accent: "text-primary",
       idle: "text-muted-foreground",
     },
-    activeCircle: "absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary",
+    activeCircle:
+      "absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary",
   },
 
   // 9. Loading States
@@ -322,49 +349,58 @@ export const tokens = {
 
   // Photography / Filter / Display tokens — v3.0
   photography: {
-    hero: 'w-full aspect-[4/5] rounded-[24px] overflow-hidden relative',
-    heroOverlay: 'absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70',
-    thumbnail: 'w-16 h-16 rounded-[12px] overflow-hidden object-cover',
-    thumbnailLg: 'w-24 h-24 rounded-[16px] overflow-hidden object-cover',
-    gallery: 'grid grid-cols-3 gap-1 rounded-[16px] overflow-hidden',
-    avatar: 'rounded-full border-2 border-background shadow-md',
+    hero: "w-full aspect-[4/5] rounded-[24px] overflow-hidden relative",
+    heroOverlay:
+      "absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70",
+    thumbnail: "w-16 h-16 rounded-[12px] overflow-hidden object-cover",
+    thumbnailLg: "w-24 h-24 rounded-[16px] overflow-hidden object-cover",
+    gallery: "grid grid-cols-3 gap-1 rounded-[16px] overflow-hidden",
+    avatar: "rounded-full border-2 border-background shadow-md",
     avatarSizes: {
-      sm: 'w-8 h-8',
-      md: 'w-12 h-12',
-      lg: 'w-16 h-16',
-      xl: 'w-24 h-24',
+      sm: "w-8 h-8",
+      md: "w-12 h-12",
+      lg: "w-16 h-16",
+      xl: "w-24 h-24",
     },
   },
 
   filter: {
-    chip: 'inline-flex items-center gap-1.5 px-3 h-[32px] rounded-full border border-border bg-card text-[12px] font-medium transition-all duration-[150ms] cursor-pointer select-none',
-    chipActive: 'bg-primary text-primary-foreground border-primary',
-    chipIdle: 'bg-card text-foreground border-border hover:bg-secondary',
-    bar: 'flex gap-2 overflow-x-auto no-scrollbar px-4 py-2',
+    chip: "inline-flex items-center gap-1.5 px-3 h-[32px] rounded-full border border-border bg-card text-[12px] font-medium transition-all duration-[150ms] cursor-pointer select-none",
+    chipActive: "bg-primary text-primary-foreground border-primary",
+    chipIdle: "bg-card text-foreground border-border hover:bg-secondary",
+    bar: "flex gap-2 overflow-x-auto no-scrollbar px-4 py-2",
   },
 
   display: {
-    stat: 'flex flex-col items-center gap-0.5',
-    statValue: 'text-[20px] font-bold text-foreground',
-    statLabel: 'text-[11px] text-muted-foreground',
-    badge: 'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium',
-    badgePrimary: 'bg-primary/15 text-primary',
-    badgeSecondary: 'bg-secondary text-secondary-foreground',
-    divider: 'w-full h-px bg-border',
-    dividerVertical: 'w-px h-4 bg-border mx-2',
-    emptyState: 'flex flex-col items-center justify-center gap-3 py-12 text-center',
-    emptyStateIcon: 'w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground',
-    emptyStateText: 'text-[14px] text-muted-foreground max-w-[240px]',
+    stat: "flex flex-col items-center gap-0.5",
+    statValue: "text-[20px] font-bold text-foreground",
+    statLabel: "text-[11px] text-muted-foreground",
+    badge:
+      "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium",
+    badgePrimary: "bg-primary/15 text-primary",
+    badgeSecondary: "bg-secondary text-secondary-foreground",
+    divider: "w-full h-px bg-border",
+    dividerVertical: "w-px h-4 bg-border mx-2",
+    emptyState:
+      "flex flex-col items-center justify-center gap-3 py-12 text-center",
+    emptyStateIcon:
+      "w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground",
+    emptyStateText: "text-[14px] text-muted-foreground max-w-[240px]",
     // Progress bar — reusable track/fill for balance, completion, etc.
-    progressTrack: 'w-full rounded-full bg-[rgba(255,255,255,0.09)] overflow-hidden',
-    progressFill: 'h-full rounded-full bg-[#4ade80] transition-[width] duration-[450ms] ease-[cubic-bezier(0.2,0.7,0.3,1)]',
-    progressTrackLg: 'h-[5px]',
-    progressTrackSm: 'h-[3px]',
+    progressTrack:
+      "w-full rounded-full bg-[rgba(255,255,255,0.09)] overflow-hidden",
+    progressFill:
+      "h-full rounded-full bg-[#4ade80] transition-[width] duration-[450ms] ease-[cubic-bezier(0.2,0.7,0.3,1)]",
+    progressTrackLg: "h-[5px]",
+    progressTrackSm: "h-[3px]",
     // Toast — green success notification
-    toast: 'fixed left-5 right-5 bottom-[88px] bg-[#1f3a2a] border border-[rgba(74,222,128,0.3)] rounded-[12px] px-4 py-3 text-[13.5px] font-medium text-[#c8f5da] z-50 animate-in fade-in slide-in-from-bottom-2',
+    toast:
+      "fixed left-5 right-5 bottom-[88px] bg-[#1f3a2a] border border-[rgba(74,222,128,0.3)] rounded-[12px] px-4 py-3 text-[13.5px] font-medium text-[#c8f5da] z-50 animate-in fade-in slide-in-from-bottom-2",
     // Overflow menu — popover anchored to trigger
-    overflowMenu: 'absolute bg-[#232325] border border-[rgba(255,255,255,0.1)] rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.55)] z-50',
-    overflowItem: 'w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-foreground/80 hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer',
+    overflowMenu:
+      "absolute bg-popover border border-border rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.55)] z-50",
+    overflowItem:
+      "w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-foreground/80 hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer",
   },
 
   // 12. Motion / Animations (Radix + Tailwind Animate)
@@ -482,7 +518,8 @@ export const tokens = {
     // View Toggle (segmented control in CalendarMonthHeader)
     viewToggle: {
       container: "flex bg-secondary/50 p-0.5 rounded-[8px] h-8 items-stretch",
-      button: "flex items-center justify-center text-xs font-semibold rounded-[6px] px-3 transition-all duration-[150ms] select-none",
+      button:
+        "flex items-center justify-center text-xs font-semibold rounded-[6px] px-3 transition-all duration-[150ms] select-none",
       active: "bg-primary text-primary-foreground shadow-sm",
       inactive: "text-muted-foreground hover:text-foreground",
     },
@@ -594,7 +631,8 @@ export const tokens = {
   appointmentWizard: {
     // Header
     headerPadding: "px-4 py-4",
-    backButton: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
+    backButton:
+      "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
     title: "text-2xl font-bold text-foreground",
 
     // Context Area
@@ -639,12 +677,14 @@ export const tokens = {
     sheetBg: "bg-card",
     sheetBlur: "backdrop-blur-2xl",
     sheetRadius: "md:rounded-t-[2.5rem]",
-    sheetShadow: "shadow-2xl shadow-foreground/5 dark:shadow-none border border-border md:border-b-0",
+    sheetShadow:
+      "shadow-2xl shadow-foreground/5 dark:shadow-none border border-border md:border-b-0",
     highlightGradient: "bg-gradient-to-l from-foreground/10 to-transparent",
     highlightOpacity: "opacity-50",
 
     // Close Button
-    closeButton: "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
+    closeButton:
+      "rounded-full bg-secondary hover:bg-secondary/80 text-foreground",
 
     // Cards
     cardBg: "bg-card hover:bg-secondary/50",
@@ -660,7 +700,8 @@ export const tokens = {
     title: "text-4xl font-light text-foreground tracking-tight",
 
     // Session Items
-    sessionBadge: "w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-foreground",
+    sessionBadge:
+      "w-10 h-10 rounded-full bg-secondary border border-border flex items-center justify-center font-bold text-foreground",
     durationBadge:
       "text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md",
 
@@ -721,9 +762,9 @@ export const borders = {
   hairline: "var(--border)",
   hairlineLight: "var(--border)",
   subtle: "var(--border)",
-  emphasisAmber: "rgba(242,202,92,.3)",
-  amberBorder40: "rgba(242,202,92,.4)",
-  progressTrack: "rgba(255,255,255,.09)",
+  emphasisAmber: "var(--border)",
+  amberBorder40: "var(--border)",
+  progressTrack: "var(--secondary)",
 } as const;
 
 export const colors = {
@@ -732,10 +773,10 @@ export const colors = {
   textTertiary: "var(--muted-foreground)",
   mutedGrey: "var(--muted-foreground)",
   green: "var(--color-success)",
-  amber: "#f2ca5c",
-  amberGold: "#F8D057",
-  amberHover: "#f6d472",
-  amberOnColor: "#1a1a12",
+  amber: "var(--primary)",
+  amberGold: "var(--primary)",
+  amberHover: "var(--primary)",
+  amberOnColor: "var(--primary-foreground)",
   destructive: "#ef4444",
   destructiveText: "#f87171",
   cancelRed: "#ff5050",
@@ -745,12 +786,12 @@ export const colors = {
 
 export const radii = {
   pill: 99,
-  card: 15,
-  row: 13,
-  button: 11,
+  card: 22,
+  row: 16,
+  button: 16,
   small: 9,
   factPanel: 10,
-  sheet: 20,
+  sheet: 30,
 } as const;
 
 export const space = [4, 7, 9, 11, 14, 16, 20, 22] as const;
@@ -800,11 +841,16 @@ export const DType = typeScale;
 export const DSpace = space;
 export const DRadius = radii;
 
-
 /** Payment and supplier surfaces share the dashboard palette and app theme. */
 export const commerceTokens = {
-  bg: 'var(--background)', card: 'var(--card)', cardBorder: 'var(--border)',
-  textPrimary: 'var(--foreground)', textSecondary: 'var(--muted-foreground)',
-  textTertiary: 'var(--muted-foreground)', green: 'var(--color-success)',
-  amber: 'var(--primary)', amberOnColor: 'var(--primary-foreground)', track: 'var(--border)',
+  bg: "var(--background)",
+  card: "var(--card)",
+  cardBorder: "var(--border)",
+  textPrimary: "var(--foreground)",
+  textSecondary: "var(--muted-foreground)",
+  textTertiary: "var(--muted-foreground)",
+  green: "var(--color-success)",
+  amber: "var(--primary)",
+  amberOnColor: "var(--primary-foreground)",
+  track: "var(--border)",
 } as const;

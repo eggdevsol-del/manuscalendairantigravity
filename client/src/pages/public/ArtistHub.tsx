@@ -38,13 +38,15 @@ export default function ArtistHub() {
   if (error || !artist) {
     return (
       <div className="app-document min-h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Artist Not Found</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2">
+          Artist Not Found
+        </h1>
         <p className="text-muted-foreground mb-6">
           The link you followed may be broken or the artist no longer exists.
         </p>
         <button
           onClick={() => setLocation("/")}
-          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-white rounded-full transition-colors font-medium text-sm"
+          className="px-6 py-3 bg-secondary/50 hover:bg-secondary/50 text-foreground rounded-full transition-colors font-medium text-sm"
         >
           Return Home
         </button>
@@ -73,14 +75,7 @@ export default function ArtistHub() {
   };
 
   return (
-    <div className="app-document min-h-[100dvh] bg-background text-white overflow-x-hidden font-sans relative selection:bg-secondary/50">
-      {/* Background Gradients & Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-gradient-to-b from-[var(--color-status-info-bg)] via-purple-500/5 to-transparent blur-[120px] rounded-full opacity-60 mix-blend-screen" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[var(--color-status-info-bg)] blur-[150px] rounded-full mix-blend-screen" />
-        <div className="absolute top-1/4 right-0 w-[400px] h-[400px] bg-primary/10 blur-[120px] rounded-full mix-blend-screen" />
-      </div>
-
+    <div className="app-document min-h-[100dvh] bg-background text-foreground overflow-x-hidden font-sans relative selection:bg-secondary/50">
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-16 flex flex-col items-center">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -88,7 +83,7 @@ export default function ArtistHub() {
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
           className="relative mb-6 group"
         >
-          <div className="w-28 h-28 rounded-full p-1 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 shadow-[0_0_40px_rgba(var(--primary-rgb),0.3)]">
+          <div className="w-28 h-28 rounded-full p-1 bg-secondary border border-border">
             <UserAvatar
               name={artist.displayName}
               avatar={artist.profileImage}
@@ -102,7 +97,7 @@ export default function ArtistHub() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 mb-2"
+          className="text-3xl font-medium tracking-tight font-[family-name:var(--ivory-display)] text-foreground mb-2"
         >
           {artist.displayName}
         </motion.h1>
@@ -143,7 +138,7 @@ export default function ArtistHub() {
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary/50 flex items-center justify-center border border-border transition-all hover:scale-110 hover:border-blue-500/30 group"
               >
-                <Facebook className="w-4 h-4 text-muted-foreground group-hover:text-[var(--color-status-info-text)] transition-colors" />
+                <Facebook className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
               </a>
             )}
             <button
@@ -152,7 +147,7 @@ export default function ArtistHub() {
               }}
               className="w-10 h-10 rounded-full bg-secondary/50 hover:bg-secondary/50 flex items-center justify-center border border-border transition-all hover:scale-110 hover:border-border group"
             >
-              <LinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-white transition-colors" />
+              <LinkIcon className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
             </button>
           </motion.div>
         )}
@@ -169,14 +164,14 @@ export default function ArtistHub() {
             onClick={() => setLocation(`/book/${slug}`)}
             className="group relative w-full overflow-hidden rounded-[20px] p-[1px] transition-all active:scale-[0.98]"
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-pink-500 opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
+            <span className="absolute inset-0 bg-border opacity-70 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative w-full bg-background/80 backdrop-blur-xl px-6 py-5 rounded-[20px] flex items-center justify-between transition-colors group-hover:bg-background/80">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-status-info-bg)] to-purple-500/20 flex items-center justify-center border border-[var(--color-status-info-border)] group-hover:scale-110 transition-transform">
-                  <CalendarPlus className="w-5 h-5 text-[var(--color-status-info-text)]" />
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-border group-hover:scale-110 transition-transform">
+                  <CalendarPlus className="w-5 h-5 text-foreground" />
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="text-base font-bold text-white tracking-wide">
+                  <span className="text-base font-bold text-foreground tracking-wide">
                     Book Consult
                   </span>
                   <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
@@ -184,7 +179,7 @@ export default function ArtistHub() {
                   </span>
                 </div>
               </div>
-              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-white group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
             </div>
           </motion.button>
 
@@ -201,7 +196,7 @@ export default function ArtistHub() {
                     <CalendarDays className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex flex-col items-start">
-                    <span className="text-base font-bold text-white tracking-wide">
+                    <span className="text-base font-bold text-foreground tracking-wide">
                       Upcoming Seminars
                     </span>
                     <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold mt-0.5">
@@ -223,7 +218,7 @@ export default function ArtistHub() {
           className="mt-16 text-center"
         >
           <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground">
-            Powered by d.o.t.s
+            Powered by Tattoi
           </span>
         </motion.div>
       </div>

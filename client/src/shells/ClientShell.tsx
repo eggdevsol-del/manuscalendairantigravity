@@ -1,35 +1,35 @@
-import Purchases from "@/app-v3/pages/Purchases";
-import WaitlistPage from "@/app-v3/pages/Waitlist";
-import ProjectSummary from "@/app-v3/pages/Booking";
+import ProjectSummary from "@/features/bookings/ProjectSummary";
+import WaitlistPage from "@/features/bookings/WaitlistPage";
+import Purchases from "@/features/storefront/Purchases";
 import React from "react";
 import { Redirect, Route, Switch } from "wouter";
-import BottomNav from "@/app-v3/design/Navigation";
+import BottomNav from "@/components/BottomNav";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
-import ClientHome from "@/app-v3/pages/Discover";
-import Conversations from "@/app-v3/pages/Inbox";
-import Chat from "@/app-v3/pages/Inbox";
-import BookingsPage from "@/app-v3/pages/ClientBookings";
-import Settings from "@/app-v3/pages/Settings";
+import ClientHome from "@/features/client-home/ClientHome";
+import Conversations from "@/pages/Conversations";
+import Chat from "@/pages/Chat";
+import BookingsPage from "@/features/bookings/BookingsPage";
+import Settings from "@/pages/Settings";
 import NotFound from "@/pages/NotFound";
-import ClientProfilePage from "@/app-v3/pages/Profile";
+import ClientProfilePage from "@/pages/profile/ClientProfilePage";
 
 export default function ClientShell() {
   return (
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/projects/:id" component={ProjectSummary} />
+          <Route path="/waitlist" component={WaitlistPage} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
-            <Redirect to="/bookings" />
+            <Redirect to="/discover" />
           </Route>
           <Route path="/discover" component={ClientHome} />
           <Route path="/profile" component={ClientProfilePage} />
           <Route path="/conversations" component={Conversations} />
           <Route path="/chat/:id" component={Chat} />
-          <Route path="/projects/:id" component={ProjectSummary} />
-          <Route path="/waitlist" component={WaitlistPage} />
           <Route path="/bookings" component={BookingsPage} />
           <Route path="/settings" component={Settings} />
           <Route component={NotFound} />

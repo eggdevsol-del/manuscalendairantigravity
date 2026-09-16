@@ -17,22 +17,22 @@ import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { PaymentRequestBanner } from "@/components/PaymentRequestBanner";
 import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
-import PublicArtistProfile from "@/app-v3/pages/PublicArtist";
+import PublicArtistProfile from "@/pages/public/PublicArtistProfile";
+import ArtistHub from "@/pages/public/ArtistHub";
 
-import {
-  Login,
-  Signup,
-  PasswordRecovery,
-  PasswordRecovery as SetPassword,
-  MagicLink,
-  CompleteProfile,
-} from "@/app-v3/pages/Identity";
-
-import PublicStudioFunnel from "./app-v3/pages/PublicStudio";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import PasswordRecovery from "./pages/PasswordRecovery";
+import SetPassword from "./pages/SetPassword";
+import MagicLink from "./pages/MagicLink";
+import CompleteProfile from "./pages/CompleteProfile";
+import PublicStudioFunnel from "./pages/funnel/PublicStudioFunnel";
+import { PublicFunnel } from "./pages/funnel";
 import { DepositSheet } from "./pages/funnel/DepositSheet";
 import { BalanceSheet } from "./pages/funnel/BalanceSheet";
-import { PaymentRequestPage as PaymentRequestSheet } from "./app-v3/pages/PaymentLinks";
-import { PublicStorefront, PublicEvents } from "./app-v3/pages/PublicCommerce";
+import { PaymentRequestSheet } from "./pages/funnel/PaymentRequestSheet";
+import PublicStorefront from "./pages/public/PublicStorefront";
+import PublicEvents from "./pages/public/PublicEvents";
 
 const ArtistShell = React.lazy(() => import("./shells/ArtistShell"));
 const ClientShell = React.lazy(() => import("./shells/ClientShell"));
@@ -176,7 +176,7 @@ function CatchAllRoute() {
     }
     // /:slug (single segment, not a known route) → ArtistHub
     if (segments.length === 1) {
-      return <PublicArtistProfile hub />;
+      return <ArtistHub />;
     }
   }
 
@@ -245,15 +245,9 @@ function Router() {
         {/* Public funnel - no auth required */}
         <Route path="/shop/:slug" component={PublicStorefront} />
         <Route path="/events/:slug" component={PublicEvents} />
-        <Route path="/shop/:slug" component={PublicStorefront} />
-        <Route path="/events/:slug" component={PublicEvents} />
         <Route path="/studio/:slug" component={PublicStudioFunnel} />
-        <Route path="/start/:slug">
-          <PublicArtistProfile />
-        </Route>
-        <Route path="/book/:slug">
-          <PublicArtistProfile />
-        </Route>
+        <Route path="/start/:slug" component={PublicFunnel} />
+        <Route path="/book/:slug" component={PublicArtistProfile} />
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
         <Route path="/pay/:token" component={PaymentRequestSheet} />
