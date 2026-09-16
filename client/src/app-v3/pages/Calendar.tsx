@@ -1,4 +1,3 @@
-import { SittingCard } from "../components/SittingCard";
 import { CalendarTimeline } from "../design/CalendarTimeline";
 import { useState, useMemo } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
@@ -47,7 +46,6 @@ export default function Calendar() {
     () => Number(new URLSearchParams(search).get("appointment")) || null
   );
   const [bookingDateValue, setBookingDateValue] = useState<Date | null>(null);
-  const [agendaExpanded, setAgendaExpanded] = useState(false);
   const [artist, setArtist] = useState("");
   const [navigationKey, setNavigationKey] = useState(0);
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -61,13 +59,6 @@ export default function Calendar() {
         ),
     [c.eventsByDay, artist]
   );
-  const dayEvents = events
-    .filter(
-      a =>
-        formatInTimeZone(instant(a.startTime), zone, "yyyy-MM-dd") ===
-        format(c.activeDate, "yyyy-MM-dd")
-    )
-    .sort((a, b) => +instant(a.startTime) - +instant(b.startTime));
   const goDay = (date: Date) => {
     c.handleDateTap(date);
     setNavigationKey(key => key + 1);
@@ -171,46 +162,6 @@ export default function Calendar() {
           onBook={setBookingDateValue}
           services={c.artistServices}
         />
-        {!wide && (
-          <>
-            <button
-              className="v3-action v3-action-secondary v3-agenda-toggle"
-              aria-expanded={agendaExpanded}
-              onClick={() => setAgendaExpanded(!agendaExpanded)}
-            >
-              <span>
-                {format(c.activeDate, "EEE d MMM")} · {dayEvents.length}{" "}
-                sessions
-              </span>
-              <span>
-                {agendaExpanded ? "Collapse agenda" : "Expand agenda"}
-              </span>
-            </button>
-            {agendaExpanded && (
-              <section className="v3-mobile-agenda" aria-label="Day agenda">
-                {dayEvents.map(a => (
-                  <SittingCard
-                    key={a.id}
-                    title={a.client?.name || a.clientName || a.title}
-                    detail={`${bookingTime(a.startTime, zone)} · ${a.title} · ${statusLabel(a.status)}`}
-                  >
-                    <BookingInspector
-                      appointment={a}
-                      onChange={c.refetch}
-                      onClose={() => {}}
-                      showCloseButton={false}
-                    />
-                  </SittingCard>
-                ))}
-                {!dayEvents.length && (
-                  <p className="v3-muted">
-                    No sessions booked. Use + beside a date to book.
-                  </p>
-                )}
-              </section>
-            )}
-          </>
-        )}
       </div>
       <SheetShell
         isOpen={!!bookingDateValue}

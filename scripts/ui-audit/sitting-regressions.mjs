@@ -268,11 +268,9 @@ try {
         name: /Backend session 2/,
       });
       await trigger.click();
-      const expandedCard = timeline
-        .locator(".v3-sitting-card")
-        .filter({
-          has: page.getByRole("button", { name: /Backend session 2/ }),
-        });
+      const expandedCard = timeline.locator(".v3-sitting-card").filter({
+        has: page.getByRole("button", { name: /Backend session 2/ }),
+      });
       await expandedCard
         .getByRole("link", { name: "Open booking", exact: true })
         .waitFor();
@@ -298,16 +296,15 @@ try {
     console.log(
       "calendar timeline: inline disclosure at phone/tablet widths without virtual-day clipping pass"
     );
-    await page.locator(".v3-agenda-toggle").click();
-    const agenda = page.getByRole("region", { name: "Day agenda" });
-    await agenda.getByRole("button", { name: /Backend session 2/ }).click();
-    await agenda
-      .getByRole("link", { name: "Open booking", exact: true })
-      .waitFor();
-    assert.equal(await page.getByRole("dialog").count(), 0);
-    console.log(
-      "calendar agenda: inline inspector without duplicate sheet pass"
+    assert.equal(
+      await page
+        .getByRole("button", {
+          name: /Expand agenda|Compact agenda|Collapse agenda/,
+        })
+        .count(),
+      0
     );
+    console.log("calendar: redundant agenda controls absent");
     await context.close();
   }
   {

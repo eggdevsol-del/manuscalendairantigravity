@@ -50,8 +50,6 @@ export function CalendarTimeline({
   const scroll = useRef<HTMLDivElement>(null);
   const visibleDate = useRef(format(date, "yyyy-MM-dd"));
   const withinDay = useRef(0);
-  const [expanded, setExpanded] = useState(false);
-  const lastExpanded = useRef(expanded);
   const lastNavigation = useRef(navigationKey);
   const initialized = useRef(false);
   const scrolling = useRef(false);
@@ -97,14 +95,14 @@ export function CalendarTimeline({
       positions.push(
         positions[index] +
           74 +
-          Math.max(1, count) * (expanded ? 112 : 64) +
+          Math.max(1, count) * 64 +
           (format(addDays(origin, index), "yyyy-MM-dd") === selectedDay
             ? extraHeight
             : 0)
       );
     }
     return positions;
-  }, [origin, byDay, expanded, selectedDay, extraHeight]);
+  }, [origin, byDay, selectedDay, extraHeight]);
   function indexAt(top: number) {
     let low = 0,
       high = windowSize - 1;
@@ -182,19 +180,12 @@ export function CalendarTimeline({
   useLayoutEffect(() => {
     const key = format(date, "yyyy-MM-dd");
     const navigation = navigationKey !== lastNavigation.current;
-    const modeChange = expanded !== lastExpanded.current;
     const externalDate = key !== visibleDate.current;
     const firstLayout = !initialized.current;
     const geometryChanged = offsets !== lastOffsets.current;
-    if (
-      !firstLayout &&
-      !navigation &&
-      !modeChange &&
-      !externalDate &&
-      !geometryChanged
-    )
+    if (!firstLayout && !navigation && !externalDate && !geometryChanged)
       return;
-    const intentional = navigation || modeChange || externalDate;
+    const intentional = navigation || externalDate;
     if (!intentional && !firstLayout && (scrolling.current || touching.current))
       return;
     if (intentional || firstLayout) {
@@ -206,7 +197,6 @@ export function CalendarTimeline({
     }
     visibleDate.current = key;
     lastNavigation.current = navigationKey;
-    lastExpanded.current = expanded;
     lastOffsets.current = offsets;
     initialized.current = true;
     const index = differenceInCalendarDays(date, origin);
@@ -230,7 +220,7 @@ export function CalendarTimeline({
       else element.scrollTop = top;
       if (!smooth) setScrollTop(top);
     }
-  }, [date, origin, offsets, expanded, navigationKey, settledRevision]);
+  }, [date, origin, offsets, navigationKey, settledRevision]);
   const overscan = Math.max(4, Math.ceil(viewportHeight / 138));
   const first = Math.max(0, indexAt(scrollTop) - overscan);
   const last = Math.min(
@@ -247,17 +237,9 @@ export function CalendarTimeline({
     };
   });
   return (
-    <section className="v3-continuous-calendar" data-expanded={expanded}>
+    <section className="v3-continuous-calendar" data-expanded={false}>
       <div className="v3-timeline-heading">
         <strong>{format(date, "MMMM yyyy")}</strong>
-        <button
-          type="button"
-          className="v3-icon-button"
-          onClick={() => setExpanded(!expanded)}
-          aria-expanded={expanded}
-        >
-          {expanded ? "Compact agenda" : "Expand agenda"}
-        </button>
       </div>
       <div
         ref={scroll}
@@ -340,17 +322,7 @@ export function CalendarTimeline({
                       title={
                         event.client?.name || event.clientName || event.title
                       }
-                      detail={
-                        <>
-                          {event.title}
-                          {expanded && (
-                            <small>
-                              {statusLabel(event.status)} · Booking, forms &
-                              payments
-                            </small>
-                          )}
-                        </>
-                      }
+                      detail={<>{event.title}</>}
                       expanded={!!renderDetails && selectedId === event.id}
                       onExpandedChange={open =>
                         open ? onSelect(event) : onDeselect?.()

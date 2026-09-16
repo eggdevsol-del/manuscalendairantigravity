@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
-import { Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
@@ -376,23 +376,26 @@ export function BookingComposer({
             sitting before sending.
           </p>
           {error && <p role="alert">{error}</p>}
-          <Action disabled={findingDates} onClick={findDates}>
-            {findingDates ? "Checking availability…" : "Find available dates"}
-          </Action>
-          <Action
-            tone="quiet"
-            disabled={findingDates}
-            onClick={() => setStep("details")}
-          >
-            Choose dates myself
-          </Action>
-          <Action
-            tone="quiet"
-            disabled={findingDates}
-            onClick={() => setStep("service")}
-          >
-            Back to services
-          </Action>
+          <div className="v3-date-choice-actions">
+            <Action disabled={findingDates} onClick={findDates}>
+              {findingDates ? "Checking availability…" : "Find available dates"}
+            </Action>
+            <Action
+              tone="secondary"
+              disabled={findingDates}
+              onClick={() => setStep("details")}
+            >
+              Choose dates myself
+            </Action>
+            <button
+              type="button"
+              className="v3-date-choice-back"
+              disabled={findingDates}
+              onClick={() => setStep("service")}
+            >
+              <ArrowLeft size={16} aria-hidden="true" /> Back to services
+            </button>
+          </div>
         </Section>
       )}
       {step === "details" ? (
