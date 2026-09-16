@@ -139,6 +139,36 @@ describe("useChatController", () => {
     );
   });
 
+  it("follows a newly rendered message to the bottom without intermediate smooth-scroll events", () => {
+    const { result, rerender } = renderHook(() => useChatController(1));
+    const scrollTo = vi.fn();
+    const viewport = document.createElement("div");
+    Object.defineProperty(viewport, "scrollHeight", { value: 1800 });
+    viewport.scrollTo = scrollTo;
+    (result.current.viewportRef as any).current = viewport;
+    (trpc.messages.list.useQuery as any).mockReturnValue({
+      data: [{ id: 2, senderId: "123", content: "New message" }],
+    });
+    rerender();
+    expect(scrollTo).toHaveBeenLastCalledWith({
+      top: 1800,
+      behavior: "instant",
+    });
+  });
+
+  it("does not pull the reader away from older messages on an incoming update", () => {
+    const { result, rerender } = renderHook(() => useChatController(1));
+    const viewport = document.createElement("div");
+    viewport.scrollTo = vi.fn();
+    (result.current.viewportRef as any).current = viewport;
+    act(() => result.current.setScrollIntent("USER_READING_HISTORY"));
+    (trpc.messages.list.useQuery as any).mockReturnValue({
+      data: [{ id: 2, senderId: "other", content: "Incoming message" }],
+    });
+    rerender();
+    expect(viewport.scrollTo).not.toHaveBeenCalled();
+  });
+
   it("should handle quick actions", () => {
     const mutateMock = vi.fn();
     (trpc.messages.send.useMutation as any).mockReturnValue({

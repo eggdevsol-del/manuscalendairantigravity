@@ -1,3 +1,4 @@
+import { useMessageHistory } from "./useMessageHistory";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useEffect, useState, useMemo } from "react";
@@ -22,7 +23,7 @@ export function useChatData(conversationId: number) {
   const isClient = isConversationClient(user, conversation?.clientId);
 
   const {
-    data: messages,
+    data: latestMessages,
     isLoading: messagesLoading,
     error: messagesError,
   } = trpc.messages.list.useQuery(
@@ -32,6 +33,9 @@ export function useChatData(conversationId: number) {
       refetchInterval: 3000,
     }
   );
+
+  const history = useMessageHistory(conversationId, latestMessages);
+  const { messages } = history;
 
   const { data: quickActions } = trpc.quickActions.list.useQuery(undefined, {
     enabled: isArtist,
@@ -103,6 +107,7 @@ export function useChatData(conversationId: number) {
 
   const value = useMemo(
     () => ({
+      ...history,
       user,
       authLoading,
       conversation,
@@ -122,6 +127,7 @@ export function useChatData(conversationId: number) {
       otherUserName,
     }),
     [
+      history,
       user?.id,
       authLoading,
       conversation,

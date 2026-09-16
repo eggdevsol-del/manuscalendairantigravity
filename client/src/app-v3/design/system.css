@@ -2059,3 +2059,37 @@ body:has(.tattoi-notice) .v3-scroll {
 .ivory-shop-product-name { font-size: 16px; font-weight: 600; overflow-wrap: anywhere; }
 .ivory-shop-fee-note { font-size: 12px; line-height: 1.5; margin-top: 24px; }
 @media (max-width: 500px) { .v3-shop-grid:has(.ivory-shop-product) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 14px; } }
+
+/* The selected phone thread owns its scrollport, just like the tablet thread. */
+@media (max-width: 767px) {
+  .v3-screen:has(.v3-inbox.has-selection) > .v3-scroll {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+  .v3-screen:has(.v3-inbox.has-selection) .v3-content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+  .v3-inbox.has-selection {
+    flex: 1;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .v3-inbox.has-selection .v3-inbox-thread,
+  .v3-inbox.has-selection .v3-thread-layout,
+  .v3-inbox.has-selection .v3-thread {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .v3-thread-header, .v3-thread-notes, .v3-thread > .v3-design-brief,
+  .v3-composer { flex-shrink: 0; }
+}
+.v3-message-stream { display: flex; flex-direction: column; gap: 20px; flex-shrink: 0; }
+.v3-messages { overflow-anchor: none; touch-action: pan-y; }

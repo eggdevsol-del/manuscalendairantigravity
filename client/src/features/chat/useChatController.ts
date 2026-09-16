@@ -1,3 +1,4 @@
+import { useMessageScroll } from "./hooks/useMessageScroll";
 import { useEffect, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -89,7 +90,6 @@ export function useChatController(conversationId: number) {
 
     // Optimistic scroll enforcement
     setScrollIntent("AUTO_FOLLOW"); // Ensure we follow own message
-    scrollToBottom("smooth");
 
     sendMessageMutation.mutate({
       conversationId,
@@ -387,26 +387,7 @@ export function useChatController(conversationId: number) {
 
   // -- Effects --
 
-  // Auto-Scroll Effect
-  useEffect(() => {
-    if (messages && messages.length > 0) {
-      if (scrollIntent === "AUTO_FOLLOW") {
-        setTimeout(() => {
-          if (viewportRef.current) {
-            const vp = viewportRef.current;
-            vp.scrollTo({ top: vp.scrollHeight, behavior: "smooth" });
-          }
-        }, 100);
-      }
-    }
-  }, [messages, scrollIntent, viewportRef]);
-
-  useEffect(() => {
-    if (!messagesLoading && messages?.length) {
-      // Initial load check
-      // Handlers force auto-follow so this might be redundant but keeping for safety
-    }
-  }, [messagesLoading, messages]);
+  useMessageScroll(viewportRef, messages, scrollIntent === "AUTO_FOLLOW");
 
   // Mark as read
   useEffect(() => {
@@ -426,6 +407,7 @@ export function useChatController(conversationId: number) {
 
   const value = useMemo(
     () => ({
+      ...data,
       // Data
       user,
       authLoading,
@@ -469,6 +451,7 @@ export function useChatController(conversationId: number) {
     }),
     [
       // Data
+      data,
       user?.id,
       authLoading,
       conversation,

@@ -2,6 +2,7 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
@@ -33,14 +34,43 @@ const packageVersion = JSON.parse(
   fs.readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf-8")
 ).version;
 
+// Content-address the browser artifact; package version alone cannot identify patches.
+const fingerprint = createHash("sha256");
+function hashTree(dir: string) {
+  for (const entry of fs
+    .readdirSync(dir, { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name))) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) hashTree(file);
+    else if (!/\.(test|spec)\./.test(entry.name)) {
+      fingerprint.update(path.relative(import.meta.dirname, file));
+      fingerprint.update(fs.readFileSync(file));
+    }
+  }
+}
+hashTree(path.join(import.meta.dirname, "client"));
+hashTree(path.join(import.meta.dirname, "shared"));
+fingerprint.update(
+  fs.readFileSync(path.join(import.meta.dirname, "pnpm-lock.yaml"))
+);
+fingerprint.update(
+  fs.readFileSync(path.join(import.meta.dirname, "vite.config.ts"))
+);
+const sourceFingerprint = fingerprint.digest("hex");
+
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, import.meta.dirname, "");
+  const publicConfig = Object.entries(env)
+    .filter(([key]) => key.startsWith("VITE_"))
+    .sort(([a], [b]) => a.localeCompare(b));
+  const buildVersion = `${packageVersion}+${createHash("sha256").update(sourceFingerprint).update(JSON.stringify(publicConfig)).digest("hex").slice(0, 12)}`;
 
   return {
     define: {
       __APP_VERSION__: JSON.stringify(packageVersion),
+      "import.meta.env.VITE_APP_VERSION": JSON.stringify(buildVersion),
       "import.meta.env.VITE_ONESIGNAL_APP_ID": JSON.stringify(
         env.VITE_ONESIGNAL_APP_ID
       ),
@@ -50,6 +80,19 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       ...plugins,
+      {
+        name: "build-identity",
+        generateBundle() {
+          this.emitFile({
+            type: "asset",
+            fileName: "build-info.json",
+            source: JSON.stringify({
+              version: packageVersion,
+              build: buildVersion,
+            }),
+          });
+        },
+      },
       ...(mode === "development" ? [vitePluginManusRuntime()] : []),
       {
         name: "html-transform",

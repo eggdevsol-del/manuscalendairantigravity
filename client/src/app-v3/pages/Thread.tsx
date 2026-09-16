@@ -175,126 +175,144 @@ export function Thread({
             !c.messages?.length && (
               <Feedback empty="Start the conversation here. Your booking details stay together with your messages." />
             )}
-          {c.messages?.map(message => {
-            const metadata = objectFromJson(message.metadata);
-            const grid = objectFromJson(message.content);
-            const urls = mediaUrls(grid);
-            const own = message.senderId === c.user?.id;
-            const text =
-              message.messageType === "text"
-                ? message.content
-                : messageText(message.content);
-            let body;
-            if (
-              metadata.type === "session_plan" ||
-              message.messageType === "session_plan"
-            )
-              body = (
-                <PlanMessage
-                  id={Number(metadata.sessionPlanId)}
-                  conversationId={id}
-                />
-              );
-            else if (message.messageType === "studio_invite")
-              body = (
-                <InviteMessage
-                  metadata={metadata}
-                  own={own}
-                  onChange={refresh}
-                />
-              );
-            else if (metadata.type === "project_proposal")
-              body = (
-                <Panel>
-                  <h3>Booking proposal</h3>
-                  <p>{statusLabel(metadata.status || "pending")}</p>
-                  <Action
-                    onClick={() => {
-                      c.handleViewProposal(message, metadata);
-                      setBooking(true);
-                    }}
-                  >
-                    Review proposal
-                  </Action>
-                </Panel>
-              );
-            else if (
-              metadata.type === "payment_request" ||
-              metadata.type === "reschedule_deposit"
-            )
-              body = (
-                <Panel>
-                  <h3>
-                    {metadata.type === "payment_request"
-                      ? "Payment requested"
-                      : "Rescheduled booking"}
-                  </h3>
-                  <p>{text}</p>
-                  <ActionLink
-                    href={`/projects/${id}${metadata.bookingId || metadata.appointmentId ? `?session=${metadata.bookingId || metadata.appointmentId}` : ""}`}
-                  >
-                    Review booking
-                  </ActionLink>
-                </Panel>
-              );
-            else if (urls.length)
-              body = (
-                <div className="v3-message-images">
-                  {urls.map((url, i) => (
-                    <a
-                      key={`${url}-${i}`}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      <img
-                        src={url}
-                        alt={`${grid.label || "Reference"} ${i + 1}`}
-                        loading="lazy"
-                      />
-                    </a>
-                  ))}
-                </div>
-              );
-            else if (
-              message.messageType === "image" &&
-              /^https?:\/\//i.test(message.content)
-            )
-              body = (
-                <a href={message.content} target="_blank" rel="noreferrer">
-                  <img
-                    className="v3-message-image"
-                    src={message.content}
-                    alt="Shared photo"
-                    loading="lazy"
-                  />
-                </a>
-              );
-            else if (
-              message.messageType === "balance_paid" ||
-              message.messageType === "session_plan_accepted"
-            )
-              body = <Status tone="success">{text}</Status>;
-            else
-              body = (
-                <p className="v3-message-text">
-                  {message.messageType === "image"
-                    ? "This image is unavailable."
-                    : text}
-                </p>
-              );
-            return (
-              <article
-                className={`v3-message ${own ? "is-own" : ""}`}
-                key={message.id}
+          <div className="v3-message-stream">
+            {c.hasOlderMessages && (
+              <Action
+                tone="quiet"
+                disabled={c.loadingOlderMessages}
+                onClick={() => {
+                  c.setScrollIntent("USER_READING_HISTORY");
+                  void c.loadOlderMessages();
+                }}
               >
-                <div>{body}</div>
-                <time>
-                  {message.createdAt && bookingDate(message.createdAt)}
-                </time>
-              </article>
-            );
-          })}
+                {c.loadingOlderMessages
+                  ? "Loading older messages…"
+                  : "Load older messages"}
+              </Action>
+            )}
+            {c.olderMessagesError && <p role="alert">{c.olderMessagesError}</p>}
+            {c.messages?.map(message => {
+              const metadata = objectFromJson(message.metadata);
+              const grid = objectFromJson(message.content);
+              const urls = mediaUrls(grid);
+              const own = message.senderId === c.user?.id;
+              const text =
+                message.messageType === "text"
+                  ? message.content
+                  : messageText(message.content);
+              let body;
+              if (
+                metadata.type === "session_plan" ||
+                message.messageType === "session_plan"
+              )
+                body = (
+                  <PlanMessage
+                    id={Number(metadata.sessionPlanId)}
+                    conversationId={id}
+                  />
+                );
+              else if (message.messageType === "studio_invite")
+                body = (
+                  <InviteMessage
+                    metadata={metadata}
+                    own={own}
+                    onChange={refresh}
+                  />
+                );
+              else if (metadata.type === "project_proposal")
+                body = (
+                  <Panel>
+                    <h3>Booking proposal</h3>
+                    <p>{statusLabel(metadata.status || "pending")}</p>
+                    <Action
+                      onClick={() => {
+                        c.handleViewProposal(message, metadata);
+                        setBooking(true);
+                      }}
+                    >
+                      Review proposal
+                    </Action>
+                  </Panel>
+                );
+              else if (
+                metadata.type === "payment_request" ||
+                metadata.type === "reschedule_deposit"
+              )
+                body = (
+                  <Panel>
+                    <h3>
+                      {metadata.type === "payment_request"
+                        ? "Payment requested"
+                        : "Rescheduled booking"}
+                    </h3>
+                    <p>{text}</p>
+                    <ActionLink
+                      href={`/projects/${id}${metadata.bookingId || metadata.appointmentId ? `?session=${metadata.bookingId || metadata.appointmentId}` : ""}`}
+                    >
+                      Review booking
+                    </ActionLink>
+                  </Panel>
+                );
+              else if (urls.length)
+                body = (
+                  <div className="v3-message-images">
+                    {urls.map((url, i) => (
+                      <a
+                        key={`${url}-${i}`}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img
+                          src={url}
+                          alt={`${grid.label || "Reference"} ${i + 1}`}
+                          loading="lazy"
+                        />
+                      </a>
+                    ))}
+                  </div>
+                );
+              else if (
+                message.messageType === "image" &&
+                /^https?:\/\//i.test(message.content)
+              )
+                body = (
+                  <a href={message.content} target="_blank" rel="noreferrer">
+                    <img
+                      className="v3-message-image"
+                      src={message.content}
+                      alt="Shared photo"
+                      loading="lazy"
+                    />
+                  </a>
+                );
+              else if (
+                message.messageType === "balance_paid" ||
+                message.messageType === "session_plan_accepted"
+              )
+                body = <Status tone="success">{text}</Status>;
+              else
+                body = (
+                  <p className="v3-message-text">
+                    {message.messageType === "image"
+                      ? "This image is unavailable."
+                      : text}
+                  </p>
+                );
+              return (
+                <article
+                  className={`v3-message ${own ? "is-own" : ""}`}
+                  data-message-id={message.id}
+                  key={message.id}
+                >
+                  <div>{body}</div>
+                  <time>
+                    {message.createdAt && bookingDate(message.createdAt)}
+                  </time>
+                </article>
+              );
+            })}
+          </div>
         </div>
         <form
           className="v3-composer"

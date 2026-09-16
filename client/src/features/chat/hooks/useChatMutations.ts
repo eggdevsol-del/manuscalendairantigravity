@@ -77,7 +77,22 @@ export function useChatMutations(
       }
       toast.error("Failed to send message: " + error.message);
     },
-    onSuccess: async (_data, sentMessage) => {
+    onSuccess: async (savedMessage, sentMessage, context) => {
+      // Use the persisted row immediately, even if polling replaced the pending
+      // bubble while the request was in flight. Do not duplicate a realtime echo.
+      if (savedMessage) {
+        utils.messages.list.setData(
+          { conversationId: sentMessage.conversationId },
+          current => [
+            ...(current || []).filter(
+              message =>
+                message.id !== context?.optimisticId &&
+                message.id !== savedMessage.id
+            ),
+            savedMessage,
+          ]
+        );
+      }
       if (!sentMessage.messageType || sentMessage.messageType === "text") {
         state.setMessageText(current =>
           current === sentMessage.content ? "" : current

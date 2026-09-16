@@ -17,7 +17,17 @@ export const messagesRouter = router({
     .input(
       z.object({
         conversationId: z.number(),
-        limit: z.number().optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+        before: z
+          .object({
+            id: z.number().int().positive(),
+            createdAt: z
+              .string()
+              .regex(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z?$/)
+              .transform(value => value.replace("T", " ").replace(/Z$/, ""))
+              .nullable(),
+          })
+          .optional(),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -41,7 +51,11 @@ export const messagesRouter = router({
         });
       }
 
-      const msgs = await db.getMessages(input.conversationId, input.limit);
+      const msgs = await db.getMessages(
+        input.conversationId,
+        input.limit,
+        input.before
+      );
       return msgs.reverse(); // Return in chronological order
     }),
   send: protectedProcedure

@@ -163,15 +163,20 @@ if (import.meta.env.PROD) {
 
 // OneSignal is initialized by App after its providers mount.
 
-// Configure Status Bar for Native/PWA
+// Match native foreground icons to the rendered theme, including theme changes.
 if (Capacitor.isNativePlatform()) {
-  try {
-    // Make status bar transparent and overlay the webview content underneath
-    StatusBar.setOverlaysWebView({ overlay: true });
-    // Set style to Dark so the white time/battery text contrasts well with the dark theme
-    StatusBar.setStyle({ style: Style.Dark });
-  } catch (err) {
-    // Silently fail on environments that don't fully support this
-    console.warn("StatusBar setup failed:", err);
-  }
+  const apply = () => {
+    const dark = document.documentElement.classList.contains("dark");
+    void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(
+      err => console.warn("StatusBar style failed:", err)
+    );
+  };
+  void StatusBar.setOverlaysWebView({ overlay: true }).catch(err =>
+    console.warn("StatusBar overlay failed:", err)
+  );
+  apply();
+  new MutationObserver(apply).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
 }

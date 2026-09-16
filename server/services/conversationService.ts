@@ -1,4 +1,4 @@
-import { and, desc, eq, not, sql } from "drizzle-orm";
+import { and, desc, eq, not, sql, lt, or, isNull } from "drizzle-orm";
 import {
   conversations,
   InsertConversation,
@@ -150,15 +150,35 @@ export async function createMessage(message: InsertMessage) {
   return inserted[0];
 }
 
-export async function getMessages(conversationId: number, limit = 100) {
+export async function getMessages(
+  conversationId: number,
+  limit = 100,
+  before?: { id: number; createdAt: string | null }
+) {
   const db = await getDb();
   if (!db) return [];
 
   return db
     .select()
     .from(messages)
-    .where(eq(messages.conversationId, conversationId))
-    .orderBy(desc(messages.createdAt))
+    .where(
+      and(
+        eq(messages.conversationId, conversationId),
+        before
+          ? before.createdAt === null
+            ? and(isNull(messages.createdAt), lt(messages.id, before.id))
+            : or(
+                isNull(messages.createdAt),
+                lt(messages.createdAt, before.createdAt),
+                and(
+                  eq(messages.createdAt, before.createdAt),
+                  lt(messages.id, before.id)
+                )
+              )
+          : undefined
+      )
+    )
+    .orderBy(desc(messages.createdAt), desc(messages.id))
     .limit(limit);
 }
 

@@ -18,13 +18,17 @@
     "git-push": "tsx server/scripts/bump-version.ts && git add . && git commit -m \"chore: bump version\" && git push",
     "db:legacy-migrate": "tsx scripts/migrate-add-columns.ts",
     "ios:sync": "node scripts/sync-ios.mjs",
-    "ios:build": "xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination generic/platform=iOS\\ Simulator CODE_SIGNING_ALLOWED=NO build",
+    "ios:build": "node scripts/check-native-assets.mjs && xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination generic/platform=iOS\\ Simulator CODE_SIGNING_ALLOWED=NO build",
     "db:generate": "drizzle-kit generate",
     "deploy:check": "tsx server/scripts/check-deployment.ts",
     "deploy:reconcile": "node server/scripts/reconcile-rebuild.mjs",
     "deploy:test-flows": "tsx server/scripts/check-rebuild-flows.ts",
     "deploy:test-all-roles": "tsx server/scripts/check-all-roles.ts",
-    "deploy:migrate-all-roles": "node server/scripts/migrate-all-roles.mjs"
+    "deploy:migrate-all-roles": "node server/scripts/migrate-all-roles.mjs",
+    "release:check": "node scripts/verify-release.mjs",
+    "check-native-assets": "node scripts/check-native-assets.mjs",
+    "ios:prepare": "vite build && node scripts/sync-ios.mjs && node scripts/check-native-assets.mjs",
+    "release:signoff": "node scripts/check-release-signoff.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.967.0",
@@ -143,6 +147,7 @@
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.0",
     "jsdom": "^27.4.0",
+    "playwright": "1.62.1",
     "postcss": "^8.4.47",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.14",

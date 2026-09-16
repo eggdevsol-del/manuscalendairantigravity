@@ -73,6 +73,29 @@ beforeEach(() => {
 });
 
 describe("chat send recovery", () => {
+  it("restores the saved message when a poll removed its pending bubble", async () => {
+    renderHook(() => useTestComposer("Hello"));
+    const sent = { conversationId: 12, content: "Hello", messageType: "text" };
+    const context = await mocks.sendOptions.onMutate(sent);
+    mocks.cachedMessages = [{ id: 1, content: "Earlier" }];
+    const saved = { ...sent, id: 2, senderId: "artist" };
+    await act(() => mocks.sendOptions.onSuccess(saved, sent, context));
+    expect(mocks.cachedMessages).toEqual([
+      { id: 1, content: "Earlier" },
+      saved,
+    ]);
+  });
+
+  it("replaces the pending bubble without duplicating a server echo", async () => {
+    renderHook(() => useTestComposer("Hello"));
+    const sent = { conversationId: 12, content: "Hello", messageType: "text" };
+    const context = await mocks.sendOptions.onMutate(sent);
+    const saved = { ...sent, id: 2, senderId: "artist" };
+    mocks.cachedMessages!.push(saved);
+    await act(() => mocks.sendOptions.onSuccess(saved, sent, context));
+    expect(mocks.cachedMessages).toEqual([saved]);
+  });
+
   it("clears a text draft only after that exact message succeeds", async () => {
     const hook = renderHook(() => useTestComposer("The first message"));
     await act(() =>
