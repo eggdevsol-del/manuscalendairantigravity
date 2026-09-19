@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 /**
  * ArtistProfileOverlay — Full-screen artist profile
  * ──────────────────────────────────────────────────────
@@ -156,6 +157,7 @@ export default function ArtistProfileOverlay({
           >
             <motion.div
               className="artist-profile-overlay"
+              data-tour-surface="Artist profile"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -179,7 +181,7 @@ export default function ArtistProfileOverlay({
                   back
                 </button>
                 <span className="artist-profile-header-name">{artistName}</span>
-                <div style={{ width: 40 }} />
+                <TourHelp feature />
               </div>
 
               {/* Content: grid view or feed view */}

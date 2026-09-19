@@ -265,6 +265,7 @@ export function CalendarTimeline({
         tabIndex={0}
         role="region"
         aria-label="Scrollable calendar timeline"
+        data-tour-description="Scroll through the calendar to browse dates. Appointment cards expand directly below the selected card; the plus control starts a booking on its date. Browsing does not move or reschedule appointments."
       >
         <div
           style={{ height: offsets[offsets.length - 1], position: "relative" }}
@@ -293,6 +294,9 @@ export function CalendarTimeline({
                   {onBook && (
                     <button
                       type="button"
+                      data-tour-repeat="calendar-book-date"
+                      data-tour-title="Book on a calendar date"
+                      data-tour-description="Start a booking on this date. The planner lets you select a client and service, then review availability, sittings and payment details."
                       aria-label={`Book on ${format(day, "d MMMM yyyy")}`}
                       onClick={() => onBook(day)}
                     >

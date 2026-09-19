@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import {
   createContext,
   useContext,
@@ -42,6 +43,7 @@ export function Screen({
   const activeTab = sectionTabs?.items.indexOf(sectionTabs.value);
   return (
     <div
+      data-tour-surface={title}
       className={`v3-screen v3-screen-${publicView ? "public" : user?.role || "public"} ${wide ? "v3-screen-wide" : ""}`}
     >
       <header className={back ? "v3-header v3-header-with-back" : "v3-header"}>
@@ -58,31 +60,34 @@ export function Screen({
               tattoi
             </Link>
           )}
-          {action || (
-            <Link
-              className="v3-avatar"
-              href={
-                user?.role === "client"
-                  ? "/profile"
-                  : user?.role === "merchant"
-                    ? "/settings"
-                    : "/business"
-              }
-              aria-label={
-                user?.role === "client"
-                  ? "Your profile"
-                  : user?.role === "merchant"
-                    ? "Store settings"
-                    : "Your business"
-              }
-            >
-              {user?.avatar ? (
-                <img src={user.avatar} alt="" />
-              ) : (
-                <UserRound size={22} />
-              )}
-            </Link>
-          )}
+          <div className="tour-header-actions">
+            <TourHelp />
+            {action || (
+              <Link
+                className="v3-avatar"
+                href={
+                  user?.role === "client"
+                    ? "/profile"
+                    : user?.role === "merchant"
+                      ? "/settings"
+                      : "/business"
+                }
+                aria-label={
+                  user?.role === "client"
+                    ? "Your profile"
+                    : user?.role === "merchant"
+                      ? "Store settings"
+                      : "Your business"
+                }
+              >
+                {user?.avatar ? (
+                  <img src={user.avatar} alt="" />
+                ) : (
+                  <UserRound size={22} />
+                )}
+              </Link>
+            )}
+          </div>
         </div>
         <h1>{title}</h1>
         <p className="v3-subtitle" aria-hidden={subtitle ? undefined : true}>

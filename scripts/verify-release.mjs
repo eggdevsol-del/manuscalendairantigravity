@@ -4,7 +4,7 @@ const node = process.execPath;
 function run(file, args = []) {
   const result = spawnSync(node, [file, ...args], {
     stdio: "inherit",
-    env: process.env,
+    env: { ...process.env, TOUR_CASE: "", TOUR_GROUP: "", TOUR_ROLE: "", TOUR_PATH: "" },
   });
   if (result.status !== 0) throw Error(`${file} failed (${result.status})`);
 }
@@ -52,6 +52,13 @@ try {
   }
   run("scripts/ui-audit/release-regressions.mjs");
   run("scripts/ui-audit/sitting-regressions.mjs");
+  // Exercise contextual tours against the release build, including nested UI.
+  run("scripts/ui-audit/complete-tours-check.mjs");
+  run("scripts/ui-audit/tour-public-check.mjs");
+  run("scripts/ui-audit/tour-features-check.mjs");
+  run("scripts/check-tour-evidence.mjs");
+  run("scripts/ui-audit/tour-interactions-check.mjs");
+  run("scripts/ui-audit/contextual-tour-check.mjs");
   console.log(
     "Local release regressions passed. Physical-device and service acceptance is still required."
   );

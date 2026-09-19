@@ -283,7 +283,7 @@ export default function DataImport() {
                   ))}
                 </Section>
               )}
-              <Action disabled={!mapping.name || !rows.length} onClick={review}>
+              <Action disabled={!mapping.name || !rows.length} onClick={review} data-tour-description="Check mapped rows against existing records to preview matches, duplicates and conflicts. This review does not import records.">
                 {preview.isPending
                   ? "Checking records…"
                   : "Review matches & duplicates"}
@@ -311,15 +311,18 @@ export default function DataImport() {
               Duplicates are skipped. Existing profiles are not overwritten.
               Each row is checked again at import.
             </p>
-            <Action onClick={importReady} disabled={busy || eligible === 0}>
+            <Action onClick={importReady} disabled={busy || eligible === 0} data-tour-description="Import the ready rows or retry failed rows from this preview. Duplicates, invalid rows and conflicts are excluded. Existing profiles are not overwritten, and each row is checked again before import.">
               {commit.isPending
                 ? "Importing…"
                 : `Import / retry ${eligible} ready rows`}
             </Action>
           </Panel>
           {results.map(r => (
+            <div key={r.index}
+              data-tour-title={`Import row ${r.sourceRow || r.index + 2}: ${r.status}`}
+              data-tour-description={`Read this row’s result: ${r.detail}. ${["new", "matched", "failed"].includes(r.status) ? "This row is eligible for import or retry; review it before importing." : r.status === "imported" ? "This row has already been imported and is not retried." : "This row is excluded from import. Correct invalid data or conflicts before reviewing again; duplicates are skipped."}`}
+            >
             <Row
-              key={r.index}
               title={r.name || "Missing name"}
               detail={`Row ${r.sourceRow || r.index + 2}: ${r.detail}`}
               trailing={
@@ -336,6 +339,7 @@ export default function DataImport() {
                 </Status>
               }
             />
+            </div>
           ))}
         </Section>
       )}

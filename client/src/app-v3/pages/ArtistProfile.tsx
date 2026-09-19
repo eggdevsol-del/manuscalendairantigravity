@@ -391,6 +391,8 @@ function Portfolio() {
               <img
                 className="v3-media-full"
                 src={item.imageUrl}
+                data-tour-title="Portfolio artwork"
+                data-tour-description="Review this saved image at full size. Close the preview to return to your portfolio; previewing does not publish, edit or remove the image."
                 alt={item.description || "Portfolio tattoo"}
               />
             )}

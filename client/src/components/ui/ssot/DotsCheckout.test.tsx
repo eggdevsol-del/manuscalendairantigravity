@@ -58,6 +58,8 @@ describe("Custom Stripe checkout", () => {
     );
     expect(screen.getByRole("button", { name: "Pay A$123.45" })).toBeTruthy();
     expect(screen.getByText("Secure session card fields")).toBeTruthy();
+    expect(screen.getByText("Secure session card fields").closest("[data-tour-title]")).toHaveAttribute("data-tour-title", "Secure payment details");
+    expect(confirm).not.toHaveBeenCalled();
     expect(screen.queryByText("PaymentIntent Elements")).toBeNull();
     expect(screen.queryByLabelText("Phone")).toBeNull();
   });

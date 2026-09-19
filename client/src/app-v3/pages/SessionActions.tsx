@@ -118,7 +118,12 @@ export function SessionActions({
         </Panel>
       )}
       {canFinish && !s.pendingRequest && (
-        <Action onClick={() => open("finish")}>
+        <Action
+          onClick={() => open("finish")}
+          data-tour-description={s.remainingCents > 0
+            ? "Review the outstanding balance before sending a payment request. Opening this review does not collect payment or complete the session."
+            : "Review this fully paid session before marking it complete and recording its finish time."}
+        >
           {s.status === "completed"
             ? "Request remaining balance"
             : "Finish session"}
@@ -126,13 +131,15 @@ export function SessionActions({
       )}
       {s.status !== "completed" && (
         <>
-          <Action tone="quiet" onClick={() => open("reschedule")}>
+          <Action tone="quiet" onClick={() => open("reschedule")}
+            data-tour-description="Choose a replacement date and time. Saving moves this session while preserving its duration and existing payments.">
             Reschedule
           </Action>
           <details>
             <summary className="v3-row">More session options</summary>
             {canFinish && (
-              <Action tone="quiet" onClick={() => open("no-show")}>
+              <Action tone="quiet" onClick={() => open("no-show")}
+                data-tour-description="Open the no-show confirmation only if the client did not attend. Reviewing it does not yet change the appointment status.">
                 Mark no-show
               </Action>
             )}
@@ -203,6 +210,7 @@ export function SessionActions({
                 <label className="v3-inline">
                   <input
                     type="checkbox"
+                    data-tour-description="When selected, confirmation cancels all remaining sessions in this plan. Leave it unchecked to cancel only this session. Payment records are retained; refunds are separate."
                     checked={all}
                     onChange={e => setAll(e.target.checked)}
                   />
@@ -218,6 +226,19 @@ export function SessionActions({
             }
             disabled={busy}
             onClick={save}
+            data-tour-description={
+              mode === "reschedule"
+                ? "Save the new date and time for this session. The app checks the future time and availability; duration and existing payments stay the same."
+                : mode === "cancel"
+                  ? all
+                    ? "Cancel all remaining sessions in this plan. This preserves payment records and does not automatically issue a refund."
+                    : "Cancel only this session. This preserves payment records and does not automatically issue a refund."
+                  : mode === "no-show"
+                    ? "Record that the client did not attend this session. Confirm only when that is accurate."
+                    : s.remainingCents > 0
+                      ? "Send the client a payment request for the displayed remaining balance. Session completion follows the payment workflow."
+                      : "Mark this fully paid session complete and record the current finish time."
+            }
           >
             {busy
               ? "Saving…"

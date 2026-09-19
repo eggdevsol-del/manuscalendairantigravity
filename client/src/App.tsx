@@ -1,3 +1,4 @@
+import { ContextualTourArrival } from "@/components/tooltip-tour/ContextualTourArrival";
 import React, { Suspense } from "react";
 import { Feedback, Screen } from "@/app-v3/design/primitives";
 import { ActionPanel } from "@/components/ActionPanel";
@@ -304,6 +305,7 @@ function App() {
                 <UpdateBanner />
                 <AuthOnlyBanners />
                 <TooltipOverlay />
+                <ContextualTourArrival />
                 <ActionPanel />
                 <ErrorBoundary boundary="app-root">
                   <Router />

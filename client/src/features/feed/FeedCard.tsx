@@ -185,6 +185,9 @@ export function FeedCard({
     return (
       <div
         className={`feed-card feed-card-focus ${discoveryMode ? "ivory-discovery-card" : ""}`}
+        data-tour-repeat="artwork-gesture"
+        data-tour-title="Explore artwork"
+        data-tour-description="Tap artwork to explore this artist’s work. Double-tap to like it. Use the artist name or profile control to view their details, and scroll to browse the feed."
         onClick={handleDoubleTap}
       >
         {onImageTap && (
@@ -446,7 +449,7 @@ export function FeedCard({
       )}
 
       {/* Media */}
-      <div className="feed-card-image-container" onClick={handleDoubleTap}>
+      <div className="feed-card-image-container" data-tour-repeat="artwork-gesture" data-tour-title="Explore artwork" data-tour-description="Tap the artwork to explore the artist’s work, or double-tap to like it. The artist name opens their profile." onClick={handleDoubleTap}>
         {onImageTap && (
           <button
             type="button"

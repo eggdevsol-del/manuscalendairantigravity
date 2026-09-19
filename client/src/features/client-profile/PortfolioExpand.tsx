@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 /**
  * PortfolioExpand.tsx
  * Shared inline portfolio grid that expands inside an artist card.
@@ -166,6 +167,7 @@ export function PortfolioExpand({
                 }}
               >
                 <motion.div
+                  data-tour-surface="Artwork viewer"
                   className="fixed inset-0 z-[9999] bg-black flex items-center justify-center outline-none"
                   style={{
                     paddingTop: "calc(var(--app-safe-top, 0px) + 64px)",
@@ -180,6 +182,12 @@ export function PortfolioExpand({
                   <Dialog.Title className="sr-only">
                     {artistName}’s portfolio
                   </Dialog.Title>
+                  <div className="absolute z-10" style={{
+                    top: "calc(var(--app-safe-top, 0px) + 12px)",
+                    left: "calc(var(--app-safe-left, 0px) + 12px)",
+                  }}>
+                    <TourHelp feature />
+                  </div>
                   <Dialog.Close asChild>
                     <button
                       type="button"

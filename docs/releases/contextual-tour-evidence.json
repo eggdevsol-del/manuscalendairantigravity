@@ -1,0 +1,781 @@
+{
+  "scenarios": 97,
+  "results": [
+    {
+      "name": "supply-catalogue",
+      "role": "artist",
+      "route": "/supplies?supplier=1",
+      "passed": true,
+      "steps": 12,
+      "evidence": "features--supply-subscription-.json"
+    },
+    {
+      "name": "supply-cart",
+      "role": "artist",
+      "route": "/supplies?supplier=1",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features--supply-subscription-.json"
+    },
+    {
+      "name": "supply-total",
+      "role": "artist",
+      "route": "/supplies?supplier=1",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features--supply-subscription-.json"
+    },
+    {
+      "name": "subscription-checkout",
+      "role": "artist",
+      "route": "/subscriptions",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features-subscription-checkout.json"
+    },
+    {
+      "name": "instagram-in_progress",
+      "role": "artist",
+      "route": "/settings?section=instagram",
+      "passed": true,
+      "steps": 11,
+      "evidence": "features.json"
+    },
+    {
+      "name": "instagram-completed",
+      "role": "artist",
+      "route": "/settings?section=instagram",
+      "passed": true,
+      "steps": 13,
+      "evidence": "features.json"
+    },
+    {
+      "name": "instagram-failed",
+      "role": "artist",
+      "route": "/settings?section=instagram",
+      "passed": true,
+      "steps": 14,
+      "evidence": "features.json"
+    },
+    {
+      "name": "instagram-lookup",
+      "role": "artist",
+      "route": "/settings?section=instagram",
+      "passed": true,
+      "steps": 13,
+      "evidence": "features.json"
+    },
+    {
+      "name": "tabs-inbox-contacts",
+      "role": "artist",
+      "route": "/conversations",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    },
+    {
+      "name": "tabs-bookings-past",
+      "role": "client",
+      "route": "/bookings",
+      "passed": true,
+      "steps": 16,
+      "evidence": "features.json"
+    },
+    {
+      "name": "tabs-orders-fulfilled",
+      "role": "merchant",
+      "route": "/merchant/orders",
+      "passed": true,
+      "steps": 11,
+      "evidence": "features.json"
+    },
+    {
+      "name": "tabs-orders-all",
+      "role": "merchant",
+      "route": "/merchant/orders",
+      "passed": true,
+      "steps": 12,
+      "evidence": "features.json"
+    },
+    {
+      "name": "legacy-proposal-review",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "legacy-editor-contact",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "legacy-editor-service-cost",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 8,
+      "evidence": "features.json"
+    },
+    {
+      "name": "legacy-editor-reschedule",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "request-archive",
+      "role": "artist",
+      "route": "/lead/1",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "request-consultation",
+      "role": "artist",
+      "route": "/settings?section=consultations",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "discover-profile",
+      "role": "client",
+      "route": "/discover",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "discover-enquiry",
+      "role": "client",
+      "route": "/discover",
+      "passed": true,
+      "steps": 29,
+      "evidence": "features.json"
+    },
+    {
+      "name": "event-list",
+      "role": "public",
+      "route": "/events/ella-morgan",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "event-registration",
+      "role": "public",
+      "route": "/events/ella-morgan",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "event-confirmation",
+      "role": "public",
+      "route": "/events/ella-morgan?order_id=1&session_id=cs_fixture",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "import-results",
+      "role": "artist",
+      "route": "/settings?section=data-import",
+      "passed": true,
+      "steps": 25,
+      "evidence": "features.json"
+    },
+    {
+      "name": "bank-disconnect",
+      "role": "artist",
+      "route": "/bank-payouts",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "bank-account-setup",
+      "role": "artist",
+      "route": "/bank-payouts",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "portfolio-preview",
+      "role": "artist",
+      "route": "/artist-profile",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "portfolio-remove",
+      "role": "artist",
+      "route": "/artist-profile",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "waitlist-offer",
+      "role": "artist",
+      "route": "/waitlist",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "waitlist-withdraw",
+      "role": "artist",
+      "route": "/waitlist",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "waitlist-client-offer",
+      "role": "client",
+      "route": "/waitlist",
+      "passed": true,
+      "steps": 11,
+      "evidence": "features.json"
+    },
+    {
+      "name": "waitlist-client-leave",
+      "role": "client",
+      "route": "/waitlist",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "waitlist-deposit",
+      "role": "client",
+      "route": "/waitlist",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features.json"
+    },
+    {
+      "name": "import-client-mapping",
+      "role": "artist",
+      "route": "/settings?section=data-import",
+      "passed": true,
+      "steps": 18,
+      "evidence": "features.json"
+    },
+    {
+      "name": "import-appointment-mapping",
+      "role": "artist",
+      "route": "/settings?section=data-import",
+      "passed": true,
+      "steps": 25,
+      "evidence": "features.json"
+    },
+    {
+      "name": "import-preview",
+      "role": "artist",
+      "route": "/settings?section=data-import",
+      "passed": true,
+      "steps": 25,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-trip-edit",
+      "role": "artist",
+      "route": "/settings?section=travel",
+      "passed": true,
+      "steps": 6,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-trip-remove",
+      "role": "artist",
+      "route": "/settings?section=travel",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-trip-clients",
+      "role": "artist",
+      "route": "/settings?section=travel",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-template-edit",
+      "role": "artist",
+      "route": "/settings?section=notifications",
+      "passed": true,
+      "steps": 8,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-errors-0",
+      "role": "admin",
+      "route": "/admin/errors",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "confirmation-errors-1",
+      "role": "admin",
+      "route": "/admin/errors",
+      "passed": true,
+      "steps": 2,
+      "evidence": "features.json"
+    },
+    {
+      "name": "commerce-product",
+      "role": "public",
+      "route": "/shop/ella-morgan",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "commerce-product-description",
+      "role": "public",
+      "route": "/shop/ella-morgan",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "commerce-cart",
+      "role": "public",
+      "route": "/shop/ella-morgan",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "commerce-in-stock",
+      "role": "public",
+      "route": "/shop/ella-morgan",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "commerce-refund",
+      "role": "artist",
+      "route": "/payout-history",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "map-overview",
+      "role": "client",
+      "route": "/discover",
+      "passed": true,
+      "steps": 19,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-consent-signature",
+      "role": "client",
+      "route": "/projects/12?session=101&action=forms",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-template-medical",
+      "role": "artist",
+      "route": "/settings?section=regulation",
+      "passed": true,
+      "steps": 13,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-template-consent",
+      "role": "artist",
+      "route": "/settings?section=regulation",
+      "passed": true,
+      "steps": 13,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-procedure-record",
+      "role": "artist",
+      "route": "/settings?section=regulation",
+      "passed": true,
+      "steps": 14,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-consent-review",
+      "role": "client",
+      "route": "/projects/12?session=101&action=forms",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "forms-medical-review",
+      "role": "client",
+      "route": "/projects/12?session=101&action=forms",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "studio-schedule",
+      "role": "artist",
+      "route": "/studio?view=Schedule",
+      "passed": true,
+      "steps": 16,
+      "evidence": "features.json"
+    },
+    {
+      "name": "studio-team",
+      "role": "artist",
+      "route": "/studio?view=Team",
+      "passed": true,
+      "steps": 17,
+      "evidence": "features.json"
+    },
+    {
+      "name": "studio-billing",
+      "role": "artist",
+      "route": "/studio?view=Billing",
+      "passed": true,
+      "steps": 14,
+      "evidence": "features.json"
+    },
+    {
+      "name": "studio-remove",
+      "role": "artist",
+      "route": "/studio?view=Team",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "checkout-deposit-review",
+      "role": "client",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features.json"
+    },
+    {
+      "name": "checkout-balance-review",
+      "role": "client",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "artwork-viewer",
+      "role": "client",
+      "route": "/discover",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-finish-paid",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-cancel-plan",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-cancel-single",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "record-bookings",
+      "role": "artist",
+      "route": "/clients?client=client-test",
+      "passed": true,
+      "steps": 19,
+      "evidence": "features.json"
+    },
+    {
+      "name": "record-forms",
+      "role": "artist",
+      "route": "/clients?client=client-test",
+      "passed": true,
+      "steps": 18,
+      "evidence": "features.json"
+    },
+    {
+      "name": "record-notes",
+      "role": "artist",
+      "route": "/clients?client=client-test",
+      "passed": true,
+      "steps": 19,
+      "evidence": "features.json"
+    },
+    {
+      "name": "record-sitting",
+      "role": "artist",
+      "route": "/clients?client=client-test",
+      "passed": true,
+      "steps": 21,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-reschedule",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-finish",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-cancel",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "session-no-show",
+      "role": "artist",
+      "route": "/projects/12?session=101",
+      "passed": true,
+      "steps": 3,
+      "evidence": "features.json"
+    },
+    {
+      "name": "add-client",
+      "role": "artist",
+      "route": "/clients",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features-add-client.json"
+    },
+    {
+      "name": "services-tab",
+      "role": "artist",
+      "route": "/work-hours",
+      "passed": true,
+      "steps": 13,
+      "evidence": "features.json"
+    },
+    {
+      "name": "add-service",
+      "role": "artist",
+      "route": "/work-hours",
+      "passed": true,
+      "steps": 9,
+      "evidence": "features.json"
+    },
+    {
+      "name": "edit-service",
+      "role": "artist",
+      "route": "/work-hours",
+      "passed": true,
+      "steps": 11,
+      "evidence": "features.json"
+    },
+    {
+      "name": "portfolio-tab",
+      "role": "artist",
+      "route": "/artist-profile",
+      "passed": true,
+      "steps": 18,
+      "evidence": "features.json"
+    },
+    {
+      "name": "portfolio-upload",
+      "role": "artist",
+      "route": "/artist-profile",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "product-create",
+      "role": "artist",
+      "route": "/products",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    },
+    {
+      "name": "product-edit",
+      "role": "artist",
+      "route": "/products",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    },
+    {
+      "name": "event-create",
+      "role": "artist",
+      "route": "/artist-events",
+      "passed": true,
+      "steps": 9,
+      "evidence": "features.json"
+    },
+    {
+      "name": "trip-create",
+      "role": "artist",
+      "route": "/settings?section=travel",
+      "passed": true,
+      "steps": 6,
+      "evidence": "features.json"
+    },
+    {
+      "name": "template-create",
+      "role": "artist",
+      "route": "/settings?section=notifications",
+      "passed": true,
+      "steps": 7,
+      "evidence": "features.json"
+    },
+    {
+      "name": "booking-client",
+      "role": "artist",
+      "route": "/calendar",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "booking-service",
+      "role": "artist",
+      "route": "/calendar",
+      "passed": true,
+      "steps": 5,
+      "evidence": "features.json"
+    },
+    {
+      "name": "booking-frequency",
+      "role": "artist",
+      "route": "/calendar",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    },
+    {
+      "name": "booking-details",
+      "role": "artist",
+      "route": "/calendar",
+      "passed": true,
+      "steps": 11,
+      "evidence": "features.json"
+    },
+    {
+      "name": "booking-review",
+      "role": "artist",
+      "route": "/calendar",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "thread-details",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "thread-booking",
+      "role": "artist",
+      "route": "/chat/12",
+      "passed": true,
+      "steps": 4,
+      "evidence": "features.json"
+    },
+    {
+      "name": "project-overview",
+      "role": "artist",
+      "route": "/projects/12",
+      "passed": true,
+      "steps": 22,
+      "evidence": "features.json"
+    },
+    {
+      "name": "project-messages",
+      "role": "artist",
+      "route": "/projects/12",
+      "passed": true,
+      "steps": 25,
+      "evidence": "features.json"
+    },
+    {
+      "name": "project-files",
+      "role": "artist",
+      "route": "/projects/12",
+      "passed": true,
+      "steps": 16,
+      "evidence": "features.json"
+    },
+    {
+      "name": "project-payments",
+      "role": "artist",
+      "route": "/projects/12",
+      "passed": true,
+      "steps": 14,
+      "evidence": "features.json"
+    },
+    {
+      "name": "client-project",
+      "role": "client",
+      "route": "/projects/12",
+      "passed": true,
+      "steps": 25,
+      "evidence": "features.json"
+    },
+    {
+      "name": "supplier-product-create",
+      "role": "merchant",
+      "route": "/merchant/products",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    },
+    {
+      "name": "supplier-product-edit",
+      "role": "merchant",
+      "route": "/merchant/products",
+      "passed": true,
+      "steps": 10,
+      "evidence": "features.json"
+    }
+  ]
+}

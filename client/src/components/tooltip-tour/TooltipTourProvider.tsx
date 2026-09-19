@@ -16,6 +16,13 @@ import React, {
   useEffect,
 } from "react";
 
+import {
+  activeTourSurface,
+  collectTourSteps,
+  isTourVisible,
+  surfaceTitle,
+} from "./contextualTargets";
+
 export interface TourStep {
   targetId: string;
   title: string;
@@ -30,11 +37,13 @@ export interface TourStep {
 export interface TourDefinition {
   id: string;
   steps: TourStep[];
+  contextual?: boolean;
 }
 
 interface TooltipTourContextType {
   /** Start a tour by definition */
   startTour: (tour: TourDefinition) => void;
+  startContextualTour: () => void;
   /** Advance to next step (or finish) */
   nextStep: () => void;
   previousStep: () => void;
@@ -64,7 +73,10 @@ const STORAGE_KEY = "manus_completed_tours";
 
 function getCompletedTours(): string[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    return Array.isArray(value)
+      ? value.filter(id => typeof id === "string")
+      : [];
   } catch {
     return [];
   }
@@ -100,19 +112,11 @@ export function TooltipTourProvider({
   }, []);
 
   const getTarget = useCallback((id: string) => {
-    const visible = (el: HTMLElement | null) =>
-      el &&
-      el.getClientRects().length &&
-      getComputedStyle(el).visibility !== "hidden"
-        ? el
-        : null;
+    const visible = (el: HTMLElement | null) => (isTourVisible(el) ? el : null);
     if (id.startsWith("css:")) {
       try {
-        return (
-          Array.from(document.querySelectorAll<HTMLElement>(id.slice(4)))
-            .map(visible)
-            .find(Boolean) || null
-        );
+        const matches=Array.from(document.querySelectorAll<HTMLElement>(id.slice(4))).map(visible).filter((el):el is HTMLElement=>!!el);
+        return matches.find(el=>{const rect=el.getBoundingClientRect();return rect.top>=0 && rect.bottom<=innerHeight && rect.left>=0 && rect.right<=innerWidth;}) || matches[0] || null;
       } catch {
         return null;
       }
@@ -161,7 +165,7 @@ export function TooltipTourProvider({
     generation.current++;
     setActiveTour(null);
     setCurrentStep(0);
-  }, [activeTour, markComplete]);
+  }, []);
 
   const nextStep = useCallback(async () => {
     if (!activeTour) return;
@@ -193,6 +197,94 @@ export function TooltipTourProvider({
     }
   }, [activeTour, currentStep, markComplete]);
 
+  const collectLiveTour = useCallback(() => {
+    const surface = activeTourSurface();
+    if (!surface) return null;
+    for (const id of targets.current.keys())
+      if (id.startsWith("live-")) targets.current.delete(id);
+    const steps = collectTourSteps(surface);
+    steps.forEach(step => registerTarget(step.targetId, step.element));
+    return {
+      id: `contextual:${location.pathname.replace(/\/\d+(?=\/|$)/g, "/record")}:${surfaceTitle(surface)}`,
+      steps,
+      contextual: true,
+    };
+  }, [registerTarget]);
+
+  const startContextualTour = useCallback(() => {
+    const next = collectLiveTour();
+    if (next) startTour(next);
+  }, [collectLiveTour, startTour]);
+
+  // New tabs, sheets, wizard stages and asynchronously loaded controls join the
+  // same live guide. No tour code invokes the controls or business mutations.
+  useEffect(() => {
+    if (!activeTour?.contextual) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const next = collectLiveTour();
+        if (!next) return;
+        setActiveTour(previous => {
+          if (!previous?.contextual) return previous;
+          const signature = (tour: TourDefinition) =>
+            JSON.stringify(
+              tour.steps.map(step => [step.targetId, step.title, step.body])
+            );
+          if (
+            previous.id === next.id &&
+            signature(previous) === signature(next)
+          )
+            return previous;
+          const target = previous.steps[currentStep]?.targetId;
+          const index =
+            previous.id === next.id
+              ? next.steps.findIndex(step => step.targetId === target)
+              : -1;
+          setCurrentStep(Math.max(0, index));
+          return next;
+        });
+      }, 100);
+    };
+    const observer = new MutationObserver(records => {
+      if (
+        records.some(
+          record => {
+            const element = record.target instanceof Element
+              ? record.target : record.target.parentElement;
+            return !element?.closest("[data-tour-ui],.tooltip-tour-backdrop");
+          }
+        )
+      )
+        refresh();
+    });
+    observer.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: [
+        "aria-expanded",
+        "aria-selected",
+        "aria-checked",
+        "aria-pressed",
+        "data-tour-description",
+        "data-tour-title",
+        "data-tour-surface",
+        "disabled",
+        "data-state",
+        "data-tour-booking-step",
+      ],
+    });
+    window.addEventListener("popstate", refresh);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+      window.removeEventListener("popstate", refresh);
+    };
+  }, [activeTour?.contextual, currentStep, collectLiveTour]);
+
   const resetTour = useCallback((tourId: string) => {
     setCompleted(prev => {
       const next = prev.filter(id => id !== tourId);
@@ -205,6 +297,7 @@ export function TooltipTourProvider({
     <TooltipTourContext.Provider
       value={{
         startTour,
+        startContextualTour,
         nextStep,
         previousStep: () => {
           generation.current++;
@@ -231,4 +324,8 @@ export function useTooltipTour() {
   if (!ctx)
     throw new Error("useTooltipTour must be used within TooltipTourProvider");
   return ctx;
+}
+
+export function useOptionalTooltipTour() {
+  return useContext(TooltipTourContext);
 }

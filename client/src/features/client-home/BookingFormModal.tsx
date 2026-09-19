@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 /**
  * BookingFormModal — Inline booking form with blur backdrop
  * ──────────────────────────────────────────────────────────
@@ -378,6 +379,7 @@ export default function BookingFormModal({
         >
           <motion.div
             className="booking-form-backdrop"
+            data-tour-surface={showSuccess ? "Booking request sent" : "Request a booking"}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -393,6 +395,7 @@ export default function BookingFormModal({
             >
               {/* Header */}
               <div className="booking-form-header">
+                <TourHelp feature />
                 <Dialog.Title asChild>
                   <h3>Book with {artistName}</h3>
                 </Dialog.Title>

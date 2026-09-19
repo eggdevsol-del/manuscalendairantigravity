@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 /**
  * ClientHome — Unified client home page
  * ─────────────────────────────────────────────────────────
@@ -177,7 +178,7 @@ export default function ClientHome() {
   const showPill = focusedArtist !== null && headerHidden;
 
   return (
-    <>
+    <div data-tour-surface={focusedArtist ? "Artist artwork" : view === "discovery" ? "Discover" : "Your artists and bookings"} className="tour-discover-surface">
       {/* ── Auto-hide Header ── */}
       <header
         className={`client-home-header ${headerHidden ? "header-hidden" : ""}`}
@@ -201,6 +202,7 @@ export default function ClientHome() {
               )}
             </div>
             <span className="artist-focus-pill-name">{focusedArtist.name}</span>
+            <TourHelp />
             <button
               className="artist-focus-pill-book"
               onClick={() => setShowProfile(true)}
@@ -223,7 +225,8 @@ export default function ClientHome() {
                 <div className="client-home-avatar-fallback">{initials}</div>
               )}
             </button>
-            <span className="client-home-logo">tattoi</span>
+            <span className="client-home-logo" data-tour-intro>tattoi</span>
+            <TourHelp />
             <div className="client-home-toggle">
               <button
                 className={`client-home-toggle-btn ${view === "discovery" ? "active" : ""}`}
@@ -272,6 +275,7 @@ export default function ClientHome() {
               )}
             </div>
             <span className="artist-focus-pill-name">{focusedArtist.name}</span>
+            <TourHelp />
             <button
               className="artist-focus-pill-book"
               onClick={() => setShowProfile(true)}
@@ -353,6 +357,6 @@ export default function ClientHome() {
           />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ export function response(name, role) {
       : role === "admin"
         ? { ...artist, role: "admin" }
         : base(name, role);
-  if (name === "feed.getPublicArtistProfile")
+  if (name === "feed.getPublicArtistProfile" || name === "feed.getArtistPublicProfile")
     return {
       ...person,
       artistId: artist.id,

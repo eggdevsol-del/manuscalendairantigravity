@@ -125,6 +125,9 @@ export default function Calendar() {
           <button
             key={date.toISOString()}
             type="button"
+            data-tour-repeat="calendar-week-day"
+            data-tour-title="Choose a calendar day"
+            data-tour-description="Select a date in the week strip to bring that day into view. Use the week arrows or Today to move to another week; this does not change an appointment."
             aria-label={format(date, "EEEE, d MMMM yyyy")}
             aria-pressed={
               format(date, "yyyy-MM-dd") === format(c.activeDate, "yyyy-MM-dd")

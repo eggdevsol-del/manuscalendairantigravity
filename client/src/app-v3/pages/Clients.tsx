@@ -157,6 +157,7 @@ export default function Clients() {
           {create.error && <p role="alert">{create.error.message}</p>}
           <Action
             type="submit"
+            data-tour-description="Save the entered name and optional contact details as a client record. Review the details before adding the client."
             disabled={!form.name.trim() || create.isPending}
           >
             {create.isPending ? "Adding…" : "Add client"}

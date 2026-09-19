@@ -194,3 +194,131 @@
     animation: none;
   }
 }
+
+/* The original moving island, with the current Ivory palette. */
+.tour-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tour-help {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--secondary);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.tour-help:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.tour-sheet-help {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+}
+.ivory-sheet > .tour-sheet-help + [data-slot="sheet-header"] {
+  padding-inline: 64px;
+}
+.tooltip-tour-bubble {
+  max-width: none;
+  border-radius: 28px;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 20%);
+}
+.tooltip-tour-bubble-inner {
+  position: relative;
+  border-radius: 28px;
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+  box-shadow: none;
+  padding: 18px;
+}
+.tooltip-tour-title {
+  color: inherit;
+  padding-right: 32px;
+}
+.tooltip-tour-body,
+.tooltip-tour-skip {
+  color: color-mix(in srgb, var(--background) 85%, transparent);
+}
+.tooltip-tour-skip:active {
+  color: var(--background);
+}
+.tooltip-tour-next {
+  background: var(--background);
+  color: var(--foreground);
+  border-radius: 99px;
+}
+.tooltip-tour-collapse {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+.tooltip-tour-local-ring {
+  position: absolute;
+  border: 2px solid var(--ring);
+  border-radius: 14px;
+  pointer-events: none;
+  transition:
+    top 0.18s ease,
+    left 0.18s ease,
+    width 0.18s ease,
+    height 0.18s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-tour-local-ring {
+    transition: none;
+  }
+}
+
+.tour-dialog-help {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 2;
+}
+[data-slot="dialog-content"]:has(.tour-dialog-help)
+  [data-slot="dialog-header"] {
+  padding-inline: 40px;
+}
+
+/* The island stays in the portalled dialog's focus scope, but may sit beside a
+   short sheet. Its inner form remains the independently scrolling viewport. */
+[data-slot=sheet-content]:has(> .tooltip-tour-backdrop),
+[data-slot=dialog-content]:has(> .tooltip-tour-backdrop) { overflow:visible; }
+
+.tooltip-tour-bubble[data-collapsed=true] .tooltip-tour-bubble-inner { min-height:48px; padding:10px 16px; justify-content:center; }
+.tooltip-tour-bubble[data-collapsed=true] .tooltip-tour-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tooltip-tour-bubble[data-collapsed=true] .tooltip-tour-footer { display:none; }
+.tooltip-tour-bubble[data-collapsed=true] .tooltip-tour-collapse { top:2px; width:44px; height:44px; }
+
+.tour-discover-surface { min-height:100dvh; }
+.artist-profile-overlay:has(> .tooltip-tour-backdrop) { overflow:visible; }
+.booking-form-header:has([data-tour-ui]) { gap:10px; }
+.booking-form-header:has([data-tour-ui]) h3 { flex:1; }
+
+/* Keep the tour trigger in the header flow, clear of the wordmark and view switch. */
+.client-home-header:has(> .tour-help) {
+  gap: 8px;
+}
+.client-home-header > .client-home-logo {
+  position: static;
+  transform: none;
+  flex: 1;
+  min-width: 0;
+}

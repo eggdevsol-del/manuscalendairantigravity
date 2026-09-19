@@ -30,6 +30,9 @@ export function WeekAgenda() {
           <button
             key={date.toISOString()}
             type="button"
+            data-tour-repeat="home-week-date"
+            data-tour-title="Choose a day in your week"
+            data-tour-description="Select a date to see that day’s appointments. Expand full week shows the entire week; selecting a day returns to its appointments."
             aria-label={format(date, "EEEE, d MMMM yyyy")}
             aria-pressed={
               format(date, "yyyy-MM-dd") === format(selected, "yyyy-MM-dd")

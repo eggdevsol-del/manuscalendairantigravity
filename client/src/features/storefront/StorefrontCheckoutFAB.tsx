@@ -161,6 +161,7 @@ export function StorefrontCheckoutFAB({
                       tone="secondary"
                       disabled={checkout.isPending}
                       aria-label={`Decrease ${item.title}`}
+                      data-tour-description="Reduce this item’s quantity by one. Reducing it to zero removes it from the cart. Review the updated total before checkout."
                       onClick={() => updateQuantity(item.cartItemId, -1)}
                     >
                       −
@@ -169,6 +170,7 @@ export function StorefrontCheckoutFAB({
                     <Button
                       tone="secondary"
                       aria-label={`Increase ${item.title}`}
+                      data-tour-description="Add one more of this item, up to the available stock limit. The cart total updates; this does not place an order."
                       disabled={
                         checkout.isPending ||
                         item.quantity >= Math.min(item.maxInventory, 100)
@@ -180,6 +182,7 @@ export function StorefrontCheckoutFAB({
                     <Button
                       tone="quiet"
                       disabled={checkout.isPending}
+                      data-tour-description="Remove this item from your cart. This does not cancel an existing paid order."
                       onClick={() => removeItem(item.cartItemId)}
                     >
                       Remove
@@ -212,7 +215,7 @@ export function StorefrontCheckoutFAB({
                   separately.
                 </p>
               )}
-              <dl className="rounded-2xl bg-secondary p-5 space-y-2">
+              <dl className="rounded-2xl bg-secondary p-5 space-y-2" data-tour-title="Order total and platform fee" data-tour-description="Review the item subtotal, shipping, platform fee and total in the displayed currency. Changing quantities or delivery can change these amounts; the store confirms final prices when checkout opens.">
                 <div className="flex justify-between">
                   <dt>Subtotal</dt>
                   <dd>${(subtotalCents / 100).toFixed(2)}</dd>

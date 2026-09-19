@@ -497,8 +497,10 @@ function CheckoutLayout({
         </span>
       </div>
 
-      {/* Stripe Payment Element — renders card, Apple Pay, Google Pay, Link */}
+      {/* Stripe owns sensitive fields; the guide targets their containing panel. */}
       <div
+        data-tour-title="Secure payment details"
+        data-tour-description="Choose an available payment method and complete Stripe’s secure fields yourself. Review the displayed total and any recurring terms before selecting Pay or Subscribe. The guide does not enter card details or submit payment."
         style={{
           background: "var(--card)",
           border: "1px solid var(--border)",

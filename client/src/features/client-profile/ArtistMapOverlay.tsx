@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 /**
  * ArtistMapOverlay.tsx
  * Full-screen artist map overlay.
@@ -290,6 +291,9 @@ export function ArtistMapOverlay({
 
   return createPortal(
     <motion.div
+      role="dialog"
+      aria-label="Artist map"
+      data-tour-surface="Artist map"
       className="fixed inset-0 z-[200] flex flex-col bg-background"
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
@@ -335,11 +339,12 @@ export function ArtistMapOverlay({
             <X className="w-5 h-5" />
           </button>
           <div className="flex-1">
-            <p className="text-sm font-bold">Discover Artists</p>
+            <p className="text-sm font-bold" data-tour-intro>Discover Artists</p>
             <p className="text-xs text-muted-foreground">
               {visibleArtists.length} artists in view
             </p>
           </div>
+          <div className="pointer-events-auto"><TourHelp feature /></div>
         </div>
 
         {/* Search sits below the shared 44px close/header row. */}

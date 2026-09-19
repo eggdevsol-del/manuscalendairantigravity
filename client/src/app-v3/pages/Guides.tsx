@@ -1,3 +1,4 @@
+import { TOUR_CATALOGUE } from "@/components/tooltip-tour/tourCatalogue";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -255,55 +256,6 @@ const clientGuides: Guide[] = [
   },
 ];
 
-// Targets are resolved after navigation and as controls appear; missing targets are never replaced by the header.
-const guideTargets: Record<string, string[]> = {
-  today: ["css:.v3-attention", "text:Up next"],
-  booking: [
-    "text:New booking",
-    'css:[data-tour-booking-step="details"]',
-    'css:[data-tour-booking-step="review"]',
-  ],
-  inbox: ["css:.v3-inbox-list", "text:Book"],
-  clients: ["css:input[type=search]", "css:.v3-client-detail"],
-  hours: ["css:.v3-form", "text:Services"],
-  link: ["css:.v3-form", "text:Copy link"],
-  money: ["css:.v3-facts", "text:Payment history"],
-  bank: ["css:.v3-content .v3-panel", "css:.v3-form"],
-  forms: ["css:.v3-content .v3-form", "text:Procedure log"],
-  waitlist: ["css:.v3-content .v3-row", "css:.v3-form"],
-  studio: ["text:Schedule", "text:Team", "text:Billing"],
-  travel: ["text:Add trip", "css:.v3-content .v3-row"],
-  import: ["css:input[type=file]", "css:.v3-content .v3-action-primary"],
-  instagram: ["css:.v3-form input", "css:.v3-form button"],
-  supplies: ["css:input[type=search]", 'css:a[href="/supply-orders"]'],
-  notifications: ["text:This device", "text:Saved message templates"],
-  plans: ["css:.v3-plan-grid", "css:.v3-plan-grid .v3-action"],
-  "supplier-day": [
-    'css:a[href="/merchant/orders"]',
-    'css:a[href="/merchant/products"]',
-  ],
-  "supplier-products": [
-    "css:.v3-catalogue-grid",
-    'css:a[href$="/admin/products"],a[href="/settings"]',
-  ],
-  "supplier-orders": [
-    "css:.v3-content .v3-row",
-    'css:a[href="https://admin.shopify.com"]',
-  ],
-  "supplier-payments": [
-    "text:Payments & payouts",
-    "css:.v3-content .v3-status, .v3-content .v3-action-primary",
-  ],
-  "supplier-shopify": ["text:Shopify", "css:.v3-form"],
-  "supplier-account": ["css:.v3-form", 'css:a[href="/account-settings"]'],
-  "client-booking": [
-    "css:.v3-booking-cards",
-    "css:.v3-content .v3-action-primary",
-  ],
-  "client-message": ["css:.v3-inbox-list", "css:.v3-composer"],
-  "client-profile": ["css:.v3-content .v3-row", 'css:a[href="/bookings"]'],
-};
-
 export default function Guides() {
   const { user } = useAuth();
   const [, go] = useLocation();
@@ -326,6 +278,33 @@ export default function Guides() {
         onChange={setSearch}
         label="Find a walkthrough"
       />
+      <p className="v3-muted">
+        Use the question mark on any page or feature sheet. The island moves
+        between its controls and follows you when you open a tab, record or
+        booking step.
+      </p>
+      <Section title="Every page and feature">
+        {TOUR_CATALOGUE.filter(
+          item =>
+            item.roles.includes(user?.role || "client") &&
+            (item.title + item.detail)
+              .toLowerCase()
+              .includes(search.toLowerCase())
+        ).map(item => (
+          <Row
+            key={item.route}
+            title={item.title}
+            detail={item.detail}
+            onClick={() =>
+              go(
+                item.route +
+                  (item.route.includes("?") ? "&" : "?") +
+                  "walkthrough=1"
+              )
+            }
+          />
+        ))}
+      </Section>
       <Section title="Choose a workflow">
         {guides
           .filter(g => g.title.toLowerCase().includes(search.toLowerCase()))
@@ -333,26 +312,13 @@ export default function Guides() {
             <Row
               key={guide.id}
               title={guide.title}
-              detail={`${guide.steps.length} steps · no changes made automatically`}
-              trailing={
-                tour.isTourCompleted("v3-" + guide.id) ? (
-                  <Status tone="success">Viewed</Status>
-                ) : undefined
-              }
+              detail="Contextual steps for this page and its features"
               onClick={() => {
-                go(guide.route);
-                tour.startTour({
-                  id: "v3-" + guide.id,
-                  steps: guide.steps.map((body, index) => ({
-                    title: guide.title,
-                    body,
-                    targetId:
-                      guideTargets[guide.id]?.[index] ||
-                      "css:[data-tour-unavailable]",
-                    onNext:
-                      index === guide.steps.length - 1 ? undefined : () => {},
-                  })),
-                });
+                go(
+                  guide.route +
+                    (guide.route.includes("?") ? "&" : "?") +
+                    "walkthrough=1"
+                );
               }}
             />
           ))}

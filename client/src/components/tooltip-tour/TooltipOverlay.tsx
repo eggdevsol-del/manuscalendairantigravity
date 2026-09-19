@@ -22,6 +22,8 @@ export function TooltipOverlay() {
     bottom: innerHeight - 100,
   });
   const bubble = useRef<HTMLDivElement>(null);
+  const [owner, setOwner] = useState<HTMLElement | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
   const [height, setHeight] = useState(180);
   const step = activeTour?.steps[currentStep];
   useEffect(() => {
@@ -30,13 +32,17 @@ export function TooltipOverlay() {
     const measure = () => {
       const el = getTarget(step.targetId);
       if (el && el !== target) {
+        target?.removeAttribute('data-tour-current-target');
         target = el;
-        el.scrollIntoView({
-          block: "center",
-          inline: "nearest",
-          behavior: "auto",
-        });
+        el.setAttribute('data-tour-current-target',step.targetId);
+        const box=el.getBoundingClientRect();
+        const outside = box.top < 12 || box.bottom > innerHeight - 90 || box.left < 0 || box.right > innerWidth;
+        if (outside && !el.dataset.tourRepeat) el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
       }
+      const dialog =
+        el?.closest<HTMLElement>('[role="dialog"],[role="alertdialog"]') ||
+        null;
+      setOwner(dialog);
       const box = el?.getBoundingClientRect();
       setRect(
         box
@@ -53,12 +59,8 @@ export function TooltipOverlay() {
       const safe = (name: string) =>
         parseFloat(style.getPropertyValue(name)) || 0;
       const top = (view?.offsetTop || 0) + Math.max(12, safe("--app-safe-top"));
-      const left =
-        (view?.offsetLeft || 0) + Math.max(12, safe("--app-safe-left"));
-      const right =
-        (view?.offsetLeft || 0) +
-        (view?.width || innerWidth) -
-        Math.max(12, safe("--app-safe-right"));
+      const left = (view?.offsetLeft || 0) + Math.max(12, safe("--app-safe-left"));
+      const right = (view?.offsetLeft || 0) + (view?.width || innerWidth) - Math.max(12, safe("--app-safe-right"));
       const nav = document
         .getElementById("bottom-nav")
         ?.getBoundingClientRect();
@@ -66,24 +68,31 @@ export function TooltipOverlay() {
         (view?.offsetTop || 0) +
           (view?.height || innerHeight) -
           Math.max(12, safe("--app-safe-bottom")),
-        nav?.top && nav.top > top ? nav.top - 12 : Infinity
+        !dialog && nav?.top && nav.top > top
+            ? nav.top - 12
+            : Infinity
       );
       setBounds({ top, left, right, bottom });
     };
     const escape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") skipTour();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        skipTour();
+      }
     };
     measure();
     const timer = setInterval(measure, 200);
     window.addEventListener("scroll", measure, true);
     window.addEventListener("resize", measure);
-    window.addEventListener("keydown", escape);
+    window.addEventListener("keydown", escape, true);
     window.visualViewport?.addEventListener("resize", measure);
     return () => {
+      target?.removeAttribute("data-tour-current-target");
       clearInterval(timer);
       window.removeEventListener("scroll", measure, true);
       window.removeEventListener("resize", measure);
-      window.removeEventListener("keydown", escape);
+      window.removeEventListener("keydown", escape, true);
       window.visualViewport?.removeEventListener("resize", measure);
     };
   }, [step, getTarget, skipTour]);
@@ -94,7 +103,16 @@ export function TooltipOverlay() {
     );
     observer.observe(bubble.current);
     return () => observer.disconnect();
-  }, [activeTour?.id]);
+  }, [activeTour?.id, owner, collapsed]);
+  useEffect(() => {
+    if (!activeTour) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const frame = requestAnimationFrame(() => bubble.current?.focus({preventScroll:true}));
+    return () => {
+      cancelAnimationFrame(frame);
+      if(previous?.isConnected && !previous.closest('[inert],[aria-hidden="true"]')) previous.focus({preventScroll:true});
+    };
+  }, [!!activeTour]);
   if (!activeTour || !step) return null;
   const width = Math.min(320, bounds.right - bounds.left);
   const maxHeight = Math.max(80, bounds.bottom - bounds.top);
@@ -113,51 +131,99 @@ export function TooltipOverlay() {
   }
   left = Math.max(bounds.left, Math.min(left, bounds.right - width));
   top = Math.max(bounds.top, Math.min(top, bounds.bottom - actualHeight));
+  const offset = owner?.getBoundingClientRect();
+  const localTop = top - (offset?.top || 0) + (owner?.scrollTop || 0);
+  const localLeft = left - (offset?.left || 0) + (owner?.scrollLeft || 0);
   return createPortal(
-    <div className="tooltip-tour-backdrop" data-tour-id={activeTour.id}>
-      <svg aria-hidden="true">
-        <defs>
-          <mask id="tour-spotlight">
-            <rect width="100%" height="100%" fill="white" />
-            {rect && (
-              <rect {...rect} x={rect.left} y={rect.top} rx="12" fill="black" />
-            )}
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="rgba(0,0,0,.35)"
-          mask="url(#tour-spotlight)"
-        />
-        {rect && (
+    <div
+      className="tooltip-tour-backdrop"
+      data-tour-ui
+      onClick={event=>event.stopPropagation()}
+      data-tour-id={activeTour.id}
+      style={owner ? { position: "absolute", zIndex: 9990 } : undefined}
+    >
+      {!owner && (
+        <svg aria-hidden="true">
+          <defs>
+            <mask id="tour-spotlight">
+              <rect width="100%" height="100%" fill="white" />
+              {rect && (
+                <rect
+                  {...rect}
+                  x={rect.left}
+                  y={rect.top}
+                  rx="12"
+                  fill="black"
+                />
+              )}
+            </mask>
+          </defs>
           <rect
-            className="tooltip-tour-pulse-ring"
-            x={rect.left}
-            y={rect.top}
-            width={rect.width}
-            height={rect.height}
-            rx="12"
-            fill="none"
-            stroke="var(--v3-gold)"
-            strokeWidth="2"
+            width="100%"
+            height="100%"
+            fill="rgba(0,0,0,.35)"
+            mask="url(#tour-spotlight)"
           />
-        )}
-      </svg>
+          {rect && (
+            <rect
+              className="tooltip-tour-pulse-ring"
+              x={rect.left}
+              y={rect.top}
+              width={rect.width}
+              height={rect.height}
+              rx="12"
+              fill="none"
+              stroke="var(--v3-gold)"
+              strokeWidth="2"
+            />
+          )}
+        </svg>
+      )}
+      {owner && rect && (
+        <div
+          aria-hidden="true"
+          className="tooltip-tour-local-ring"
+          style={{
+            left: rect.left - (offset?.left || 0),
+            top: rect.top - (offset?.top || 0),
+            width: rect.width,
+            height: rect.height,
+          }}
+        />
+      )}
       <div
         ref={bubble}
         className="tooltip-tour-bubble"
+        data-tour-target={step.targetId}
+        data-collapsed={collapsed}
+        tabIndex={-1}
         role="dialog"
         aria-modal="false"
         aria-labelledby="tour-title"
-        style={{ top, left, width, maxHeight, overflowY: "auto" }}
+        style={{
+          top: localTop,
+          left: localLeft,
+          width,
+          maxHeight,
+          overflowY: "auto",
+          position: owner ? "absolute" : "fixed",
+        }}
       >
         <div className="tooltip-tour-bubble-inner">
-          <p id="tour-title" className="tooltip-tour-title">
+          <button
+            type="button"
+            className="tooltip-tour-collapse"
+            aria-label={collapsed ? "Expand guide" : "Minimise guide"}
+            aria-expanded={!collapsed}
+            onClick={() => setCollapsed(value => !value)}
+          >
+            {collapsed ? "+" : "−"}
+          </button>
+          <p aria-live="polite" id="tour-title" className="tooltip-tour-title">
             {step.title}
           </p>
-          <p className="tooltip-tour-body">{step.body}</p>
-          {!rect && (
+          {!collapsed && <p className="tooltip-tour-body">{step.body}</p>}
+          {!rect && !collapsed && (
             <p className="tooltip-tour-body" role="status">
               Open the section or control described above to continue. If it
               isn’t available for this account, skip this tour.
@@ -188,6 +254,8 @@ export function TooltipOverlay() {
         </div>
       </div>
     </div>,
-    document.body
+    // Stay inside the owning portalled dialog so its focus trap and inertness
+    // continue to protect the background while the guide remains operable.
+    owner || document.body
   );
 }

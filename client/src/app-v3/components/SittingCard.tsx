@@ -51,6 +51,9 @@ export function SittingCard({
         type="button"
         className={headerClassName || "v3-row"}
         style={headerStyle}
+        data-tour-repeat="sitting-disclosure"
+        data-tour-title="Sitting details"
+        data-tour-description="Select a sitting to expand its own details directly beneath the card. Its dates, status, forms, amounts and available actions belong to that sitting. Select it again to collapse."
         aria-expanded={open}
         aria-controls={id}
         onClick={() => {

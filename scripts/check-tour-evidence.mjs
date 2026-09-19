@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readdir,readFile,stat,writeFile} from 'node:fs/promises';
+import {cases} from './ui-audit/tour-feature-cases.mjs';
+const dir=process.env.AUDIT_OUTPUT||'output/tattoi-complete-tours';
+const files=await Promise.all((await readdir(dir)).filter(name=>/^features.*\.json$/.test(name)).map(async name=>({name,time:(await stat(dir+'/'+name)).mtimeMs})));
+const latest=new Map();
+for(const {name} of files.sort((a,b)=>a.time-b.time)) for(const row of JSON.parse(await readFile(dir+'/'+name,'utf8'))) latest.set(row.name,{...row,evidence:name});
+assert.equal(new Set(cases.map(c=>c.name)).size,cases.length,'Scenario names must be unique');
+const results=cases.map(test=>{const result=latest.get(test.name);return {name:test.name,role:test.role||'artist',route:test.path,passed:result?.passed===true,steps:result?.steps?.length||0,evidence:result?.evidence||null};});
+const missing=results.filter(row=>!row.passed);
+assert.deepEqual(missing,[],'Every declared feature scenario needs passing browser evidence');
+await writeFile('docs/releases/contextual-tour-evidence.json',JSON.stringify({scenarios:results.length,results},null,2)+'\n');
+console.log('Feature evidence complete:',results.length,'of',cases.length);

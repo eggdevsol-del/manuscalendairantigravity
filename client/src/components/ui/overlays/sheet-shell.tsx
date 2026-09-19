@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import React from "react";
 import { Badge } from "../badge";
 import {
@@ -49,10 +50,14 @@ export function SheetShell({
           className
         )}
         data-overlay-id={overlayId}
+        data-tour-surface={title}
       >
         {side === "bottom" && (
           <div className="ivory-sheet-handle" aria-hidden="true" />
         )}
+        <div className="tour-sheet-help">
+          <TourHelp feature />
+        </div>
         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
           <div className="flex items-center justify-center relative">
             <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center">
