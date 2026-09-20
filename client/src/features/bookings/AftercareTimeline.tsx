@@ -66,13 +66,13 @@ export function AftercareTimeline({
       <div className="flex items-center justify-between mb-2">
         <span
           className="text-[10px] font-bold uppercase"
-          style={{ color: "#4ade80", letterSpacing: "0.08em" }}
+          style={{ color: "var(--color-success)", letterSpacing: "0.08em" }}
         >
           AFTERCARE · DAY {displayDay} OF {totalDays}
         </span>
         <span
           className="text-[11px] font-semibold"
-          style={{ color: "#4ade80" }}
+          style={{ color: "var(--color-success)" }}
         >
           {currentPhaseLabel}
         </span>
@@ -81,7 +81,7 @@ export function AftercareTimeline({
       {/* Today's instruction */}
       <p
         className="text-[13px] leading-relaxed mb-0"
-        style={{ color: "rgba(255,255,255,.78)" }}
+        style={{ color: "color-mix(in srgb, var(--foreground) 78%, transparent)" }}
       >
         {todaysCopy}
       </p>
@@ -91,7 +91,7 @@ export function AftercareTimeline({
         onClick={() => setExpanded(!expanded)}
         className="flex items-center justify-center gap-1.5 w-full text-[12px] font-semibold"
         style={{
-          color: "#4ade80",
+          color: "var(--color-success)",
           padding: "11px 0 12px",
           minHeight: 44,
         }}
@@ -117,18 +117,18 @@ export function AftercareTimeline({
 
             // Dot colours
             const dotBg = isDone
-              ? "#4ade80"
+              ? "var(--color-success)"
               : isCurrent
-              ? "#F8D057"
-              : "#1B1B1B";
+              ? "var(--primary)"
+              : "var(--card)";
             const dotBorder = isDone
-              ? "#4ade80"
+              ? "var(--color-success)"
               : isCurrent
-              ? "#F8D057"
-              : "rgba(255,255,255,0.18)";
+              ? "var(--primary)"
+              : "color-mix(in srgb, var(--foreground) 18%, transparent)";
             const connectorColor = isDone
               ? "rgba(74,222,128,.35)"
-              : "rgba(255,255,255,0.1)";
+              : "color-mix(in srgb, var(--foreground) 10%, transparent)";
 
             // Status label
             const status = isDone
@@ -137,13 +137,13 @@ export function AftercareTimeline({
               ? "TODAY"
               : "AHEAD";
             const statusColor = isDone
-              ? "#4ade80"
+              ? "var(--color-success)"
               : isCurrent
-              ? "#F8D057"
-              : "#7A7A7A";
+              ? "var(--primary)"
+              : "var(--muted-foreground)";
 
             // Window label color
-            const windowColor = isCurrent ? "#F8D057" : "#FFFFFF";
+            const windowColor = isCurrent ? "var(--primary)" : "var(--foreground)";
 
             return (
               <div key={phase.id} className="flex gap-3" style={{ minHeight: 8 }}>
@@ -192,7 +192,7 @@ export function AftercareTimeline({
                   </div>
                   <p
                     className="text-[12.5px] leading-relaxed"
-                    style={{ color: "rgba(255,255,255,.7)" }}
+                    style={{ color: "color-mix(in srgb, var(--foreground) 70%, transparent)" }}
                   >
                     {phase.instruction}
                   </p>
@@ -206,21 +206,21 @@ export function AftercareTimeline({
             className="flex items-start gap-2 mt-1"
             style={{
               borderRadius: 10,
-              background: "rgba(255,255,255,0.04)",
+              background: "color-mix(in srgb, var(--foreground) 4%, transparent)",
               padding: "10px 12px",
             }}
           >
             <Info
               className="w-3.5 h-3.5 shrink-0 mt-0.5"
-              style={{ color: "#7A7A7A" }}
+              style={{ color: "var(--muted-foreground)" }}
             />
-            <p className="text-[12px] text-[#7A7A7A]">
+            <p className="text-[12px] text-[var(--muted-foreground)]">
               Something looks wrong?{" "}
               <button
                 onClick={() => {
                   if (conversationId) setLocation(`/chat/${conversationId}`);
                 }}
-                className="font-bold text-white underline-offset-2 hover:underline"
+                className="font-bold text-foreground underline-offset-2 hover:underline"
               >
                 Message {artistName}
               </button>{" "}

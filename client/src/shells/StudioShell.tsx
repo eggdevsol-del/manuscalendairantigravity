@@ -27,11 +27,11 @@ export default function StudioShell() {
   };
 
   // Design system token colors matching Artist App BottomNav
-  const bgColor = "var(--color-bg-header, #141416)";
+  const bgColor = "var(--color-bg-header, var(--background))";
   const borderColor = "var(--color-border, rgba(255,255,255,0.08))";
   const activeColor = "var(--color-accent-violet, #eec95f)";
-  const inactiveColor = "var(--color-text-secondary, #8A8A92)";
-  const badgeBorder = "var(--color-bg-header, #141416)";
+  const inactiveColor = "var(--color-text-secondary, var(--muted-foreground))";
+  const badgeBorder = "var(--color-bg-header, var(--background))";
   const dangerColor = "var(--color-danger, #ef4444)";
 
   const navTabs = [
@@ -191,18 +191,18 @@ export default function StudioShell() {
       {notesOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setNotesOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-3">
-              <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-semibold tracking-[2px] text-[var(--foreground)] uppercase">
                 DESIGN NOTES
               </div>
-              <button onClick={() => setNotesOpen(false)} className="text-[#e8e8ea] p-2 hover:text-white">✕</button>
+              <button onClick={() => setNotesOpen(false)} className="text-[var(--foreground)] p-2 hover:text-foreground">✕</button>
             </div>
 
-            <div className="text-[13.5px] leading-relaxed text-[#c9c9ce] space-y-3">
+            <div className="text-[13.5px] leading-relaxed text-[var(--foreground)] space-y-3">
               <div>
                 <div className="text-[#eec95f] font-semibold mb-1">Core Architecture & Business Logic</div>
-                <ul className="list-disc list-inside space-y-1 text-[#9b9ba1]">
+                <ul className="list-disc list-inside space-y-1 text-[var(--muted-foreground)]">
                   <li>Studio app mirrors the artist app's language: dark surfaces, gold accents, pill segments, outlined status chips, bottom nav.</li>
                   <li>Nav is Home · Messages · Calendar · Profile; Artists and Money live as Home segments.</li>
                   <li>Studios never hold client money — deposits and payments go directly to the artist who takes the client.</li>
@@ -216,10 +216,10 @@ export default function StudioShell() {
 
               <div>
                 <div className="text-[#eec95f] font-semibold mb-1">Interactive Features & Workflows</div>
-                <ul className="list-disc list-inside space-y-1 text-[#9b9ba1]">
-                  <li><b className="text-white">Messages → Lead → Send to artist</b>: pick artist by style fit, day, time → Send referral hold.</li>
-                  <li><b className="text-white">Home → Artists → tap an artist</b>: view 8 live 30d metrics, change terms with artist approval note, or remove.</li>
-                  <li><b className="text-white">Home → Money → Withdraw</b>: inspect the real 3.5% fee breakdown (Stripe 1.7% + 30c + platform).</li>
+                <ul className="list-disc list-inside space-y-1 text-[var(--muted-foreground)]">
+                  <li><b className="text-foreground">Messages → Lead → Send to artist</b>: pick artist by style fit, day, time → Send referral hold.</li>
+                  <li><b className="text-foreground">Home → Artists → tap an artist</b>: view 8 live 30d metrics, change terms with artist approval note, or remove.</li>
+                  <li><b className="text-foreground">Home → Money → Withdraw</b>: inspect the real 3.5% fee breakdown (Stripe 1.7% + 30c + platform).</li>
                 </ul>
               </div>
             </div>

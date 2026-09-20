@@ -63,7 +63,7 @@
 
 /* ── Logo ── */
 .client-home-logo {
-  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  font-family: var(--ivory-body);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 1px;

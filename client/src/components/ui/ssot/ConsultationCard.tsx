@@ -71,7 +71,7 @@ export function ConsultationCard({
             {isNew && (
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
             )}
-            <h3 className="font-bold text-foreground text-lg truncate group-hover:text-white transition-colors duration-300">
+            <h3 className="font-bold text-foreground text-lg truncate group-hover:text-foreground transition-colors duration-300">
               {subject}
               {clientName ? ` - ${clientName}` : ""}
             </h3>

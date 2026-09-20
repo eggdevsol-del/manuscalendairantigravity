@@ -80,10 +80,10 @@ export function BalanceCheckoutSheet({
         style={{
           bottom: "var(--bottom-nav-height, 64px)",
           maxHeight: "85%",
-          background: "#1B1B1B",
+          background: "var(--card)",
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          borderTop: "1px solid rgba(255,255,255,0.12)",
+          borderTop: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
           zIndex: "var(--z-sheet, 9999)",
           display: "flex",
           flexDirection: "column",
@@ -95,12 +95,12 @@ export function BalanceCheckoutSheet({
           className="flex items-center justify-between shrink-0"
           style={{
             padding: "14px 16px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            borderBottom: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
           }}
         >
           <span
-            className="text-[17px] font-bold text-white"
-            style={{ fontFamily: '"DM Sans", sans-serif' }}
+            className="text-[17px] font-bold text-foreground"
+            style={{ fontFamily: "var(--ivory-body)" }}
           >
             {step === "success" ? "Payment confirmed" : "Pay balance"}
           </span>
@@ -110,7 +110,7 @@ export function BalanceCheckoutSheet({
             style={{
               width: 44,
               height: 44,
-              color: "#7A7A7A",
+              color: "var(--muted-foreground)",
               background: "none",
               border: "none",
             }}
@@ -181,22 +181,22 @@ function ReviewStep({
       {/* Info card */}
       <div
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
           borderRadius: 14,
           padding: 14,
           marginBottom: 16,
         }}
       >
-        <div className="text-[14px] font-semibold text-white mb-0.5">
+        <div className="text-[14px] font-semibold text-foreground mb-0.5">
           Balance · {projectName}
         </div>
-        <div className="text-[12.5px] text-[#7A7A7A] mb-3">{artistName}</div>
+        <div className="text-[12.5px] text-[var(--muted-foreground)] mb-3">{artistName}</div>
 
         <div
           style={{
             height: 1,
-            background: "rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--foreground) 8%, transparent)",
             margin: "0 -14px",
             marginBottom: 12,
           }}
@@ -206,18 +206,18 @@ function ReviewStep({
         <div className="flex flex-col gap-2">
           {depositPaidCents > 0 && (
             <div className="flex justify-between text-[13px]">
-              <span className="text-[#7A7A7A]">Deposit paid</span>
-              <span style={{ color: "#4ade80" }}>−{fmt(depositPaidCents)}</span>
+              <span className="text-[var(--muted-foreground)]">Deposit paid</span>
+              <span style={{ color: "var(--color-success)" }}>−{fmt(depositPaidCents)}</span>
             </div>
           )}
           <div className="flex justify-between text-[13px]">
-            <span className="text-[#7A7A7A]">Remaining balance</span>
-            <span className="text-white">{fmt(balanceDueCents)}</span>
+            <span className="text-[var(--muted-foreground)]">Remaining balance</span>
+            <span className="text-foreground">{fmt(balanceDueCents)}</span>
           </div>
           {platformFeeCents > 0 && (
             <div className="flex justify-between text-[13px]">
-              <span className="text-[#7A7A7A]">Platform fee</span>
-              <span className="text-[#7A7A7A]">{fmt(platformFeeCents)}</span>
+              <span className="text-[var(--muted-foreground)]">Platform fee</span>
+              <span className="text-[var(--muted-foreground)]">{fmt(platformFeeCents)}</span>
             </div>
           )}
         </div>
@@ -225,19 +225,19 @@ function ReviewStep({
         <div
           style={{
             height: 1,
-            background: "rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--foreground) 8%, transparent)",
             margin: "12px -14px",
           }}
         />
 
         {/* Total */}
         <div className="flex justify-between items-baseline">
-          <span className="text-[14px] font-semibold text-white">
+          <span className="text-[14px] font-semibold text-foreground">
             Total due today
           </span>
           <span
-            className="text-[20px] font-bold text-white"
-            style={{ fontFamily: '"DM Sans", sans-serif' }}
+            className="text-[20px] font-bold text-foreground"
+            style={{ fontFamily: "var(--ivory-body)" }}
           >
             {fmt(totalCents || balanceDueCents)}
           </span>
@@ -245,7 +245,7 @@ function ReviewStep({
       </div>
 
       {/* Footnote */}
-      <p className="text-[12px] text-[#7A7A7A] mb-4 px-1">
+      <p className="text-[12px] text-[var(--muted-foreground)] mb-4 px-1">
         Paying the balance early locks in your session. This amount is
         non-refundable once the session has been completed.
       </p>
@@ -276,9 +276,9 @@ function ReviewStep({
           height: 52,
           borderRadius: 16,
           fontSize: 15,
-          fontFamily: '"DM Sans", sans-serif',
-          background: "#F8D057",
-          color: "#1B1B1B",
+          fontFamily: "var(--ivory-body)",
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
           border: "none",
           cursor: isLoading ? "wait" : "pointer",
         }}
@@ -312,17 +312,17 @@ function SuccessStep({ onDone }: { onDone: () => void }) {
           border: "1px solid rgba(74,222,128,0.4)",
         }}
       >
-        <Check className="w-[30px] h-[30px]" style={{ color: "#4ade80" }} />
+        <Check className="w-[30px] h-[30px]" style={{ color: "var(--color-success)" }} />
       </div>
 
       <h2
-        className="text-[20px] font-bold text-white"
-        style={{ fontFamily: '"DM Sans", sans-serif' }}
+        className="text-[20px] font-bold text-foreground"
+        style={{ fontFamily: "var(--ivory-body)" }}
       >
         Balance paid
       </h2>
 
-      <p className="text-[13.5px] text-[#7A7A7A] text-center max-w-[280px]">
+      <p className="text-[13.5px] text-[var(--muted-foreground)] text-center max-w-[280px]">
         Your session is fully paid and locked in. See you at the studio!
       </p>
 
@@ -333,9 +333,9 @@ function SuccessStep({ onDone }: { onDone: () => void }) {
           height: 52,
           borderRadius: 16,
           fontSize: 15,
-          fontFamily: '"DM Sans", sans-serif',
-          background: "#F8D057",
-          color: "#1B1B1B",
+          fontFamily: "var(--ivory-body)",
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
           border: "none",
         }}
       >

@@ -70,8 +70,8 @@ export function SessionPlanCard({
         style={{
           maxWidth: "88%",
           alignSelf: "flex-start",
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.12)",
+          background: "var(--card)",
+          border: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
           borderRadius: 16,
           padding: 14,
           animation: "sessionPlanPop 300ms ease-out",
@@ -80,14 +80,14 @@ export function SessionPlanCard({
         {/* Eyebrow */}
         <div
           className="text-[10px] font-bold uppercase mb-1"
-          style={{ color: "#7A7A7A", letterSpacing: "0.08em" }}
+          style={{ color: "var(--muted-foreground)", letterSpacing: "0.08em" }}
         >
           SESSION PLAN
         </div>
 
         {/* Headline */}
         <h3
-          className="text-[18px] font-bold text-white mb-3"
+          className="text-[18px] font-bold text-foreground mb-3"
           style={{ marginTop: 5 }}
         >
           {sessionCount} session{sessionCount !== 1 ? "s" : ""} ·{" "}
@@ -102,20 +102,20 @@ export function SessionPlanCard({
             <div key={session.sessionIndex} className="flex items-center gap-2">
               {/* Index badge */}
               <div
-                className="flex items-center justify-center shrink-0 text-[12px] font-bold text-white"
+                className="flex items-center justify-center shrink-0 text-[12px] font-bold text-foreground"
                 style={{
                   width: 28,
                   height: 28,
                   borderRadius: "50%",
                   background: "#232326",
-                  border: "1px solid rgba(255,255,255,0.12)",
+                  border: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
                 }}
               >
                 {session.sessionIndex}
               </div>
 
               {/* Date/time */}
-              <span className="flex-1 text-[13.5px] text-white">
+              <span className="flex-1 text-[13.5px] text-foreground">
                 {formatSessionDate(session.startsAt)}
               </span>
 
@@ -123,7 +123,7 @@ export function SessionPlanCard({
               <span
                 className="text-[11px] font-bold shrink-0"
                 style={{
-                  color: "#F8D057",
+                  color: "var(--primary)",
                   background: "rgba(248,208,87,0.1)",
                   borderRadius: 6,
                   padding: "4px 7px",
@@ -145,9 +145,9 @@ export function SessionPlanCard({
               style={{
                 height: 44,
                 borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.12)",
+                border: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
                 background: "transparent",
-                color: "rgba(255,255,255,.58)",
+                color: "color-mix(in srgb, var(--foreground) 57.99999999999999%, transparent)",
               }}
             >
               Decline
@@ -159,8 +159,8 @@ export function SessionPlanCard({
                 height: 44,
                 borderRadius: 12,
                 border: "none",
-                background: "#F8D057",
-                color: "#1B1B1B",
+                background: "var(--primary)",
+                color: "var(--primary-foreground)",
               }}
             >
               Accept plan
@@ -177,7 +177,7 @@ export function SessionPlanCard({
               height: 44,
               borderRadius: 12,
               background: "rgba(74,222,128,0.15)",
-              color: "#4ade80",
+              color: "var(--color-success)",
               border: "none",
             }}
           >
@@ -187,21 +187,21 @@ export function SessionPlanCard({
 
         {/* Declined state */}
         {isDeclined && (
-          <div className="text-center text-[13px] text-[#7A7A7A] py-2">
+          <div className="text-center text-[13px] text-[var(--muted-foreground)] py-2">
             Plan declined
           </div>
         )}
 
         {/* Withdrawn state */}
         {isWithdrawn && (
-          <div className="text-center text-[13px] text-[#7A7A7A] py-2">
+          <div className="text-center text-[13px] text-[var(--muted-foreground)] py-2">
             Plan withdrawn by artist
           </div>
         )}
 
         {/* Artist view of pending — no actions, just status */}
         {isPending && isOwnMessage && (
-          <div className="text-center text-[13px] text-[#7A7A7A] py-2">
+          <div className="text-center text-[13px] text-[var(--muted-foreground)] py-2">
             Waiting for client to respond
           </div>
         )}

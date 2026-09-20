@@ -2,7 +2,7 @@
  * Client Terminal Signup — Department of Tattoo Services
  * ──────────────────────────────────────────────────────────
  * Step-by-step prompt form overlaid on the shared CRT terminal shell.
- * Extends login.css base classes; all text uses SSOT primary (#F8D057).
+ * Extends login.css base classes; all text uses SSOT primary (var(--primary)).
  */
 
 /* ── Override center area for scrollable signup ────── */
@@ -29,10 +29,10 @@
 .terminal-signup-prompt {
   font-size: 10px;
   font-weight: 700;
-  color: #F8D057;
+  color: var(--primary);
   letter-spacing: 2px;
   margin-bottom: 12px;
-  text-shadow: 0 0 10px rgba(248, 208, 87, 0.2);
+  text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2);
 }
 
 /* ── Input row: field + CONFIRM + optional SKIP ────── */
@@ -47,23 +47,23 @@
   flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(248, 208, 87, 0.4);
-  color: #F8D057;
-  font-family: "JetBrains Mono", monospace;
+  border-bottom: 1px solid rgba(var(--primary-rgb), 0.4);
+  color: var(--primary);
+  font-family: var(--ivory-body);
   font-size: 12px;
   font-weight: 400;
   padding: 8px 0;
   outline: none;
   letter-spacing: 0.5px;
-  caret-color: #F8D057;
+  caret-color: var(--primary);
 }
 
 .terminal-signup-input:focus {
-  border-bottom-color: #F8D057;
+  border-bottom-color: var(--primary);
 }
 
 .terminal-signup-input::placeholder {
-  color: rgba(248, 208, 87, 0.25);
+  color: rgba(var(--primary-rgb), 0.25);
 }
 
 /* Password dots should also be yellow */
@@ -75,9 +75,9 @@
 .terminal-signup-confirm,
 .terminal-signup-skip {
   background: transparent;
-  border: 1px solid rgba(248, 208, 87, 0.3);
-  color: #F8D057;
-  font-family: "JetBrains Mono", monospace;
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  color: var(--primary);
+  font-family: var(--ivory-body);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -88,18 +88,18 @@
 }
 
 .terminal-signup-confirm:hover {
-  background: rgba(248, 208, 87, 0.1);
-  border-color: #F8D057;
+  background: rgba(var(--primary-rgb), 0.1);
+  border-color: var(--primary);
 }
 
 .terminal-signup-skip {
-  border-color: rgba(248, 208, 87, 0.15);
-  color: rgba(248, 208, 87, 0.5);
+  border-color: rgba(var(--primary-rgb), 0.15);
+  color: rgba(var(--primary-rgb), 0.5);
 }
 
 .terminal-signup-skip:hover {
-  border-color: rgba(248, 208, 87, 0.3);
-  color: rgba(248, 208, 87, 0.8);
+  border-color: rgba(var(--primary-rgb), 0.3);
+  color: rgba(var(--primary-rgb), 0.8);
 }
 
 /* ── Completed field ────────────────────────────────── */
@@ -113,18 +113,18 @@
 .terminal-signup-completed-line {
   font-size: 9.5px;
   line-height: 1.7;
-  color: #F8D057;
+  color: var(--primary);
   font-weight: 400;
   letter-spacing: 0.3px;
 }
 
 .terminal-signup-completed-check {
-  color: #F8D057;
+  color: var(--primary);
   margin-left: 8px;
 }
 
 .terminal-signup-completed-skipped {
-  color: rgba(248, 208, 87, 0.3);
+  color: rgba(var(--primary-rgb), 0.3);
   margin-left: 8px;
   font-size: 8px;
   letter-spacing: 1px;
@@ -132,36 +132,36 @@
 
 /* ── Google Places dropdown override in terminal mode ── */
 .terminal-places-wrapper .relative > .absolute.z-50 {
-  background-color: #000 !important;
-  border-color: rgba(248, 208, 87, 0.3) !important;
+  background-color: var(--card) !important;
+  border-color: rgba(var(--primary-rgb), 0.3) !important;
 }
 
 .terminal-places-wrapper .relative > .absolute.z-50 button {
-  font-family: "JetBrains Mono", monospace;
-  color: #F8D057 !important;
+  font-family: var(--ivory-body);
+  color: var(--primary) !important;
 }
 
 .terminal-places-wrapper .relative > .absolute.z-50 button:hover,
 .terminal-places-wrapper .relative > .absolute.z-50 button.bg-primary\/15 {
-  background-color: rgba(248, 208, 87, 0.1) !important;
+  background-color: rgba(var(--primary-rgb), 0.1) !important;
 }
 
 .terminal-places-wrapper .relative > .absolute.z-50 .text-muted-foreground {
-  color: rgba(248, 208, 87, 0.4) !important;
+  color: rgba(var(--primary-rgb), 0.4) !important;
 }
 
 .terminal-places-wrapper .relative > .absolute.z-50 .text-primary {
-  color: #F8D057 !important;
+  color: var(--primary) !important;
 }
 
 /* Override GooglePlacesInput styling in terminal mode */
 .terminal-places-input {
   background: transparent !important;
   border: none !important;
-  border-bottom: 1px solid rgba(248, 208, 87, 0.4) !important;
+  border-bottom: 1px solid rgba(var(--primary-rgb), 0.4) !important;
   border-radius: 0 !important;
-  color: #F8D057 !important;
-  font-family: "JetBrains Mono", monospace !important;
+  color: var(--primary) !important;
+  font-family: var(--ivory-body);
   font-size: 12px !important;
   height: auto !important;
   padding: 8px 0 !important;
@@ -169,13 +169,13 @@
 }
 
 .terminal-places-input:focus {
-  border-bottom-color: #F8D057 !important;
+  border-bottom-color: var(--primary) !important;
   ring: none !important;
   outline: none !important;
 }
 
 .terminal-places-input::placeholder {
-  color: rgba(248, 208, 87, 0.25) !important;
+  color: rgba(var(--primary-rgb), 0.25) !important;
 }
 
 /* ── Validation error ───────────────────────────────── */

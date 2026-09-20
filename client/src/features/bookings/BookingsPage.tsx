@@ -18,7 +18,7 @@ export default function BookingsPage() {
   });
 
   return (
-    <div className="min-h-screen" style={{ background: "#1B1B1B" }}>
+    <div className="min-h-screen" style={{ background: "var(--card)" }}>
       <PageHeader title="Bookings" subtitle={dateStr} />
 
       <div className="px-4 pt-2 pb-3">

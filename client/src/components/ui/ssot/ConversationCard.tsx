@@ -106,7 +106,7 @@ export function ConversationCard({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center mb-0.5">
-            <h3 className="font-bold text-foreground text-lg truncate tracking-tight group-hover:text-white transition-colors duration-300">
+            <h3 className="font-bold text-foreground text-lg truncate tracking-tight group-hover:text-foreground transition-colors duration-300">
               {name || "Unknown User"}
             </h3>
             {timestamp && (
@@ -156,7 +156,7 @@ export function ConversationCard({
           )}
 
           {!isNew && unreadCount > 0 && (
-            <div className="bg-primary text-white shadow-[0_0_10px_rgba(var(--primary),0.5)] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+            <div className="bg-primary text-primary-foreground shadow-[0_0_10px_rgba(var(--primary),0.5)] rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
               {unreadCount}
             </div>
           )}

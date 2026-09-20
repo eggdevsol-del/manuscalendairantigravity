@@ -9,7 +9,7 @@
  * (handled by BankPayoutsPage).
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     ConnectComponentsProvider,
     ConnectAccountOnboarding,
@@ -17,6 +17,7 @@ import {
 import { loadConnectAndInitialize } from "@stripe/connect-js";
 import { trpcVanilla } from "@/lib/trpcVanilla";
 import { trpc } from "@/lib/trpc";
+import { useIvoryPalette } from "@/ui/useIvoryPalette";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 interface StripeExpressOnboardingProps {
@@ -28,6 +29,7 @@ export function StripeExpressOnboarding({
     onComplete,
     isResuming = false,
 }: StripeExpressOnboardingProps) {
+    const palette = useIvoryPalette();
     const [completed, setCompleted] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const utils = trpc.useUtils();
@@ -52,15 +54,22 @@ export function StripeExpressOnboarding({
             appearance: {
                 overlays: "dialog",
                 variables: {
-                    colorPrimary: "#E09F3E",
-                    colorBackground: "#0b1120",
-                    colorText: "#ffffff",
-                    colorDanger: "#ef4444",
+                    colorPrimary: palette.primary,
+                    colorBackground: palette.surface,
+                    colorText: palette.foreground,
+                    colorDanger: palette.danger,
                     borderRadius: "12px",
                 },
             },
         });
     });
+
+    useEffect(() => {
+        stripeConnectInstance?.update({ appearance: { variables: {
+            colorPrimary: palette.primary, colorBackground: palette.surface,
+            colorText: palette.foreground, colorDanger: palette.danger,
+        } } });
+    }, [stripeConnectInstance, palette]);
 
     const handleExit = () => {
         setCompleted(true);

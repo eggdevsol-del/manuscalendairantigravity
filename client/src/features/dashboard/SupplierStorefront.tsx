@@ -327,7 +327,7 @@ export function SupplierStorefront({
                       {isAvailable ? (
                         selectedVarId && cart[selectedVarId] ? (
                           // Quantity stepper
-                          <div className="flex items-center gap-0 rounded-full overflow-hidden" style={{ background: '#f2ca5c' }}>
+                          <div className="flex items-center gap-0 rounded-full overflow-hidden" style={{ background: 'var(--primary)' }}>
                             <button
                               onClick={(e) => { e.stopPropagation(); removeFromCart(selectedVarId); }}
                               className="w-8 h-8 flex items-center justify-center hover:bg-black/10 transition-colors"
@@ -361,7 +361,7 @@ export function SupplierStorefront({
                               }
                             }}
                             className="px-4 py-1.5 rounded-full text-xs font-bold transition-colors"
-                            style={{ background: '#f2ca5c', color: '#1a1a19', minHeight: 32 }}
+                            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', minHeight: 32 }}
                           >
                             Add
                           </button>
@@ -395,8 +395,8 @@ export function SupplierStorefront({
             onClick={() => setShowCheckout(true)}
             className="w-full flex items-center justify-between rounded-2xl px-5 py-3.5 shadow-lg transition-colors"
             style={{
-              background: '#f2ca5c',
-              color: '#1a1a19',
+              background: 'var(--primary)',
+              color: 'var(--primary-foreground)',
               minHeight: 52,
             }}
           >

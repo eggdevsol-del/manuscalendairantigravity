@@ -2,7 +2,7 @@
  * Login Terminal — Department of Tattoo Services
  * ─────────────────────────────────────────────────
  * CRT-inspired boot sequence with cycling centered sections.
- * All text uses SSOT primary color (#F8D057).
+ * All text uses SSOT primary color (var(--primary)).
  */
 
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
@@ -13,8 +13,8 @@
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: #000;
-  font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+  background: var(--background);
+  font-family: var(--ivory-body);
   overflow: hidden;
 }
 
@@ -28,8 +28,8 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(248, 208, 87, 0.015) 2px,
-    rgba(248, 208, 87, 0.015) 4px
+    rgba(var(--primary-rgb), 0.015) 2px,
+    rgba(var(--primary-rgb), 0.015) 4px
   );
   animation: scanline-flicker 8s linear infinite;
 }
@@ -51,7 +51,7 @@
 .login-terminal-datetime {
   font-size: 9px;
   font-weight: 300;
-  color: rgba(248, 208, 87, 0.5);
+  color: rgba(var(--primary-rgb), 0.5);
   letter-spacing: 1px;
   margin-bottom: 8px;
 }
@@ -59,25 +59,25 @@
 .login-terminal-title {
   font-size: 15px;
   font-weight: 700;
-  color: #F8D057;
+  color: var(--primary);
   letter-spacing: 3px;
   text-transform: uppercase;
   margin: 0;
-  text-shadow: 0 0 20px rgba(248, 208, 87, 0.3), 0 0 40px rgba(248, 208, 87, 0.1);
+  text-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3), 0 0 40px rgba(var(--primary-rgb), 0.1);
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
 .login-terminal-version {
   font-size: 9px;
   font-weight: 400;
-  color: rgba(248, 208, 87, 0.5);
+  color: rgba(var(--primary-rgb), 0.5);
   letter-spacing: 2px;
   margin-top: 4px;
 }
 
 @keyframes glow-pulse {
-  0%, 100% { text-shadow: 0 0 20px rgba(248, 208, 87, 0.3), 0 0 40px rgba(248, 208, 87, 0.1); }
-  50% { text-shadow: 0 0 30px rgba(248, 208, 87, 0.5), 0 0 60px rgba(248, 208, 87, 0.2); }
+  0%, 100% { text-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3), 0 0 40px rgba(var(--primary-rgb), 0.1); }
+  50% { text-shadow: 0 0 30px rgba(var(--primary-rgb), 0.5), 0 0 60px rgba(var(--primary-rgb), 0.2); }
 }
 
 /* ── Center: cycling sections ─────────────────────── */
@@ -117,10 +117,10 @@
 .terminal-section-header {
   font-size: 10px;
   font-weight: 700;
-  color: #F8D057;
+  color: var(--primary);
   letter-spacing: 2px;
   margin-bottom: 8px;
-  text-shadow: 0 0 10px rgba(248, 208, 87, 0.2);
+  text-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2);
 }
 
 .terminal-section-lines {
@@ -133,7 +133,7 @@
   font-size: 9.5px;
   line-height: 1.7;
   letter-spacing: 0.3px;
-  color: #F8D057;
+  color: var(--primary);
   font-weight: 400;
   white-space: pre-wrap;
   word-break: break-word;
@@ -141,7 +141,7 @@
 
 /* ── Cursor ───────────────────────────────────────── */
 .terminal-cursor {
-  color: #F8D057;
+  color: var(--primary);
   animation: cursor-blink 0.6s steps(1) infinite;
   margin-left: 1px;
 }
@@ -160,9 +160,9 @@
 .terminal-final-line {
   font-size: 11px;
   font-weight: 700;
-  color: #F8D057;
+  color: var(--primary);
   letter-spacing: 1.5px;
-  text-shadow: 0 0 20px rgba(248, 208, 87, 0.4);
+  text-shadow: 0 0 20px rgba(var(--primary-rgb), 0.4);
   animation: glow-pulse 3s ease-in-out infinite;
 }
 
@@ -180,13 +180,13 @@
 
 /* ── Override form text for terminal aesthetic ──── */
 .login-terminal-actions .text-muted-foreground {
-  color: rgba(248, 208, 87, 0.6);
+  color: rgba(var(--primary-rgb), 0.6);
 }
 
 .login-terminal-actions .text-muted-foreground:hover {
-  color: rgba(248, 208, 87, 0.9);
+  color: rgba(var(--primary-rgb), 0.9);
 }
 
 .login-terminal-actions .text-muted-foreground\/50 {
-  color: rgba(248, 208, 87, 0.3);
+  color: rgba(var(--primary-rgb), 0.3);
 }

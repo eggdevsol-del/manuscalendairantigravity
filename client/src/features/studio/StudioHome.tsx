@@ -42,7 +42,7 @@ function MetricTooltip({ text, label }: { text: string; label?: string }) {
         }}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="w-3.5 h-3.5 rounded-full border border-white/20 text-[9px] font-semibold text-[#8d8d93] hover:text-white hover:border-white/40 flex items-center justify-center transition-colors ml-1 leading-none cursor-pointer"
+        className="w-3.5 h-3.5 rounded-full border border-foreground/20 text-[9px] font-semibold text-[var(--muted-foreground)] hover:text-foreground hover:border-foreground/40 flex items-center justify-center transition-colors ml-1 leading-none cursor-pointer"
         aria-label="Metric info"
       >
         i
@@ -58,8 +58,8 @@ function MetricTooltip({ text, label }: { text: string; label?: string }) {
               setOpen(false);
             }}
           />
-          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-[101] w-48 sm:w-56 p-2.5 rounded-xl bg-[#28282b] border border-white/15 text-[11px] text-[#d8d8dc] font-normal leading-relaxed shadow-xl backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150 text-left">
-            {label && <strong className="block text-white font-semibold mb-0.5">{label}</strong>}
+          <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 z-[101] w-48 sm:w-56 p-2.5 rounded-xl bg-[var(--card)] border border-foreground/15 text-[11px] text-[var(--foreground)] font-normal leading-relaxed shadow-xl backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150 text-left">
+            {label && <strong className="block text-foreground font-semibold mb-0.5">{label}</strong>}
             {text}
           </span>
         </>
@@ -288,7 +288,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
 
       {/* ── Scrollable Viewport Content ── */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
-        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+        <div className="max-w-[1060px] mx-auto w-full text-[var(--foreground)] [font-family:var(--ivory-body)]">
           {/* ── Gold-Bordered Money Summary Card (Real DB live values) ── */}
           <div
             ref={studioMoneyCardRef as any}
@@ -326,14 +326,14 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       </div>
 
       {/* ── Segment Pill: Today · Artists · Money · Vault · Suppliers ── */}
-      <div ref={studioSegmentPillRef as any} className="flex bg-[#1a1a1b] rounded-full p-1 mb-5.5 overflow-x-auto no-scrollbar">
+      <div ref={studioSegmentPillRef as any} className="flex bg-[var(--card)] rounded-full p-1 mb-5.5 overflow-x-auto no-scrollbar">
         <button
           onClick={() => {
             setHomeSeg("today");
             setIsMoneyUnlocked(false);
           }}
           className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
-            homeSeg === "today" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+            homeSeg === "today" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
           }`}
         >
           Today
@@ -344,7 +344,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             setIsMoneyUnlocked(false);
           }}
           className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
-            homeSeg === "artists" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+            homeSeg === "artists" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
           }`}
         >
           Artists
@@ -352,7 +352,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         <button
           onClick={() => setHomeSeg("money")}
           className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
-            homeSeg === "money" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+            homeSeg === "money" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
           }`}
         >
           Money
@@ -363,7 +363,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             setIsMoneyUnlocked(false);
           }}
           className={`flex-1 min-w-[72px] py-2.5 rounded-full text-[14px] font-medium transition-all flex items-center justify-center gap-1 ${
-            homeSeg === "vault" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+            homeSeg === "vault" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
           }`}
         >
           <span>Vault</span>
@@ -374,7 +374,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             setIsMoneyUnlocked(false);
           }}
           className={`flex-1 min-w-[80px] py-2.5 rounded-full text-[14px] font-medium transition-all ${
-            homeSeg === "suppliers" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+            homeSeg === "suppliers" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
           }`}
         >
           Supplies
@@ -387,10 +387,10 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {homeSeg === "today" && (
         <div>
           <div className="flex justify-between items-baseline mb-3">
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
               IN THE CHAIRS TODAY
             </div>
-            <div className="text-[13px] text-[#8d8d93]">
+            <div className="text-[13px] text-[var(--muted-foreground)]">
               {todayRows.length} in the chairs · {Math.max(0, 10 - todayRows.length)} free
             </div>
           </div>
@@ -401,15 +401,15 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                 <div
                   key={r.id}
                   onClick={r.tap}
-                  className="bg-[#1a1a1b] border border-white/[0.07] rounded-[16px] p-4 flex items-center gap-4 cursor-pointer hover:border-white/15 transition-colors"
+                  className="bg-[var(--card)] border border-foreground/[0.07] rounded-[16px] p-4 flex items-center gap-4 cursor-pointer hover:border-foreground/15 transition-colors"
                 >
                   <div className="shrink-0 w-[88px]">
-                    <div className="text-[16.5px] font-semibold text-white whitespace-nowrap">{r.time}</div>
-                    <div className="text-[12.5px] text-[#8d8d93]">{r.hrs}</div>
+                    <div className="text-[16.5px] font-semibold text-foreground whitespace-nowrap">{r.time}</div>
+                    <div className="text-[12.5px] text-[var(--muted-foreground)]">{r.hrs}</div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[16px] font-semibold text-white truncate">{r.client}</div>
-                    <div className="text-[13px] text-[#9b9ba1] truncate">{r.service}</div>
+                    <div className="text-[16px] font-semibold text-foreground truncate">{r.client}</div>
+                    <div className="text-[13px] text-[var(--muted-foreground)] truncate">{r.service}</div>
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <span className="w-2 h-2 rounded-full" style={{ backgroundColor: r.artistColor }} />
                       <span className="text-[12px]" style={{ color: r.artistColor }}>{r.artistName}</span>
@@ -425,17 +425,17 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               ))}
             </div>
           ) : (
-            <div className="border-1.5 border-dashed border-white/15 rounded-[16px] p-7 text-center text-[#6e6e75] text-sm">
+            <div className="border-1.5 border-dashed border-foreground/15 rounded-[16px] p-7 text-center text-[var(--muted-foreground)] text-sm">
               No one in the chairs today
             </div>
           )}
 
           {/* Needs You Queue */}
           <div className="flex justify-between items-baseline mt-6 mb-3">
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
               NEEDS YOU
             </div>
-            <div className="text-[13px] text-[#8d8d93]">
+            <div className="text-[13px] text-[var(--muted-foreground)]">
               {newLeads.length + awaitingReferrals.length + pendingInvites.length + (arrearsList.length ? 1 : 0)} things
             </div>
           </div>
@@ -444,15 +444,15 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             {newLeads.length > 0 && (
               <div
                 onClick={() => onNavigateTab("msg")}
-                className="bg-[#1a1a1b] border border-[#8a7434] rounded-[16px] p-4.5 cursor-pointer hover:border-[#eec95f] transition-all"
+                className="bg-[var(--card)] border border-[#8a7434] rounded-[16px] p-4.5 cursor-pointer hover:border-[#eec95f] transition-all"
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <div className="text-base font-semibold text-white">
+                  <div className="text-base font-semibold text-foreground">
                     {newLeads.length} new studio {newLeads.length > 1 ? "inquiries" : "inquiry"}
                   </div>
                   <div className="text-[12.5px] font-medium text-[#eec95f] shrink-0">Assign</div>
                 </div>
-                <div className="text-[13px] text-[#9b9ba1] mt-1 truncate">
+                <div className="text-[13px] text-[var(--muted-foreground)] mt-1 truncate">
                   {newLeads.map((l: any) => l.clientName).join(", ")} — route to artist
                 </div>
               </div>
@@ -462,13 +462,13 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               <div
                 key={a.id}
                 onClick={() => onNavigateTab("msg", { leadId: a.id })}
-                className="bg-[#1a1a1b] border border-white/[0.07] rounded-[16px] p-4.5 cursor-pointer hover:border-white/15 transition-all"
+                className="bg-[var(--card)] border border-foreground/[0.07] rounded-[16px] p-4.5 cursor-pointer hover:border-foreground/15 transition-all"
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <div className="text-base font-semibold text-white">Awaiting confirm — {a.artist?.name || "Artist"}</div>
+                  <div className="text-base font-semibold text-foreground">Awaiting confirm — {a.artist?.name || "Artist"}</div>
                   <div className="text-[12.5px] font-medium text-[#eec95f] shrink-0">View</div>
                 </div>
-                <div className="text-[13px] text-[#9b9ba1] mt-1 truncate">
+                <div className="text-[13px] text-[var(--muted-foreground)] mt-1 truncate">
                   {a.client?.name || a.title} · recommended on calendar
                 </div>
               </div>
@@ -478,20 +478,20 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               <div
                 key={p.id}
                 onClick={() => setInvOpen(true)}
-                className="bg-[#1a1a1b] border border-white/[0.07] rounded-[16px] p-4.5 cursor-pointer hover:border-white/15 transition-all"
+                className="bg-[var(--card)] border border-foreground/[0.07] rounded-[16px] p-4.5 cursor-pointer hover:border-foreground/15 transition-all"
               >
                 <div className="flex justify-between items-baseline gap-2">
-                  <div className="text-base font-semibold text-white">Invite pending — {p.inviteEmail}</div>
+                  <div className="text-base font-semibold text-foreground">Invite pending — {p.inviteEmail}</div>
                   <div className="text-[12.5px] font-medium text-[#eec95f] shrink-0">Invites</div>
                 </div>
-                <div className="text-[13px] text-[#9b9ba1] mt-1">
+                <div className="text-[13px] text-[var(--muted-foreground)] mt-1">
                   {p.commissionPct}% commission · awaits in-app approval
                 </div>
               </div>
             ))}
 
             {newLeads.length === 0 && awaitingReferrals.length === 0 && pendingInvites.length === 0 && (
-              <div className="col-span-full border border-white/5 rounded-[16px] p-6 text-center text-[#6e6e75] text-sm">
+              <div className="col-span-full border border-foreground/5 rounded-[16px] p-6 text-center text-[var(--muted-foreground)] text-sm">
                 All clear — nothing needs your attention right now
               </div>
             )}
@@ -505,10 +505,10 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {homeSeg === "artists" && (
         <div ref={studioArtistsListRef as any}>
           <div className="flex justify-between items-baseline mb-3">
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
               RESIDENT ARTISTS
             </div>
-            <div className="text-[13px] text-[#8d8d93]">{artists.length} of 10 chairs filled</div>
+            <div className="text-[13px] text-[var(--muted-foreground)]">{artists.length} of 10 chairs filled</div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -529,29 +529,29 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                 <div
                   key={a.id}
                   onClick={() => setDetArtistId(a.userId)}
-                  className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] p-4.5 cursor-pointer hover:border-white/20 transition-all"
+                  className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] p-4.5 cursor-pointer hover:border-foreground/20 transition-all"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-11.5 h-11.5 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-sm shrink-0">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-semibold text-white truncate">{name}</div>
-                      <div className="text-[12.5px] text-[#9b9ba1] truncate">{a.specialties || "Custom"}</div>
+                      <div className="text-base font-semibold text-foreground truncate">{name}</div>
+                      <div className="text-[12.5px] text-[var(--muted-foreground)] truncate">{a.specialties || "Custom"}</div>
                     </div>
-                    <span className="shrink-0 text-[11.5px] px-2.5 py-1 rounded-full bg-[#2f2f33] text-[#c9c9ce]">
+                    <span className="shrink-0 text-[11.5px] px-2.5 py-1 rounded-full bg-[var(--secondary)] text-[var(--foreground)]">
                       {termsBadge}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2.5 mt-3.5">
-                    <div className="flex-1 h-1.5 rounded-full bg-[#323236] overflow-hidden">
+                    <div className="flex-1 h-1.5 rounded-full bg-[var(--secondary)] overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[#eec95f] transition-all duration-300"
                         style={{ width: `${a.utilizationPct ?? 0}%` }}
                       />
                     </div>
-                    <div className="text-xs text-[#9b9ba1] shrink-0 flex items-center">
+                    <div className="text-xs text-[var(--muted-foreground)] shrink-0 flex items-center">
                       {a.utilizationPct ?? 0}% booked
                       <MetricTooltip
                         label="% Booked (Chair Utilization)"
@@ -561,14 +561,14 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                   </div>
 
                   <div className="flex justify-between items-center mt-2.5 text-[13px]">
-                    <span className="text-[#9b9ba1] flex items-center">
+                    <span className="text-[var(--muted-foreground)] flex items-center">
                       {a.completedBookingsCount ?? a.bookingsCount ?? 0} completed · {a.bookedHours ?? 0}h scheduled
                       <MetricTooltip
                         label="Bookings & Scheduled Hours"
                         text="Completed bookings in the last 30 days alongside total confirmed and in-progress hours currently on the schedule."
                       />
                     </span>
-                    <span className="font-semibold text-white flex items-center">
+                    <span className="font-semibold text-foreground flex items-center">
                       {formatMoney(a.grossCents || 0)} gross · 30d
                       <MetricTooltip
                         label="30D Gross"
@@ -599,14 +599,14 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
         <div>
           {isMasked ? (
             /* Passcode Gate */
-            <div className="max-w-[420px] mx-auto mt-7 bg-[#1a1a1b] border border-white/[0.08] rounded-[20px] p-7 text-center shadow-2xl">
+            <div className="max-w-[420px] mx-auto mt-7 bg-[var(--card)] border border-foreground/[0.08] rounded-[20px] p-7 text-center shadow-2xl">
               <div className="w-14 h-14 rounded-full mx-auto mb-3.5 flex items-center justify-center bg-[#eec95f]/12 border border-[#8a7434] text-[#eec95f] text-2xl">
                 🔒
               </div>
-              <div className="text-[11px] font-semibold tracking-[2px] text-[#8d8d93] uppercase">
+              <div className="text-[11px] font-semibold tracking-[2px] text-[var(--muted-foreground)] uppercase">
                 MONEY IS LOCKED
               </div>
-              <p className="text-sm text-[#9b9ba1] my-2 mb-4.5 leading-relaxed">
+              <p className="text-sm text-[var(--muted-foreground)] my-2 mb-4.5 leading-relaxed">
                 Enter the studio passcode to view balances, splits and withdrawals
               </p>
               <input
@@ -616,7 +616,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                 onChange={(e) => setPasscodeAttempt(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleUnlockMoney()}
                 placeholder="Passcode"
-                className="w-full bg-[#2f2f33] border border-white/10 rounded-full py-3 px-4 text-white text-base tracking-[6px] text-center outline-none focus:border-[#eec95f]"
+                className="w-full bg-[var(--secondary)] border border-foreground/10 rounded-full py-3 px-4 text-foreground text-base tracking-[6px] text-center outline-none focus:border-[#eec95f]"
               />
               <button
                 onClick={handleUnlockMoney}
@@ -629,13 +629,13 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             /* Real Live Money Dashboard */
             <div>
               {/* Range Pills */}
-              <div className="inline-flex bg-[#1a1a1b] rounded-full p-1 mb-4">
+              <div className="inline-flex bg-[var(--card)] rounded-full p-1 mb-4">
                 {(["7", "30", "90", "all"] as const).map((r) => (
                   <button
                     key={r}
                     onClick={() => setMoneyRange(r)}
                     className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
-                      moneyRange === r ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+                      moneyRange === r ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
                     }`}
                   >
                     {r === "all" ? "All time" : `${r} days`}
@@ -646,8 +646,8 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               {/* Balance & Earnings 2-Column Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
                 {/* Balance Card */}
-                <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] p-5">
-                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
+                <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] p-5">
+                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
                     STUDIO BALANCE
                   </div>
                   <div className="text-[32px] font-bold text-[#eec95f] my-2">
@@ -659,30 +659,30 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                   >
                     Withdraw
                   </button>
-                  <div className="text-xs text-[#8d8d93] mt-3">
+                  <div className="text-xs text-[var(--muted-foreground)] mt-3">
                     3.5% studio fee on withdrawal — Stripe processing (1.7% + $0.30) + 1.8% platform fee
                   </div>
                 </div>
 
                 {/* Earnings Summary Card */}
-                <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] p-5 space-y-2">
+                <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] p-5 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#c9c9ce]">Artists grossed</span>
-                    <span className="text-white font-medium">{formatMoney(moneyData?.grossCents || 0)}</span>
+                    <span className="text-[var(--foreground)]">Artists grossed</span>
+                    <span className="text-foreground font-medium">{formatMoney(moneyData?.grossCents || 0)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#c9c9ce]">Studio commission</span>
+                    <span className="text-[var(--foreground)]">Studio commission</span>
                     <span className="text-[#57c97e] font-medium">+{formatMoney(moneyData?.commissionCents || 0)}</span>
                   </div>
-                  <div className="flex justify-between text-sm pb-2 border-b border-white/[0.08]">
-                    <span className="text-[#c9c9ce]">Chair rent collected</span>
+                  <div className="flex justify-between text-sm pb-2 border-b border-foreground/[0.08]">
+                    <span className="text-[var(--foreground)]">Chair rent collected</span>
                     <span className="text-[#57c97e] font-medium">+{formatMoney(moneyData?.rentCents || 0)}</span>
                   </div>
                   <div className="flex justify-between text-base font-bold pt-1">
                     <span>Studio earned</span>
                     <span className="text-[#eec95f]">{formatMoney(moneyData?.earnedCents || 0)}</span>
                   </div>
-                  <div className="text-xs text-[#8d8d93] mt-2">
+                  <div className="text-xs text-[var(--muted-foreground)] mt-2">
                     Settled automatically at artist payouts — the studio never holds client deposits
                   </div>
                 </div>
@@ -692,22 +692,22 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* By Artist Splits */}
                 <div>
-                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2.5">
+                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2.5">
                     BY ARTIST
                   </div>
-                  <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] px-4 py-2 divide-y divide-white/5">
+                  <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] px-4 py-2 divide-y divide-white/5">
                     {(moneyData?.byArtist || []).map((b: any) => (
                       <div key={b.id} className="flex items-center gap-3 py-3">
                         <div className="w-9 h-9 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-xs shrink-0">
                           {b.initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-white truncate">{b.name}</div>
-                          <div className="text-xs text-[#9b9ba1] truncate capitalize">{b.paymentModel} terms</div>
+                          <div className="text-sm font-semibold text-foreground truncate">{b.name}</div>
+                          <div className="text-xs text-[var(--muted-foreground)] truncate capitalize">{b.paymentModel} terms</div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm font-bold text-[#eec95f]">{formatMoney(b.cutCents)}</div>
-                          <div className="text-[11px] text-[#8d8d93]">of {formatMoney(b.grossCents)}</div>
+                          <div className="text-[11px] text-[var(--muted-foreground)]">of {formatMoney(b.grossCents)}</div>
                         </div>
                       </div>
                     ))}
@@ -716,7 +716,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
 
                 {/* Transactions Ledger */}
                 <div>
-                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2.5">
+                  <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2.5">
                     TRANSACTIONS
                   </div>
                   <div className="space-y-2">
@@ -725,11 +725,11 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       return (
                         <div
                           key={t.id}
-                          className="bg-[#1a1a1b] border border-white/[0.06] rounded-[16px] p-3.5 flex items-center gap-3"
+                          className="bg-[var(--card)] border border-foreground/[0.06] rounded-[16px] p-3.5 flex items-center gap-3"
                         >
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold text-white truncate">{t.description || "Studio Settlement"}</div>
-                            <div className="text-xs text-[#9b9ba1]">
+                            <div className="text-sm font-semibold text-foreground truncate">{t.description || "Studio Settlement"}</div>
+                            <div className="text-xs text-[var(--muted-foreground)]">
                               {new Date(t.createdAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
                             </div>
                           </div>
@@ -757,18 +757,18 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {homeSeg === "vault" && (
         <div ref={studioVaultSectionRef as any} className="space-y-4 animate-in fade-in duration-300">
           {/* Header Banner */}
-          <div className="bg-gradient-to-br from-[#1a1a1b] to-[#252528] border border-[#eec95f]/30 rounded-[20px] p-5 shadow-lg relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[var(--card)] to-[var(--card)] border border-[#eec95f]/30 rounded-[20px] p-5 shadow-lg relative overflow-hidden">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="p-1.5 rounded-lg bg-[#eec95f]/15 text-[#eec95f]">
                     <ShieldCheck className="w-5 h-5" />
                   </span>
-                  <h3 className="text-base font-bold text-white tracking-tight">
+                  <h3 className="text-base font-bold text-foreground tracking-tight">
                     QLD Form 9 & Permanent Consent Vault
                   </h3>
                 </div>
-                <p className="text-xs text-[#9b9ba1] mt-1 max-w-[560px] leading-relaxed">
+                <p className="text-xs text-[var(--muted-foreground)] mt-1 max-w-[560px] leading-relaxed">
                   Queensland Infection Control & Health Audit Repository. Immutable digital procedure records, sterilizer logs, and medical disclosures stored permanently across all resident artists.
                 </p>
               </div>
@@ -782,21 +782,21 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-white/10">
-              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Total Records</div>
-                <div className="text-lg font-bold text-white mt-0.5">{vaultData?.stats.totalRecords || 0}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-foreground/10">
+              <div className="bg-[var(--background)]/60 rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase tracking-[1.2px]">Total Records</div>
+                <div className="text-lg font-bold text-foreground mt-0.5">{vaultData?.stats.totalRecords || 0}</div>
               </div>
-              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">QLD Form 9 Logs</div>
+              <div className="bg-[var(--background)]/60 rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase tracking-[1.2px]">QLD Form 9 Logs</div>
                 <div className="text-lg font-bold text-[#eec95f] mt-0.5">{vaultData?.stats.form9Count || 0}</div>
               </div>
-              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Consent Forms</div>
+              <div className="bg-[var(--background)]/60 rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase tracking-[1.2px]">Consent Forms</div>
                 <div className="text-lg font-bold text-[#57c97e] mt-0.5">{vaultData?.stats.consentCount || 0}</div>
               </div>
-              <div className="bg-[#141416]/60 rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] font-semibold text-[#8d8d93] uppercase tracking-[1.2px]">Audit Status</div>
+              <div className="bg-[var(--background)]/60 rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] font-semibold text-[var(--muted-foreground)] uppercase tracking-[1.2px]">Audit Status</div>
                 <div className="text-lg font-bold text-[#57c97e] mt-0.5 flex items-center gap-1">
                   <span>100% Valid</span>
                   <CheckCircle2 className="w-4 h-4 text-[#57c97e]" />
@@ -808,13 +808,13 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
           {/* Search & Filters */}
           <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
             <div className="relative flex-1 max-w-[380px]">
-              <Search className="w-4 h-4 text-[#8d8d93] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[var(--muted-foreground)] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={vaultSearch}
                 onChange={(e) => setVaultSearch(e.target.value)}
                 placeholder="Search client, artist or procedure..."
-                className="w-full bg-[#1a1a1b] border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder:text-[#6e6e75] outline-none focus:border-[#eec95f]"
+                className="w-full bg-[var(--card)] border border-foreground/10 rounded-full pl-9 pr-4 py-2 text-xs text-foreground placeholder:text-[var(--muted-foreground)] outline-none focus:border-[#eec95f]"
               />
             </div>
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
@@ -830,7 +830,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                   className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
                     vaultFilter === f.id
                       ? "bg-[#eec95f] text-[#1c1503] font-bold"
-                      : "bg-[#1a1a1b] text-[#9a9aa0] border border-white/5 hover:text-white"
+                      : "bg-[var(--card)] text-[var(--muted-foreground)] border border-foreground/5 hover:text-foreground"
                   }`}
                 >
                   {f.label}
@@ -867,21 +867,21 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               }).map((r: any) => (
                 <div
                   key={r.id}
-                  className="bg-[#1a1a1b] border border-white/[0.07] rounded-[16px] p-4 flex items-center justify-between gap-3 hover:border-white/20 transition-all"
+                  className="bg-[var(--card)] border border-foreground/[0.07] rounded-[16px] p-4 flex items-center justify-between gap-3 hover:border-foreground/20 transition-all"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#eec95f] shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-foreground/5 border border-foreground/10 flex items-center justify-center text-[#eec95f] shrink-0">
                       <FileText className="w-5 h-5" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white truncate">{r.title}</span>
+                        <span className="text-sm font-bold text-foreground truncate">{r.title}</span>
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#2e2a4d] text-[#b3a7f5] uppercase">
                           {r.recordType === "form_9" ? "Form 9" : r.recordType === "medical_release" ? "Medical" : "Consent"}
                         </span>
                       </div>
-                      <div className="text-xs text-[#9b9ba1] mt-0.5 truncate">
-                        Client: <strong className="text-white">{r.clientName}</strong> · Artist: {r.artistName}
+                      <div className="text-xs text-[var(--muted-foreground)] mt-0.5 truncate">
+                        Client: <strong className="text-foreground">{r.clientName}</strong> · Artist: {r.artistName}
                       </div>
                     </div>
                   </div>
@@ -891,17 +891,17 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       <span>Signed</span>
                       <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
-                    <div className="text-[11px] text-[#8d8d93] mt-0.5">
+                    <div className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
                       {new Date(r.signedAt).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="border border-dashed border-white/10 rounded-[18px] p-10 text-center text-[#8d8d93] text-sm">
+              <div className="border border-dashed border-foreground/10 rounded-[18px] p-10 text-center text-[var(--muted-foreground)] text-sm">
                 <ShieldCheck className="w-8 h-8 text-[#eec95f] mx-auto mb-2 opacity-60" />
-                <p className="font-semibold text-white">No vault records found</p>
-                <p className="text-xs text-[#6e6e75] mt-1">
+                <p className="font-semibold text-foreground">No vault records found</p>
+                <p className="text-xs text-[var(--muted-foreground)] mt-1">
                   Signed procedure logs and consent forms from all resident artists automatically archive here.
                 </p>
               </div>
@@ -915,14 +915,14 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {/* ══════════════════════════════════════════════ */}
       {homeSeg === "suppliers" && (
         <div ref={studioSuppliersAreaRef as any} className="space-y-4 animate-in fade-in duration-300">
-          <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[20px] p-5 mb-2">
+          <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[20px] p-5 mb-2">
             <div className="flex items-center gap-3">
               <span className="p-2 rounded-xl bg-[#eec95f]/15 text-[#eec95f]">
                 <Package className="w-5 h-5" />
               </span>
               <div>
-                <h3 className="text-base font-bold text-white">Wholesale Studio Procurement</h3>
-                <p className="text-xs text-[#9b9ba1] mt-0.5">
+                <h3 className="text-base font-bold text-foreground">Wholesale Studio Procurement</h3>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
                   Order bulk gloves, needles, ink, and shop barrier film billed directly to the studio's verified Stripe payment method.
                 </p>
               </div>
@@ -939,34 +939,34 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {detArtist && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setDetArtistId(null)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center gap-3.5 mb-4.5">
               <div className="w-13 h-13 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-base shrink-0">
                 {(detArtist.user?.name || "RA").slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold text-white truncate">{detArtist.user?.name}</h3>
-                <p className="text-xs text-[#9b9ba1] truncate">{detArtist.specialties || "Resident Artist"}</p>
+                <h3 className="text-lg font-bold text-foreground truncate">{detArtist.user?.name}</h3>
+                <p className="text-xs text-[var(--muted-foreground)] truncate">{detArtist.specialties || "Resident Artist"}</p>
               </div>
               <button
                 onClick={() => setDetArtistId(null)}
-                className="w-9 h-9 rounded-full bg-[#353539] text-[#e8e8ea] flex items-center justify-center text-sm"
+                className="w-9 h-9 rounded-full bg-[var(--secondary)] text-[var(--foreground)] flex items-center justify-center text-sm"
               >
                 ✕
               </button>
             </div>
 
             {/* 8 Metrics Grid */}
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
               LAST 30 DAYS
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
-              <div className="bg-[#2f2f33] rounded-xl p-3">
-                <div className="text-[10px] font-semibold tracking-[1px] text-[#8d8d93]">REVENUE</div>
-                <div className="text-base font-bold text-white mt-1">{formatMoney(detArtist.grossCents || 0)}</div>
+              <div className="bg-[var(--secondary)] rounded-xl p-3">
+                <div className="text-[10px] font-semibold tracking-[1px] text-[var(--muted-foreground)]">REVENUE</div>
+                <div className="text-base font-bold text-foreground mt-1">{formatMoney(detArtist.grossCents || 0)}</div>
               </div>
-              <div className="bg-[#2f2f33] rounded-xl p-3">
-                <div className="text-[10px] font-semibold tracking-[1px] text-[#8d8d93]">STUDIO CUT</div>
+              <div className="bg-[var(--secondary)] rounded-xl p-3">
+                <div className="text-[10px] font-semibold tracking-[1px] text-[var(--muted-foreground)]">STUDIO CUT</div>
                 <div className="text-base font-bold text-[#eec95f] mt-1">
                   {formatMoney(
                     detArtist.paymentModel === "rent"
@@ -975,21 +975,21 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                   )}
                 </div>
               </div>
-              <div className="bg-[#2f2f33] rounded-xl p-3">
-                <div className="text-[10px] font-semibold tracking-[1px] text-[#8d8d93]">UTILIZATION</div>
-                <div className="text-base font-bold text-white mt-1">{detArtist.utilizationPct || 70}%</div>
+              <div className="bg-[var(--secondary)] rounded-xl p-3">
+                <div className="text-[10px] font-semibold tracking-[1px] text-[var(--muted-foreground)]">UTILIZATION</div>
+                <div className="text-base font-bold text-foreground mt-1">{detArtist.utilizationPct || 70}%</div>
               </div>
-              <div className="bg-[#2f2f33] rounded-xl p-3">
-                <div className="text-[10px] font-semibold tracking-[1px] text-[#8d8d93]">BOOKINGS</div>
-                <div className="text-base font-bold text-white mt-1">{detArtist.bookingsCount || 0}</div>
+              <div className="bg-[var(--secondary)] rounded-xl p-3">
+                <div className="text-[10px] font-semibold tracking-[1px] text-[var(--muted-foreground)]">BOOKINGS</div>
+                <div className="text-base font-bold text-foreground mt-1">{detArtist.bookingsCount || 0}</div>
               </div>
             </div>
 
             {/* Payment Model Terms Editor */}
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
               PAYMENT MODEL
             </div>
-            <div className="flex bg-[#2f2f33] rounded-full p-1 mb-4">
+            <div className="flex bg-[var(--secondary)] rounded-full p-1 mb-4">
               {(["commission", "rent", "dynamic", "none"] as const).map((m) => (
                 <button
                   key={m}
@@ -1004,7 +1004,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                     })
                   }
                   className={`flex-1 py-2 rounded-full text-xs font-medium capitalize transition-all ${
-                    detArtist.paymentModel === m ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+                    detArtist.paymentModel === m ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
                   }`}
                 >
                   {m === "rent" ? "Chair rent" : m}
@@ -1024,13 +1024,13 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       commissionPct: Math.max(5, (detArtist.commissionPct || 30) - 5),
                     })
                   }
-                  className="w-11 h-11 rounded-full border border-white/15 text-white text-xl"
+                  className="w-11 h-11 rounded-full border border-foreground/15 text-foreground text-xl"
                 >
                   −
                 </button>
                 <div className="text-center min-w-[130px]">
                   <div className="text-3xl font-bold text-[#eec95f]">{detArtist.commissionPct || 30}%</div>
-                  <div className="text-xs text-[#8d8d93]">of gross · settled at payout</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">of gross · settled at payout</div>
                 </div>
                 <button
                   onClick={() =>
@@ -1041,7 +1041,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       commissionPct: Math.min(70, (detArtist.commissionPct || 30) + 5),
                     })
                   }
-                  className="w-11 h-11 rounded-full border border-white/15 text-white text-xl"
+                  className="w-11 h-11 rounded-full border border-foreground/15 text-foreground text-xl"
                 >
                   +
                 </button>
@@ -1059,7 +1059,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       weeklyChairRentCents: Math.max(10000, (detArtist.weeklyChairRentCents || 35000) - 2500),
                     })
                   }
-                  className="w-11 h-11 rounded-full border border-white/15 text-white text-xl"
+                  className="w-11 h-11 rounded-full border border-foreground/15 text-foreground text-xl"
                 >
                   −
                 </button>
@@ -1067,7 +1067,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                   <div className="text-3xl font-bold text-[#eec95f]">
                     ${Math.round((detArtist.weeklyChairRentCents || 35000) / 100)}
                   </div>
-                  <div className="text-xs text-[#8d8d93]">per week · taken from payouts</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">per week · taken from payouts</div>
                 </div>
                 <button
                   onClick={() =>
@@ -1078,7 +1078,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                       weeklyChairRentCents: Math.min(150000, (detArtist.weeklyChairRentCents || 35000) + 2500),
                     })
                   }
-                  className="w-11 h-11 rounded-full border border-white/15 text-white text-xl"
+                  className="w-11 h-11 rounded-full border border-foreground/15 text-foreground text-xl"
                 >
                   +
                 </button>
@@ -1112,15 +1112,15 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {rmOpen && detArtist && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-6 font-['Poppins',system-ui,sans-serif]">
           <div onClick={() => setRmOpen(false)} className="fixed inset-0 bg-black/75 backdrop-blur-sm" />
-          <div className="relative z-10 bg-[#1f1f22] border border-white/10 rounded-[20px] p-6 max-w-[380px] w-full text-white shadow-2xl animate-in zoom-in-95">
+          <div className="relative z-10 bg-[var(--card)] border border-foreground/10 rounded-[20px] p-6 max-w-[380px] w-full text-foreground shadow-2xl animate-in zoom-in-95">
             <h3 className="text-lg font-bold">Remove {detArtist.user?.name}?</h3>
-            <p className="text-xs text-[#9b9ba1] leading-relaxed mt-2">
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mt-2">
               They keep their Dept of Tattoo Services account and every client they've booked — clients belong to the artist, not the studio. Calendar sync ends, metrics lock, and future splits stop.
             </p>
             <div className="flex gap-2.5 mt-5">
               <button
                 onClick={() => setRmOpen(false)}
-                className="flex-1 py-3 rounded-full border border-white/15 text-sm hover:border-white/30"
+                className="flex-1 py-3 rounded-full border border-foreground/15 text-sm hover:border-foreground/30"
               >
                 Cancel
               </button>
@@ -1142,27 +1142,27 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {invOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setInvOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-semibold tracking-[2px] text-[var(--foreground)] uppercase">
                 INVITE ARTIST
               </div>
-              <button onClick={() => setInvOpen(false)} className="text-[#e8e8ea] text-sm p-2">✕</button>
+              <button onClick={() => setInvOpen(false)} className="text-[var(--foreground)] text-sm p-2">✕</button>
             </div>
-            <p className="text-xs text-[#9b9ba1] leading-relaxed mb-4">
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mb-4">
               The invite lands in the artist's Dept Messages with your proposed terms — they approve in-app. On approval their calendar syncs, metrics unlock, and you can route inquiries. Clients stay theirs if they ever leave.
             </p>
 
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
               TERMS — SENT FOR ARTIST APPROVAL
             </div>
-            <div className="flex bg-[#2f2f33] rounded-full p-1 mb-3">
+            <div className="flex bg-[var(--secondary)] rounded-full p-1 mb-3">
               {(["commission", "rent", "dynamic", "none"] as const).map((m) => (
                 <button
                   key={m}
                   onClick={() => setInvModel(m)}
                   className={`flex-1 py-2 rounded-full text-xs font-medium capitalize transition-all ${
-                    invModel === m ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+                    invModel === m ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
                   }`}
                 >
                   {m === "rent" ? "Chair rent" : m}
@@ -1171,29 +1171,29 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
             </div>
 
             {invModel === "commission" && (
-              <div className="bg-[#2f2f33] rounded-xl p-3.5 flex items-center justify-between mb-4">
+              <div className="bg-[var(--secondary)] rounded-xl p-3.5 flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-sm font-semibold text-white">Commission %</div>
-                  <div className="text-xs text-[#9b9ba1]">Taken at every payout</div>
+                  <div className="text-sm font-semibold text-foreground">Commission %</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">Taken at every payout</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setInvComm(Math.max(5, invComm - 5))} className="w-8 h-8 rounded-full border border-white/15 text-white">−</button>
+                  <button onClick={() => setInvComm(Math.max(5, invComm - 5))} className="w-8 h-8 rounded-full border border-foreground/15 text-foreground">−</button>
                   <span className="text-base font-bold text-[#eec95f] min-w-[44px] text-center">{invComm}%</span>
-                  <button onClick={() => setInvComm(Math.min(70, invComm + 5))} className="w-8 h-8 rounded-full border border-white/15 text-white">+</button>
+                  <button onClick={() => setInvComm(Math.min(70, invComm + 5))} className="w-8 h-8 rounded-full border border-foreground/15 text-foreground">+</button>
                 </div>
               </div>
             )}
 
             {invModel === "rent" && (
-              <div className="bg-[#2f2f33] rounded-xl p-3.5 flex items-center justify-between mb-4">
+              <div className="bg-[var(--secondary)] rounded-xl p-3.5 flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-sm font-semibold text-white">Weekly Chair Rent</div>
-                  <div className="text-xs text-[#9b9ba1]">Deducted from payouts</div>
+                  <div className="text-sm font-semibold text-foreground">Weekly Chair Rent</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">Deducted from payouts</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setInvRent(Math.max(100, invRent - 25))} className="w-8 h-8 rounded-full border border-white/15 text-white">−</button>
+                  <button onClick={() => setInvRent(Math.max(100, invRent - 25))} className="w-8 h-8 rounded-full border border-foreground/15 text-foreground">−</button>
                   <span className="text-base font-bold text-[#eec95f] min-w-[64px] text-center">${invRent}/wk</span>
-                  <button onClick={() => setInvRent(Math.min(1500, invRent + 25))} className="w-8 h-8 rounded-full border border-white/15 text-white">+</button>
+                  <button onClick={() => setInvRent(Math.min(1500, invRent + 25))} className="w-8 h-8 rounded-full border border-foreground/15 text-foreground">+</button>
                 </div>
               </div>
             )}
@@ -1203,7 +1203,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
                 value={invEmail}
                 onChange={(e) => setInvEmail(e.target.value)}
                 placeholder="artist@email.com"
-                className="flex-1 bg-[#2f2f33] border border-white/10 rounded-full px-4 py-3 text-white text-sm outline-none focus:border-[#eec95f]"
+                className="flex-1 bg-[var(--secondary)] border border-foreground/10 rounded-full px-4 py-3 text-foreground text-sm outline-none focus:border-[#eec95f]"
               />
               <button
                 onClick={() =>
@@ -1233,28 +1233,28 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
       {wOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setWOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-semibold tracking-[2px] text-[var(--foreground)] uppercase">
                 WITHDRAW
               </div>
-              <button onClick={() => setWOpen(false)} className="text-[#e8e8ea] text-sm p-2">✕</button>
+              <button onClick={() => setWOpen(false)} className="text-[var(--foreground)] text-sm p-2">✕</button>
             </div>
 
-            <div className="bg-[#2f2f33] rounded-2xl p-4.5 space-y-2.5">
+            <div className="bg-[var(--secondary)] rounded-2xl p-4.5 space-y-2.5">
               <div className="flex justify-between text-sm">
-                <span className="text-[#c9c9ce]">Studio balance</span>
-                <span className="text-white font-semibold">{formatMoney(balanceCents, true)}</span>
+                <span className="text-[var(--foreground)]">Studio balance</span>
+                <span className="text-foreground font-semibold">{formatMoney(balanceCents, true)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#c9c9ce]">Stripe processing fee (1.7% + $0.30)</span>
+                <span className="text-[var(--foreground)]">Stripe processing fee (1.7% + $0.30)</span>
                 <span className="text-[#e26565]">−{formatMoney(stripeFeeCents, true)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-[#c9c9ce]">Platform fee (1.8%)</span>
+                <span className="text-[var(--foreground)]">Platform fee (1.8%)</span>
                 <span className="text-[#e26565]">−{formatMoney(platformFeeCents, true)}</span>
               </div>
-              <div className="flex justify-between text-xs text-[#8d8d93] pb-2 border-b border-white/10">
+              <div className="flex justify-between text-xs text-[var(--muted-foreground)] pb-2 border-b border-foreground/10">
                 <span>Total studio fee (3.5%)</span>
                 <span>−{formatMoney(totalFeeCents, true)}</span>
               </div>
@@ -1264,7 +1264,7 @@ export function StudioHome({ onNavigateTab, onOpenNotes }: StudioHomeProps) {
               </div>
             </div>
 
-            <p className="text-xs text-[#8d8d93] mt-3 leading-relaxed">
+            <p className="text-xs text-[var(--muted-foreground)] mt-3 leading-relaxed">
               Withdrawn from the studio Stripe balance to your linked bank account. Arrives in 1–2 business days.
             </p>
 

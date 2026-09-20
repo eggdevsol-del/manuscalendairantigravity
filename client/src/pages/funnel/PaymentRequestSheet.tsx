@@ -20,16 +20,16 @@ import { format } from "date-fns";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 
 const DT = {
-  bg: "#0d0d0e",
-  card: "#131314",
-  cardBorder: "rgba(255,255,255,.08)",
-  textPrimary: "rgba(255,255,255,.95)",
-  textSecondary: "rgba(255,255,255,.55)",
-  textTertiary: "rgba(255,255,255,.36)",
-  green: "#34c759",
-  amber: "#f2ca5c",
-  amberOnColor: "#1a1a00",
-  track: "rgba(255,255,255,.08)",
+  bg: "var(--background)",
+  card: "var(--card)",
+  cardBorder: "color-mix(in srgb, var(--foreground) 8%, transparent)",
+  textPrimary: "color-mix(in srgb, var(--foreground) 95%, transparent)",
+  textSecondary: "color-mix(in srgb, var(--foreground) 55%, transparent)",
+  textTertiary: "color-mix(in srgb, var(--foreground) 36%, transparent)",
+  green: "var(--color-success)",
+  amber: "var(--primary)",
+  amberOnColor: "var(--primary-foreground)",
+  track: "color-mix(in srgb, var(--foreground) 8%, transparent)",
 };
 
 function formatCents(cents: number): string {
@@ -85,7 +85,7 @@ function SuccessScreen({ info, onClose }: { info: any; onClose: () => void }) {
           onClick={onClose}
           style={{
             marginTop: 24, width: "100%",
-            background: "rgba(255,255,255,.08)",
+            background: "color-mix(in srgb, var(--foreground) 8%, transparent)",
             border: `1px solid ${DT.cardBorder}`,
             borderRadius: 12, padding: "14px 20px",
             fontSize: 14, fontWeight: 600, color: DT.textPrimary,
@@ -304,7 +304,7 @@ export function PaymentRequestSheet() {
           ) : (
             <div style={{
               width: 56, height: 56, borderRadius: 14,
-              background: "rgba(255,255,255,.08)",
+              background: "color-mix(in srgb, var(--foreground) 8%, transparent)",
               display: "flex", alignItems: "center", justifyContent: "center",
               margin: "0 auto 16px",
               fontSize: 18, fontWeight: 600, color: DT.textSecondary,
@@ -324,7 +324,7 @@ export function PaymentRequestSheet() {
         {/* Session details card */}
         <div style={{ padding: "0 20px" }}>
           <div style={{
-            background: "rgba(255,255,255,.04)",
+            background: "color-mix(in srgb, var(--foreground) 4%, transparent)",
             border: `1px solid ${DT.cardBorder}`,
             borderRadius: 14, padding: "16px 18px",
           }}>

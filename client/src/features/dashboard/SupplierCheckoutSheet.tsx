@@ -28,16 +28,16 @@ import { toast } from "sonner";
 // ── Design Tokens ────────────────────────────────────────────
 
 const DT = {
-  bg: "#0d0d0e",
-  card: "#131314",
-  cardBorder: "rgba(255,255,255,.08)",
-  textPrimary: "rgba(255,255,255,.95)",
-  textSecondary: "rgba(255,255,255,.55)",
-  textTertiary: "rgba(255,255,255,.36)",
-  green: "#34c759",
-  amber: "#f2ca5c",
-  amberOnColor: "#1a1a00",
-  track: "rgba(255,255,255,.08)",
+  bg: "var(--background)",
+  card: "var(--card)",
+  cardBorder: "color-mix(in srgb, var(--foreground) 8%, transparent)",
+  textPrimary: "color-mix(in srgb, var(--foreground) 95%, transparent)",
+  textSecondary: "color-mix(in srgb, var(--foreground) 55%, transparent)",
+  textTertiary: "color-mix(in srgb, var(--foreground) 36%, transparent)",
+  green: "var(--color-success)",
+  amber: "var(--primary)",
+  amberOnColor: "var(--primary-foreground)",
+  track: "color-mix(in srgb, var(--foreground) 8%, transparent)",
 };
 
 function formatCents(cents: number, currency: string = "AUD"): string {

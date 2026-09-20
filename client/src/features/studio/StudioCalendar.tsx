@@ -186,12 +186,12 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
 
       {/* ── Scrollable Viewport Content ── */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
-        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+        <div className="max-w-[1060px] mx-auto w-full text-[var(--foreground)] [font-family:var(--ivory-body)]">
           {/* ── Navigation Bar ── */}
           <div className="flex items-center gap-2.5 mb-4 flex-wrap">
         <button
           onClick={() => setSelDate(new Date().toISOString().slice(0, 10))}
-          className="border-1.5 border-[#8a7434] text-white rounded-full px-4.5 py-2 text-sm font-medium hover:border-[#eec95f] transition-all"
+          className="border-1.5 border-[#8a7434] text-foreground rounded-full px-4.5 py-2 text-sm font-medium hover:border-[#eec95f] transition-all"
         >
           Today
         </button>
@@ -199,7 +199,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
         <div className="flex items-center gap-2 mx-auto">
           <button
             onClick={() => setSelDate(addDays(selDate, calView === "month" ? -30 : -7))}
-            className="w-9 h-9 rounded-full bg-[#2f2f33] text-white text-base flex items-center justify-center"
+            className="w-9 h-9 rounded-full bg-[var(--secondary)] text-foreground text-base flex items-center justify-center"
           >
             ‹
           </button>
@@ -208,7 +208,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
           </div>
           <button
             onClick={() => setSelDate(addDays(selDate, calView === "month" ? 30 : 7))}
-            className="w-9 h-9 rounded-full bg-[#2f2f33] text-white text-base flex items-center justify-center"
+            className="w-9 h-9 rounded-full bg-[var(--secondary)] text-foreground text-base flex items-center justify-center"
           >
             ›
           </button>
@@ -220,7 +220,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
               key={v}
               onClick={() => setCalView(v)}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all ${
-                calView === v ? "bg-[#48484c] text-white" : "text-[#8d8d93] hover:text-white"
+                calView === v ? "bg-[var(--secondary)] text-foreground" : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
               {v}
@@ -236,7 +236,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
           className={`shrink-0 rounded-full px-4 py-2 text-xs font-medium border transition-all ${
             calFilter === "all"
               ? "bg-[#f2cf63] text-[#1c1503] border-[#f2cf63]"
-              : "bg-[#1a1a1b] text-[#b8b8bd] border-white/10"
+              : "bg-[var(--card)] text-[var(--muted-foreground)] border-foreground/10"
           }`}
         >
           All artists
@@ -247,8 +247,8 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
             onClick={() => setCalFilter(a.userId)}
             className={`shrink-0 rounded-full px-4 py-2 text-xs font-medium border transition-all ${
               calFilter === a.userId
-                ? "bg-[#eec95f]/20 text-white border-[#eec95f]"
-                : "bg-[#1a1a1b] text-[#b8b8bd] border-white/10"
+                ? "bg-[#eec95f]/20 text-foreground border-[#eec95f]"
+                : "bg-[var(--card)] text-[var(--muted-foreground)] border-foreground/10"
             }`}
           >
             {a.user?.name?.split(" ")[0]}
@@ -269,14 +269,14 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                 onClick={() => setSelDate(d.dateStr)}
                 className="text-center cursor-pointer py-1"
               >
-                <div className="text-xs text-[#8d8d93] mb-1.5">{d.dow}</div>
+                <div className="text-xs text-[var(--muted-foreground)] mb-1.5">{d.dow}</div>
                 <div
                   className={`w-11 h-11 mx-auto rounded-full flex items-center justify-center text-lg font-bold transition-all ${
                     d.isSelected
-                      ? "bg-[#eec95f] text-[#17130a]"
+                      ? "bg-[#eec95f] text-[var(--background)]"
                       : d.isToday
                         ? "text-[#eec95f]"
-                        : "text-[#e8e8ea] hover:bg-white/5"
+                        : "text-[var(--foreground)] hover:bg-foreground/5"
                   }`}
                 >
                   {d.dnum}
@@ -289,7 +289,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
           </div>
 
           <div className="mb-4">
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-2xl font-bold text-foreground">
               {DOWL[selDateObj.getDay()]}, {selDateObj.getDate()} {MON[selDateObj.getMonth()]}
             </h3>
           </div>
@@ -301,8 +301,8 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                 <div key={g.artistId} className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#eec95f]" />
-                    <span className="text-sm font-semibold text-[#c9c9ce]">{g.artistName}</span>
-                    <span className="text-xs text-[#6e6e75]">{g.events.length} booking{g.events.length > 1 ? "s" : ""}</span>
+                    <span className="text-sm font-semibold text-[var(--foreground)]">{g.artistName}</span>
+                    <span className="text-xs text-[var(--muted-foreground)]">{g.events.length} booking{g.events.length > 1 ? "s" : ""}</span>
                   </div>
 
                   <div className="space-y-2">
@@ -314,10 +314,10 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                       >
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-bold text-[#eec95f] truncate">{e.service}</div>
-                          <div className="text-xs text-[#b9b9be] mt-0.5">{e.time} · {e.hrs} hrs</div>
+                          <div className="text-xs text-[var(--muted-foreground)] mt-0.5">{e.time} · {e.hrs} hrs</div>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="text-xs font-semibold text-white truncate max-w-[120px]">{e.client}</div>
+                          <div className="text-xs font-semibold text-foreground truncate max-w-[120px]">{e.client}</div>
                           <div className="text-[11px] text-[#eec95f] mt-0.5 font-semibold">Inspect ›</div>
                         </div>
                       </div>
@@ -327,7 +327,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
               ))}
             </div>
           ) : (
-            <div className="border-1.5 border-dashed border-white/15 rounded-[16px] p-9 text-center text-[#6e6e75] text-sm">
+            <div className="border-1.5 border-dashed border-foreground/15 rounded-[16px] p-9 text-center text-[var(--muted-foreground)] text-sm">
               No bookings on this day
             </div>
           )}
@@ -343,8 +343,8 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
             <div />
             {weekDates.map((h) => (
               <div key={h.dateStr} className="text-center">
-                <div className="text-[11.5px] text-[#8d8d93]">{h.dow}</div>
-                <div className={`text-sm font-bold ${h.isToday ? "text-[#eec95f]" : "text-[#e8e8ea]"}`}>
+                <div className="text-[11.5px] text-[var(--muted-foreground)]">{h.dow}</div>
+                <div className={`text-sm font-bold ${h.isToday ? "text-[#eec95f]" : "text-[var(--foreground)]"}`}>
                   {h.dnum}
                 </div>
               </div>
@@ -356,7 +356,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
               <div key={a.id} className="grid grid-cols-[96px_repeat(7,1fr)] gap-1.5 items-center">
                 <div className="flex items-center gap-1.5 min-w-0 pr-1">
                   <span className="w-2 h-2 rounded-full bg-[#eec95f] shrink-0" />
-                  <span className="text-xs text-[#c9c9ce] truncate">{a.user?.name?.split(" ")[0]}</span>
+                  <span className="text-xs text-[var(--foreground)] truncate">{a.user?.name?.split(" ")[0]}</span>
                 </div>
 
                 {weekDates.map((w) => {
@@ -371,8 +371,8 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                         setSelDate(w.dateStr);
                         setCalFilter(a.userId);
                       }}
-                      className={`h-11 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all border border-white/5 ${
-                        bookedHrs > 0 ? "bg-[#eec95f]/25 text-white hover:bg-[#eec95f]/40" : "bg-[#1a1a1b] text-[#3c3c41]"
+                      className={`h-11 rounded-lg flex items-center justify-center text-xs font-bold cursor-pointer transition-all border border-foreground/5 ${
+                        bookedHrs > 0 ? "bg-[#eec95f]/25 text-foreground hover:bg-[#eec95f]/40" : "bg-[var(--card)] text-[var(--secondary)]"
                       }`}
                     >
                       {bookedHrs > 0 ? `${bookedHrs}h` : ""}
@@ -382,7 +382,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
               </div>
             ))}
           </div>
-          <div className="text-xs text-[#6e6e75] mt-3">Tap any cell to jump to that artist's day schedule</div>
+          <div className="text-xs text-[var(--muted-foreground)] mt-3">Tap any cell to jump to that artist's day schedule</div>
         </div>
       )}
 
@@ -391,7 +391,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
       {/* ══════════════════════════════════════════════ */}
       {calView === "month" && (
         <div className="space-y-2">
-          <div className="grid grid-cols-7 gap-1.5 text-center text-xs text-[#8d8d93]">
+          <div className="grid grid-cols-7 gap-1.5 text-center text-xs text-[var(--muted-foreground)]">
             {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
               <div key={i}>{d}</div>
             ))}
@@ -413,11 +413,11 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                     setCalView("day");
                     setSelDate(cellDateStr);
                   }}
-                  className={`min-h-[58px] rounded-xl p-2 cursor-pointer bg-[#1a1a1b] border border-white/5 transition-all ${
+                  className={`min-h-[58px] rounded-xl p-2 cursor-pointer bg-[var(--card)] border border-foreground/5 transition-all ${
                     isCurrentMonth ? "opacity-100" : "opacity-30"
                   } hover:border-[#eec95f]/50`}
                 >
-                  <div className="text-xs font-semibold text-[#e8e8ea]">{cellDate.getDate()}</div>
+                  <div className="text-xs font-semibold text-[var(--foreground)]">{cellDate.getDate()}</div>
                   {hasAppts && (
                     <div className="flex gap-1 mt-1.5 items-center">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#eec95f]" />
@@ -438,7 +438,7 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
       {selectedAppt && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setSelectedAppt(null)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5 text-[#f2f2f3]">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[88vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5 text-[var(--foreground)]">
             {/* Header */}
             <div className="flex items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-3 min-w-0">
@@ -446,24 +446,24 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
                   {selectedAppt.artistName.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="text-lg font-bold text-white truncate">{selectedAppt.artistName}</h3>
+                  <h3 className="text-lg font-bold text-foreground truncate">{selectedAppt.artistName}</h3>
                   <span className="text-xs font-semibold text-[#eec95f]">{selectedAppt.chairBadge}</span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedAppt(null)}
-                className="w-9 h-9 rounded-full bg-[#353539] text-[#e8e8ea] hover:text-white flex items-center justify-center text-sm"
+                className="w-9 h-9 rounded-full bg-[var(--secondary)] text-[var(--foreground)] hover:text-foreground flex items-center justify-center text-sm"
               >
                 ✕
               </button>
             </div>
 
             {/* Project & Session Info */}
-            <div className="bg-[#1e1e20] border border-white/10 rounded-2xl p-4.5 mb-3.5 space-y-3">
+            <div className="bg-[var(--card)] border border-foreground/10 rounded-2xl p-4.5 mb-3.5 space-y-3">
               <div className="flex justify-between items-start gap-2">
                 <div>
-                  <div className="text-[11px] font-semibold tracking-[1.5px] text-[#8d8d93] uppercase">PROJECT & SERVICE</div>
-                  <h4 className="text-base font-bold text-white mt-0.5">{selectedAppt.service}</h4>
+                  <div className="text-[11px] font-semibold tracking-[1.5px] text-[var(--muted-foreground)] uppercase">PROJECT & SERVICE</div>
+                  <h4 className="text-base font-bold text-foreground mt-0.5">{selectedAppt.service}</h4>
                 </div>
                 <span className="text-xs px-2.5 py-1 rounded-full bg-[#2e2a4d] text-[#b3a7f5] font-semibold">
                   Session {selectedAppt.sessionNumber} of {selectedAppt.totalSessions}
@@ -472,82 +472,82 @@ export function StudioCalendar({ initialDate, initialArtistId }: StudioCalendarP
 
               {/* Progress Bar */}
               <div>
-                <div className="flex justify-between text-xs text-[#9b9ba1] mb-1">
+                <div className="flex justify-between text-xs text-[var(--muted-foreground)] mb-1">
                   <span>Project Progress</span>
-                  <span className="font-semibold text-white">50% Completed</span>
+                  <span className="font-semibold text-foreground">50% Completed</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#323236] overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-[var(--secondary)] overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-[#eec95f] to-[#f6d97e] rounded-full w-1/2" />
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-xs text-[#c9c9ce]">
+              <div className="pt-2 border-t border-foreground/5 flex items-center justify-between text-xs text-[var(--foreground)]">
                 <div className="flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-[#8d8d93]" />
-                  <span>Client: <strong className="text-white">{selectedAppt.client}</strong></span>
+                  <User className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
+                  <span>Client: <strong className="text-foreground">{selectedAppt.client}</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-[#8d8d93]" />
+                  <Clock className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
                   <span>{selectedAppt.date} · {selectedAppt.time} ({selectedAppt.hrs}h)</span>
                 </div>
               </div>
             </div>
 
             {/* Design Brief Summary */}
-            <div className="bg-[#1e1e20] border border-white/10 rounded-2xl p-4 mb-3.5">
-              <div className="text-[11px] font-semibold tracking-[1.5px] text-[#8d8d93] uppercase mb-1.5 flex items-center gap-1.5">
+            <div className="bg-[var(--card)] border border-foreground/10 rounded-2xl p-4 mb-3.5">
+              <div className="text-[11px] font-semibold tracking-[1.5px] text-[var(--muted-foreground)] uppercase mb-1.5 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#eec95f]" />
                 <span>Auto-Brief / Studio Notes</span>
               </div>
-              <p className="text-xs text-[#d8d8dc] leading-relaxed">
+              <p className="text-xs text-[var(--foreground)] leading-relaxed">
                 {selectedAppt.notes}
               </p>
             </div>
 
             {/* Financial Breakdown Grid */}
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
               FINANCIAL BREAKDOWN
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3.5">
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Total Quote</div>
-                <div className="text-sm font-bold text-white mt-0.5">{formatMoney(selectedAppt.priceCents)}</div>
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Total Quote</div>
+                <div className="text-sm font-bold text-foreground mt-0.5">{formatMoney(selectedAppt.priceCents)}</div>
               </div>
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Deposit Paid</div>
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Deposit Paid</div>
                 <div className="text-sm font-bold text-[#57c97e] mt-0.5">{formatMoney(selectedAppt.depositCents)}</div>
               </div>
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Remaining</div>
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Remaining</div>
                 <div className="text-sm font-bold text-[#eec95f] mt-0.5">
                   {formatMoney(Math.max(0, selectedAppt.priceCents - selectedAppt.depositCents))}
                 </div>
               </div>
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5">
-                <div className="text-[10px] text-[#8d8d93] uppercase font-semibold">Studio Cut</div>
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5">
+                <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">Studio Cut</div>
                 <div className="text-sm font-bold text-[#eec95f] mt-0.5">{formatMoney(selectedAppt.studioCutCents)}</div>
               </div>
             </div>
 
             {/* Compliance Badges */}
-            <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+            <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
               LEGAL & HEALTH AUDIT STATUS
             </div>
             <div className="space-y-1.5 mb-4">
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5 flex items-center justify-between">
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <ShieldCheck className="w-4 h-4 text-[#57c97e]" />
-                  <span className="text-xs font-semibold text-white">Queensland Form 9 Procedure Log</span>
+                  <span className="text-xs font-semibold text-foreground">Queensland Form 9 Procedure Log</span>
                 </div>
                 <span className="text-xs font-bold text-[#57c97e] flex items-center gap-1">
                   <span>Archived in Vault</span>
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </span>
               </div>
-              <div className="bg-[#1e1e20] rounded-xl p-3 border border-white/5 flex items-center justify-between">
+              <div className="bg-[var(--card)] rounded-xl p-3 border border-foreground/5 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <FileText className="w-4 h-4 text-[#57c97e]" />
-                  <span className="text-xs font-semibold text-white">Digital Client Consent</span>
+                  <span className="text-xs font-semibold text-foreground">Digital Client Consent</span>
                 </div>
                 <span className="text-xs font-bold text-[#57c97e] flex items-center gap-1">
                   <span>Signed & Stored</span>

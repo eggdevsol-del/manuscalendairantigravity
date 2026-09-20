@@ -3,23 +3,23 @@
 // ═══════════════════════════════════════════════════════════
 
 export const typography = {
-  display:     'font-["DM_Sans"] text-[48px] font-bold leading-[1.05] tracking-[-0.02em] uppercase',
-  h1:          'font-["DM_Sans"] text-[28px] font-bold leading-[1.15] tracking-[-0.01em]',
-  h2:          'font-["DM_Sans"] text-[22px] font-bold leading-[1.2]',
-  h3:          'font-["DM_Sans"] text-[18px] font-bold leading-[1.25]',
-  body:        'font-["DM_Sans"] text-[14px] font-normal leading-[1.5]',
-  bodySm:      'font-["DM_Sans"] text-[12px] font-normal leading-[1.4]',
-  label:       'font-["DM_Sans"] text-[11px] font-normal leading-[1.3]',
-  labelValue:  'font-["DM_Sans"] text-[13px] font-semibold leading-[1.3]',
-  eyebrow:     'font-["DM_Sans"] text-[13px] font-normal leading-[1.3] text-muted-foreground',
-  micro:       'font-["DM_Sans"] text-[11px] font-medium',
-  nano:        'font-["DM_Sans"] text-[10px] font-bold uppercase tracking-wider',
-  pico:        'font-["DM_Sans"] text-[9px] font-bold uppercase tracking-widest',
-  sectionLabel:'font-["DM_Sans"] text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground',
-  price:       'font-["DM_Sans"] text-[15px] font-bold leading-[1.2]',
-  tag:         'font-["DM_Sans"] text-[11px] font-medium',
-  link:        'font-["DM_Sans"] text-[13px] font-medium text-primary',
-  cta:         'font-["DM_Sans"] text-[15px] font-semibold leading-[1.0]',
+  display:     '[font-family:var(--ivory-display)] text-[48px] font-bold leading-[1.05] tracking-[-0.02em] uppercase',
+  h1:          '[font-family:var(--ivory-display)] text-[28px] font-bold leading-[1.15] tracking-[-0.01em]',
+  h2:          '[font-family:var(--ivory-display)] text-[22px] font-bold leading-[1.2]',
+  h3:          '[font-family:var(--ivory-display)] text-[18px] font-bold leading-[1.25]',
+  body:        '[font-family:var(--ivory-body)] text-[14px] font-normal leading-[1.5]',
+  bodySm:      '[font-family:var(--ivory-body)] text-[12px] font-normal leading-[1.4]',
+  label:       '[font-family:var(--ivory-body)] text-[11px] font-normal leading-[1.3]',
+  labelValue:  '[font-family:var(--ivory-body)] text-[13px] font-semibold leading-[1.3]',
+  eyebrow:     '[font-family:var(--ivory-body)] text-[13px] font-normal leading-[1.3] text-muted-foreground',
+  micro:       '[font-family:var(--ivory-body)] text-[11px] font-medium',
+  nano:        '[font-family:var(--ivory-body)] text-[10px] font-bold uppercase tracking-wider',
+  pico:        '[font-family:var(--ivory-body)] text-[9px] font-bold uppercase tracking-widest',
+  sectionLabel:'[font-family:var(--ivory-body)] text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground',
+  price:       '[font-family:var(--ivory-body)] text-[15px] font-bold leading-[1.2]',
+  tag:         '[font-family:var(--ivory-body)] text-[11px] font-medium',
+  link:        '[font-family:var(--ivory-body)] text-[13px] font-medium text-primary',
+  cta:         '[font-family:var(--ivory-body)] text-[15px] font-semibold leading-[1.0]',
 } as const;
 
 export const statusColor = {
@@ -87,7 +87,7 @@ export const tokens = {
   // 1. Backgrounds
   // Exact match from Calendar/Dashboard
   bgGradient:
-    "fixed inset-0 w-full h-[100dvh] bg-[radial-gradient(circle_at_top_right,rgba(var(--primary-rgb),0.15),rgba(27,27,27,1)_60%)]",
+    "fixed inset-0 w-full h-[100dvh] bg-background",
 
   // 2. Sheets
   // Main sheet (Dashboard, Calendar)
@@ -110,9 +110,9 @@ export const tokens = {
     scrimBg: "rgba(0,0,0,.62)",
     /** Sheet panel styles */
     panel: "fixed left-0 right-0 flex flex-col",
-    panelBg: "#1B1B1B",
+    panelBg: "var(--popover)",
     panelRadius: 20,
-    panelBorder: "1px solid rgba(255,255,255,0.12)",
+    panelBorder: "1px solid var(--border)",
     maxHeight: "85vh",
   },
 
@@ -134,7 +134,7 @@ export const tokens = {
   // 3. Cards
   // CalendAIr DS v3.0 — surface token (bg-card = #1A1A1E dark / #FFFFFF light)
   card: {
-    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[16px]", // radius-md = 16px
+    base: "group relative overflow-hidden transition-all duration-[150ms] border border-border/30 rounded-[16px] shadow-[var(--ivory-shadow)]", // radius-md = 16px
     bg: "bg-card text-card-foreground hover:bg-card/90", // bg-surface in both themes
     bgAccent:
       "bg-gradient-to-r from-primary/20 to-primary/5 hover:from-primary/25 hover:to-primary/10",
@@ -231,7 +231,7 @@ export const tokens = {
 
   // 6. Typography — CalendAIr DS v3.0
   header: {
-    pageTitle: "text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
+    pageTitle: "ivory-heading text-[28px] font-bold leading-[1.2] text-foreground tracking-tight",
     pageSubtitle: "ml-2 text-[14px] font-normal text-muted-foreground",
     sectionTitle:
       "text-[11px] font-[500] text-muted-foreground tracking-[0.08em] uppercase",
@@ -356,14 +356,14 @@ export const tokens = {
     emptyStateIcon: 'w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-muted-foreground',
     emptyStateText: 'text-[14px] text-muted-foreground max-w-[240px]',
     // Progress bar — reusable track/fill for balance, completion, etc.
-    progressTrack: 'w-full rounded-full bg-[rgba(255,255,255,0.09)] overflow-hidden',
+    progressTrack: 'w-full rounded-full bg-secondary overflow-hidden',
     progressFill: 'h-full rounded-full bg-[#4ade80] transition-[width] duration-[450ms] ease-[cubic-bezier(0.2,0.7,0.3,1)]',
     progressTrackLg: 'h-[5px]',
     progressTrackSm: 'h-[3px]',
     // Toast — green success notification
     toast: 'fixed left-5 right-5 bottom-[88px] bg-[#1f3a2a] border border-[rgba(74,222,128,0.3)] rounded-[12px] px-4 py-3 text-[13.5px] font-medium text-[#c8f5da] z-50 animate-in fade-in slide-in-from-bottom-2',
     // Overflow menu — popover anchored to trigger
-    overflowMenu: 'absolute bg-[#232325] border border-[rgba(255,255,255,0.1)] rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.55)] z-50',
+    overflowMenu: 'absolute bg-popover border border-[rgba(255,255,255,0.1)] rounded-[12px] p-1.5 min-w-[170px] shadow-[0_18px_40px_rgba(0,0,0,0.55)] z-50',
     overflowItem: 'w-full text-left px-3 py-2.5 rounded-[8px] text-[14px] font-normal text-foreground/80 hover:bg-[rgba(255,255,255,0.08)] transition-colors cursor-pointer',
   },
 
@@ -701,46 +701,46 @@ export const tokens = {
 // ═══════════════════════════════════════════════════════════
 
 export const surfaces = {
-  pageBg: "#111112",
-  card: "#1a1a1b",
-  cardAlt: "#131314",
-  cardHighlight: "#1A1A1E",
-  row: "#1a1a1b",
-  rowHover: "#212123",
-  quietRow: "rgba(255,255,255,.02)",
-  sheet: "#1c1c1e",
-  sheetPanel: "#1B1B1B",
-  menu: "#232325",
-  avatarFallback: "#2a2a2c",
-  factPanel: "rgba(255,255,255,.03)",
+  pageBg: "var(--background)",
+  card: "var(--card)",
+  cardAlt: "var(--secondary)",
+  cardHighlight: "var(--accent)",
+  row: "var(--card)",
+  rowHover: "var(--secondary)",
+  quietRow: "var(--secondary)",
+  sheet: "var(--popover)",
+  sheetPanel: "var(--popover)",
+  menu: "var(--popover)",
+  avatarFallback: "var(--muted)",
+  factPanel: "var(--secondary)",
   scrim: "rgba(0,0,0,.62)",
-  segmentPill: "rgba(255,255,255,.1)",
+  segmentPill: "var(--accent)",
 } as const;
 
 export const borders = {
-  hairline: "rgba(255,255,255,.06)",
-  hairlineLight: "rgba(255,255,255,.08)",
-  subtle: "rgba(255,255,255,.12)",
-  emphasisAmber: "rgba(242,202,92,.3)",
-  amberBorder40: "rgba(242,202,92,.4)",
-  progressTrack: "rgba(255,255,255,.09)",
+  hairline: "var(--border)",
+  hairlineLight: "var(--border)",
+  subtle: "var(--border)",
+  emphasisAmber: "var(--border)",
+  amberBorder40: "var(--border)",
+  progressTrack: "var(--secondary)",
 } as const;
 
 export const colors = {
-  textPrimary: "#f5f5f4",
-  textSecondary: "rgba(255,255,255,.62)",
-  textTertiary: "rgba(255,255,255,.58)",
-  mutedGrey: "#7A7A7A",
-  green: "#4ade80",
-  amber: "#f2ca5c",
-  amberGold: "#F8D057",
-  amberHover: "#f6d472",
-  amberOnColor: "#1a1a12",
-  destructive: "#ef4444",
-  destructiveText: "#f87171",
-  cancelRed: "#ff5050",
-  toastBg: "#1f3a2a",
-  toastText: "#c8f5da",
+  textPrimary: "var(--foreground)",
+  textSecondary: "var(--muted-foreground)",
+  textTertiary: "var(--muted-foreground)",
+  mutedGrey: "var(--muted-foreground)",
+  green: "var(--color-success)",
+  amber: "var(--primary)",
+  amberGold: "var(--primary)",
+  amberHover: "var(--accent-foreground)",
+  amberOnColor: "var(--primary-foreground)",
+  destructive: "var(--destructive)",
+  destructiveText: "var(--destructive)",
+  cancelRed: "var(--destructive)",
+  toastBg: "var(--color-status-success-bg)",
+  toastText: "var(--color-success)",
 } as const;
 
 export const radii = {

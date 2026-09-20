@@ -97,15 +97,15 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
 
       {/* ── Scrollable Viewport Content ── */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
-        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+        <div className="max-w-[1060px] mx-auto w-full text-[var(--foreground)] [font-family:var(--ivory-body)]">
           {/* ── Studio Identity Block ── */}
           <div className="text-center py-3 pb-6">
         <div className="w-21 h-21 rounded-full mx-auto flex items-center justify-center font-bold text-2xl bg-gradient-to-br from-[#e7c563] to-[#8f6f2c] text-[#231b06] shadow-lg">
           {(myStudio?.name || "ST").slice(0, 2).toUpperCase()}
         </div>
-        <h2 className="text-xl font-bold text-white mt-3">{myStudio?.name || "Multi-artist Studio"}</h2>
-        <p className="text-xs text-[#9b9ba1] mt-0.5">@{myStudio?.instagramHandle || "studio"}</p>
-        <p className="text-xs text-[#9b9ba1] mt-1">{myStudio?.address || "Studio Space"}</p>
+        <h2 className="text-xl font-bold text-foreground mt-3">{myStudio?.name || "Multi-artist Studio"}</h2>
+        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">@{myStudio?.instagramHandle || "studio"}</p>
+        <p className="text-xs text-[var(--muted-foreground)] mt-1">{myStudio?.address || "Studio Space"}</p>
 
         <div className="flex gap-2 flex-wrap justify-center mt-3.5">
           {["Realism", "Fine Line", "Blackwork", "Neo-trad", "Anime", "Geometric"].map((t) => (
@@ -119,80 +119,80 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
       <div className="max-w-[640px] mx-auto space-y-5">
         {/* ── BUSINESS SECTION ── */}
         <div>
-          <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+          <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
             BUSINESS
           </div>
-          <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] divide-y divide-white/5 overflow-hidden">
+          <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] divide-y divide-white/5 overflow-hidden">
             {/* Defaults */}
-            <div onClick={() => setDfOpen(true)} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
+            <div onClick={() => setDfOpen(true)} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-foreground/[0.02]">
               <div className="w-9 h-9 rounded-full bg-[#eec95f]/15 text-[#eec95f] flex items-center justify-center font-bold text-sm shrink-0">
                 %
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Commission & chair rent</div>
-                <div className="text-xs text-[#9b9ba1]">
+                <div className="text-sm font-semibold text-foreground">Commission & chair rent</div>
+                <div className="text-xs text-[var(--muted-foreground)]">
                   Defaults: {defComm}% or ${defRent}/wk
                 </div>
               </div>
-              <span className="text-[#6e6e75] font-mono">›</span>
+              <span className="text-[var(--muted-foreground)] font-mono">›</span>
             </div>
 
             {/* Payment processing */}
-            <div className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
+            <div className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-foreground/[0.02]">
               <div className="w-9 h-9 rounded-full bg-[#57c97e]/15 text-[#57c97e] flex items-center justify-center font-bold text-sm shrink-0">
                 $
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Payment processing</div>
-                <div className="text-xs text-[#9b9ba1]">Stripe Connect active ✓</div>
+                <div className="text-sm font-semibold text-foreground">Payment processing</div>
+                <div className="text-xs text-[var(--muted-foreground)]">Stripe Connect active ✓</div>
               </div>
               <span className="w-2 h-2 rounded-full bg-[#57c97e] mr-1" />
-              <span className="text-[#6e6e75] font-mono">›</span>
+              <span className="text-[var(--muted-foreground)] font-mono">›</span>
             </div>
 
             {/* Money passcode */}
-            <div onClick={() => setPpOpen(true)} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
+            <div onClick={() => setPpOpen(true)} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-foreground/[0.02]">
               <div className="w-9 h-9 rounded-full bg-[#e26565]/15 text-[#e26565] flex items-center justify-center text-sm shrink-0">
                 🔒
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Money passcode</div>
-                <div className="text-xs text-[#9b9ba1]">
+                <div className="text-sm font-semibold text-foreground">Money passcode</div>
+                <div className="text-xs text-[var(--muted-foreground)]">
                   {hasPasscode ? "On — Money locks when you leave it" : "Off — set a passcode to lock Money"}
                 </div>
               </div>
-              <span className="text-[#6e6e75] font-mono">›</span>
+              <span className="text-[var(--muted-foreground)] font-mono">›</span>
             </div>
 
             {/* Studio booking link */}
-            <div onClick={handleCopyLink} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
+            <div onClick={handleCopyLink} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-foreground/[0.02]">
               <div className="w-9 h-9 rounded-full bg-[#a98ff2]/15 text-[#a98ff2] flex items-center justify-center text-sm shrink-0">
                 ⚯
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Studio booking link</div>
-                <div className="text-xs text-[#9b9ba1] truncate">
+                <div className="text-sm font-semibold text-foreground">Studio booking link</div>
+                <div className="text-xs text-[var(--muted-foreground)] truncate">
                   tattoi.app/s/{myStudio?.publicSlug || "studio"}
                 </div>
               </div>
-              <span className="text-[#6e6e75] font-mono">›</span>
+              <span className="text-[var(--muted-foreground)] font-mono">›</span>
             </div>
           </div>
         </div>
 
         {/* ── PREFERENCES SECTION ── */}
         <div>
-          <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+          <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
             PREFERENCES
           </div>
-          <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] divide-y divide-white/5 overflow-hidden">
+          <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] divide-y divide-white/5 overflow-hidden">
             <div className="flex items-center gap-3.5 p-4">
               <div className="w-9 h-9 rounded-full bg-[#e8a15c]/15 text-[#e8a15c] flex items-center justify-center text-sm shrink-0">
                 ✎
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Auto-brief new leads</div>
-                <div className="text-xs text-[#9b9ba1]">Summarise inquiries before routing</div>
+                <div className="text-sm font-semibold text-foreground">Auto-brief new leads</div>
+                <div className="text-xs text-[var(--muted-foreground)]">Summarise inquiries before routing</div>
               </div>
               <button
                 onClick={() => {
@@ -201,7 +201,7 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
                   updateDefaultsMutation.mutate({ studioId, autoBriefEnabled: next });
                 }}
                 className={`w-12 h-7 rounded-full transition-colors relative ${
-                  autoBriefOn ? "bg-[#f2cf63]" : "bg-[#48484c]"
+                  autoBriefOn ? "bg-[#f2cf63]" : "bg-[var(--secondary)]"
                 }`}
               >
                 <div
@@ -216,19 +216,19 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
 
         {/* ── SYSTEM SECTION ── */}
         <div>
-          <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+          <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
             SYSTEM
           </div>
-          <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[18px] overflow-hidden">
-            <div onClick={onOpenNotes} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-white/[0.02]">
-              <div className="w-9 h-9 rounded-full bg-white/10 text-[#c9c9ce] flex items-center justify-center text-xs font-bold shrink-0">
+          <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[18px] overflow-hidden">
+            <div onClick={onOpenNotes} className="flex items-center gap-3.5 p-4 cursor-pointer hover:bg-foreground/[0.02]">
+              <div className="w-9 h-9 rounded-full bg-foreground/10 text-[var(--foreground)] flex items-center justify-center text-xs font-bold shrink-0">
                 i
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">Design notes</div>
-                <div className="text-xs text-[#9b9ba1]">Architecture, settlement mechanics & rules</div>
+                <div className="text-sm font-semibold text-foreground">Design notes</div>
+                <div className="text-xs text-[var(--muted-foreground)]">Architecture, settlement mechanics & rules</div>
               </div>
-              <span className="text-[#6e6e75] font-mono">›</span>
+              <span className="text-[var(--muted-foreground)] font-mono">›</span>
             </div>
           </div>
 
@@ -236,7 +236,7 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
           <div className="pt-2">
             <button
               onClick={() => setLocation("/dashboard")}
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#28282b] border border-white/10 hover:border-white/20 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99]"
+              className="w-full py-3.5 px-4 rounded-2xl bg-[var(--card)] border border-foreground/10 hover:border-foreground/20 text-foreground text-sm font-semibold flex items-center justify-center gap-2 transition-all shadow-sm active:scale-[0.99]"
             >
               <span>←</span>
               <span>Switch to Artist Account</span>
@@ -253,32 +253,32 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
       {dfOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setDfOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-3.5">
-              <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-semibold tracking-[2px] text-[var(--foreground)] uppercase">
                 STUDIO DEFAULTS
               </div>
-              <button onClick={() => setDfOpen(false)} className="text-[#e8e8ea] text-sm p-2">✕</button>
+              <button onClick={() => setDfOpen(false)} className="text-[var(--foreground)] text-sm p-2">✕</button>
             </div>
 
-            <div className="bg-[#2f2f33] rounded-2xl p-4 flex items-center gap-3 mb-3">
+            <div className="bg-[var(--secondary)] rounded-2xl p-4 flex items-center gap-3 mb-3">
               <div className="flex-1">
-                <div className="text-sm font-semibold text-white">Default commission</div>
-                <div className="text-xs text-[#9b9ba1]">For newly invited artists</div>
+                <div className="text-sm font-semibold text-foreground">Default commission</div>
+                <div className="text-xs text-[var(--muted-foreground)]">For newly invited artists</div>
               </div>
-              <button onClick={() => setDefComm(Math.max(5, defComm - 5))} className="w-9 h-9 rounded-full border border-white/15 text-white">−</button>
+              <button onClick={() => setDefComm(Math.max(5, defComm - 5))} className="w-9 h-9 rounded-full border border-foreground/15 text-foreground">−</button>
               <span className="text-base font-bold text-[#eec95f] min-w-[48px] text-center">{defComm}%</span>
-              <button onClick={() => setDefComm(Math.min(70, defComm + 5))} className="w-9 h-9 rounded-full border border-white/15 text-white">+</button>
+              <button onClick={() => setDefComm(Math.min(70, defComm + 5))} className="w-9 h-9 rounded-full border border-foreground/15 text-foreground">+</button>
             </div>
 
-            <div className="bg-[#2f2f33] rounded-2xl p-4 flex items-center gap-3 mb-4">
+            <div className="bg-[var(--secondary)] rounded-2xl p-4 flex items-center gap-3 mb-4">
               <div className="flex-1">
-                <div className="text-sm font-semibold text-white">Default chair rent</div>
-                <div className="text-xs text-[#9b9ba1]">Weekly · settled from payouts</div>
+                <div className="text-sm font-semibold text-foreground">Default chair rent</div>
+                <div className="text-xs text-[var(--muted-foreground)]">Weekly · settled from payouts</div>
               </div>
-              <button onClick={() => setDefRent(Math.max(100, defRent - 25))} className="w-9 h-9 rounded-full border border-white/15 text-white">−</button>
+              <button onClick={() => setDefRent(Math.max(100, defRent - 25))} className="w-9 h-9 rounded-full border border-foreground/15 text-foreground">−</button>
               <span className="text-base font-bold text-[#eec95f] min-w-[68px] text-center">${defRent}/wk</span>
-              <button onClick={() => setDefRent(Math.min(1500, defRent + 25))} className="w-9 h-9 rounded-full border border-white/15 text-white">+</button>
+              <button onClick={() => setDefRent(Math.min(1500, defRent + 25))} className="w-9 h-9 rounded-full border border-foreground/15 text-foreground">+</button>
             </div>
 
             <button
@@ -304,14 +304,14 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
       {ppOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setPpOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[13px] font-semibold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-semibold tracking-[2px] text-[var(--foreground)] uppercase">
                 MONEY PASSCODE
               </div>
-              <button onClick={() => setPpOpen(false)} className="text-[#e8e8ea] text-sm p-2">✕</button>
+              <button onClick={() => setPpOpen(false)} className="text-[var(--foreground)] text-sm p-2">✕</button>
             </div>
-            <p className="text-xs text-[#9b9ba1] leading-relaxed mb-4">
+            <p className="text-xs text-[var(--muted-foreground)] leading-relaxed mb-4">
               Locks the Money area and masks balances on Home. Anyone opening Money will need this passcode.
             </p>
 
@@ -322,7 +322,7 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
                 value={ppCurrent}
                 onChange={(e) => setPpCurrent(e.target.value)}
                 placeholder="Current passcode"
-                className="w-full bg-[#2f2f33] border border-white/10 rounded-full py-3 px-4 text-white text-sm tracking-[4px] text-center outline-none focus:border-[#eec95f] mb-2.5"
+                className="w-full bg-[var(--secondary)] border border-foreground/10 rounded-full py-3 px-4 text-foreground text-sm tracking-[4px] text-center outline-none focus:border-[#eec95f] mb-2.5"
               />
             )}
 
@@ -332,7 +332,7 @@ export function StudioProfile({ onNavigateHomeArtists, onOpenNotes }: StudioProf
               value={ppNew}
               onChange={(e) => setPpNew(e.target.value)}
               placeholder={hasPasscode ? "New passcode" : "Choose a passcode (4+ digits)"}
-              className="w-full bg-[#2f2f33] border border-white/10 rounded-full py-3 px-4 text-white text-sm tracking-[4px] text-center outline-none focus:border-[#eec95f]"
+              className="w-full bg-[var(--secondary)] border border-foreground/10 rounded-full py-3 px-4 text-foreground text-sm tracking-[4px] text-center outline-none focus:border-[#eec95f]"
             />
 
             <button

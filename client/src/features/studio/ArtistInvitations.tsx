@@ -54,7 +54,7 @@ export default function ArtistInvitations({ onBack }: { onBack: () => void }) {
                     </p>
                     <div className="flex gap-2">
                       <Button
-                        className="flex-1 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-white"
+                        className="flex-1 bg-[var(--color-success)] hover:bg-[var(--color-success)] text-foreground"
                         disabled={respondMutation.isPending}
                         onClick={() =>
                           respondMutation.mutate({

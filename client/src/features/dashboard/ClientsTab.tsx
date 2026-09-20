@@ -38,14 +38,14 @@ const DT = {
   avatarFallback: surfaces.avatarFallback,
   // Borders
   hairline: borders.hairline,
-  rowBorder: "rgba(255,255,255,.05)",
+  rowBorder: "color-mix(in srgb, var(--foreground) 5%, transparent)",
   rowBorderExpanded: borders.subtle,
   // Text
   textPrimary: colors.textPrimary,
   textSecondary: colors.textSecondary,
   textTertiary: colors.textTertiary,
-  textQuaternary: "rgba(255,255,255,.32)",
-  textMoney: "rgba(255,255,255,.7)",
+  textQuaternary: "color-mix(in srgb, var(--foreground) 32%, transparent)",
+  textMoney: "color-mix(in srgb, var(--foreground) 70%, transparent)",
   // Semantic
   green: colors.green,
   amber: colors.amber,
@@ -53,10 +53,10 @@ const DT = {
   amberOnColor: colors.amberOnColor,
   amberBorder: borders.amberBorder40,
   // Sheet selection
-  sheetSelected: "rgba(242,202,92,.13)",
-  sheetSelectedBorder: "rgba(242,202,92,.5)",
-  sheetUnselected: "rgba(255,255,255,.03)",
-  sheetUnselectedBorder: "rgba(255,255,255,.07)",
+  sheetSelected: "rgba(var(--primary-rgb),.13)",
+  sheetSelectedBorder: "rgba(var(--primary-rgb),.5)",
+  sheetUnselected: "color-mix(in srgb, var(--foreground) 3%, transparent)",
+  sheetUnselectedBorder: "color-mix(in srgb, var(--foreground) 7%, transparent)",
   // Toast
   toastBg: colors.toastBg,
   toastBorder: "rgba(74,222,128,.3)",
@@ -326,31 +326,31 @@ export function ClientsTab({ demoMode = false }: ClientsTabProps) {
   if (isLoading) {
     return (
       <div className="space-y-6 pb-40 animate-pulse">
-        <div className="relative px-1"><div className="h-[44px] rounded-[12px] bg-[rgba(255,255,255,.05)]" /></div>
-        <div className="px-1"><div className="h-5 w-20 rounded bg-[rgba(255,255,255,.06)] mb-4" /></div>
+        <div className="relative px-1"><div className="h-[44px] rounded-[12px] bg-[color-mix(in_srgb,_var(--foreground)_5%,_transparent)]" /></div>
+        <div className="px-1"><div className="h-5 w-20 rounded bg-[color-mix(in_srgb,_var(--foreground)_6%,_transparent)] mb-4" /></div>
         <div style={{ borderRadius: 18, background: DT.card, border: `1px solid ${DT.hairline}`, overflow: "hidden" }}>
           <div className="p-5 pb-[18px]" style={{ borderBottom: `1px solid ${DT.hairline}` }}>
             <div className="flex items-center gap-3.5">
-              <div className="w-[46px] h-[46px] rounded-[12px] bg-[rgba(255,255,255,.06)]" />
+              <div className="w-[46px] h-[46px] rounded-[12px] bg-[color-mix(in_srgb,_var(--foreground)_6%,_transparent)]" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 w-32 rounded bg-[rgba(255,255,255,.07)]" />
-                <div className="h-3 w-48 rounded bg-[rgba(255,255,255,.04)]" />
+                <div className="h-4 w-32 rounded bg-[color-mix(in_srgb,_var(--foreground)_7%,_transparent)]" />
+                <div className="h-3 w-48 rounded bg-[color-mix(in_srgb,_var(--foreground)_4%,_transparent)]" />
               </div>
             </div>
             <div className="mt-5 space-y-2">
-              <div className="h-3 w-20 rounded bg-[rgba(255,255,255,.04)]" />
-              <div className="h-8 w-28 rounded bg-[rgba(255,255,255,.06)]" />
+              <div className="h-3 w-20 rounded bg-[color-mix(in_srgb,_var(--foreground)_4%,_transparent)]" />
+              <div className="h-8 w-28 rounded bg-[color-mix(in_srgb,_var(--foreground)_6%,_transparent)]" />
             </div>
-            <div className="mt-3 h-[5px] rounded-full bg-[rgba(255,255,255,.05)]" />
+            <div className="mt-3 h-[5px] rounded-full bg-[color-mix(in_srgb,_var(--foreground)_5%,_transparent)]" />
           </div>
           <div className="px-5 pt-4 pb-0 space-y-[7px]">
             {[1,2,3,4].map(i => (
-              <div key={i} className="h-[62px] rounded-[13px] bg-[rgba(255,255,255,.03)]" />
+              <div key={i} className="h-[62px] rounded-[13px] bg-[color-mix(in_srgb,_var(--foreground)_3%,_transparent)]" />
             ))}
           </div>
           <div className="p-5 flex gap-2.5">
-            <div className="flex-[1.6] h-[46px] rounded-[12px] bg-[rgba(255,255,255,.06)]" />
-            <div className="flex-1 h-[46px] rounded-[12px] bg-[rgba(255,255,255,.04)]" />
+            <div className="flex-[1.6] h-[46px] rounded-[12px] bg-[color-mix(in_srgb,_var(--foreground)_6%,_transparent)]" />
+            <div className="flex-1 h-[46px] rounded-[12px] bg-[color-mix(in_srgb,_var(--foreground)_4%,_transparent)]" />
           </div>
         </div>
       </div>
@@ -610,7 +610,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               <div style={{
                 width: 46, height: 46, borderRadius: 12, background: DT.avatarFallback,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 15, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)", flexShrink: 0,
+                fontSize: 15, fontWeight: 600, lineHeight: 1, color: "color-mix(in srgb, var(--foreground) 60%, transparent)", flexShrink: 0,
               }}>
                 {group.clientName.split(" ").map(n => n[0]).join("").slice(0, 2)}
               </div>
@@ -646,10 +646,10 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               <div style={{
                 width: 34, height: 34, borderRadius: 9,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                color: "rgba(255,255,255,.5)", fontSize: 15,
+                color: "color-mix(in srgb, var(--foreground) 50%, transparent)", fontSize: 15,
                 transition: "background .16s",
               }}
-                className="hover:bg-[rgba(255,255,255,.07)]"
+                className="hover:bg-[color-mix(in_srgb,_var(--foreground)_7%,_transparent)]"
               >
                 •••
               </div>
@@ -758,7 +758,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                               </div>
                               <div style={{
                                 fontSize: 12, fontWeight: 400, lineHeight: 1.4,
-                                color: "rgba(255,255,255,.36)", marginTop: 2, whiteSpace: "nowrap",
+                                color: "color-mix(in srgb, var(--foreground) 36%, transparent)", marginTop: 2, whiteSpace: "nowrap",
                               }}>
                                 {time}
                               </div>
@@ -828,9 +828,9 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                   <button
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
-                                      flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
+                                      flexShrink: 0, border: "1px solid color-mix(in srgb, var(--foreground) 16%, transparent)",
                                       borderRadius: 10, padding: "11px 14px", background: "none",
-                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "color-mix(in srgb, var(--foreground) 80%, transparent)", cursor: "pointer",
                                     }}
                                   >
                                     Reschedule
@@ -838,9 +838,9 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                   <button
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
-                                      flexShrink: 0, border: "1px solid rgba(255,255,255,.16)",
+                                      flexShrink: 0, border: "1px solid color-mix(in srgb, var(--foreground) 16%, transparent)",
                                       borderRadius: 10, padding: "11px 14px", background: "none",
-                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.8)", cursor: "pointer",
+                                      fontSize: 13.5, fontWeight: 400, lineHeight: 1, color: "color-mix(in srgb, var(--foreground) 80%, transparent)", cursor: "pointer",
                                     }}
                                   >
                                     Note
@@ -894,13 +894,13 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                                 padding: "11px 14px", borderRadius: 13, background: DT.completedRow,
                               }}
                             >
-                              <div style={{ width: 94, flexShrink: 0, fontSize: 13.5, fontWeight: 500, lineHeight: 1.2, color: "rgba(255,255,255,.55)" }}>
+                              <div style={{ width: 94, flexShrink: 0, fontSize: 13.5, fontWeight: 500, lineHeight: 1.2, color: "color-mix(in srgb, var(--foreground) 55%, transparent)" }}>
                                 {date}
                               </div>
                               <div style={{ flex: 1, fontSize: 12.5, fontWeight: 400, lineHeight: 1.3, color: DT.textTertiary }}>
                                 {time}
                               </div>
-                              <span style={{ fontSize: 12.5, fontWeight: 400, lineHeight: 1, color: "rgba(255,255,255,.4)" }}>
+                              <span style={{ fontSize: 12.5, fontWeight: 400, lineHeight: 1, color: "color-mix(in srgb, var(--foreground) 40%, transparent)" }}>
                                 {formatCents(session.paidCents)} paid
                               </span>
                             </div>
@@ -946,7 +946,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               href={`sms:${group.clientPhone}`}
               style={{
                 flex: 1, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center",
-                border: "1px solid rgba(255,255,255,.18)", borderRadius: 12, padding: 15,
+                border: "1px solid color-mix(in srgb, var(--foreground) 18%, transparent)", borderRadius: 12, padding: 15,
                 fontSize: 15.5, fontWeight: 500, lineHeight: 1, color: DT.textPrimary,
                 textDecoration: "none", cursor: "pointer",
               }}
@@ -967,7 +967,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
               transition={{ duration: 0.12 }}
               style={{
                 position: "absolute", top: 60, right: 18,
-                background: DT.menu, border: "1px solid rgba(255,255,255,.1)",
+                background: DT.menu, border: "1px solid color-mix(in srgb, var(--foreground) 10%, transparent)",
                 borderRadius: 12, padding: 6, minWidth: 170,
                 boxShadow: "0 18px 40px rgba(0,0,0,.55)", zIndex: 5,
               }}
@@ -987,7 +987,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                       fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
                       textDecoration: "none", cursor: "pointer",
                     }}
-                    className="hover:bg-[rgba(255,255,255,.08)]"
+                    className="hover:bg-[color-mix(in_srgb,_var(--foreground)_8%,_transparent)]"
                   >
                     {item.label}
                   </a>
@@ -1001,7 +1001,7 @@ function ProjectCard({ group, index, onViewProfile, demoMode, demoRef }: Project
                       fontSize: 14, fontWeight: 400, lineHeight: 1, color: DT.textPrimary,
                       cursor: "pointer",
                     }}
-                    className="hover:bg-[rgba(255,255,255,.08)]"
+                    className="hover:bg-[color-mix(in_srgb,_var(--foreground)_8%,_transparent)]"
                   >
                     {item.label}
                   </button>
@@ -1088,7 +1088,7 @@ function PaymentSheet({ group, preSelectedSessionId, onClose, onConfirm, demoMod
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%", background: DT.sheet,
-          borderTop: "1px solid rgba(255,255,255,.1)",
+          borderTop: "1px solid color-mix(in srgb, var(--foreground) 10%, transparent)",
           borderRadius: "20px 20px 0 0", padding: "22px 20px 20px",
         }}
       >
@@ -1194,7 +1194,7 @@ function ClientProfile({ client, onBack }: ClientProfileProps) {
           <div style={{
             width: 64, height: 64, borderRadius: 12, background: DT.avatarFallback,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 600, lineHeight: 1, color: "rgba(255,255,255,.6)",
+            fontSize: 20, fontWeight: 600, lineHeight: 1, color: "color-mix(in srgb, var(--foreground) 60%, transparent)",
           }}>
             {client.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
           </div>

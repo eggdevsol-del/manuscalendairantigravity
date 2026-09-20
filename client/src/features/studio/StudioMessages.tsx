@@ -119,31 +119,31 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
 
       {/* ── Scrollable Viewport Content ── */}
       <div className="flex-1 overflow-y-auto mobile-scroll px-4 sm:px-6 pt-2 pb-32">
-        <div className="max-w-[1060px] mx-auto w-full text-[#f2f2f3] font-['DM_Sans',system-ui,sans-serif]">
+        <div className="max-w-[1060px] mx-auto w-full text-[var(--foreground)] [font-family:var(--ivory-body)]">
           {/* ── 2-Pane or Single Column Grid ── */}
           <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-4 items-start">
         {/* LEFT COLUMN: LIST */}
         <div className={hasSelection ? "hidden md:block" : "block"}>
           {/* Search Box */}
-          <div className="flex items-center gap-2.5 bg-[#1a1a1b] border border-white/[0.07] rounded-full py-3 px-4.5 mb-3.5">
-            <span className="text-[#6e6e75] text-base">⌕</span>
+          <div className="flex items-center gap-2.5 bg-[var(--card)] border border-foreground/[0.07] rounded-full py-3 px-4.5 mb-3.5">
+            <span className="text-[var(--muted-foreground)] text-base">⌕</span>
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search conversations..."
-              className="flex-1 bg-transparent border-none outline-none text-white text-sm"
+              className="flex-1 bg-transparent border-none outline-none text-foreground text-sm"
             />
           </div>
 
           {/* Segment: Studio Inbox vs Artists */}
-          <div className="flex bg-[#1a1a1b] rounded-full p-1 mb-4">
+          <div className="flex bg-[var(--card)] rounded-full p-1 mb-4">
             <button
               onClick={() => {
                 setMsgSeg("inbox");
                 setSelThreadAid(null);
               }}
               className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all ${
-                msgSeg === "inbox" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+                msgSeg === "inbox" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
               Studio inbox
@@ -154,7 +154,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                 setSelLeadId(null);
               }}
               className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-all ${
-                msgSeg === "artists" ? "bg-[#48484c] text-white shadow" : "text-[#9a9aa0] hover:text-white"
+                msgSeg === "artists" ? "bg-[var(--secondary)] text-foreground shadow" : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
               Artists
@@ -177,19 +177,19 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                       setSelLeadId(r.id);
                       setSelThreadAid(null);
                     }}
-                    className={`bg-[#1a1a1b] border rounded-[18px] p-3.5 sm:p-4 flex items-center gap-3 cursor-pointer transition-all ${
-                      isSelected ? "border-[#eec95f]" : "border-white/[0.07] hover:border-white/20"
+                    className={`bg-[var(--card)] border rounded-[18px] p-3.5 sm:p-4 flex items-center gap-3 cursor-pointer transition-all ${
+                      isSelected ? "border-[#eec95f]" : "border-foreground/[0.07] hover:border-foreground/20"
                     }`}
                   >
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#e7c563] to-[#8f6f2c] text-[#231b06] flex items-center justify-center font-bold text-sm shrink-0">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-semibold text-white truncate">{r.clientName}</div>
-                      <div className="text-xs text-[#9b9ba1] truncate">{r.projectType || "Tattoo Inquiry"}</div>
+                      <div className="text-base font-semibold text-foreground truncate">{r.clientName}</div>
+                      <div className="text-xs text-[var(--muted-foreground)] truncate">{r.projectType || "Tattoo Inquiry"}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-[11px] text-[#8d8d93] mb-1">
+                      <div className="text-[11px] text-[var(--muted-foreground)] mb-1">
                         {new Date(r.createdAt || Date.now()).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
                       </div>
                       <span
@@ -204,7 +204,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
               })}
 
               {filteredLeads.length === 0 && (
-                <div className="border border-dashed border-white/10 rounded-2xl p-8 text-center text-[#6e6e75] text-xs">
+                <div className="border border-dashed border-foreground/10 rounded-2xl p-8 text-center text-[var(--muted-foreground)] text-xs">
                   No inquiries in the studio inbox
                 </div>
               )}
@@ -226,20 +226,20 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                       setSelThreadAid(a.userId);
                       setSelLeadId(null);
                     }}
-                    className={`bg-[#1a1a1b] border rounded-[18px] p-3.5 sm:p-4 flex items-center gap-3 cursor-pointer transition-all ${
-                      isSelected ? "border-[#eec95f]" : "border-white/[0.07] hover:border-white/20"
+                    className={`bg-[var(--card)] border rounded-[18px] p-3.5 sm:p-4 flex items-center gap-3 cursor-pointer transition-all ${
+                      isSelected ? "border-[#eec95f]" : "border-foreground/[0.07] hover:border-foreground/20"
                     }`}
                   >
                     <div className="w-12 h-12 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-sm shrink-0">
                       {initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-base font-semibold text-white truncate">{name}</div>
-                      <div className="text-xs text-[#9b9ba1] truncate capitalize">
+                      <div className="text-base font-semibold text-foreground truncate">{name}</div>
+                      <div className="text-xs text-[var(--muted-foreground)] truncate capitalize">
                         {a.paymentModel} settlement · weekly payout
                       </div>
                     </div>
-                    <div className="text-[11px] text-[#8d8d93] shrink-0">Active</div>
+                    <div className="text-[11px] text-[var(--muted-foreground)] shrink-0">Active</div>
                   </div>
                 );
               })}
@@ -250,17 +250,17 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
         {/* RIGHT COLUMN: THREAD DETAIL PANE */}
         <div className={!hasSelection ? "hidden md:block" : "block"}>
           {!hasSelection ? (
-            <div className="border-1.5 border-dashed border-white/10 rounded-[20px] p-16 text-center text-[#6e6e75] text-sm">
+            <div className="border-1.5 border-dashed border-foreground/10 rounded-[20px] p-16 text-center text-[var(--muted-foreground)] text-sm">
               Select a conversation
             </div>
           ) : selLead ? (
             /* Lead Thread Pane */
-            <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[20px] overflow-hidden">
+            <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[20px] overflow-hidden">
               {/* Header */}
-              <div className="flex items-center gap-3 p-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-3 p-4 border-b border-foreground/[0.06]">
                 <button
                   onClick={() => setSelLeadId(null)}
-                  className="md:hidden w-9 h-9 rounded-full bg-[#2f2f33] text-[#e8e8ea] flex items-center justify-center text-sm"
+                  className="md:hidden w-9 h-9 rounded-full bg-[var(--secondary)] text-[var(--foreground)] flex items-center justify-center text-sm"
                 >
                   ←
                 </button>
@@ -268,8 +268,8 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                   {(selLead.clientName || "CL").slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-base font-bold text-white truncate">{selLead.clientName}</div>
-                  <div className="text-xs text-[#9b9ba1] truncate">Studio inquiry · {selLead.clientEmail || selLead.clientPhone}</div>
+                  <div className="text-base font-bold text-foreground truncate">{selLead.clientName}</div>
+                  <div className="text-xs text-[var(--muted-foreground)] truncate">Studio inquiry · {selLead.clientEmail || selLead.clientPhone}</div>
                 </div>
                 <span
                   className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border"
@@ -284,10 +284,10 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
 
               {/* Lead Brief Box */}
               <div className="p-4.5 pb-2">
-                <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+                <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
                   LEAD BRIEF
                 </div>
-                <p className="text-sm leading-relaxed text-[#d8d8dc]">
+                <p className="text-sm leading-relaxed text-[var(--foreground)]">
                   {selLead.clientName} is inquiring about a {selLead.projectType || "custom tattoo"}. Budget estimated at $
                   {((selLead.estimatedValue || 45000) / 100).toFixed(0)}.
                 </p>
@@ -299,7 +299,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
 
               {/* Message & Status Panel */}
               <div className="p-4.5 pt-2">
-                <div className="bg-[#28282b] rounded-2xl rounded-tl-sm p-3.5 max-w-[520px] text-sm text-[#e2e2e6] leading-relaxed mb-3">
+                <div className="bg-[var(--card)] rounded-2xl rounded-tl-sm p-3.5 max-w-[520px] text-sm text-[var(--foreground)] leading-relaxed mb-3">
                   {selLead.description || `Inquiry for ${selLead.projectType || "custom tattoo"}${selLead.placement ? ` on ${selLead.placement}` : ""}${selLead.size ? ` (${selLead.size})` : ""}.`}
                 </div>
 
@@ -318,11 +318,11 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                 )}
 
                 {selLead.status === "referred" && (
-                  <div className="bg-[#1a1a1b] border border-white/10 rounded-2xl p-4.5 mt-3 space-y-2">
-                    <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase">
+                  <div className="bg-[var(--card)] border border-foreground/10 rounded-2xl p-4.5 mt-3 space-y-2">
+                    <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
                       REFERRAL SENT
                     </div>
-                    <div className="text-base font-bold text-white">Recommended to resident artist</div>
+                    <div className="text-base font-bold text-foreground">Recommended to resident artist</div>
                     <div className="bg-[#e8a15c]/12 border border-[#e8a15c]/50 text-[#e8a15c] rounded-xl py-2.5 text-center text-xs font-medium">
                       Waiting for artist to confirm
                     </div>
@@ -331,12 +331,12 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
               </div>
 
               {/* Input Bar */}
-              <div className="flex items-center gap-2.5 p-3.5 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2.5 p-3.5 border-t border-foreground/[0.06]">
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 bg-[#28282b] border border-white/[0.08] rounded-full py-3 px-4.5 text-white text-sm outline-none focus:border-[#eec95f]"
+                  className="flex-1 bg-[var(--card)] border border-foreground/[0.08] rounded-full py-3 px-4.5 text-foreground text-sm outline-none focus:border-[#eec95f]"
                 />
                 <button
                   onClick={() => {
@@ -352,11 +352,11 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
             </div>
           ) : (
             /* Artist Thread Pane */
-            <div className="bg-[#1a1a1b] border border-white/[0.07] rounded-[20px] overflow-hidden">
-              <div className="flex items-center gap-3 p-4 border-b border-white/[0.06]">
+            <div className="bg-[var(--card)] border border-foreground/[0.07] rounded-[20px] overflow-hidden">
+              <div className="flex items-center gap-3 p-4 border-b border-foreground/[0.06]">
                 <button
                   onClick={() => setSelThreadAid(null)}
-                  className="md:hidden w-9 h-9 rounded-full bg-[#2f2f33] text-[#e8e8ea] flex items-center justify-center text-sm"
+                  className="md:hidden w-9 h-9 rounded-full bg-[var(--secondary)] text-[var(--foreground)] flex items-center justify-center text-sm"
                 >
                   ←
                 </button>
@@ -364,25 +364,25 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                   {(selArtist?.user?.name || "RA").slice(0, 2).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-base font-bold text-white truncate">{selArtist?.user?.name}</div>
-                  <div className="text-xs text-[#9b9ba1] truncate">Resident Artist · {selArtist?.paymentModel} terms</div>
+                  <div className="text-base font-bold text-foreground truncate">{selArtist?.user?.name}</div>
+                  <div className="text-xs text-[var(--muted-foreground)] truncate">Resident Artist · {selArtist?.paymentModel} terms</div>
                 </div>
               </div>
 
               <div className="p-4.5 space-y-3">
-                <div className="text-[11px] text-[#6e6e75] text-center mb-2">
+                <div className="text-[11px] text-[var(--muted-foreground)] text-center mb-2">
                   Studio updates and settlement notices are delivered to the artist's Dept messages
                 </div>
 
                 {/* Symmetrical Settlement Card */}
-                <div className="bg-[#1a1a1b] border border-white/10 rounded-2xl p-4 max-w-[500px] ml-auto space-y-1.5">
-                  <div className="text-[10.5px] font-bold tracking-[1.8px] text-[#8d8d93] uppercase">
+                <div className="bg-[var(--card)] border border-foreground/10 rounded-2xl p-4 max-w-[500px] ml-auto space-y-1.5">
+                  <div className="text-[10.5px] font-bold tracking-[1.8px] text-[var(--muted-foreground)] uppercase">
                     SETTLEMENT RECEIVED
                   </div>
-                  <div className="text-base font-bold text-white">
+                  <div className="text-base font-bold text-foreground">
                     {selArtist?.paymentModel === "rent" ? `$${Math.round((selArtist.weeklyChairRentCents || 35000) / 100)} chair rent` : "Settlement cut from payout"}
                   </div>
-                  <div className="text-xs text-[#c9c9ce]">
+                  <div className="text-xs text-[var(--foreground)]">
                     Weekly payout · {new Date().toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })} · recorded in both feeds
                   </div>
                   <div className="border border-[#57c97e] text-[#57c97e] rounded-xl py-2 text-center text-xs font-semibold mt-2">
@@ -391,12 +391,12 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-3.5 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2.5 p-3.5 border-t border-foreground/[0.06]">
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder="Message artist..."
-                  className="flex-1 bg-[#28282b] border border-white/[0.08] rounded-full py-3 px-4.5 text-white text-sm outline-none focus:border-[#eec95f]"
+                  className="flex-1 bg-[var(--card)] border border-foreground/[0.08] rounded-full py-3 px-4.5 text-foreground text-sm outline-none focus:border-[#eec95f]"
                 />
                 <button
                   onClick={() => {
@@ -420,7 +420,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
       {asOpen && selLead && createPortal(
         <div className="fixed inset-0 z-[9999] flex flex-col justify-end">
           <div onClick={() => setAsOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
-          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[#28282b] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-white/10 shadow-2xl animate-in slide-in-from-bottom-5">
+          <div className="relative z-10 w-full max-w-[640px] mx-auto bg-[var(--card)] rounded-t-[26px] p-5 sm:p-6 max-h-[86vh] overflow-y-auto border-t border-foreground/10 shadow-2xl animate-in slide-in-from-bottom-5">
             {/* Wizard Header */}
             <div className="flex items-center gap-3 mb-4.5">
               <button
@@ -428,14 +428,14 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                   if (asStep === 1) setAsOpen(false);
                   else setAsStep((prev) => (prev - 1) as any);
                 }}
-                className="w-10 h-10 rounded-full bg-[#353539] text-[#e8e8ea] flex items-center justify-center text-base shrink-0"
+                className="w-10 h-10 rounded-full bg-[var(--secondary)] text-[var(--foreground)] flex items-center justify-center text-base shrink-0"
               >
                 ←
               </button>
-              <div className="text-[13px] font-bold tracking-[2px] text-[#c9c9ce] uppercase">
+              <div className="text-[13px] font-bold tracking-[2px] text-[var(--foreground)] uppercase">
                 {asStep === 1 ? "SELECT ARTIST" : asStep === 2 ? "RECOMMEND A DAY" : "REVIEW REFERRAL"}
               </div>
-              <div className="ml-auto text-xs text-[#9b9ba1] truncate">{selLead.clientName}</div>
+              <div className="ml-auto text-xs text-[var(--muted-foreground)] truncate">{selLead.clientName}</div>
             </div>
 
             {/* STEP 1: SELECT ARTIST */}
@@ -452,14 +452,14 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                         setAsAid(a.userId);
                         setAsStep(2);
                       }}
-                      className="bg-[#2f2f33] border border-white/[0.07] hover:border-[#eec95f] rounded-2xl p-3.5 flex items-center gap-3.5 cursor-pointer transition-all"
+                      className="bg-[var(--secondary)] border border-foreground/[0.07] hover:border-[#eec95f] rounded-2xl p-3.5 flex items-center gap-3.5 cursor-pointer transition-all"
                     >
                       <div className="w-11 h-11 rounded-full bg-[#eec95f]/15 border border-[#eec95f] text-[#eec95f] flex items-center justify-center font-bold text-sm shrink-0">
                         {initials}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-white truncate">{name}</div>
-                        <div className="text-xs text-[#9b9ba1] truncate">{a.specialties || "Resident Artist"}</div>
+                        <div className="text-sm font-bold text-foreground truncate">{name}</div>
+                        <div className="text-xs text-[var(--muted-foreground)] truncate">{a.specialties || "Resident Artist"}</div>
                       </div>
                       <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-[#57c97e] text-[#57c97e] shrink-0">
                         Great fit
@@ -483,7 +483,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                         className={`rounded-xl p-3 text-center cursor-pointer transition-all border ${
                           isSelected
                             ? "bg-[#eec95f]/15 border-[#eec95f] text-[#eec95f]"
-                            : "bg-[#2f2f33] border-white/[0.06] text-[#e8e8ea] hover:border-white/20"
+                            : "bg-[var(--secondary)] border-foreground/[0.06] text-[var(--foreground)] hover:border-foreground/20"
                         }`}
                       >
                         <div className="text-xs font-semibold">{d.dow}</div>
@@ -494,7 +494,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                   })}
                 </div>
 
-                <div className="text-[11px] font-semibold tracking-[1.8px] text-[#8d8d93] uppercase mb-2">
+                <div className="text-[11px] font-semibold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-2">
                   START TIME
                 </div>
                 <div className="flex gap-2.5 mb-5">
@@ -505,7 +505,7 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
                       className={`flex-1 py-3 rounded-full text-sm font-semibold border transition-all ${
                         asTime === t
                           ? "bg-[#eec95f]/15 border-[#eec95f] text-[#eec95f]"
-                          : "bg-[#2f2f33] border-white/[0.06] text-[#c9c9ce]"
+                          : "bg-[var(--secondary)] border-foreground/[0.06] text-[var(--foreground)]"
                       }`}
                     >
                       {t}
@@ -534,30 +534,30 @@ export function StudioMessages({ initialLeadId, initialThreadAid }: StudioMessag
             {/* STEP 3: REVIEW & SEND */}
             {asStep === 3 && asArtist && (
               <div className="space-y-4">
-                <div className="bg-[#2f2f33] rounded-2xl p-4.5 space-y-3">
-                  <div className="flex justify-between text-[11px] font-bold tracking-[1.6px] text-[#8d8d93] uppercase">
+                <div className="bg-[var(--secondary)] rounded-2xl p-4.5 space-y-3">
+                  <div className="flex justify-between text-[11px] font-bold tracking-[1.6px] text-[var(--muted-foreground)] uppercase">
                     <span>LEAD</span>
                     <span>ARTIST</span>
                   </div>
                   <div className="flex justify-between text-base font-bold">
-                    <span className="text-white">{selLead.clientName}</span>
+                    <span className="text-foreground">{selLead.clientName}</span>
                     <span className="text-[#eec95f]">{asArtist.user?.name}</span>
                   </div>
-                  <div className="border-t border-white/[0.08]" />
-                  <div className="text-[11px] font-bold tracking-[1.6px] text-[#8d8d93] uppercase">PROPOSED</div>
-                  <div className="text-sm font-bold text-white">{asDate} · {asTime}</div>
-                  <div className="text-xs text-[#9b9ba1]">Held on the calendar until artist confirms in Dept Messages</div>
+                  <div className="border-t border-foreground/[0.08]" />
+                  <div className="text-[11px] font-bold tracking-[1.6px] text-[var(--muted-foreground)] uppercase">PROPOSED</div>
+                  <div className="text-sm font-bold text-foreground">{asDate} · {asTime}</div>
+                  <div className="text-xs text-[var(--muted-foreground)]">Held on the calendar until artist confirms in Dept Messages</div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold tracking-[1.8px] text-[#8d8d93] uppercase mb-1.5">
+                  <label className="block text-[11px] font-bold tracking-[1.8px] text-[var(--muted-foreground)] uppercase mb-1.5">
                     NOTE TO ARTIST
                   </label>
                   <textarea
                     value={asNote}
                     onChange={(e) => setAsNote(e.target.value)}
                     rows={3}
-                    className="w-full bg-[#2f2f33] border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#eec95f]"
+                    className="w-full bg-[var(--secondary)] border border-foreground/10 rounded-xl p-3 text-foreground text-sm outline-none focus:border-[#eec95f]"
                   />
                 </div>
 

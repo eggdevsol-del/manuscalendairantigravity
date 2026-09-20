@@ -79,7 +79,7 @@ export function UserAvatar({
       ) : (
         <span
           className={cn(
-            'font-["DM_Sans"] font-bold text-white select-none',
+            '[font-family:var(--ivory-body)] font-bold text-primary-foreground select-none',
             sizeConfig.text
           )}
         >

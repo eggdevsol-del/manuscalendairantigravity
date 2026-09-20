@@ -272,7 +272,7 @@ function LLMBrief({ serverTask }: { serverTask: any }) {
         gap: 8,
       }}>
         <div className="animate-spin" style={{
-          width: 12, height: 12, border: "1.5px solid rgba(255,255,255,.15)",
+          width: 12, height: 12, border: "1.5px solid color-mix(in srgb, var(--foreground) 15%, transparent)",
           borderTopColor: DT.textSecondary, borderRadius: "50%",
         }} />
         Generating brief…
@@ -678,7 +678,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
             justifyContent: "center",
           }}>
             <div className="animate-spin" style={{
-              width: 20, height: 20, border: "2px solid rgba(255,255,255,.15)",
+              width: 20, height: 20, border: "2px solid color-mix(in srgb, var(--foreground) 15%, transparent)",
               borderTopColor: DT.textPrimary, borderRadius: "50%",
             }} />
           </div>
@@ -742,7 +742,7 @@ export function TodaySegment({ demoMode = false }: TodaySegmentProps) {
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
             <div className="animate-spin" style={{
-              width: 20, height: 20, border: "2px solid rgba(255,255,255,.15)",
+              width: 20, height: 20, border: "2px solid color-mix(in srgb, var(--foreground) 15%, transparent)",
               borderTopColor: DT.textPrimary, borderRadius: "50%",
             }} />
           </div>

@@ -1,0 +1,105 @@
+/* Ivory presentation only. Geometry, scrolling and interactions belong to main. */
+:root {
+  --ivory-display: ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --ivory-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  --background: #f8f6f2;
+  --foreground: #29231e;
+  --card: #fffdfa;
+  --card-foreground: #29231e;
+  --popover: #fffdfa;
+  --popover-foreground: #29231e;
+  --secondary: #efebe5;
+  --secondary-foreground: #29231e;
+  --muted: #efebe5;
+  --muted-foreground: #746c64;
+  --primary: #382c24;
+  --primary-foreground: #fffdfa;
+  --primary-rgb: 56, 44, 36;
+  --accent: #eee8df;
+  --accent-foreground: #514236;
+  --border: #e5e0d9;
+  --input: #fffdfa;
+  --ring: #514236;
+  --destructive: #9d342e;
+  --destructive-foreground: #fffdfa;
+  --color-success: #24644d;
+  --color-warning: #855318;
+  --color-status-success-bg: #eaf1eb;
+  --color-status-warning-bg: #f8eedc;
+  --color-status-danger-bg: #f9eae7;
+  --color-text-disabled: #8b8075;
+  --ivory-shadow: 0 8px 28px rgb(56 44 36 / 5%);
+}
+.dark {
+  --background: #1d1a17;
+  --foreground: #f8f3eb;
+  --card: #29251f;
+  --card-foreground: #f8f3eb;
+  --popover: #29251f;
+  --popover-foreground: #f8f3eb;
+  --secondary: #342e27;
+  --secondary-foreground: #f8f3eb;
+  --muted: #342e27;
+  --muted-foreground: #bdb2a5;
+  --primary: #e3d6c5;
+  --primary-foreground: #29231e;
+  --primary-rgb: 227, 214, 197;
+  --accent: #3a3229;
+  --accent-foreground: #e3d6c5;
+  --border: #443c33;
+  --input: #29251f;
+  --ring: #e3d6c5;
+  --destructive: #f0a29c;
+  --destructive-foreground: #3d2523;
+  --color-success: #9ed2b8;
+  --color-warning: #e8c38c;
+  --color-status-success-bg: #22362c;
+  --color-status-warning-bg: #3a3021;
+  --color-status-danger-bg: #3d2523;
+  --color-text-disabled: #a39686;
+  --ivory-shadow: 0 8px 28px rgb(0 0 0 / 12%);
+}
+:root, .dark {
+  --color-bg-base: var(--background);
+  --color-bg-surface: var(--card);
+  --color-bg-elevated: var(--secondary);
+  --color-bg-header: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-on-accent: var(--primary-foreground);
+  --color-accent-yellow: var(--primary);
+  --color-accent-dim: var(--accent);
+  --color-gold: var(--accent-foreground);
+  --color-danger: var(--destructive);
+  --color-border: var(--border);
+  --color-divider: var(--border);
+  --color-divider-light: var(--border);
+  --color-status-success-text: var(--color-success);
+  --color-status-warning-text: var(--color-warning);
+  --color-status-danger-text: var(--destructive);
+  --color-status-success-border: color-mix(in srgb, var(--color-success) 25%, transparent);
+  --color-status-warning-border: color-mix(in srgb, var(--color-warning) 25%, transparent);
+  --color-status-danger-border: color-mix(in srgb, var(--destructive) 25%, transparent);
+  --color-status-neutral-bg: var(--secondary);
+  --color-status-neutral-text: var(--muted-foreground);
+  --color-status-neutral-border: var(--border);
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--accent);
+  --sidebar-accent-foreground: var(--accent-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --chart-1: var(--primary);
+  --chart-2: var(--accent-foreground);
+  --chart-3: var(--muted-foreground);
+  --chart-4: var(--color-text-disabled);
+  --chart-5: var(--border);
+  --bg-gradient: var(--background);
+}
+body { font-family: var(--ivory-body); }
+h1, h2, .ivory-heading { font-family: var(--ivory-display); }
+[data-slot="card"] { box-shadow: var(--ivory-shadow); }
+/* Match Ivory display lettering while retaining main's title size and line box. */
+.ivory-heading { font-weight: 500; letter-spacing: -0.045em; }

@@ -4,7 +4,7 @@
  * SegmentedHeader is the canonical tab header component.
  * Use this for consistent tab styling across all pages.
  *
- * §4: Active tab uses solid rgba(255,255,255,.1) pill.
+ * §4: Active tab uses solid var(--card) pill.
  *     No text-shadow glow, no blur filter.
  *     Inactive text at .58 alpha for ≥4.5:1 contrast.
  *
@@ -27,7 +27,7 @@ export function SegmentedHeader({
 }: SegmentedHeaderProps) {
   return (
     <div className={cn("flex w-full items-center gap-1 p-1 rounded-full", className)}
-      style={{ background: "rgba(255,255,255,.04)" }}
+      style={{ background: "var(--secondary)" }}
     >
       {options.map((title, index) => {
         const isActive = index === activeIndex;
@@ -41,8 +41,8 @@ export function SegmentedHeader({
               "min-h-[44px]", // §10 touch target
             )}
             style={{
-              background: isActive ? "rgba(255,255,255,.1)" : "transparent",
-              color: isActive ? "#f5f5f4" : "rgba(255,255,255,.58)",
+              background: isActive ? "var(--card)" : "transparent",
+              color: isActive ? "var(--foreground)" : "var(--muted-foreground)",
             }}
           >
             {title}

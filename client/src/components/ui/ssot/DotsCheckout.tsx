@@ -17,7 +17,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { loadStripe, type Appearance } from "@stripe/stripe-js";
 import {
   Elements,
@@ -27,44 +27,47 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2, Lock, ArrowLeft } from "lucide-react";
 
+import { useIvoryPalette, readIvoryPalette } from "@/ui/useIvoryPalette";
+
 // Load Stripe outside render to avoid re-creating on every render
 const stripePromise = loadStripe(
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""
 );
 
-// ── Stripe Elements Appearance (Dark Theme) ──────────────────────────────────
-const appearance: Appearance = {
-  theme: "night",
+// ── Stripe Elements Appearance (shared Ivory tokens) ──────────────────────────────────
+function createAppearance(palette: ReturnType<typeof readIvoryPalette>): Appearance {
+return {
+  theme: "flat",
   variables: {
-    colorPrimary: "#F8D057",
-    colorBackground: "#232326",
-    colorText: "#FFFFFF",
-    colorTextSecondary: "#7A7A7A",
-    colorDanger: "#ff4d4f",
+    colorPrimary: palette.primary,
+    colorBackground: palette.surface,
+    colorText: palette.foreground,
+    colorTextSecondary: palette.muted,
+    colorDanger: palette.danger,
     borderRadius: "12px",
-    fontFamily: '"DM Sans", "Inter", system-ui, sans-serif',
+    fontFamily: palette.font,
     fontSizeBase: "15px",
     spacingGridRow: "16px",
     spacingGridColumn: "12px",
   },
   rules: {
     ".Input": {
-      border: "1px solid rgba(255,255,255,0.12)",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
+      border: `1px solid ${palette.border}`,
+      backgroundColor: palette.surface,
+      color: palette.foreground,
       padding: "14px 12px",
       fontSize: "15px",
       transition: "border-color 200ms ease, box-shadow 200ms ease",
     },
     ".Input:focus": {
-      border: "1px solid #F8D057",
-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
+      border: `1px solid ${palette.primary}`,
+      boxShadow: `0 0 0 2px ${palette.border}`,
     },
     ".Input::placeholder": {
-      color: "#555",
+      color: palette.muted,
     },
     ".Label": {
-      color: "#999",
+      color: palette.muted,
       fontSize: "12px",
       fontWeight: "500",
       textTransform: "uppercase" as any,
@@ -72,26 +75,27 @@ const appearance: Appearance = {
       marginBottom: "6px",
     },
     ".Tab": {
-      border: "1px solid rgba(255,255,255,0.12)",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
+      border: `1px solid ${palette.border}`,
+      backgroundColor: palette.surface,
+      color: palette.foreground,
       borderRadius: "12px",
     },
     ".Tab--selected": {
-      border: "1px solid #F8D057",
-      backgroundColor: "#1A1A1E",
-      color: "#FFFFFF",
-      boxShadow: "0 0 0 2px rgba(248,208,87,0.15)",
+      border: `1px solid ${palette.primary}`,
+      backgroundColor: palette.surface,
+      color: palette.foreground,
+      boxShadow: `0 0 0 2px ${palette.border}`,
     },
     ".Tab:hover": {
-      border: "1px solid rgba(255,255,255,0.25)",
+      border: `1px solid ${palette.ring}`,
     },
     ".Error": {
-      color: "#ff4d4f",
+      color: palette.danger,
       fontSize: "13px",
     },
   },
 };
+}
 
 // ── Props ────────────────────────────────────────────────────────────────────
 export interface DotsCheckoutProps {
@@ -121,6 +125,8 @@ export function DotsCheckout({
   onError,
   onBack,
 }: DotsCheckoutProps) {
+  const palette = useIvoryPalette();
+  const appearance = useMemo(() => createAppearance(palette), [palette]);
   if (!clientSecret) return null;
 
   return (
@@ -207,16 +213,16 @@ function CheckoutForm({
       {/* Amount display */}
       <div className="flex items-center justify-between px-1 pt-1 pb-2">
         <span
-          style={{ color: "#7A7A7A", fontSize: 13, fontWeight: 500 }}
+          style={{ color: "var(--muted-foreground)", fontSize: 13, fontWeight: 500 }}
         >
           Paying
         </span>
         <span
           style={{
-            color: "#FFFFFF",
+            color: "var(--foreground)",
             fontSize: 22,
             fontWeight: 700,
-            fontFamily: '"DM Sans", sans-serif',
+            fontFamily: "var(--ivory-body)",
           }}
         >
           {formattedAmount}
@@ -226,8 +232,8 @@ function CheckoutForm({
       {/* Stripe Payment Element — renders card, Apple Pay, Google Pay, Link */}
       <div
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
           borderRadius: 16,
           padding: 16,
           minHeight: isReady ? undefined : 200,
@@ -238,7 +244,7 @@ function CheckoutForm({
           <div className="absolute inset-0 flex items-center justify-center">
             <Loader2
               className="w-6 h-6 animate-spin"
-              style={{ color: "#F8D057" }}
+              style={{ color: "var(--primary)" }}
             />
           </div>
         )}
@@ -277,7 +283,7 @@ function CheckoutForm({
       {/* Trust badge */}
       <div
         className="flex items-center justify-center gap-1.5"
-        style={{ color: "#555", fontSize: 12, padding: "4px 0" }}
+        style={{ color: "var(--muted-foreground)", fontSize: 12, padding: "4px 0" }}
       >
         <Lock className="w-3 h-3" />
         <span>Payments secured by Stripe</span>
@@ -292,14 +298,14 @@ function CheckoutForm({
           height: 52,
           borderRadius: 14,
           fontSize: 16,
-          fontFamily: '"DM Sans", sans-serif',
+          fontFamily: "var(--ivory-body)",
           background: isProcessing
-            ? "rgba(248,208,87,0.7)"
-            : "linear-gradient(135deg, #F8D057 0%, #F0C040 100%)",
-          color: "#1B1B1B",
+            ? "rgba(var(--primary-rgb),0.7)"
+            : "var(--primary)",
+          color: "var(--primary-foreground)",
           border: "none",
           cursor: isProcessing ? "wait" : "pointer",
-          boxShadow: "0 2px 12px rgba(248,208,87,0.25)",
+          boxShadow: "0 2px 12px rgba(var(--primary-rgb),0.25)",
         }}
       >
         {isProcessing ? (
@@ -319,7 +325,7 @@ function CheckoutForm({
           onClick={onBack}
           className="flex items-center justify-center gap-1 transition-colors"
           style={{
-            color: "#7A7A7A",
+            color: "var(--muted-foreground)",
             fontSize: 14,
             fontWeight: 500,
             padding: "8px 0",

@@ -71,7 +71,7 @@ export function UpcomingTab() {
     return (
       <div className="flex items-center justify-center py-20">
         <div
-          className="w-6 h-6 border-2 border-white/20 border-t-white/70 rounded-full animate-spin"
+          className="w-6 h-6 border-2 border-foreground/20 border-t-white/70 rounded-full animate-spin"
         />
       </div>
     );
@@ -84,16 +84,16 @@ export function UpcomingTab() {
   if (appointments.length === 0 && pendingConsults.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <Calendar className="w-10 h-10 text-white/20" />
-        <p className="text-[13.5px] text-[#7A7A7A] text-center max-w-[220px]">
+        <Calendar className="w-10 h-10 text-foreground/20" />
+        <p className="text-[13.5px] text-[var(--muted-foreground)] text-center max-w-[220px]">
           No upcoming sessions. Find an artist to start your next piece.
         </p>
         <button
           onClick={() => setLocation("/discover")}
           className="flex items-center gap-2 px-5 py-3 rounded-xl text-[13.5px] font-semibold"
           style={{
-            background: "#F8D057",
-            color: "#1B1B1B",
+            background: "var(--primary)",
+            color: "var(--primary-foreground)",
             minHeight: 44,
           }}
         >
@@ -119,8 +119,8 @@ export function UpcomingTab() {
               key={appt.id}
               className="relative overflow-hidden"
               style={{
-                background: "#1A1A1E",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--card)",
+                border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
                 borderRadius: 16,
                 padding: 16,
               }}
@@ -130,8 +130,8 @@ export function UpcomingTab() {
                 <div
                   className="absolute top-0 right-0 text-[10px] font-bold uppercase tracking-wide"
                   style={{
-                    background: "#F8D057",
-                    color: "#1B1B1B",
+                    background: "var(--primary)",
+                    color: "var(--primary-foreground)",
                     padding: "5px 12px",
                     borderBottomLeftRadius: 12,
                     letterSpacing: "0.06em",
@@ -145,7 +145,7 @@ export function UpcomingTab() {
               <div
                 className="text-[12px] font-bold uppercase mb-1"
                 style={{
-                  color: isNext && isConfirmed ? "#F8D057" : "#7A7A7A",
+                  color: isNext && isConfirmed ? "var(--primary)" : "var(--muted-foreground)",
                   letterSpacing: "0.06em",
                 }}
               >
@@ -153,7 +153,7 @@ export function UpcomingTab() {
               </div>
 
               {/* Title */}
-              <h3 className="text-[16px] font-bold text-white mb-0.5">
+              <h3 className="text-[16px] font-bold text-foreground mb-0.5">
                 {appt.projectName || appt.title}
                 {appt.sessionIndex && appt.sessionTotal
                   ? ` — session ${appt.sessionIndex}`
@@ -161,7 +161,7 @@ export function UpcomingTab() {
               </h3>
 
               {/* Meta */}
-              <p className="text-[13.5px] text-[#7A7A7A] mb-3">
+              <p className="text-[13.5px] text-[var(--muted-foreground)] mb-3">
                 {appt.artist.name}
                 {appt.durationMinutes ? ` · ${formatDuration(appt.durationMinutes)}` : ""}
                 {appt.studioName ? ` · ${appt.studioName}` : ""}
@@ -176,12 +176,12 @@ export function UpcomingTab() {
                   {appt.depositPaidCents > 0 && (
                     <div>
                       <div
-                        className="text-[10px] font-bold uppercase text-[#7A7A7A] mb-0.5"
+                        className="text-[10px] font-bold uppercase text-[var(--muted-foreground)] mb-0.5"
                         style={{ letterSpacing: "0.06em" }}
                       >
                         Deposit
                       </div>
-                      <div className="text-[12.5px] font-medium text-white">
+                      <div className="text-[12.5px] font-medium text-foreground">
                         ${(appt.depositPaidCents / 100).toFixed(0)} paid
                       </div>
                     </div>
@@ -189,12 +189,12 @@ export function UpcomingTab() {
                   {appt.estimateCents > 0 && (
                     <div>
                       <div
-                        className="text-[10px] font-bold uppercase text-[#7A7A7A] mb-0.5"
+                        className="text-[10px] font-bold uppercase text-[var(--muted-foreground)] mb-0.5"
                         style={{ letterSpacing: "0.06em" }}
                       >
                         Estimate
                       </div>
-                      <div className="text-[12.5px] font-medium text-white">
+                      <div className="text-[12.5px] font-medium text-foreground">
                         ${(appt.estimateCents / 100).toFixed(0)}
                       </div>
                     </div>
@@ -220,21 +220,21 @@ export function UpcomingTab() {
                     padding: "12px 14px",
                     background: hasPaymentRequest
                       ? "rgba(242,202,92,0.12)"
-                      : "rgba(255,255,255,0.04)",
+                      : "color-mix(in srgb, var(--foreground) 4%, transparent)",
                     border: hasPaymentRequest
                       ? "1px solid rgba(242,202,92,0.3)"
-                      : "1px solid rgba(255,255,255,0.08)",
+                      : "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
                     minHeight: 44,
                   }}
                 >
                   <div className="flex items-center gap-2">
                     <CreditCard
                       className="w-4 h-4"
-                      style={{ color: hasPaymentRequest ? "#f2ca5c" : "#7A7A7A" }}
+                      style={{ color: hasPaymentRequest ? "var(--primary)" : "var(--muted-foreground)" }}
                     />
                     <span
                       className="text-[13.5px] font-semibold"
-                      style={{ color: hasPaymentRequest ? "#f2ca5c" : "rgba(255,255,255,.7)" }}
+                      style={{ color: hasPaymentRequest ? "var(--primary)" : "color-mix(in srgb, var(--foreground) 70%, transparent)" }}
                     >
                       ${(appt.balanceDueCents / 100).toFixed(0)}{" "}
                       {hasPaymentRequest ? "payment requested" : "remaining balance"}
@@ -243,7 +243,7 @@ export function UpcomingTab() {
                   <span
                     className="text-[11px] font-bold uppercase"
                     style={{
-                      color: hasPaymentRequest ? "#1B1B1B" : "rgba(255,255,255,.7)",
+                      color: hasPaymentRequest ? "var(--primary-foreground)" : "color-mix(in srgb, var(--foreground) 70%, transparent)",
                       letterSpacing: "0.06em",
                     }}
                   >
@@ -261,11 +261,11 @@ export function UpcomingTab() {
                         setLocation(`/chat/${appt.conversationId}`);
                       }
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 text-[13.5px] font-semibold text-white"
+                    className="flex-1 flex items-center justify-center gap-2 text-[13.5px] font-semibold text-foreground"
                     style={{
                       height: 44,
                       borderRadius: 12,
-                      border: "1px solid rgba(255,255,255,0.12)",
+                      border: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
                       background: "transparent",
                     }}
                   >
@@ -282,9 +282,9 @@ export function UpcomingTab() {
                     style={{
                       height: 44,
                       borderRadius: 12,
-                      border: "1px solid rgba(255,255,255,0.12)",
+                      border: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
                       background: "transparent",
-                      color: "rgba(255,255,255,.58)",
+                      color: "color-mix(in srgb, var(--foreground) 58%, transparent)",
                     }}
                   >
                     Reschedule
@@ -301,24 +301,24 @@ export function UpcomingTab() {
             key={`consult-${consult.id}`}
             className="flex items-center justify-between"
             style={{
-              background: "rgba(255,255,255,0.02)",
-              border: "1px dashed rgba(255,255,255,0.12)",
+              background: "color-mix(in srgb, var(--foreground) 2%, transparent)",
+              border: "1px dashed color-mix(in srgb, var(--foreground) 12%, transparent)",
               borderRadius: 16,
               padding: 16,
             }}
           >
             <div>
-              <div className="text-[13.5px] font-semibold text-white">
+              <div className="text-[13.5px] font-semibold text-foreground">
                 Consult with {consult.artistName}
               </div>
-              <div className="text-[12.5px] text-[#7A7A7A]">
+              <div className="text-[12.5px] text-[var(--muted-foreground)]">
                 {getRelativeTime(consult.createdAt || "")} · awaiting reply
               </div>
             </div>
             <span
               className="text-[11px] font-bold uppercase shrink-0"
               style={{
-                color: "#f2ca5c",
+                color: "var(--primary)",
                 border: "1px solid rgba(242,202,92,0.4)",
                 borderRadius: 999,
                 padding: "4px 9px",

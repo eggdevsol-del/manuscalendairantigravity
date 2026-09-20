@@ -115,10 +115,10 @@ export function SessionPlanCheckoutSheet({
         style={{
           bottom: "var(--bottom-nav-height)",
           zIndex: "var(--z-bottom-sheet)" as any,
-          background: "#1B1B1B",
+          background: "var(--card)",
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          borderTop: "1px solid rgba(255,255,255,0.12)",
+          borderTop: "1px solid color-mix(in srgb, var(--foreground) 12%, transparent)",
           maxHeight: "85vh",
           animation: "sheetSlideUp 280ms cubic-bezier(.2,.8,.25,1)",
         }}
@@ -126,13 +126,13 @@ export function SessionPlanCheckoutSheet({
         {/* Header */}
         <div
           className="flex items-center justify-between px-4 py-3 shrink-0"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ borderBottom: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)" }}
         >
-          <h2 className="text-[17px] font-bold text-white">{title}</h2>
+          <h2 className="text-[17px] font-bold text-foreground">{title}</h2>
           <button
             onClick={onClose}
             className="flex items-center justify-center"
-            style={{ width: 44, height: 44, color: "#7A7A7A" }}
+            style={{ width: 44, height: 44, color: "var(--muted-foreground)" }}
           >
             <X className="w-5 h-5" />
           </button>
@@ -222,8 +222,8 @@ function ReviewStep({
       {/* Inner card */}
       <div
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
           borderRadius: 14,
           padding: 14,
           marginBottom: 16,
@@ -237,24 +237,24 @@ function ReviewStep({
             size="sm"
           />
           <div>
-            <div className="text-[14px] font-semibold text-white">
+            <div className="text-[14px] font-semibold text-foreground">
               Deposit · {items.length} session{items.length !== 1 ? "s" : ""}
             </div>
-            <div className="text-[12.5px] text-[#7A7A7A]">
+            <div className="text-[12.5px] text-[var(--muted-foreground)]">
               {artistName}
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", margin: "0 0 12px" }} />
+        <div style={{ borderTop: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)", margin: "0 0 12px" }} />
 
         {/* Line items */}
         <div className="flex flex-col gap-2">
           {/* Plan total */}
           <div className="flex justify-between text-[13px]">
-            <span style={{ color: "#7A7A7A" }}>Session plan total</span>
-            <span style={{ color: "#7A7A7A" }}>
+            <span style={{ color: "var(--muted-foreground)" }}>Session plan total</span>
+            <span style={{ color: "var(--muted-foreground)" }}>
               ${(totalEstimate / 100).toFixed(2)}
             </span>
           </div>
@@ -262,10 +262,10 @@ function ReviewStep({
           {/* Per-session deposits */}
           {items.map((item: any) => (
             <div key={item.id} className="flex justify-between text-[13px]">
-              <span style={{ color: "#7A7A7A" }}>
+              <span style={{ color: "var(--muted-foreground)" }}>
                 Session {item.sessionIndex} deposit · {Math.round(item.durationMinutes / 60)} hrs
               </span>
-              <span style={{ color: "#7A7A7A" }}>
+              <span style={{ color: "var(--muted-foreground)" }}>
                 ${(item.depositCents / 100).toFixed(2)}
               </span>
             </div>
@@ -273,37 +273,37 @@ function ReviewStep({
 
           {/* Deposit due now */}
           <div className="flex justify-between text-[13px] font-semibold">
-            <span className="text-white">Deposit due now (non-refundable)</span>
-            <span className="text-white">
+            <span className="text-foreground">Deposit due now (non-refundable)</span>
+            <span className="text-foreground">
               ${(depositTotal / 100).toFixed(2)}
             </span>
           </div>
 
           {/* Platform fee */}
           <div className="flex justify-between text-[13px]">
-            <span style={{ color: "#7A7A7A" }}>Platform fee</span>
-            <span style={{ color: "#7A7A7A" }}>
+            <span style={{ color: "var(--muted-foreground)" }}>Platform fee</span>
+            <span style={{ color: "var(--muted-foreground)" }}>
               ${(platformFee / 100).toFixed(2)}
             </span>
           </div>
         </div>
 
         {/* Divider */}
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", margin: "12px 0" }} />
+        <div style={{ borderTop: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)", margin: "12px 0" }} />
 
         {/* Total */}
         <div className="flex justify-between items-baseline">
-          <span className="text-[14px] font-semibold text-white">
+          <span className="text-[14px] font-semibold text-foreground">
             Total due today
           </span>
-          <span className="text-[20px] font-bold text-white">
+          <span className="text-[20px] font-bold text-foreground">
             ${(totalDue / 100).toFixed(2)}
           </span>
         </div>
       </div>
 
       {/* Footnote */}
-      <p className="text-[12px] text-[#7A7A7A] mb-4 leading-relaxed">
+      <p className="text-[12px] text-[var(--muted-foreground)] mb-4 leading-relaxed">
         Each session's deposit is calculated separately and charged here as one
         payment. Paying it locks both dates in {artistName}'s calendar — the
         balance is requested after each session.
@@ -317,8 +317,8 @@ function ReviewStep({
         style={{
           height: 52,
           borderRadius: 16,
-          background: paying ? "rgba(255,255,255,0.12)" : "#F8D057",
-          color: paying ? "#7A7A7A" : "#1B1B1B",
+          background: paying ? "color-mix(in srgb, var(--foreground) 12%, transparent)" : "var(--primary)",
+          color: paying ? "var(--muted-foreground)" : "var(--primary-foreground)",
           border: "none",
         }}
       >
@@ -380,14 +380,14 @@ function SuccessStep({
           animation: "successCheckPop 340ms ease-out",
         }}
       >
-        <Check className="w-[30px] h-[30px]" style={{ color: "#4ade80" }} />
+        <Check className="w-[30px] h-[30px]" style={{ color: "var(--color-success)" }} />
       </div>
 
       {/* Headline */}
-      <h3 className="text-[20px] font-bold text-white mb-2">Deposit paid</h3>
+      <h3 className="text-[20px] font-bold text-foreground mb-2">Deposit paid</h3>
 
       {/* Body */}
-      <p className="text-[13.5px] text-[#7A7A7A] mb-6" style={{ maxWidth: 280 }}>
+      <p className="text-[13.5px] text-[var(--muted-foreground)] mb-6" style={{ maxWidth: 280 }}>
         Session{items.length !== 1 ? "s" : ""} {sessionIndices}{" "}
         {items.length !== 1 ? "are" : "is"} locked in. {plan.artist?.name || "Your artist"} has been
         notified.
@@ -397,14 +397,14 @@ function SuccessStep({
       <div
         className="w-full flex items-center justify-between mb-6"
         style={{
-          background: "#1A1A1E",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--card)",
+          border: "1px solid color-mix(in srgb, var(--foreground) 8%, transparent)",
           borderRadius: 14,
           padding: "12px 14px",
         }}
       >
-        <span className="text-[13px] text-[#7A7A7A]">Receipt sent to</span>
-        <span className="text-[13px] font-semibold text-white">{userEmail}</span>
+        <span className="text-[13px] text-[var(--muted-foreground)]">Receipt sent to</span>
+        <span className="text-[13px] font-semibold text-foreground">{userEmail}</span>
       </div>
 
       {/* Done button */}
@@ -414,8 +414,8 @@ function SuccessStep({
         style={{
           height: 52,
           borderRadius: 16,
-          background: "#F8D057",
-          color: "#1B1B1B",
+          background: "var(--primary)",
+          color: "var(--primary-foreground)",
           border: "none",
         }}
       >

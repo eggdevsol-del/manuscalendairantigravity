@@ -102,17 +102,17 @@ export function UpcomingWidget({ upcoming }: UpcomingWidgetProps) {
                   onClick={() => setLocation(`/pay/${pendingRequest.token}`)}
                   className="mt-3 w-full flex items-center justify-between rounded-xl px-4 py-3"
                   style={{
-                    background: "rgba(242, 202, 92, 0.12)",
-                    border: "1px solid rgba(242, 202, 92, 0.3)",
+                    background: "rgba(var(--primary-rgb), 0.12)",
+                    border: "1px solid rgba(var(--primary-rgb), 0.3)",
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4" style={{ color: "#f2ca5c" }} />
-                    <span className="text-sm font-semibold" style={{ color: "#f2ca5c" }}>
+                    <CreditCard className="w-4 h-4" style={{ color: "var(--primary)" }} />
+                    <span className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                       ${(pendingRequest.amountCents / 100).toLocaleString("en-AU")} payment requested
                     </span>
                   </div>
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "#f2ca5c" }}>
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--primary)" }}>
                     Pay now
                   </span>
                 </button>

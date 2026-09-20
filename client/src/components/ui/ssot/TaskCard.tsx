@@ -91,7 +91,7 @@ export function TaskCard({
       />
       <div className="flex items-center gap-4 z-10 relative">
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-foreground text-lg leading-tight mb-1 group-hover:text-white transition-colors duration-300">
+          <h3 className="font-bold text-foreground text-lg leading-tight mb-1 group-hover:text-foreground transition-colors duration-300">
             {title}
           </h3>
           {context && (
