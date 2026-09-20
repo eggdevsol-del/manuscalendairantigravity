@@ -168,7 +168,7 @@ try {
     );
     await page.getByText("A new dragon tattoo request").waitFor();
     const pay = page.getByRole("link", {
-      name: "Review $100.00 request",
+      name: "Sitting 2: review $100.00 request",
       exact: true,
     });
     assert.equal(await pay.getAttribute("href"), "/pay/partial-request");
@@ -186,32 +186,28 @@ try {
     assert((await page.locator("dl").innerText()).includes("$100"));
     assert(!(await page.locator("dl").innerText()).includes("$450"));
     await page.goto(base + "/bookings");
-    await page.getByRole("tab", { name: "Past", exact: true }).click();
-    await page.getByRole("heading", { name: "No past projects yet" }).waitFor();
+    await page.locator(".ivory-completed-projects > summary").click();
+    await page.getByText("No completed projects yet.", { exact: true }).waitFor();
     await page.goto(base + "/projects/12?session=101");
-    await page
-      .getByText("Religious design reference", { exact: true })
-      .waitFor();
+    const project = page.locator(".ivory-project-card").filter({has: page.getByRole("heading",{name:"Jesus/Angels full arm", exact:true})});
+    await project.getByText("Religious design reference", { exact: true }).first().waitFor();
     assert.equal(
-      await page
+      await project
         .getByText("Botanical private reference", { exact: true })
         .count(),
       0
     );
+    assert.equal(await project.getByText("Unrelated proposal", { exact: true }).count(), 0);
     assert.equal(
-      await page.getByText("Unrelated proposal", { exact: true }).count(),
-      0
-    );
-    assert.equal(
-      await page.getByLabel("Project sittings").locator("li").count(),
+      await project.getByLabel("Project sittings").locator("li").count(),
       2
     );
-    await page.getByRole("tab", { name: "Payments", exact: true }).click();
+    await project.locator("summary").filter({hasText:/^Payments$/}).click();
     await page
       .getByRole("heading", { name: "Project payment history · AUD" })
       .waitFor();
-    assert.equal(await page.getByText("$999.00", { exact: true }).count(), 0);
-    await page.getByRole("tab", { name: "Overview", exact: true }).click();
+    assert.equal(await project.getByText("$999.00", { exact: true }).count(), 0);
+    // Sitting actions remain in the expanded row while payment history is open.
     await page
       .getByRole("button", { name: "Request a date change", exact: true })
       .click();
@@ -230,7 +226,7 @@ try {
       .waitFor();
     assert.deepEqual(errors, []);
     console.log(
-      `PASS ${width}: grouped sittings, requests, exact payment link, Past empty state, project scope, reviewed change draft, form deep link, no overflow/runtime errors`
+      `PASS ${width}: grouped sittings, requests, exact payment link, completed-project empty state, project scope, reviewed change draft, form deep link, no overflow/runtime errors`
     );
     await context.close();
   }

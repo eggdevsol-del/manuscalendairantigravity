@@ -972,3 +972,34 @@ body .booking-form-chip {
   line-height: 16px;
   margin-top: 2px;
 }
+
+/* A project owns its progress, sittings and resources; the page remains one scroll. */
+.ivory-project-list { display: grid; gap: 24px; min-width: 0; }
+.ivory-project-card { min-width: 0; scroll-margin-top: 16px; }
+.ivory-project-card > .v3-stack, .ivory-project-heading { gap: 12px; }
+.ivory-project-heading { display: grid; margin-bottom: 16px; }
+.ivory-project-heading h2 { font-family: var(--ivory-display); font-size: 25px; font-weight: 500; }
+.ivory-project-progress { display: grid; gap: 6px; margin: 10px 0; }
+.ivory-project-progress p { font-size: 14px; font-weight: 550; color: var(--v3-ink); }
+.ivory-project-progress > .v3-muted { font-size: 13px; }
+.ivory-project-progress progress { appearance: none; width: 100%; height: 6px; border: 0; border-radius: 99px; overflow: hidden; background: var(--v3-soft); color: var(--primary); }
+.ivory-project-progress progress::-webkit-progress-bar { background: var(--v3-soft); border-radius: 99px; }
+.ivory-project-progress progress::-webkit-progress-value { background: var(--primary); border-radius: 99px; }
+.ivory-project-progress progress::-moz-progress-bar { background: var(--primary); border-radius: 99px; }
+.ivory-project-actions, .ivory-project-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.ivory-project-actions:empty { display: none; }
+.ivory-project-links .v3-action { font-size: 14px; min-height: 44px; padding: 10px 8px; }
+.ivory-project-resource { border-top: 1px solid var(--v3-line); margin-top: 12px; }
+.ivory-project-resource > summary { cursor: pointer; min-height: 48px; }
+.ivory-project-resource > summary::after { content: "+"; margin-left: auto; }
+.ivory-project-resource[open] > summary::after { content: "−"; }
+.ivory-completed-projects > summary { cursor: pointer; font-weight: 550; }
+.ivory-project-sittings > .v3-action { margin-top: 8px; }
+.ivory-project-card .v3-grid { grid-template-columns: minmax(0, 1fr); }
+.ivory-project-progress-copy { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 8px; }
+.ivory-project-progress-copy > .v3-muted { font-size: 13px; }
+.ivory-project-money { color: var(--v3-muted); font-size: 13px; }
+.ivory-project-actions .v3-action { min-height: 44px; padding: 10px 12px; font-size: 14px; }
+.ivory-project-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.ivory-project-links .v3-action { padding: 8px 2px; font-size: 13px; line-height: 1.25; text-align: center; }
+.ivory-project-card > .v3-stack > div:first-child h2 { font-family: var(--ivory-display); font-size: 25px; font-weight: 500; }

@@ -1,3 +1,9 @@
+import { ProjectProgress } from "../components/ProjectProgress";
+import { ProjectSittings } from "../components/ProjectSittings";
+import {
+  orderedProjectGroups,
+  nextProjectSitting,
+} from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
@@ -31,7 +37,6 @@ import {
   Screen,
   Section,
   Status,
-  Tabs,
 } from "../design/primitives";
 import { Thread } from "./Thread";
 import { SessionActions } from "./SessionActions";
@@ -40,10 +45,86 @@ export default function Booking() {
   const [, params] = useRoute("/projects/:id");
   const id = Number(params?.id);
   const search = useSearch();
+  const { user } = useAuth();
+  const query = trpc.projects.summary.useQuery(
+    { conversationId: id },
+    { enabled: id > 0 }
+  );
+  const selectedId = Number(new URLSearchParams(search).get("session"));
+  const groups = orderedProjectGroups(query.data?.sessions || []);
+  const arrived = useRef<number | null>(null);
+  const keys = groups.map(g => projectKey(g[0]));
+  for (const plan of query.data?.plans || []) {
+    if (
+      (plan.paymentState ||
+        (plan.requiresDeposit ?? plan.status === "pending")) &&
+      !keys.includes(`plan:${plan.id}`)
+    )
+      keys.push(`plan:${plan.id}`);
+  }
+  if (query.data && !keys.length) keys.push("request");
+  const selected = query.data?.sessions.find(s => s.id === selectedId);
+  const requestedProject = new URLSearchParams(search).get("project");
+  const focusedKey = selected
+    ? projectKey(selected)
+    : requestedProject && keys.includes(requestedProject)
+      ? requestedProject
+      : keys[0];
+  useEffect(() => {
+    if (!query.data || arrived.current === id) return;
+    arrived.current = id;
+    if (selectedId || requestedProject)
+      document
+        .getElementById(`project-${focusedKey}`)
+        ?.scrollIntoView({ block: "start" });
+  }, [query.data, selectedId, focusedKey, requestedProject, id]);
+  return (
+    <Screen
+      title="Tattoo projects"
+      subtitle={
+        user?.role === "client"
+          ? query.data?.artist?.name
+          : query.data?.client?.name
+      }
+      back={user?.role === "client" ? "/bookings" : "/conversations"}
+      wide
+    >
+      <Feedback
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => query.refetch()}
+      />
+      {!(id > 0) && (
+        <Feedback empty="This booking link is invalid. Open your bookings to choose a session." />
+      )}
+      {query.data && selectedId > 0 && !selected && (
+        <Feedback empty="This sitting is no longer available. Your other projects are below." />
+      )}
+      <div className="ivory-project-list">
+        {keys.map(key => (
+          <section id={`project-${key}`} key={`${id}:${key}`}>
+            <BookingProject projectId={key} focused={key === focusedKey} />
+          </section>
+        ))}
+      </div>
+    </Screen>
+  );
+}
+
+function BookingProject({
+  projectId,
+  focused,
+}: {
+  projectId: string;
+  focused: boolean;
+}) {
+  const [, params] = useRoute("/projects/:id");
+  const id = Number(params?.id);
+  const search = useSearch();
   const [, go] = useLocation();
   const qs = new URLSearchParams(search);
-  const selectedId = Number(qs.get("session")) || null;
-  const active = qs.get("view");
+  const selectedId = focused ? Number(qs.get("session")) || null : null;
+  const active = focused ? qs.get("view") : null;
   const tab =
     active === "Messages" || active === "Files" || active === "Payments"
       ? active
@@ -53,7 +134,11 @@ export default function Booking() {
     { conversationId: id },
     { enabled: id > 0 }
   );
-  const data = query.data;
+  const data = query.data && {
+    ...query.data,
+    sessions: query.data.sessions.filter(s => projectKey(s) === projectId),
+    plans: query.data.plans.filter(p => `plan:${p.id}` === projectId),
+  };
   const client = isConversationClient(user, data?.client?.id);
   const session = selectedId
     ? data?.sessions.find(s => s.id === selectedId)
@@ -100,12 +185,13 @@ export default function Booking() {
   const [plan, setPlan] = useState<number | null>(null);
   const forms = trpc.forms.getPendingForms.useQuery(
     { appointmentId: session?.id },
-    { enabled: client && !!session }
+    { enabled: client && focused && !!session }
   );
   const formAction = useRef("");
   useEffect(() => {
     const key = `${id}:${session?.id}`;
     if (
+      focused &&
       qs.get("action") === "forms" &&
       forms.data?.length &&
       formAction.current !== key
@@ -113,11 +199,8 @@ export default function Booking() {
       formAction.current = key;
       setSign(true);
     }
-  }, [search, id, session?.id, forms.data]);
+  }, [search, id, session?.id, forms.data, focused]);
   const siblings = projectSessions(data?.sessions || [], session);
-  const groups = [
-    ...new Map((data?.sessions || []).map(s => [projectKey(s), s])).values(),
-  ];
   // A returning client's new proposal must remain reachable before sessions exist.
   const pending =
     data?.plans.filter(
@@ -125,7 +208,7 @@ export default function Booking() {
         (!session || p.id === session.sessionPlanId) &&
         (p.paymentState || (p.requiresDeposit ?? p.status === "pending"))
     ) || [];
-  const selectedKey = session ? projectKey(session) : null;
+  const selectedKey = projectId === "request" ? null : projectId;
   const briefs = (data?.briefs || []).filter(
     b => !selectedKey || b.projectKeys?.includes(selectedKey)
   );
@@ -138,24 +221,23 @@ export default function Booking() {
   const history = (data?.history || []).filter(
     h => !selectedKey || h.projectKeys?.includes(selectedKey)
   );
+  const [filesOpen, setFilesOpen] = useState(tab === "Files");
+  const [paymentsOpen, setPaymentsOpen] = useState(tab === "Payments");
+  useEffect(() => {
+    if (tab === "Files") setFilesOpen(true);
+    if (tab === "Payments") setPaymentsOpen(true);
+  }, [tab]);
   const refresh = () => {
     void query.refetch();
     if (client) void forms.refetch();
   };
   const navigate = (view: string, sessionId = session?.id) => {
     const q = new URLSearchParams();
+    q.set("project", projectId);
     if (sessionId) q.set("session", String(sessionId));
     if (view !== "Overview") q.set("view", view);
     go(`/projects/${id}?${q}`);
   };
-  const subtitle = [
-    client ? data?.artist?.name : data?.client?.name,
-    session && data
-      ? `Session ${session.sessionIndex || siblings.findIndex(s => s.id === session.id) + 1} of ${session.sessionTotal || siblings.length}`
-      : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
   const overview = data && (
     <div className="v3-grid">
       <div className="v3-stack">
@@ -302,7 +384,7 @@ export default function Booking() {
           </Section>
         )}
         <ActionLink
-          href={`/projects/${id}?${session ? `session=${session.id}&` : ""}view=Messages`}
+          href={`/projects/${id}?project=${encodeURIComponent(projectId)}&${session ? `session=${session.id}&` : ""}view=Messages`}
         >
           <MessageCircle />
           Message{" "}
@@ -341,64 +423,60 @@ export default function Booking() {
       </aside>
     </div>
   );
+  const next = nextProjectSitting(siblings);
+  const projectForms =
+    data?.forms.filter(
+      f =>
+        siblings.some(
+          s =>
+            s.id === f.appointmentId &&
+            !["cancelled", "no-show", "completed"].includes(s.status)
+        ) && f.status !== "signed"
+    ) || [];
   return (
-    <Screen
-      title={session?.projectName || "Tattoo project"}
-      subtitle={subtitle}
-      back={
-        client
-          ? user?.role === "client"
-            ? "/bookings"
-            : "/conversations"
-          : "/calendar"
-      }
-      subheader={
-        data && (
-          <Tabs
-            items={["Overview", "Messages", "Files", "Payments"] as const}
-            value={tab}
-            onChange={t => navigate(t)}
-            label="Booking sections"
-          />
-        )
-      }
-    >
-      <Feedback
-        loading={query.isLoading}
-        error={query.error}
-        onRetry={() => query.refetch()}
-      />
-      {!(id > 0) && (
-        <Feedback empty="This booking link is invalid. Open your bookings to choose a session." />
-      )}
-      {data && selectedId && !session && (
-        <Feedback empty="This session is not available in this conversation. Choose a tattoo project below or return to your bookings." />
-      )}
+    <Panel className="ivory-project-card">
       {data && (
         <>
-          {groups.length > 1 && (
-            <div className="v3-form">
-              <label>
-                Tattoo project
-                <select
-                  aria-label="Tattoo project"
-                  value={session ? projectKey(session) : ""}
-                  onChange={e => {
-                    const target = groups.find(
-                      s => projectKey(s) === e.target.value
-                    );
-                    if (target) navigate(tab, target.id);
-                  }}
-                >
-                  {groups.map(s => (
-                    <option key={projectKey(s)} value={projectKey(s)}>
-                      {s.projectName || "Unnamed tattoo project"}
-                    </option>
+          <div className="ivory-project-heading">
+            <h2>
+              {session?.projectName ||
+                data.plans[0]?.projectName ||
+                "Tattoo project"}
+            </h2>
+            <p className="v3-muted">
+              {client ? data.artist?.name : data.client?.name}
+            </p>
+            {!!siblings.length && <ProjectProgress sittings={siblings} />}
+            {next && (
+              <p className="v3-next-sitting">
+                Next: sitting {next.sessionIndex || siblings.indexOf(next) + 1}{" "}
+                · {bookingDate(next.startsAt, next.timeZone)}
+              </p>
+            )}
+            <div className="ivory-project-actions">
+              {client &&
+                siblings
+                  .filter(s => s.pendingRequest)
+                  .map(s => (
+                    <ActionLink
+                      key={s.id}
+                      href={`/pay/${s.pendingRequest!.token}`}
+                      tone="primary"
+                    >
+                      Sitting {s.sessionIndex || siblings.indexOf(s) + 1}:
+                      review {money(s.pendingRequest!.amountCents)} request
+                    </ActionLink>
                   ))}
-                </select>
-              </label>
+              {client && projectForms.length > 0 && (
+                <ActionLink
+                  href={`/projects/${id}?session=${projectForms[0].appointmentId}&action=forms`}
+                  tone="secondary"
+                >
+                  Complete consent forms · {projectForms.length}
+                </ActionLink>
+              )}
             </div>
-          )}
+          </div>
           {namingFailed && (
             <Panel>
               <p>
@@ -418,34 +496,60 @@ export default function Booking() {
             </Panel>
           )}
           {siblings.length > 0 && (
-            <Section title="Project sittings">
-              <ol className="v3-sitting-list" aria-label="Project sittings">
-                {siblings.map((s, i) => (
-                  <li key={s.id} data-next={s.id === session?.id}>
-                    <SittingCard
-                      title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}`}
-                      detail={bookingDate(s.startsAt, s.timeZone)}
-                      expanded={
-                        tab === "Overview" &&
-                        s.id === session?.id &&
-                        collapsedSitting !== s.id
-                      }
-                      onExpandedChange={open => {
-                        setCollapsedSitting(open ? null : s.id);
-                        if (open) navigate("Overview", s.id);
-                      }}
-                    >
-                      {s.id === session?.id && overview}
-                    </SittingCard>
-                  </li>
-                ))}
-              </ol>
-            </Section>
+            <ProjectSittings
+              sittings={siblings}
+              selectedId={selectedId}
+              render={(s, i) => (
+                <SittingCard
+                  title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}`}
+                  detail={bookingDate(s.startsAt, s.timeZone)}
+                  expanded={
+                    tab === "Overview" &&
+                    !!selectedId &&
+                    s.id === session?.id &&
+                    collapsedSitting !== s.id
+                  }
+                  onExpandedChange={open => {
+                    setCollapsedSitting(open ? null : s.id);
+                    if (open) navigate("Overview", s.id);
+                  }}
+                >
+                  {s.id === session?.id && overview}
+                </SittingCard>
+              )}
+            />
           )}
-          {tab === "Messages" && <Thread id={id} initialDraft={requestDraft} />}
+          <Action tone="quiet" onClick={() => navigate("Messages")}>
+            Message{" "}
+            {client
+              ? data.artist?.name || "your artist"
+              : data.client?.name || "client"}
+          </Action>
+          <SheetShell
+            isOpen={tab === "Messages"}
+            onClose={() => navigate("Overview")}
+            title="Project messages"
+          >
+            {tab === "Messages" && (
+              <Thread id={id} initialDraft={requestDraft} />
+            )}
+          </SheetShell>
           {tab === "Overview" && siblings.length === 0 && overview}
-          {tab === "Files" && (
+          <details
+            open={filesOpen}
+            onToggle={event => setFilesOpen(event.currentTarget.open)}
+            className="ivory-project-resource"
+          >
+            <summary className="v3-row">Design & references</summary>
             <Section title="Project reference images">
+              {briefs.map(b => (
+                <div key={b.id}>
+                  <p style={{ whiteSpace: "pre-wrap" }}>{b.description}</p>
+                  {b.placement && (
+                    <p className="v3-muted">Placement: {b.placement}</p>
+                  )}
+                </div>
+              ))}
               {!briefs.some(b => b.images.length) && (
                 <Feedback empty="No references are linked to this project yet. Older, unassigned references remain available in Messages." />
               )}
@@ -500,14 +604,19 @@ export default function Booking() {
                 </details>
               )}
               <ActionLink
-                href={`/projects/${id}?${session ? `session=${session.id}&` : ""}view=Messages`}
+                href={`/projects/${id}?project=${encodeURIComponent(projectId)}&${session ? `session=${session.id}&` : ""}view=Messages`}
                 tone="quiet"
               >
                 Share photos in Messages
               </ActionLink>
             </Section>
-          )}
-          {tab === "Payments" && (
+          </details>
+          <details
+            open={paymentsOpen}
+            onToggle={event => setPaymentsOpen(event.currentTarget.open)}
+            className="ivory-project-resource"
+          >
+            <summary className="v3-row">Payments</summary>
             <Section title="Project payment history · AUD">
               <p className="v3-muted">
                 Session totals can include imported payments without a linked
@@ -544,7 +653,7 @@ export default function Booking() {
                 />
               ))}
             </Section>
-          )}
+          </details>
         </>
       )}
       <SheetShell
@@ -586,7 +695,7 @@ export default function Booking() {
           projectName={session.projectName || "Tattoo project"}
         />
       )}
-    </Screen>
+    </Panel>
   );
 }
 function EarlierAppointment({ conversationId }: { conversationId: number }) {

@@ -1,0 +1,91 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { response } from './ivory-fixtures.mjs';
+const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_PATH || 'playwright');
+const out=process.env.AUDIT_OUTPUT || 'output/tattoi-project-cards';await mkdir(out,{recursive:true});
+const base=process.env.AUDIT_URL || 'http://127.0.0.1:5210';
+const browser=await chromium.launch({headless:true,executablePath:process.env.AUDIT_BROWSER});
+const original=response('projects.summary','client');
+const source=original.sessions[0];
+const sessions=[...Array.from({length:6},(_,i)=>({...source,id:101+i,sessionPlanId:11,sessionIndex:i+1,sessionTotal:6,projectName:'Botanical sleeve',status:i<2?'completed':'confirmed',startsAt:`2026-10-${10+i}T00:00:00Z`,endsAt:`2026-10-${10+i}T03:00:00Z`,estimateCents:60000,paidCents:15000,remainingCents:45000,pendingRequest:i===2?{token:'sleeve-payment',amountCents:10000}:null})),...Array.from({length:2},(_,i)=>({...source,id:201+i,sessionPlanId:22,sessionIndex:i+1,sessionTotal:2,projectName:'Butterfly tattoo',status:i===0?'completed':'confirmed',startsAt:`2026-11-${10+i}T00:00:00Z`,endsAt:`2026-11-${10+i}T03:00:00Z`,pendingRequest:null})),{...source,id:301,sessionPlanId:null,sessionTotal:null,projectName:'Fine-line study',status:'confirmed',startsAt:'2026-12-10T00:00:00Z',endsAt:'2026-12-10T02:00:00Z',pendingRequest:null}];
+const archived={...source,id:401,sessionPlanId:44,sessionIndex:1,sessionTotal:1,projectName:'Finished flower',status:'completed',remainingCents:0,startsAt:'2026-08-01T00:00:00Z',endsAt:'2026-08-01T02:00:00Z'};
+const summary={...original,sessions,plans:[],forms:[{id:7,appointmentId:103,title:'Sleeve consent',status:'pending'},{id:8,appointmentId:202,title:'Butterfly consent',status:'pending'}],briefs:[{id:1,description:'Sleeve reference only',images:[],projectKeys:['plan:11']},{id:2,description:'Butterfly reference only',images:[],projectKeys:['plan:22']}],history:[{id:1,type:'deposit',method:'card',amountCents:12345,projectKeys:['plan:11']},{id:2,type:'deposit',method:'card',amountCents:67890,projectKeys:['plan:22']}]};
+const booking=s=>({...response('appointments.getClientBookings','client').appointments[0],...s,conversationId:12,amountPaidCents:s.paidCents,depositPaidCents:s.paidCents,balanceDueCents:s.remainingCents,paymentRequest:s.pendingRequest,pendingFormCount:[103,202].includes(s.id)?1:0});
+const results=[];
+try {
+for(const width of [320,390,820]){
+ const context=await browser.newContext({viewport:{width,height:900},hasTouch:true,isMobile:width<768,serviceWorkers:'block',timezoneId:'Australia/Brisbane'});
+ await context.addInitScript(()=>{localStorage.setItem('authToken','test');localStorage.setItem('tattoi-theme-override','light');sessionStorage.setItem('splashShown','true');});
+ let pendingExisting=false;
+ const calls=[],errors=[];
+ await context.route('**/*',async r=>{
+  const u=new URL(r.request().url());if(u.hostname!=='127.0.0.1')return r.abort();
+  if(!u.pathname.startsWith('/api/trpc/'))return r.continue();
+  const names=u.pathname.split('/').at(-1).split(',');let raw={};try{raw=r.request().postDataJSON()||JSON.parse(u.searchParams.get('input')||'{}')}catch{}
+  return r.fulfill({json:names.map((name,i)=>{
+   calls.push({name,input:raw[i]?.json,method:r.request().method()});let v=response(name,'client');
+   if(name==='projects.summary')v=pendingExisting?{...summary,plans:[{id:33,projectName:'New koi proposal',status:'pending',requiresDeposit:true,depositCents:15000}]}:summary;
+   if(name==='appointments.getClientBookings')v={appointments:(raw[i]?.json?.tab==='past'?[archived]:sessions).map(booking),pendingRequests:[],pendingConsults:[]};
+   if(name==='sessionPlans.getByClient')v=pendingExisting?[{id:11,conversationId:12,projectName:'Botanical sleeve',status:'pending',requiresDeposit:true,depositTotalCents:15000,platformFeeCents:500,items:[]}]:[];
+   if(name==='forms.getPendingForms')v=[{id:7,appointmentId:raw[i]?.json?.appointmentId,title:'Sleeve consent',content:'Read before signing.',status:'pending',formType:'consent'}];
+   return {result:{data:{json:v}}};
+  })});
+ });
+ const page=await context.newPage();page.setDefaultTimeout(8000);page.on('pageerror',e=>errors.push(e.message));await page.clock.install({time:new Date('2026-09-21T00:00:00Z')});
+ await page.goto(base+'/bookings');
+ const card=name=>page.locator('.ivory-project-card').filter({has:page.getByRole('heading',{name,exact:true})});
+ const sleeve=card('Botanical sleeve'), butterfly=card('Butterfly tattoo');await sleeve.waitFor();
+ assert.equal(await page.getByRole('tablist').count(),0);
+ assert.equal(await sleeve.getByRole('progressbar',{name:'2 of 6 sittings completed'}).getAttribute('value'),'2');
+ assert.equal(await butterfly.getByRole('progressbar',{name:'1 of 2 sittings completed'}).getAttribute('max'),'2');
+ assert.equal(await card('Fine-line study').getByRole('progressbar').count(),0);
+ assert.equal(await sleeve.getByRole('listitem').count(),1);
+ await sleeve.getByRole('link',{name:/review \$100.00 request/i}).waitFor();
+ await sleeve.getByRole('link',{name:/Complete sitting 3 forms/}).waitFor();
+ assert.equal(await sleeve.getByRole('link',{name:/review \$100.00 request/i}).getAttribute('href'),'/pay/sleeve-payment');
+ await page.waitForTimeout(450);
+ await page.screenshot({path:`${out}/bookings-${width}.png`,fullPage:true});
+ await sleeve.getByRole('button',{name:'View all 6 sittings'}).click();
+ const trigger=sleeve.getByRole('button',{name:/Sitting 4 ·/});await trigger.click();
+ const row=trigger.locator('..');await row.getByText('Balance due',{exact:true}).waitFor();
+ assert.equal(await butterfly.locator('.v3-sitting-details').count(),0);
+ assert(await row.evaluate(el=>{const d=el.querySelector('.v3-sitting-details');return d.getBoundingClientRect().top>=el.querySelector('button').getBoundingClientRect().bottom}));
+ await trigger.click();assert.equal(await sleeve.locator('.v3-sitting-details').count(),0);
+ await page.locator('.ivory-completed-projects > summary').click();await card('Finished flower').getByRole('progressbar',{name:'1 of 1 sittings completed'}).waitFor();
+ await butterfly.getByRole('link',{name:'Design & references',exact:true}).click();
+ await page.waitForURL('**/projects/12?session=202&view=Files');
+ const detailButterfly=card('Butterfly tattoo'),detailSleeve=card('Botanical sleeve');
+ await detailButterfly.getByText('Butterfly reference only',{exact:true}).last().waitFor();
+ assert.equal(await detailButterfly.getByText('Sleeve reference only',{exact:true}).count(),0);
+ assert.equal(await page.getByRole('combobox',{name:'Tattoo project'}).count(),0);assert.equal(await page.getByRole('tablist',{name:'Booking sections'}).count(),0);
+ await detailButterfly.locator('summary').filter({hasText:/^Payments$/}).click();
+ await detailButterfly.getByText('$678.90',{exact:true}).waitFor();assert.equal(await detailButterfly.getByText('$123.45',{exact:true}).count(),0);
+ await page.waitForTimeout(450);
+ await page.screenshot({path:`${out}/project-resources-${width}.png`,fullPage:true});
+ await page.goto(base+'/projects/12?session=104');
+ const deep=card('Botanical sleeve');await deep.getByRole('button',{name:'Request a date change',exact:true}).waitFor();
+ assert.equal(await deep.getByRole('listitem').count(),1);
+ await deep.getByRole('button',{name:'Request a date change',exact:true}).click();
+ const message=page.getByRole('textbox',{name:'Message',exact:true});await message.waitFor();
+ assert((await message.inputValue()).includes('Botanical sleeve, sitting 4'));
+ assert(!calls.some(c=>c.name==='messages.send'));
+ await page.goto(base+'/projects/12?session=103&action=forms');await page.getByRole('heading',{name:'Consent forms',exact:true}).waitFor();
+ assert(calls.some(c=>c.name==='forms.getPendingForms'&&c.input.appointmentId===103));
+ assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ pendingExisting=true;
+ await page.goto(base+'/bookings');
+ await sleeve.getByRole('button',{name:'Review $155.00 deposit & fee',exact:true}).waitFor();
+ assert.equal(await page.getByRole('heading',{name:'Botanical sleeve',exact:true}).count(),1,'Existing plan and sittings stay in one project card');
+ if(width===390){await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.waitForTimeout(350);await page.screenshot({path:`${out}/bookings-dark-${width}.png`,fullPage:true});}
+ await page.goto(base+'/projects/12?project=plan%3A33');
+ const newProject=card('New koi proposal');await newProject.getByRole('button',{name:/^Message /}).waitFor();
+ await newProject.getByRole('button',{name:/^Message /}).click();
+ await page.getByRole('textbox',{name:'Message',exact:true}).waitFor();
+ assert.equal(new URL(page.url()).searchParams.get('project'),'plan:33','A proposal without sittings keeps its own project context');
+ assert.deepEqual(errors,[]);
+ results.push({width,status:'passed',checks:['project identity','known and unknown progress','compact and expanded sittings','adjacent detail panels','urgent forms and payment links','completed project disclosure','project-scoped references and payments','legacy sitting deep links','date-change message draft without send','consent deep link','existing proposal stays in its project card','proposal without sittings retains message context','no overflow or runtime errors']});
+ await context.close();
+}
+} finally {await browser.close();await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));}
+console.log(JSON.stringify(results,null,2));

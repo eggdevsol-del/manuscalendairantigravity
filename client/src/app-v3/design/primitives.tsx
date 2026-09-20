@@ -169,11 +169,15 @@ export function Section({
 export function Panel({
   children,
   tone = "plain",
+  className = "",
 }: {
   children: ReactNode;
   tone?: "plain" | "attention";
+  className?: string;
 }) {
-  return <div className={`v3-panel v3-panel-${tone}`}>{children}</div>;
+  return (
+    <div className={`v3-panel v3-panel-${tone} ${className}`}>{children}</div>
+  );
 }
 export function Status({
   children,

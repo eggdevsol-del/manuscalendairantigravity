@@ -52,6 +52,7 @@ try {
   }
   run("scripts/ui-audit/release-regressions.mjs");
   run("scripts/ui-audit/sitting-regressions.mjs");
+  run("scripts/ui-audit/project-cards-check.mjs");
   // Exercise contextual tours against the release build, including nested UI.
   run("scripts/ui-audit/complete-tours-check.mjs");
   run("scripts/ui-audit/tour-public-check.mjs");

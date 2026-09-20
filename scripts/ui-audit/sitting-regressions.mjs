@@ -308,8 +308,9 @@ try {
     await context.close();
   }
   {
+    // A proposal without booked sittings owns its own project card.
     const plan = {
-      id: 11,
+      id: 22,
       conversationId: 12,
       artist,
       clientId: client.id,
