@@ -30,6 +30,11 @@ async function setup(role, override = {}, init) {
     timezoneId: "Australia/Brisbane",
   });
   await context.addInitScript(() => {
+    // Tours exercise the available, not-yet-enabled notification action.
+    // Headless Chromium defaults to denied; installed Chrome defaults to default.
+    // Keep this isolated permission fixture consistent without subscribing a device.
+    if ('Notification' in window)
+      Object.defineProperty(Notification, 'permission', { configurable: true, get: () => 'default' });
     if (!localStorage.getItem("tattoi-theme-override"))
       localStorage.setItem("tattoi-theme-override", "light");
     localStorage.setItem("authToken", "test");
