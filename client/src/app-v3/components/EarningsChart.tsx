@@ -37,42 +37,51 @@ export function EarningsChart({
         {daily.map((d, i) => (
           <g key={d.date}>
             <rect
-              x={i * width + 0.35}
-              y={Math.min(y(d.netCents), baseline)}
-              width={Math.max(0.5, width - 0.7)}
-              height={Math.abs(y(d.netCents) - baseline)}
-              rx="1"
-              fill={d.netCents < 0 ? "var(--v3-red)" : "var(--v3-green)"}
+              x={i * width}
+              y={
+                d.netCents === 0
+                  ? baseline - 1
+                  : Math.min(y(d.netCents), baseline)
+              }
+              width={width}
+              height={d.netCents === 0 ? 1 : Math.abs(y(d.netCents) - baseline)}
+              rx="0"
+              fill={
+                d.netCents === 0
+                  ? "var(--v3-muted)"
+                  : d.netCents < 0
+                    ? "var(--v3-red)"
+                    : "var(--v3-green)"
+              }
             >
               <title>
                 {d.date}: {money(d.netCents)}
               </title>
             </rect>
-            {d.netCents !== 0 &&
-              (() => {
-                const label = new Intl.NumberFormat("en-AU", {
-                  notation: "compact",
-                  maximumFractionDigits: 1,
-                }).format(d.netCents / 100);
-                return (
-                  <text
-                    x={(i + 0.5) * width}
-                    y={Math.min(y(d.netCents), baseline) - 3}
-                    textAnchor="middle"
-                    fontSize="6"
-                    fill="var(--v3-ink)"
-                    {...(label.length * 3.6 > width - 1
-                      ? {
-                          textLength: width - 1,
-                          lengthAdjust: "spacingAndGlyphs" as const,
-                        }
-                      : {})}
-                  >
-                    <title>{money(d.netCents)}</title>
-                    {label}
-                  </text>
-                );
-              })()}
+            {(() => {
+              const label = new Intl.NumberFormat("en-AU", {
+                notation: "compact",
+                maximumFractionDigits: 1,
+              }).format(d.netCents / 100);
+              return (
+                <text
+                  x={(i + 0.5) * width}
+                  y={Math.min(y(d.netCents), baseline) - 3}
+                  textAnchor="middle"
+                  fontSize="6"
+                  fill="var(--v3-ink)"
+                  {...(label.length * 3.6 > width - 1
+                    ? {
+                        textLength: width - 1,
+                        lengthAdjust: "spacingAndGlyphs" as const,
+                      }
+                    : {})}
+                >
+                  <title>{money(d.netCents)}</title>
+                  {label}
+                </text>
+              );
+            })()}
           </g>
         ))}
       </svg>

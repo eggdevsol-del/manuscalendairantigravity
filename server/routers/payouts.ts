@@ -1,4 +1,8 @@
-import { dailyEarnings, sumLedgerEarnings } from "../services/dailyEarnings";
+import {
+  dailyEarnings,
+  sumLedgerEarnings,
+  earningsPeriodStart,
+} from "../services/dailyEarnings";
 /**
  * Payouts Router — Artist Dashboard Queries
  *
@@ -170,7 +174,7 @@ export const payoutsRouter = router({
       };
       const days = periodDays[input.period];
       const startDate = days
-        ? new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+        ? earningsPeriodStart(new Date(), days, input.timeZone)
             .toISOString()
             .slice(0, 19)
             .replace("T", " ")

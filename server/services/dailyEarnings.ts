@@ -1,4 +1,4 @@
-import { formatInTimeZone } from "date-fns-tz";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 type LedgerRow = {
   createdAt: string | null;
   transactionType: string;
@@ -69,4 +69,13 @@ export function dailyEarnings(
     points.push({ date, netCents: sums.get(date) || 0 });
   }
   return points;
+}
+
+/** Include today and the previous days-1 calendar dates in the artist's timezone. */
+export function earningsPeriodStart(now: Date, days: number, zone: string) {
+  const date = new Date(
+    formatInTimeZone(now, zone, "yyyy-MM-dd") + "T12:00:00Z"
+  );
+  date.setUTCDate(date.getUTCDate() - days + 1);
+  return fromZonedTime(date.toISOString().slice(0, 10) + "T00:00:00", zone);
 }
