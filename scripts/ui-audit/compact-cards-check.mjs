@@ -44,7 +44,9 @@ try{for(const width of [320,390,820]){
  await page.goto(base+'/chat/12');
  const chat=page.locator('.v3-booking-message');await chat.waitFor();
  // Approved graphical message cards show facts directly, without another disclosure.
- const chatMetrics={sittings:await chat.getByRole('list',{name:'Sitting dates'}).getByRole('listitem').count()};
+ const sittingRows=chat.getByRole('list',{name:'Sitting dates'}).getByRole('listitem');
+ await sittingRows.first().waitFor();
+ const chatMetrics={sittings:await sittingRows.count()};
  assert(chatMetrics.sittings>0);
  assert.equal(await chat.locator('.v3-summary-card').count(),0);
  await chat.getByText(/^(Sittings|Project) estimate$/).waitFor();
