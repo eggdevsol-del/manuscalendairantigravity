@@ -28,3 +28,11 @@ The new project-card browser audit is included in `scripts/verify-release.mjs` f
 
 Screenshots and browser results: `output/tattoi-project-cards/`.
 Run `scripts/ui-audit/project-cards-check.mjs` against a local candidate using `AUDIT_URL` and `AUDIT_BROWSER` as needed. Existing public resource links continue to use the current API permissions and backend project associations.
+
+## Project summary refinement
+
+Collapsed projects now list upcoming dates as plain text, with progress always visible. Completed dates are available when the project is expanded; entirely finished projects list their historical dates. One disclosure reveals all sitting rows and secondary resources. Urgent payment and consent actions remain visible. Deep links automatically open the relevant project, including reference, payment and form links.
+
+Rescheduled labels are derived from the existing appointment audit log through a shared server reader. Both booking-list and project-summary responses use that reader. The existing reschedule mutation retains appointment ID, session-plan ID and financial state; project grouping continues to use the saved session-plan ID, never the date. No migration or generated example data was added.
+
+Regression coverage checks plain date summaries, hidden secondary actions, rescheduled labels, one-step sitting access, retained project membership after date changes, progress, and existing deep links at 320, 390 and 820 pixels. Browser runs use intercepted fixtures, not live payments or production records.

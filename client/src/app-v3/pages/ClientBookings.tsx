@@ -1,5 +1,8 @@
 import { ProjectProgress } from "../components/ProjectProgress";
-import { ProjectSittings } from "../components/ProjectSittings";
+import {
+  ProjectSittings,
+  ProjectDisclosure,
+} from "../components/ProjectSittings";
 import {
   orderedProjectGroups,
   nextProjectSitting,
@@ -83,8 +86,7 @@ export default function ClientBookings() {
   const projectCards = (
     groups: ReturnType<
       typeof orderedProjectGroups<(typeof appointments)[number]>
-    >,
-    archived = false
+    >
   ) => (
     <div className="ivory-project-list">
       {groups.map(sittings => {
@@ -114,24 +116,7 @@ export default function ClientBookings() {
                 </h2>
                 <p>{first.artist.name}</p>
               </div>
-              {!archived && (
-                <p className="v3-next-sitting">
-                  {!["completed", "cancelled", "no-show"].includes(next.status)
-                    ? `Next: sitting ${next.sessionIndex || sittings.indexOf(next) + 1} · ${bookingDate(next.startsAt, next.timeZone)}`
-                    : "No upcoming sitting · review outstanding actions"}
-                </p>
-              )}
               <ProjectProgress sittings={sittings} />
-              <p className="ivory-project-money">
-                {money(
-                  sittings.reduce((sum, a) => sum + (a.amountPaidCents || 0), 0)
-                )}{" "}
-                paid ·{" "}
-                {money(
-                  sittings.reduce((sum, a) => sum + (a.balanceDueCents || 0), 0)
-                )}{" "}
-                remaining
-              </p>
               <div className="ivory-project-actions">
                 {proposal && (
                   <Action
@@ -169,71 +154,91 @@ export default function ClientBookings() {
                   </ActionLink>
                 )}
               </div>
-              <ProjectSittings
-                sittings={sittings}
-                selectedId={openSittings[key]}
-                render={(a, index) => (
-                  <SittingCard
-                    expanded={openSittings[key] === a.id}
-                    onExpandedChange={open =>
-                      setOpenSittings(previous => ({
-                        ...previous,
-                        [key]: open ? a.id : null,
-                      }))
-                    }
-                    title={`Sitting ${a.sessionIndex || index + 1} · ${statusLabel(a.status)}`}
-                    detail={bookingDate(a.startsAt, a.timeZone)}
-                  >
-                    {a.conversationId ? (
-                      <SittingSummary
-                        conversationId={a.conversationId}
-                        appointmentId={a.id}
-                      />
-                    ) : (
-                      <>
-                        <p className="v3-muted">
-                          {a.depositPaidCents > 0
-                            ? "Deposit received"
-                            : "No deposit recorded"}{" "}
-                          · {money(a.balanceDueCents)} remaining
-                          {a.pendingFormCount
-                            ? ` · ${a.pendingFormCount} ${a.pendingFormCount === 1 ? "form" : "forms"} to complete`
-                            : ""}
-                        </p>
-                        {a.paymentRequest &&
-                          !requested.some(r => r.id === a.id) && (
-                            <ActionLink href={`/pay/${a.paymentRequest.token}`}>
-                              Review {money(a.paymentRequest.amountCents)}{" "}
-                              request
-                            </ActionLink>
-                          )}
-                      </>
-                    )}
-                  </SittingCard>
+              <ProjectDisclosure sittings={sittings}>
+                <p className="ivory-project-money">
+                  {money(
+                    sittings.reduce(
+                      (sum, a) => sum + (a.amountPaidCents || 0),
+                      0
+                    )
+                  )}{" "}
+                  paid ·{" "}
+                  {money(
+                    sittings.reduce(
+                      (sum, a) => sum + (a.balanceDueCents || 0),
+                      0
+                    )
+                  )}{" "}
+                  remaining
+                </p>
+                <ProjectSittings
+                  sittings={sittings}
+                  selectedId={openSittings[key]}
+                  render={(a, index) => (
+                    <SittingCard
+                      expanded={openSittings[key] === a.id}
+                      onExpandedChange={open =>
+                        setOpenSittings(previous => ({
+                          ...previous,
+                          [key]: open ? a.id : null,
+                        }))
+                      }
+                      title={`Sitting ${a.sessionIndex || index + 1} · ${statusLabel(a.status)}${a.rescheduled ? " · Rescheduled" : ""}`}
+                      detail={bookingDate(a.startsAt, a.timeZone)}
+                    >
+                      {a.conversationId ? (
+                        <SittingSummary
+                          conversationId={a.conversationId}
+                          appointmentId={a.id}
+                        />
+                      ) : (
+                        <>
+                          <p className="v3-muted">
+                            {a.depositPaidCents > 0
+                              ? "Deposit received"
+                              : "No deposit recorded"}{" "}
+                            · {money(a.balanceDueCents)} remaining
+                            {a.pendingFormCount
+                              ? ` · ${a.pendingFormCount} ${a.pendingFormCount === 1 ? "form" : "forms"} to complete`
+                              : ""}
+                          </p>
+                          {a.paymentRequest &&
+                            !requested.some(r => r.id === a.id) && (
+                              <ActionLink
+                                href={`/pay/${a.paymentRequest.token}`}
+                              >
+                                Review {money(a.paymentRequest.amountCents)}{" "}
+                                request
+                              </ActionLink>
+                            )}
+                        </>
+                      )}
+                    </SittingCard>
+                  )}
+                />
+                {first.conversationId && (
+                  <div className="ivory-project-links">
+                    <ActionLink
+                      href={`/chat/${first.conversationId}`}
+                      tone="quiet"
+                    >
+                      Message artist
+                    </ActionLink>
+                    <ActionLink
+                      href={destination(next) + "&view=Files"}
+                      tone="quiet"
+                    >
+                      Design & references
+                    </ActionLink>
+                    <ActionLink
+                      href={destination(next) + "&view=Payments"}
+                      tone="quiet"
+                    >
+                      Payments
+                    </ActionLink>
+                  </div>
                 )}
-              />
-              {first.conversationId && (
-                <div className="ivory-project-links">
-                  <ActionLink
-                    href={`/chat/${first.conversationId}`}
-                    tone="quiet"
-                  >
-                    Message artist
-                  </ActionLink>
-                  <ActionLink
-                    href={destination(next) + "&view=Files"}
-                    tone="quiet"
-                  >
-                    Design & references
-                  </ActionLink>
-                  <ActionLink
-                    href={destination(next) + "&view=Payments"}
-                    tone="quiet"
-                  >
-                    Payments
-                  </ActionLink>
-                </div>
-              )}
+              </ProjectDisclosure>
             </div>
           </Panel>
         );
@@ -310,7 +315,7 @@ export default function ClientBookings() {
           error={past.error}
           onRetry={() => past.refetch()}
         />
-        {projectCards(completedGroups, true)}
+        {projectCards(completedGroups)}
         {!past.isLoading && !past.error && !completedGroups.length && (
           <p className="v3-muted">No completed projects yet.</p>
         )}

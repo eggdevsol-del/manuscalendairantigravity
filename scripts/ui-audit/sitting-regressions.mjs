@@ -195,6 +195,7 @@ try {
   ]) {
     const { page, context, calls } = await setup(role, overrides);
     await page.goto(baseURL + path);
+    if (path === "/bookings") await page.locator(".ivory-project-disclosure > details > summary").first().click();
     await page.getByRole("button", { name: title }).click();
     const card = page
       .locator(".v3-sitting-card")

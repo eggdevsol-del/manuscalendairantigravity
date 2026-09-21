@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { it, expect } from "vitest";
 import { ProjectProgress } from "./ProjectProgress";
-import { ProjectSittings } from "./ProjectSittings";
+import { ProjectSittings, ProjectDisclosure } from "./ProjectSittings";
 const sittings = Array.from({ length: 6 }, (_, i) => ({
   id: i + 1,
   sessionPlanId: 11,
@@ -22,28 +22,38 @@ it("shows unknown progress honestly without an invented bar", () => {
   expect(screen.queryByRole("progressbar")).toBeNull();
   expect(screen.getByText(/total to be confirmed/)).toBeTruthy();
 });
-it("keeps a long project compact and expands its rows on request", () => {
-  render(
-    <ProjectSittings
-      sittings={sittings}
-      render={s => <span>Sitting {s.id}</span>}
-    />
+it("shows date text while collapsed and reveals all sitting controls in one step", async () => {
+  const { container } = render(
+    <ProjectDisclosure
+      sittings={sittings.map(s => ({ ...s, rescheduled: s.id === 3 }))}
+    >
+      <ProjectSittings
+        sittings={sittings}
+        render={s => <button>Sitting {s.id}</button>}
+      />
+    </ProjectDisclosure>
   );
-  expect(screen.getAllByRole("listitem")).toHaveLength(1);
-  expect(screen.getByText("Sitting 3")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "View all 6 sittings" }));
-  expect(screen.getAllByRole("listitem")).toHaveLength(6);
-  fireEvent.click(screen.getByRole("button", { name: "Show fewer sittings" }));
-  expect(screen.getAllByRole("listitem")).toHaveLength(1);
+  expect(screen.getAllByRole("listitem")).toHaveLength(4);
+  expect(screen.getByText("Rescheduled")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Sitting 3" })).toBeNull();
+  fireEvent.click(screen.getByText("View sittings"));
+  await waitFor(() =>
+    expect(container.querySelector("details")?.open).toBe(true)
+  );
+  expect(screen.getAllByRole("button")).toHaveLength(6);
+  fireEvent.click(screen.getByText("Hide sittings"));
+  await waitFor(() =>
+    expect(screen.queryByRole("button", { name: "Sitting 3" })).toBeNull()
+  );
 });
-it("keeps a deep-linked sitting visible even in a compact long project", () => {
+it("opens the project for a sitting deep link", () => {
   render(
-    <ProjectSittings
-      sittings={sittings}
-      selectedId={5}
-      render={s => <span>Sitting {s.id}</span>}
-    />
+    <ProjectDisclosure sittings={sittings} reveal>
+      <ProjectSittings
+        sittings={sittings}
+        render={s => <button>Sitting {s.id}</button>}
+      />
+    </ProjectDisclosure>
   );
-  expect(screen.getByText("Sitting 5")).toBeTruthy();
-  expect(screen.queryByText("Sitting 3")).toBeNull();
+  expect(screen.getByRole("button", { name: "Sitting 5" })).toBeTruthy();
 });

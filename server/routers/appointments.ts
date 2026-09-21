@@ -1,3 +1,4 @@
+import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import { revisedBookingPrice } from "../domain/paymentState";
 import { withDatabaseTransaction as priceTransaction } from "../services/core";
@@ -1314,6 +1315,7 @@ export const appointmentsRouter = router({
       );
       const artistIds = [...new Set(rows.map(a => a.artistId))];
       const ids = selected.map(a => a.id);
+      const rescheduled = await rescheduledSittingIds(dbRef, ids);
       const [artists, settings, requests, forms, leads, consults] =
         await Promise.all([
           artistIds.length
@@ -1391,6 +1393,7 @@ export const appointmentsRouter = router({
           return {
             id: a.id,
             sessionPlanId: a.sessionPlanId,
+            rescheduled: rescheduled.has(a.id),
             startsAt: timestamp(a.startTime),
             endsAt: timestamp(a.endTime),
             timeZone: a.timeZone || "Australia/Brisbane",

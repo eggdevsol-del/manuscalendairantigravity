@@ -1003,3 +1003,12 @@ body .booking-form-chip {
 .ivory-project-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
 .ivory-project-links .v3-action { padding: 8px 2px; font-size: 13px; line-height: 1.25; text-align: center; }
 .ivory-project-card > .v3-stack > div:first-child h2 { font-family: var(--ivory-display); font-size: 25px; font-weight: 500; }
+
+/* Collapsed projects expose dates, with controls revealed only on request. */
+.ivory-project-dates { list-style: none; padding: 0; margin: 0; display: grid; gap: .65rem; }
+.ivory-project-dates li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .65rem; color: var(--v3-muted); }
+.ivory-project-dates li[data-next="true"] { color: var(--v3-ink); font-weight: 600; }
+.ivory-rescheduled { font-size: .75rem; font-weight: 400; border: 1px solid var(--v3-line); border-radius: .35rem; padding: .1rem .35rem; }
+.ivory-project-disclosure > details > summary { cursor: pointer; min-height: 44px; }
+.ivory-project-disclosure > details > summary::after { content: "⌄"; margin-left: auto; }
+.ivory-project-disclosure > details[open] > summary::after { content: "⌃"; }

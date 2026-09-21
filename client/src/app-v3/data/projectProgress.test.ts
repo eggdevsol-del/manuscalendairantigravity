@@ -96,3 +96,16 @@ describe("project order and identity", () => {
       )?.id
     ).toBe(4));
 });
+
+it("keeps a moved sitting in its original project and progress", () => {
+  const rows = [
+    sitting(1, { status: "completed" }),
+    sitting(2, { startsAt: "2027-01-01T00:00:00Z", rescheduled: true }),
+    sitting(3, { sessionPlanId: 22 }),
+  ];
+  const original = orderedProjectGroups(rows).find(
+    group => group[0].sessionPlanId === 11
+  )!;
+  expect(original.map(s => s.id)).toEqual([1, 2]);
+  expect(projectProgress(original)).toMatchObject({ completed: 1, total: 5 });
+});

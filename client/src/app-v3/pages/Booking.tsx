@@ -1,9 +1,9 @@
 import { ProjectProgress } from "../components/ProjectProgress";
-import { ProjectSittings } from "../components/ProjectSittings";
 import {
-  orderedProjectGroups,
-  nextProjectSitting,
-} from "../data/projectProgress";
+  ProjectSittings,
+  ProjectDisclosure,
+} from "../components/ProjectSittings";
+import { orderedProjectGroups } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
@@ -423,7 +423,6 @@ function BookingProject({
       </aside>
     </div>
   );
-  const next = nextProjectSitting(siblings);
   const projectForms =
     data?.forms.filter(
       f =>
@@ -447,12 +446,6 @@ function BookingProject({
               {client ? data.artist?.name : data.client?.name}
             </p>
             {!!siblings.length && <ProjectProgress sittings={siblings} />}
-            {next && (
-              <p className="v3-next-sitting">
-                Next: sitting {next.sessionIndex || siblings.indexOf(next) + 1}{" "}
-                · {bookingDate(next.startsAt, next.timeZone)}
-              </p>
-            )}
             <div className="ivory-project-actions">
               {client &&
                 siblings
@@ -495,165 +488,174 @@ function BookingProject({
               </Action>
             </Panel>
           )}
-          {siblings.length > 0 && (
-            <ProjectSittings
-              sittings={siblings}
-              selectedId={selectedId}
-              render={(s, i) => (
-                <SittingCard
-                  title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}`}
-                  detail={bookingDate(s.startsAt, s.timeZone)}
-                  expanded={
-                    tab === "Overview" &&
-                    !!selectedId &&
-                    s.id === session?.id &&
-                    collapsedSitting !== s.id
-                  }
-                  onExpandedChange={open => {
-                    setCollapsedSitting(open ? null : s.id);
-                    if (open) navigate("Overview", s.id);
-                  }}
-                >
-                  {s.id === session?.id && overview}
-                </SittingCard>
-              )}
-            />
-          )}
-          <Action tone="quiet" onClick={() => navigate("Messages")}>
-            Message{" "}
-            {client
-              ? data.artist?.name || "your artist"
-              : data.client?.name || "client"}
-          </Action>
-          <SheetShell
-            isOpen={tab === "Messages"}
-            onClose={() => navigate("Overview")}
-            title="Project messages"
+          <ProjectDisclosure
+            sittings={siblings}
+            reveal={
+              !!selectedId ||
+              tab !== "Overview" ||
+              (focused && qs.get("action") === "forms")
+            }
           >
-            {tab === "Messages" && (
-              <Thread id={id} initialDraft={requestDraft} />
+            {siblings.length > 0 && (
+              <ProjectSittings
+                sittings={siblings}
+                selectedId={selectedId}
+                render={(s, i) => (
+                  <SittingCard
+                    title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}${s.rescheduled ? " · Rescheduled" : ""}`}
+                    detail={bookingDate(s.startsAt, s.timeZone)}
+                    expanded={
+                      tab === "Overview" &&
+                      !!selectedId &&
+                      s.id === session?.id &&
+                      collapsedSitting !== s.id
+                    }
+                    onExpandedChange={open => {
+                      setCollapsedSitting(open ? null : s.id);
+                      if (open) navigate("Overview", s.id);
+                    }}
+                  >
+                    {s.id === session?.id && overview}
+                  </SittingCard>
+                )}
+              />
             )}
-          </SheetShell>
-          {tab === "Overview" && siblings.length === 0 && overview}
-          <details
-            open={filesOpen}
-            onToggle={event => setFilesOpen(event.currentTarget.open)}
-            className="ivory-project-resource"
-          >
-            <summary className="v3-row">Design & references</summary>
-            <Section title="Project reference images">
-              {briefs.map(b => (
-                <div key={b.id}>
-                  <p style={{ whiteSpace: "pre-wrap" }}>{b.description}</p>
-                  {b.placement && (
-                    <p className="v3-muted">Placement: {b.placement}</p>
-                  )}
+            <Action tone="quiet" onClick={() => navigate("Messages")}>
+              Message{" "}
+              {client
+                ? data.artist?.name || "your artist"
+                : data.client?.name || "client"}
+            </Action>
+            <SheetShell
+              isOpen={tab === "Messages"}
+              onClose={() => navigate("Overview")}
+              title="Project messages"
+            >
+              {tab === "Messages" && (
+                <Thread id={id} initialDraft={requestDraft} />
+              )}
+            </SheetShell>
+            {tab === "Overview" && siblings.length === 0 && overview}
+            <details
+              open={filesOpen}
+              onToggle={event => setFilesOpen(event.currentTarget.open)}
+              className="ivory-project-resource"
+            >
+              <summary className="v3-row">Design & references</summary>
+              <Section title="Project reference images">
+                {briefs.map(b => (
+                  <div key={b.id}>
+                    <p style={{ whiteSpace: "pre-wrap" }}>{b.description}</p>
+                    {b.placement && (
+                      <p className="v3-muted">Placement: {b.placement}</p>
+                    )}
+                  </div>
+                ))}
+                {!briefs.some(b => b.images.length) && (
+                  <Feedback empty="No references are linked to this project yet. Older, unassigned references remain available in Messages." />
+                )}
+                <div className="v3-file-grid">
+                  {briefs
+                    .flatMap(b => b.images)
+                    .map((url, i) => (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        key={`${url}-${i}`}
+                      >
+                        <img
+                          src={url}
+                          alt={`Design reference ${i + 1}`}
+                          loading="lazy"
+                        />
+                      </a>
+                    ))}
                 </div>
-              ))}
-              {!briefs.some(b => b.images.length) && (
-                <Feedback empty="No references are linked to this project yet. Older, unassigned references remain available in Messages." />
-              )}
-              <div className="v3-file-grid">
-                {briefs
-                  .flatMap(b => b.images)
-                  .map((url, i) => (
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      key={`${url}-${i}`}
-                    >
-                      <img
-                        src={url}
-                        alt={`Design reference ${i + 1}`}
-                        loading="lazy"
-                      />
-                    </a>
-                  ))}
-              </div>
-              {!!unassignedBriefs.length && selectedKey && (
-                <details>
-                  <summary className="v3-row">
-                    Older conversation references · unassigned
-                  </summary>
-                  <p className="v3-muted">
-                    These references have no verified project link and may
-                    concern a different tattoo.
-                  </p>
-                  {unassignedBriefs.map(b => (
-                    <div key={b.id}>
-                      <p>{b.description}</p>
-                      <div className="v3-file-grid">
-                        {b.images.map((url, i) => (
-                          <a
-                            key={`${url}-${i}`}
-                            href={url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <img
-                              src={url}
-                              alt={`Unassigned reference ${i + 1}`}
-                              loading="lazy"
-                            />
-                          </a>
-                        ))}
+                {!!unassignedBriefs.length && selectedKey && (
+                  <details>
+                    <summary className="v3-row">
+                      Older conversation references · unassigned
+                    </summary>
+                    <p className="v3-muted">
+                      These references have no verified project link and may
+                      concern a different tattoo.
+                    </p>
+                    {unassignedBriefs.map(b => (
+                      <div key={b.id}>
+                        <p>{b.description}</p>
+                        <div className="v3-file-grid">
+                          {b.images.map((url, i) => (
+                            <a
+                              key={`${url}-${i}`}
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <img
+                                src={url}
+                                alt={`Unassigned reference ${i + 1}`}
+                                loading="lazy"
+                              />
+                            </a>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </details>
-              )}
-              <ActionLink
-                href={`/projects/${id}?project=${encodeURIComponent(projectId)}&${session ? `session=${session.id}&` : ""}view=Messages`}
-                tone="quiet"
-              >
-                Share photos in Messages
-              </ActionLink>
-            </Section>
-          </details>
-          <details
-            open={paymentsOpen}
-            onToggle={event => setPaymentsOpen(event.currentTarget.open)}
-            className="ivory-project-resource"
-          >
-            <summary className="v3-row">Payments</summary>
-            <Section title="Project payment history · AUD">
-              <p className="v3-muted">
-                Session totals can include imported payments without a linked
-                transaction.
-              </p>
-              {!history.length && (
-                <Feedback empty="No linked transactions recorded." />
-              )}
-              {!!unassignedHistory.length && selectedKey && (
-                <details>
-                  <summary className="v3-row">
-                    Other conversation transactions · unassigned
-                  </summary>
-                  <p className="v3-muted">
-                    These transactions have no verified project link. They are
-                    not included as this project’s payments.
-                  </p>
-                  {unassignedHistory.map(h => (
-                    <Row
-                      key={h.id}
-                      title={statusLabel(h.type)}
-                      detail={h.createdAt && bookingDate(h.createdAt)}
-                      trailing={<strong>{money(h.amountCents)}</strong>}
-                    />
-                  ))}
-                </details>
-              )}
-              {history.map(h => (
-                <Row
-                  key={h.id}
-                  title={`${statusLabel(h.type)} · ${h.method || "Payment"}`}
-                  detail={h.createdAt && bookingDate(h.createdAt)}
-                  trailing={<strong>{money(h.amountCents)}</strong>}
-                />
-              ))}
-            </Section>
-          </details>
+                    ))}
+                  </details>
+                )}
+                <ActionLink
+                  href={`/projects/${id}?project=${encodeURIComponent(projectId)}&${session ? `session=${session.id}&` : ""}view=Messages`}
+                  tone="quiet"
+                >
+                  Share photos in Messages
+                </ActionLink>
+              </Section>
+            </details>
+            <details
+              open={paymentsOpen}
+              onToggle={event => setPaymentsOpen(event.currentTarget.open)}
+              className="ivory-project-resource"
+            >
+              <summary className="v3-row">Payments</summary>
+              <Section title="Project payment history · AUD">
+                <p className="v3-muted">
+                  Session totals can include imported payments without a linked
+                  transaction.
+                </p>
+                {!history.length && (
+                  <Feedback empty="No linked transactions recorded." />
+                )}
+                {!!unassignedHistory.length && selectedKey && (
+                  <details>
+                    <summary className="v3-row">
+                      Other conversation transactions · unassigned
+                    </summary>
+                    <p className="v3-muted">
+                      These transactions have no verified project link. They are
+                      not included as this project’s payments.
+                    </p>
+                    {unassignedHistory.map(h => (
+                      <Row
+                        key={h.id}
+                        title={statusLabel(h.type)}
+                        detail={h.createdAt && bookingDate(h.createdAt)}
+                        trailing={<strong>{money(h.amountCents)}</strong>}
+                      />
+                    ))}
+                  </details>
+                )}
+                {history.map(h => (
+                  <Row
+                    key={h.id}
+                    title={`${statusLabel(h.type)} · ${h.method || "Payment"}`}
+                    detail={h.createdAt && bookingDate(h.createdAt)}
+                    trailing={<strong>{money(h.amountCents)}</strong>}
+                  />
+                ))}
+              </Section>
+            </details>
+          </ProjectDisclosure>
         </>
       )}
       <SheetShell

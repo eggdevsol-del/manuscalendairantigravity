@@ -1,3 +1,4 @@
+import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import {
   paymentProjectKeys,
@@ -254,6 +255,7 @@ export const projectsRouter = router({
         : [];
       const presentedPlans = await readPresentedPlans(db, detailedPlans);
       const ids = sessions.map(s => s.id);
+      const rescheduled = await rescheduledSittingIds(db, ids);
       const paymentIds = [
         ...new Set(
           [
@@ -354,6 +356,7 @@ export const projectsRouter = router({
                   (!r.expiresAt ||
                     new Date(r.expiresAt.replace(" ", "T") + "Z") > new Date())
               ) || null,
+            rescheduled: rescheduled.has(s.id),
             startsAt: s.startsAt.replace(" ", "T") + "Z",
             endsAt: s.endsAt.replace(" ", "T") + "Z",
             ...sittingFinancials({

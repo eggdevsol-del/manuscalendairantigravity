@@ -6,6 +6,8 @@ export type ProjectSitting = {
   sessionIndex?: number | null;
   sessionTotal?: number | null;
   status: string;
+  timeZone?: string | null;
+  rescheduled?: boolean;
   startsAt?: string | null;
   endsAt?: string | null;
 };
