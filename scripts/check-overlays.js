@@ -46,6 +46,10 @@ export function scanOverlays(root, entry = "client/src/App.tsx") {
       true
     );
     function walk(node) {
+      if (relative.startsWith("client/src/app-v3/") &&
+          (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) &&
+          node.tagName.getText(ast) === "details")
+        violations.push(relative + ": use DetailsSheet for secondary information");
       let spec;
       if (
         (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&

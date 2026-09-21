@@ -1,3 +1,4 @@
+import { DetailsSheet } from "./DetailsSheet";
 import {
   bookingDate,
   statusLabel,
@@ -54,7 +55,7 @@ export function ProjectDisclosure<T extends ProjectSitting>({
   );
   return (
     <div className="ivory-project-disclosure">
-      {!open && (
+      {
         <ul className="ivory-project-dates" aria-label="Project dates">
           {dates.map(s => (
             <li key={s.id} data-next={s.id === next?.id}>
@@ -73,13 +74,15 @@ export function ProjectDisclosure<T extends ProjectSitting>({
             </li>
           ))}
         </ul>
-      )}
-      <details open={open} onToggle={e => setOpen(e.currentTarget.open)}>
-        <summary className="v3-row">
-          {open ? "Hide sittings" : "View sittings"}
-        </summary>
-        <div hidden={!open}>{children}</div>
-      </details>
+      }
+      <DetailsSheet
+        title="Project sittings"
+        label="View sittings"
+        open={open}
+        onOpenChange={setOpen}
+      >
+        {children}
+      </DetailsSheet>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { useUIDebug } from "@/_core/contexts/UIDebugContext";
 
 interface SheetShellProps {
   isOpen: boolean;
+  onCloseAutoFocus?: (event: Event) => void;
   onClose: () => void;
   title: string;
   description?: string;
@@ -26,6 +27,7 @@ interface SheetShellProps {
 
 export function SheetShell({
   isOpen,
+  onCloseAutoFocus,
   onClose,
   title,
   description,
@@ -41,6 +43,7 @@ export function SheetShell({
     <Sheet open={isOpen} onOpenChange={v => !v && onClose()}>
       <SheetContent
         side={side}
+        onCloseAutoFocus={onCloseAutoFocus}
         className={cn(
           "ivory-sheet flex flex-col p-0 gap-0 border-border bg-popover shadow-xl overflow-hidden text-foreground outline-none",
           side === "bottom" ? "rounded-t-[24px] border-t-0 max-h-[85dvh]" : "",
@@ -59,12 +62,12 @@ export function SheetShell({
           <TourHelp feature />
         </div>
         <SheetHeader className="p-6 pb-4 shrink-0 border-b border-border space-y-2 relative">
-          <div className="flex items-center justify-center relative">
-            <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center">
+          <div className="flex flex-col items-center justify-center relative gap-2 px-8">
+            <SheetTitle className="text-xl font-semibold tracking-tight text-foreground text-center break-words min-w-0 max-w-full">
               {title}
             </SheetTitle>
             {showDebugLabels && overlayName && (
-              <div className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary tracking-wider uppercase bg-primary/5 absolute right-0 top-1/2 -translate-y-1/2">
+              <div className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary tracking-wider uppercase bg-primary/5">
                 UI v2 · {overlayName}
               </div>
             )}

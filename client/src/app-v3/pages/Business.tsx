@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import {
   Wallet,
   CalendarDays,
@@ -208,17 +209,23 @@ export function Money() {
           onRetry={() => history.refetch()}
         />
         {history.data?.entries.map((entry: any) => (
-          <details key={entry.id} className="v3-divider">
-            <summary className="v3-row">
-              <span className="v3-row-copy">
-                <strong>
-                  {statusLabel(entry.type)}
-                  {entry.clientName ? ` · ${entry.clientName}` : ""}
-                </strong>
-                <span>{entry.createdAt && bookingDate(entry.createdAt)}</span>
-              </span>
-              <strong>{money(entry.amountCents)}</strong>
-            </summary>
+          <DetailsSheet
+            sheetTitle="Transaction details"
+            key={entry.id}
+            className="v3-divider"
+            title={
+              <>
+                <span className="v3-row-copy">
+                  <strong>
+                    {statusLabel(entry.type)}
+                    {entry.clientName ? ` · ${entry.clientName}` : ""}
+                  </strong>
+                  <span>{entry.createdAt && bookingDate(entry.createdAt)}</span>
+                </span>
+                <strong>{money(entry.amountCents)}</strong>
+              </>
+            }
+          >
             <dl className="v3-facts">
               <div>
                 <dt>Method</dt>
@@ -233,7 +240,7 @@ export function Money() {
                 <dd>{money(entry.netCents)}</dd>
               </div>
             </dl>
-          </details>
+          </DetailsSheet>
         ))}
         <ActionLink href="/payout-history" tone="quiet">
           View payout history <ArrowRight />

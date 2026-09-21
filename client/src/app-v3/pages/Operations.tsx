@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -163,8 +164,10 @@ export function ErrorReports() {
           {error && <p role="alert">{error.message}</p>}
           {query.data?.errors.map(item => (
             <Panel key={item.id}>
-              <details>
-                <summary>{item.message}</summary>
+              <DetailsSheet
+                sheetTitle="Event details"
+                title={<> {item.message} </>}
+              >
                 <p>
                   {bookingDate(item.createdAt)} · {item.boundary || "App"} ·{" "}
                   {item.appVersion || "Unknown version"}
@@ -181,7 +184,7 @@ export function ErrorReports() {
                     Mark resolved
                   </Action>
                 )}
-              </details>
+              </DetailsSheet>
             </Panel>
           ))}
           {query.data?.errors.length === 0 && (

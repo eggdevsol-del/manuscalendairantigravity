@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useState } from "react";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { trpc } from "@/lib/trpc";
@@ -120,9 +121,11 @@ export function SessionActions({
       {canFinish && !s.pendingRequest && (
         <Action
           onClick={() => open("finish")}
-          data-tour-description={s.remainingCents > 0
-            ? "Review the outstanding balance before sending a payment request. Opening this review does not collect payment or complete the session."
-            : "Review this fully paid session before marking it complete and recording its finish time."}
+          data-tour-description={
+            s.remainingCents > 0
+              ? "Review the outstanding balance before sending a payment request. Opening this review does not collect payment or complete the session."
+              : "Review this fully paid session before marking it complete and recording its finish time."
+          }
         >
           {s.status === "completed"
             ? "Request remaining balance"
@@ -131,22 +134,27 @@ export function SessionActions({
       )}
       {s.status !== "completed" && (
         <>
-          <Action tone="quiet" onClick={() => open("reschedule")}
-            data-tour-description="Choose a replacement date and time. Saving moves this session while preserving its duration and existing payments.">
+          <Action
+            tone="quiet"
+            onClick={() => open("reschedule")}
+            data-tour-description="Choose a replacement date and time. Saving moves this session while preserving its duration and existing payments."
+          >
             Reschedule
           </Action>
-          <details>
-            <summary className="v3-row">More session options</summary>
+          <DetailsSheet title={<> More session options </>}>
             {canFinish && (
-              <Action tone="quiet" onClick={() => open("no-show")}
-                data-tour-description="Open the no-show confirmation only if the client did not attend. Reviewing it does not yet change the appointment status.">
+              <Action
+                tone="quiet"
+                onClick={() => open("no-show")}
+                data-tour-description="Open the no-show confirmation only if the client did not attend. Reviewing it does not yet change the appointment status."
+              >
                 Mark no-show
               </Action>
             )}
             <Action tone="danger" onClick={() => open("cancel")}>
               Cancel session
             </Action>
-          </details>
+          </DetailsSheet>
         </>
       )}
       <SheetShell

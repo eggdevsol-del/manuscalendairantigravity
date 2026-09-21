@@ -1,3 +1,7 @@
+import {
+  isDesignProjectName,
+  designProjectName,
+} from "../../shared/projectNames";
 import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import {
@@ -8,7 +12,7 @@ import { generateProjectName } from "../services/llmEnrichment";
 import { readPresentedPlans } from "../services/sessionPlanPresentation";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { and, eq, inArray, or, asc, desc, isNull } from "drizzle-orm";
+import { and, eq, inArray, or, asc, desc, gt } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
 import { requireConversationAccess, requireArtist } from "../services/access";
@@ -151,15 +155,25 @@ export const projectsRouter = router({
       const existing = await db.query.appointments.findFirst({
         where: eq(schema.appointments.sessionPlanId, plan.id),
       });
-      const name =
-        existing?.projectName ||
-        metadata.projectName ||
-        (await generateProjectName(
-          db,
-          input.conversationId,
-          metadata.serviceName,
-          plan.createdAt || undefined
-        ));
+      // Keep an older project's context separate from later tattoos in the same chat.
+      const laterPlan = plan.createdAt
+        ? await db.query.sessionPlans.findFirst({
+            where: and(
+              eq(schema.sessionPlans.conversationId, input.conversationId),
+              gt(schema.sessionPlans.createdAt, plan.createdAt)
+            ),
+            orderBy: [asc(schema.sessionPlans.createdAt)],
+          })
+        : undefined;
+      const saved = existing?.projectName || metadata.projectName;
+      const name = isDesignProjectName(saved)
+        ? saved
+        : await generateProjectName(
+            db,
+            input.conversationId,
+            undefined,
+            laterPlan ? plan.createdAt || undefined : undefined
+          );
       await db
         .update(schema.messages)
         .set({ metadata: JSON.stringify({ ...metadata, projectName: name }) })
@@ -167,12 +181,7 @@ export const projectsRouter = router({
       await db
         .update(schema.appointments)
         .set({ projectName: name })
-        .where(
-          and(
-            eq(schema.appointments.sessionPlanId, plan.id),
-            isNull(schema.appointments.projectName)
-          )
-        );
+        .where(and(eq(schema.appointments.sessionPlanId, plan.id)));
       return { projectName: name };
     }),
   summary: protectedProcedure
@@ -349,6 +358,7 @@ export const projectsRouter = router({
             ...s
           }) => ({
             ...s,
+            projectName: designProjectName(s.projectName),
             pendingRequest:
               requests.find(
                 r =>

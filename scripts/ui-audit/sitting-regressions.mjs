@@ -148,45 +148,18 @@ try {
   for (const role of ["artist", "client"]) {
     const { page, context } = await setup(role, overrides);
     await page.goto(baseURL + "/projects/12?session=101");
+    const close = async () => page.getByRole("dialog").last().getByRole("button", {name:"Close",exact:true}).click();
+    await page.getByRole("dialog",{name:/Sitting 1 ·/}).waitFor();
+    await close();
     const list = page.getByRole("list", { name: "Project sittings" });
-    await list.waitFor();
     for (const n of [2, 3, 1]) {
-      await list
-        .getByRole("button", { name: new RegExp(`Sitting ${n} ·`) })
-        .click();
-      const card = list.locator(":scope > li").nth(n - 1);
-      await card.locator(".v3-sitting-details").waitFor();
-      assert.equal(await page.locator(".v3-sitting-details").count(), 1);
-      assert.ok(
-        await card
-          .getByText(`$${((12345 + n) / 100).toFixed(2)}`, { exact: true })
-          .count()
-      );
-      assert.ok(
-        await card.evaluate(el => {
-          const panel = el
-            .querySelector(".v3-sitting-details")
-            .getBoundingClientRect();
-          return (
-            panel.top >=
-              el.querySelector("button").getBoundingClientRect().bottom &&
-            (!el.nextElementSibling ||
-              panel.bottom <= el.nextElementSibling.getBoundingClientRect().top)
-          );
-        })
-      );
+      await list.getByRole("button", {name:new RegExp(`Sitting ${n} ·`)}).click();
+      const sheet=page.getByRole("dialog",{name:new RegExp(`Sitting ${n} ·`)});
+      await sheet.getByText(`$${((12345+n)/100).toFixed(2)}`,{exact:true}).waitFor();
+      assert(await sheet.evaluate(el=>el.dataset.side==='bottom'&&!el.closest('.v3-sitting-card')));
+      await close();
     }
-    await list.getByRole("button", { name: /Sitting 1 ·/ }).click();
-    assert.equal(await page.locator(".v3-sitting-details").count(), 0);
-    await list.getByRole("button", { name: /Sitting 1 ·/ }).click();
-    await page.screenshot({
-      path: out + `/project-${role}.png`,
-      fullPage: true,
-    });
-    console.log(
-      role +
-        ": project selection, own-card placement, server amounts, collapse pass"
-    );
+    console.log(role+": project sitting sheets retain exact server amounts and close to the project");
     await context.close();
   }
   for (const [role, path, title] of [
@@ -195,11 +168,9 @@ try {
   ]) {
     const { page, context, calls } = await setup(role, overrides);
     await page.goto(baseURL + path);
-    if (path === "/bookings") await page.locator(".ivory-project-disclosure > details > summary").first().click();
+    if (path === "/bookings") await page.getByRole("button",{name:"View sittings",exact:true}).first().click();
     await page.getByRole("button", { name: title }).click();
-    const card = page
-      .locator(".v3-sitting-card")
-      .filter({ has: page.getByRole("button", { name: title }) });
+    const card = page.getByRole("dialog", {name:title});
     await card.getByText("$123.47", { exact: true }).waitFor();
     assert.ok(
       calls.some(
@@ -214,7 +185,7 @@ try {
     );
     await page.screenshot({ path: out + `/list-${role}.png`, fullPage: true });
     console.log(
-      path + ": inline server-backed details and exact sitting action pass"
+      path + ": sheet server-backed details and exact sitting action pass"
     );
     await context.close();
   }
@@ -239,9 +210,7 @@ try {
     });
     await page.goto(baseURL + "/studio");
     await page.getByRole("button", { name: /Backend session 2/ }).click();
-    const card = page
-      .locator(".v3-sitting-card")
-      .filter({ has: page.getByRole("button", { name: /Backend session 2/ }) });
+    const card = page.getByRole("dialog", {name:/Backend session 2/});
     await card.getByRole("link", { name: "Open booking workspace" }).waitFor();
     assert.equal(
       await card
@@ -250,7 +219,7 @@ try {
       "/projects/12?session=102"
     );
     assert.equal(await page.locator(".v3-studio-inspector").count(), 0);
-    console.log("studio: selected booking details inside its card pass");
+    console.log("studio: selected booking details in a sheet pass");
     await context.close();
   }
   {
@@ -269,33 +238,15 @@ try {
         name: /Backend session 2/,
       });
       await trigger.click();
-      const expandedCard = timeline.locator(".v3-sitting-card").filter({
-        has: page.getByRole("button", { name: /Backend session 2/ }),
-      });
-      await expandedCard
-        .getByRole("link", { name: "Open booking", exact: true })
-        .waitFor();
-      await page.waitForTimeout(150);
-      const layout = await expandedCard.evaluate(el => {
-        const panel = el
-          .querySelector(".v3-sitting-details")
-          .getBoundingClientRect();
-        const day = el.closest(".v3-timeline-day").getBoundingClientRect();
-        return {
-          below:
-            panel.top >=
-            el.querySelector("button").getBoundingClientRect().bottom,
-          contained: panel.bottom <= day.bottom,
-        };
-      });
-      assert.ok(layout.below && layout.contained, JSON.stringify(layout));
-      assert.equal(await page.getByRole("dialog").count(), 0);
-      await page.screenshot({ path: out + `/timeline-${width}.png` });
-      await trigger.click();
+      const sheet=page.getByRole("dialog");
+      await sheet.getByRole("link",{name:"Open booking",exact:true}).waitFor();
+      assert(await sheet.evaluate(el=>!el.closest('.v3-timeline-day')&&el.dataset.side==='bottom'));
+      await page.screenshot({path:out+`/timeline-${width}.png`});
+      await sheet.getByRole("button",{name:"Close",exact:true}).click();
     }
     await page.setViewportSize({ width: 390, height: 874 });
     console.log(
-      "calendar timeline: inline disclosure at phone/tablet widths without virtual-day clipping pass"
+      "calendar timeline: portalled sheets at phone/tablet widths without virtual-day clipping pass"
     );
     assert.equal(
       await page
@@ -336,19 +287,11 @@ try {
       "sessionPlans.getById": plan,
     });
     await page.goto(baseURL + "/bookings");
-    const proposal = page
-      .locator(".v3-panel")
-      .filter({ has: page.getByRole("heading", { name: "Backend proposal" }) });
-    const button = proposal.getByRole("button", { name: /Sitting 2/ });
-    await button.click();
-    await proposal.getByText("$24.67", { exact: true }).waitFor();
-    await proposal
-      .getByRole("button", { name: /Review .*deposit & fee/ })
-      .click();
-    const dialog = page.getByRole("dialog");
-    await dialog.waitFor();
-    await dialog.getByRole("button", { name: /Sitting 2/ }).click();
-    await dialog.getByText("$24.67", { exact: true }).waitFor();
+    await page.getByRole("button",{name:/Backend proposal.*View booking proposal/}).click();
+    const review=page.getByRole("dialog",{name:"Review your booking",exact:true});
+    await review.getByText("$2.52",{exact:true}).waitFor();
+    await review.getByRole("button",{name:/Sitting 2/}).click();
+    await page.getByRole("dialog",{name:"Sitting 2",exact:true}).getByText("$24.67",{exact:true}).waitFor();
     console.log(
       "proposal list and checkout: shared disclosure and backend deposit pass"
     );

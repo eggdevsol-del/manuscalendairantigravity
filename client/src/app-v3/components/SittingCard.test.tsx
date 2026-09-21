@@ -1,8 +1,17 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import { SittingCard } from "./SittingCard";
-describe("shared sitting disclosure", () => {
-  it("opens only the selected card inline, keeps actions separate, and collapses accessibly", () => {
+vi.mock("@/_core/contexts/UIDebugContext", () => ({
+  useUIDebug: () => ({ showDebugLabels: false }),
+}));
+describe("shared sitting sheet", () => {
+  it("portals details outside the card and closes without changing the page", async () => {
     const { container } = render(
       <>
         <SittingCard title="Sitting 1">
@@ -14,17 +23,17 @@ describe("shared sitting disclosure", () => {
       </>
     );
     const button = screen.getByRole("button", { name: "Sitting 1" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    fireEvent.click(button);
+    const sheet = screen.getByRole("dialog", { name: "Sitting 1" });
+    expect(container.contains(sheet)).toBe(false);
+    expect(
+      within(sheet).getByRole("link", { name: "Open sitting" })
+    ).toBeTruthy();
+    expect(screen.queryByText("Second balance")).toBeNull();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Close" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.queryByRole("link")).toBeNull();
-    fireEvent.click(button);
-    const panel = document.getElementById(
-      button.getAttribute("aria-controls")!
-    );
-    expect(panel?.previousElementSibling).toBe(button);
-    expect(panel?.contains(screen.getByRole("link"))).toBe(true);
-    expect(button.contains(screen.getByRole("link"))).toBe(false);
-    expect(container.querySelectorAll(".v3-sitting-details")).toHaveLength(1);
-    fireEvent.click(button);
-    expect(screen.queryByRole("link")).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(button));
   });
 });

@@ -1,3 +1,5 @@
+import { isDesignProjectName } from "../../../../shared/projectNames";
+import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
 import {
   ProjectSittings,
@@ -9,7 +11,6 @@ import {
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
-import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { bookingProjectKey } from "../../../../shared/clientBookingGroups";
@@ -54,10 +55,17 @@ export default function ClientBookings() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      for (const a of bookings.data?.appointments || []) {
+      for (const a of [
+        ...(bookings.data?.appointments || []),
+        ...(plans.data || []).map(p => ({
+          projectName: p.projectName,
+          sessionPlanId: p.id,
+          conversationId: p.conversationId,
+        })),
+      ]) {
         if (cancelled) return;
         if (
-          a.projectName ||
+          isDesignProjectName(a.projectName) ||
           !a.sessionPlanId ||
           !a.conversationId ||
           attemptedNames.current.has(a.sessionPlanId)
@@ -69,7 +77,10 @@ export default function ClientBookings() {
             conversationId: a.conversationId,
             sessionPlanId: a.sessionPlanId,
           });
-          if (!cancelled) await bookings.refetch();
+          if (!cancelled) {
+            await bookings.refetch();
+            await plans.refetch();
+          }
         } catch {
           if (!cancelled) setNameError(true);
         }
@@ -78,7 +89,7 @@ export default function ClientBookings() {
     return () => {
       cancelled = true;
     };
-  }, [bookings.data, nameRetry]);
+  }, [bookings.data, plans.data, nameRetry]);
   const groups = orderedProjectGroups(appointments);
   const completedGroups = orderedProjectGroups(past.data?.appointments || []);
   const requests = bookings.data?.pendingRequests || [];
@@ -281,35 +292,38 @@ export default function ClientBookings() {
         .filter(p => !appointments.some(a => a.sessionPlanId === p.id))
         .map(p => (
           <Panel key={p.id} tone="attention">
-            <h2>{p.projectName || "Booking proposal"}</h2>
-            <p>
-              {p.artist?.name || "Your artist"} · {p.items.length} sittings
-            </p>
-            <p>
-              {p.paymentState
-                ? "We’re checking the payment status. Don’t submit another payment."
-                : "Review your proposed dates and deposit before confirming."}
-            </p>
-            <ProjectSittings
-              sittings={p.items.map(i => ({ ...i, status: "proposed" }))}
-              render={i => <ProposedSittingCard item={i} />}
-            />
-            <Action
+            <button
+              type="button"
+              className="v3-row"
+              aria-haspopup="dialog"
               onClick={() =>
                 setPlan({ id: p.id, conversationId: p.conversationId || 0 })
               }
             >
-              {p.paymentState
-                ? "Check payment status"
-                : `Review ${money(p.depositTotalCents + (p.platformFeeCents || 0))} deposit & fee`}
-            </Action>
+              <span className="v3-row-copy">
+                <strong>{p.projectName || "Booking proposal"}</strong>
+                <span>
+                  {p.artist?.name || "Your artist"} · {p.items.length} proposed
+                  sittings
+                </span>
+                <span>
+                  {p.paymentState
+                    ? "Check payment status"
+                    : "View booking proposal"}
+                </span>
+              </span>
+            </button>
           </Panel>
         ))}
       {projectCards(groups)}
-      <details className="ivory-completed-projects">
-        <summary className="v3-row">
-          Completed projects{past.data ? ` · ${completedGroups.length}` : ""}
-        </summary>
+      <DetailsSheet
+        className="ivory-completed-projects"
+        title={
+          <>
+            Completed projects{past.data ? ` · ${completedGroups.length}` : ""}
+          </>
+        }
+      >
         <Feedback
           loading={past.isLoading}
           error={past.error}
@@ -319,7 +333,7 @@ export default function ClientBookings() {
         {!past.isLoading && !past.error && !completedGroups.length && (
           <p className="v3-muted">No completed projects yet.</p>
         )}
-      </details>
+      </DetailsSheet>
       {!!requests.length && (
         <Section title="Requests with your artists">
           {requests.map(r => (
@@ -373,12 +387,11 @@ export default function ClientBookings() {
             <ActionLink href="/conversations">Open messages</ActionLink>
           </Panel>
         )}
-      <details>
-        <summary className="v3-row">More options</summary>
+      <DetailsSheet title={<> More options </>}>
         <Row href="/waitlist" title="Cancellation offers" />
         <Row href="/purchases" title="Your purchases" />
         <Row href="/discover" title="Explore artists" />
-      </details>
+      </DetailsSheet>
       {plan && (
         <SessionPlanCheckoutSheet
           sessionPlanId={plan.id}

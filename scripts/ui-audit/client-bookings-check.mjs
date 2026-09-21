@@ -157,8 +157,8 @@ try {
       .getByRole("heading", { name: "Jesus/Angels full arm", exact: true })
       .waitFor();
     assert.equal(
-      await page.getByLabel("Project sittings").locator("li").count(),
-      3
+      await page.getByLabel("Project dates").locator("li").count(),
+      2
     );
     assert.equal(
       await page
@@ -186,10 +186,15 @@ try {
     assert((await page.locator("dl").innerText()).includes("$100"));
     assert(!(await page.locator("dl").innerText()).includes("$450"));
     await page.goto(base + "/bookings");
-    await page.locator(".ivory-completed-projects > summary").click();
+    await page.getByRole("button",{name:/Completed projects/}).click();
     await page.getByText("No completed projects yet.", { exact: true }).waitFor();
     await page.goto(base + "/projects/12?session=101");
-    const project = page.locator(".ivory-project-card").filter({has: page.getByRole("heading",{name:"Jesus/Angels full arm", exact:true})});
+    await page.getByRole("dialog",{name:/Sitting 1 ·/}).getByRole("button",{name:"Close",exact:true}).click();
+    const projectSheet=page.getByRole("dialog",{name:"Project sittings",exact:true});
+    await projectSheet.getByRole("list",{name:"Project sittings"}).waitFor();
+    assert.equal(await projectSheet.getByRole("list",{name:"Project sittings"}).locator("li").count(),2);
+    await projectSheet.getByRole("button",{name:"Design & references",exact:true}).click();
+    const project=page.getByRole("dialog",{name:"Design & references",exact:true});
     await project.getByText("Religious design reference", { exact: true }).first().waitFor();
     assert.equal(
       await project
@@ -198,16 +203,14 @@ try {
       0
     );
     assert.equal(await project.getByText("Unrelated proposal", { exact: true }).count(), 0);
-    assert.equal(
-      await project.getByLabel("Project sittings").locator("li").count(),
-      2
-    );
-    await project.locator("summary").filter({hasText:/^Payments$/}).click();
+    await project.getByRole("button",{name:"Close",exact:true}).click();
+    await projectSheet.getByRole("button",{name:"Payments",exact:true}).click();
     await page
       .getByRole("heading", { name: "Project payment history · AUD" })
       .waitFor();
     assert.equal(await project.getByText("$999.00", { exact: true }).count(), 0);
-    // Sitting actions remain in the expanded row while payment history is open.
+    await page.getByRole("dialog",{name:"Payments",exact:true}).getByRole("button",{name:"Close",exact:true}).click();
+    await projectSheet.getByRole("button",{name:/Sitting 1 ·/}).click();
     await page
       .getByRole("button", { name: "Request a date change", exact: true })
       .click();

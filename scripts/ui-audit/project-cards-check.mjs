@@ -49,29 +49,33 @@ for(const width of [320,390,820]){
  assert.equal(await sleeve.getByRole('link',{name:/review \$100.00 request/i}).getAttribute('href'),'/pay/sleeve-payment');
  await page.waitForTimeout(450);
  await page.screenshot({path:`${out}/bookings-${width}.png`,fullPage:true});
- await sleeve.locator('summary').filter({hasText:/^View sittings$/}).click();
- await sleeve.locator('.ivory-project-dates').waitFor({state:'detached'});
- assert.equal(await sleeve.getByRole('listitem').count(),6);
- const trigger=sleeve.getByRole('button',{name:/Sitting 4 ·/});await trigger.click();
- const row=trigger.locator('..');await row.getByText('Balance due',{exact:true}).waitFor();
- assert.equal(await butterfly.locator('.v3-sitting-details').count(),0);
- assert(await row.evaluate(el=>{const d=el.querySelector('.v3-sitting-details');return d.getBoundingClientRect().top>=el.querySelector('button').getBoundingClientRect().bottom}));
- await trigger.click();assert.equal(await sleeve.locator('.v3-sitting-details').count(),0);
- await page.locator('.ivory-completed-projects > summary').click();await card('Finished flower').getByRole('progressbar',{name:'1 of 1 sittings completed'}).waitFor();
- await butterfly.locator('summary').filter({hasText:/^View sittings$/}).click();
- await butterfly.getByRole('link',{name:'Design & references',exact:true}).click();
+ await sleeve.getByRole('button',{name:'View sittings',exact:true}).click();
+ let projectSheet=page.getByRole('dialog',{name:'Project sittings',exact:true});
+ assert.equal(await projectSheet.getByRole('listitem').count(),6);
+ await projectSheet.getByRole('button',{name:/Sitting 4 ·/}).click();
+ let detailSheet=page.getByRole('dialog',{name:/Sitting 4 ·/});
+ await detailSheet.getByText('Balance due',{exact:true}).waitFor();
+ assert(await detailSheet.evaluate(el=>el.dataset.side==='bottom'&&!el.closest('.ivory-project-card')));
+ await detailSheet.getByRole('button',{name:'Close',exact:true}).click();
+ await projectSheet.getByRole('button',{name:'Close',exact:true}).click();
+ await page.getByRole('button',{name:/Completed projects/}).click();
+ await page.getByRole('dialog',{name:/Completed projects/}).getByRole('progressbar',{name:'1 of 1 sittings completed'}).waitFor();
+ await page.getByRole('dialog',{name:/Completed projects/}).getByRole('button',{name:'Close',exact:true}).click();
+ await butterfly.getByRole('button',{name:'View sittings',exact:true}).click();
+ await projectSheet.getByRole('link',{name:'Design & references',exact:true}).click();
  await page.waitForURL('**/projects/12?session=202&view=Files');
- const detailButterfly=card('Butterfly tattoo'),detailSleeve=card('Botanical sleeve');
- await detailButterfly.getByText('Butterfly reference only',{exact:true}).last().waitFor();
- assert.equal(await detailButterfly.getByText('Sleeve reference only',{exact:true}).count(),0);
- assert.equal(await page.getByRole('combobox',{name:'Tattoo project'}).count(),0);assert.equal(await page.getByRole('tablist',{name:'Booking sections'}).count(),0);
- await detailButterfly.locator('summary').filter({hasText:/^Payments$/}).click();
- await detailButterfly.getByText('$678.90',{exact:true}).waitFor();assert.equal(await detailButterfly.getByText('$123.45',{exact:true}).count(),0);
- await page.waitForTimeout(450);
+ let resource=page.getByRole('dialog',{name:'Design & references',exact:true});
+ await resource.getByText('Butterfly reference only',{exact:true}).last().waitFor();
+ assert.equal(await resource.getByText('Sleeve reference only',{exact:true}).count(),0);
+ await resource.getByRole('button',{name:'Close',exact:true}).click();
+ await projectSheet.getByRole('button',{name:'Payments',exact:true}).click();
+ resource=page.getByRole('dialog',{name:'Payments',exact:true});
+ await resource.getByText('$678.90',{exact:true}).waitFor();
+ assert.equal(await resource.getByText('$123.45',{exact:true}).count(),0);
  await page.screenshot({path:`${out}/project-resources-${width}.png`,fullPage:true});
  await page.goto(base+'/projects/12?session=104');
- const deep=card('Botanical sleeve');await deep.getByRole('button',{name:'Request a date change',exact:true}).waitFor();
- assert.equal(await deep.getByRole('listitem').count(),6);
+ const deep=page.getByRole('dialog',{name:/Sitting 4 ·/});await deep.getByRole('button',{name:'Request a date change',exact:true}).waitFor();
+
  await deep.getByRole('button',{name:'Request a date change',exact:true}).click();
  const message=page.getByRole('textbox',{name:'Message',exact:true});await message.waitFor();
  assert((await message.inputValue()).includes('Botanical sleeve, sitting 4'));
@@ -85,12 +89,12 @@ for(const width of [320,390,820]){
  assert.equal(await page.getByRole('heading',{name:'Botanical sleeve',exact:true}).count(),1,'Existing plan and sittings stay in one project card');
  if(width===390){await page.evaluate(()=>document.documentElement.classList.add('dark'));await page.waitForTimeout(350);await page.screenshot({path:`${out}/bookings-dark-${width}.png`,fullPage:true});}
  await page.goto(base+'/projects/12?project=plan%3A33');
- const newProject=card('New koi proposal');await newProject.locator('summary').filter({hasText:/^View sittings$/}).click();await newProject.getByRole('button',{name:/^Message /}).waitFor();
+ await card('New koi proposal').getByRole('button',{name:'View sittings',exact:true}).click();const newProject=page.getByRole('dialog',{name:'Project sittings',exact:true});await newProject.getByRole('button',{name:/^Message /}).waitFor();
  await newProject.getByRole('button',{name:/^Message /}).click();
  await page.getByRole('textbox',{name:'Message',exact:true}).waitFor();
  assert.equal(new URL(page.url()).searchParams.get('project'),'plan:33','A proposal without sittings keeps its own project context');
  assert.deepEqual(errors,[]);
- results.push({width,status:'passed',checks:['project identity','known and unknown progress','compact and expanded sittings','adjacent detail panels','urgent forms and payment links','completed project disclosure','project-scoped references and payments','legacy sitting deep links','date-change message draft without send','consent deep link','existing proposal stays in its project card','proposal without sittings retains message context','no overflow or runtime errors']});
+ results.push({width,status:'passed',checks:['project identity','known and unknown progress','compact and expanded sittings','portalled detail sheets','urgent forms and payment links','completed project disclosure','project-scoped references and payments','legacy sitting deep links','date-change message draft without send','consent deep link','existing proposal stays in its project card','proposal without sittings retains message context','no overflow or runtime errors']});
  await context.close();
 }
 } finally {await browser.close();await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));}

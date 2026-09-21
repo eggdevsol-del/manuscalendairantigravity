@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useState } from "react";
 import { Package } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -156,8 +157,7 @@ export default function Products() {
               in stock
             </p>
             {!!p.variants.length && (
-              <details>
-                <summary>View {p.variants.length} variants</summary>
+              <DetailsSheet title={<> View {p.variants.length} variants </>}>
                 {p.variants.map(v => (
                   <Row
                     key={v.id}
@@ -165,7 +165,7 @@ export default function Products() {
                     detail={`${v.inventoryCount} in stock`}
                   />
                 ))}
-              </details>
+              </DetailsSheet>
             )}
             <Action
               tone="secondary"

@@ -1,3 +1,5 @@
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { DetailsSheet } from "../components/DetailsSheet";
 import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
 import { WeekAgenda } from "../design/WeekAgenda";
@@ -62,6 +64,7 @@ export default function Today() {
             <button
               className="v3-attention"
               aria-expanded={expanded}
+              aria-haspopup="dialog"
               onClick={() =>
                 tasks.error ? tasks.actions.refetch() : setExpanded(!expanded)
               }
@@ -78,57 +81,66 @@ export default function Today() {
               </span>
               <ChevronRight size={19} />
             </button>
-            {expanded && tasks.tasks.length > 0 && (
-              <Section title="Needs your attention">
-                {tasks.tasks.map(task => (
-                  <div
-                    key={task.id}
-                    className="v3-task-card"
-                    data-priority={task._serverTask.priorityLevel}
-                  >
-                    <Row
-                      title={task.title}
-                      detail={task.context}
-                      onClick={() => {
-                        const t = task._serverTask;
-                        tasks.actions.startTask(t);
-                        if (t.deepLink) go(t.deepLink);
-                        else if (t.conversationId)
-                          go(`/chat/${t.conversationId}`);
-                        else if (t.emailRecipient) tasks.actions.openEmail(t);
-                        else if (t.smsNumber) tasks.actions.openSms(t);
-                        else go("/clients");
-                      }}
-                    />
-                    {task._serverTask.conversationId && (
-                      <DesignBrief
-                        conversationId={task._serverTask.conversationId}
-                      />
-                    )}
-                    <Action
-                      tone="quiet"
-                      disabled={!!tasks.completingTask}
-                      onClick={async () => {
-                        try {
-                          setActionError("");
-                          await tasks.actions.completeTask(
-                            task._serverTask,
-                            "manual"
-                          );
-                        } catch {
-                          setActionError(
-                            "Couldn’t mark this task done. Please try again."
-                          );
-                        }
-                      }}
+            <SheetShell
+              isOpen={expanded}
+              onClose={() => setExpanded(false)}
+              title="Needs your attention"
+            >
+              {expanded && tasks.tasks.length > 0 && (
+                <Section title="Needs your attention">
+                  {tasks.tasks.map(task => (
+                    <div
+                      key={task.id}
+                      className="v3-task-card"
+                      data-priority={task._serverTask.priorityLevel}
                     >
-                      Mark done
-                    </Action>
-                  </div>
-                ))}
-                {actionError && <p role="alert">{actionError}</p>}
-              </Section>
-            )}
+                      <Row
+                        title={task.title}
+                        detail={task.context}
+                        onClick={() => {
+                          const t = task._serverTask;
+                          tasks.actions.startTask(t);
+                          if (t.deepLink) go(t.deepLink);
+                          else if (t.conversationId)
+                            go(`/chat/${t.conversationId}`);
+                          else if (t.emailRecipient) tasks.actions.openEmail(t);
+                          else if (t.smsNumber) tasks.actions.openSms(t);
+                          else go("/clients");
+                        }}
+                      />
+                      {task._serverTask.conversationId && (
+                        <DesignBrief
+                          conversationId={task._serverTask.conversationId}
+                        />
+                      )}
+                      <Action
+                        tone="quiet"
+                        disabled={!!tasks.completingTask}
+                        onClick={async () => {
+                          try {
+                            setActionError("");
+                            await tasks.actions.completeTask(
+                              task._serverTask,
+                              "manual"
+                            );
+                          } catch {
+                            setActionError(
+                              "Couldn’t mark this task done. Please try again."
+                            );
+                          }
+                        }}
+                      >
+                        Mark done
+                      </Action>
+                    </div>
+                  ))}
+                  {actionError && <p role="alert">{actionError}</p>}
+                </Section>
+              )}
+              {expanded && !tasks.tasks.length && (
+                <p>Nothing needs your attention.</p>
+              )}
+            </SheetShell>
           </Panel>
           <Feedback
             loading={day.isLoading}
@@ -244,13 +256,17 @@ function ArtistSetup() {
     },
   ];
   return (
-    <details className="v3-divider">
-      <summary className="v3-row">
-        Set up your business{" "}
-        <span className="v3-muted">
-          {steps.filter(s => s.done).length} of {steps.length}
-        </span>
-      </summary>
+    <DetailsSheet
+      className="v3-divider"
+      title={
+        <>
+          Set up your business{" "}
+          <span className="v3-muted">
+            {steps.filter(s => s.done).length} of {steps.length}
+          </span>
+        </>
+      }
+    >
       <Feedback
         loading={settings.isLoading}
         error={settings.error}
@@ -271,7 +287,7 @@ function ArtistSetup() {
         </Action>
       )}
       {complete.error && <p role="alert">{complete.error.message}</p>}
-    </details>
+    </DetailsSheet>
   );
 }
 

@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useState } from "react";
 import { useRoute } from "wouter";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -218,10 +219,9 @@ function Product({
       )}
       <h2>{product.title}</h2>
       {product.description && (
-        <details>
-          <summary>About this product</summary>
+        <DetailsSheet title={<> About this product </>}>
           <p style={{ whiteSpace: "pre-wrap" }}>{product.description}</p>
-        </details>
+        </DetailsSheet>
       )}
       <p className="v3-muted">
         {product.fulfillmentType === "both"

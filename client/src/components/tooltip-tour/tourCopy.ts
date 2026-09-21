@@ -2,10 +2,22 @@ import { controlLabel } from "./contextualTargets";
 
 /** Authored product guidance shared by page, sheet and workflow tours. */
 const topics: [RegExp, string][] = [
-  [/^disconnect payment account/i, "Review the connection you are removing. Disconnecting stops new payment collection through this account in Tattoi; it does not close your Stripe account."],
-  [/payment account|bank setup/i, "Set up or review the account used to collect payments and receive payouts. Complete Stripe’s business, identity and bank checks; returning to Tattoi alone does not confirm approval."],
-  [/^artist map$/i, "Search for artists or move the map to explore an area. Select a pin to open that artist’s card; the map does not request a booking."],
-  [/^artwork viewer$/i, "Inspect this artist’s work at full size. Use the previous and next controls to browse, or close the viewer to return to the portfolio."],
+  [
+    /^disconnect payment account/i,
+    "Review the connection you are removing. Disconnecting stops new payment collection through this account in Tattoi; it does not close your Stripe account.",
+  ],
+  [
+    /payment account|bank setup/i,
+    "Set up or review the account used to collect payments and receive payouts. Complete Stripe’s business, identity and bank checks; returning to Tattoi alone does not confirm approval.",
+  ],
+  [
+    /^artist map$/i,
+    "Search for artists or move the map to explore an area. Select a pin to open that artist’s card; the map does not request a booking.",
+  ],
+  [
+    /^artwork viewer$/i,
+    "Inspect this artist’s work at full size. Use the previous and next controls to browse, or close the viewer to return to the portfolio.",
+  ],
   [
     /booking|project|sitting|session/i,
     "Keep the dates, service, estimate, deposit and client together. Open a sitting for its own details; review changes before confirming them.",
@@ -115,24 +127,78 @@ export function describeSurface(title: string) {
   );
 }
 const actions: [RegExp, string][] = [
-  [/continue with stripe/i, "Open Stripe’s hosted account setup to complete the required verification. This does not authorise a client payment."],
-  [/^try again$|^check again$|^refresh status$/i, "Request the current result again after checking the displayed issue. A refreshed view does not by itself confirm payment or account approval."],
-  [/^offer a time$/i, "Prepare an available date, duration, estimate, deposit and expiry for this waiting client. Opening the form does not send the offer."],
-  [/^accept offer & review deposit$/i, "Check availability and accept this offered time for deposit review. The booking is confirmed only after the required payment and availability checks."],
-  [/^continue to deposit$/i, "Reopen this accepted offer’s deposit review. Check the date, amount and platform fee before paying."],
-  [/^withdraw$|^leave waitlist$/i, "Review the confirmation before removing this waitlist entry. This is separate from cancelling an existing appointment."],
-  [/^clear signature$/i, "This clears the strokes in the signature pad so you can draw again. It does not remove a previously signed form."],
-  [/^continue to signature$/i, "Open the signature step after reviewing this form and answering any required questions. Continuing does not sign or submit the form."],
-  [/^review form again$/i, "Return to the form text and questions before signing. This does not submit your signature."],
-  [/^next artwork$/i, "Display the next piece in this portfolio. This does not save, share or contact the artist."],
-  [/^previous artwork$/i, "Display the previous piece in this portfolio. You can also use the left and right arrow keys while the viewer is focused."],
-  [/^add client$/i,'Open a client record form. Enter their name and contact details, then review the record before saving.'],
-  [/^add service|^edit service/i,'Open the service editor to review its name, price, duration and number of sittings. These values feed booking availability and proposals.'],
-  [/^add trip|^edit trip/i,'Open the trip editor to set the destination and date range. Saving a trip does not message clients or change working hours.'],
-  [/^add template|^edit template/i,'Edit reusable message wording. Saving the template does not send a message.'],
-  [/^add event|^create event/i,'Open the event details. Review format, dates, capacity, location and ticket price before publishing.'],
-  [/show password|hide password/i,'Show or conceal the password in this field. This does not change the password itself.'],
-  [/add session|remove session/i,'Change the sittings in this draft. Review the resulting dates and totals before sending the plan.'],
+  [
+    /continue with stripe/i,
+    "Open Stripe’s hosted account setup to complete the required verification. This does not authorise a client payment.",
+  ],
+  [
+    /^try again$|^check again$|^refresh status$/i,
+    "Request the current result again after checking the displayed issue. A refreshed view does not by itself confirm payment or account approval.",
+  ],
+  [
+    /^offer a time$/i,
+    "Prepare an available date, duration, estimate, deposit and expiry for this waiting client. Opening the form does not send the offer.",
+  ],
+  [
+    /^accept offer & review deposit$/i,
+    "Check availability and accept this offered time for deposit review. The booking is confirmed only after the required payment and availability checks.",
+  ],
+  [
+    /^continue to deposit$/i,
+    "Reopen this accepted offer’s deposit review. Check the date, amount and platform fee before paying.",
+  ],
+  [
+    /^withdraw$|^leave waitlist$/i,
+    "Review the confirmation before removing this waitlist entry. This is separate from cancelling an existing appointment.",
+  ],
+  [
+    /^clear signature$/i,
+    "This clears the strokes in the signature pad so you can draw again. It does not remove a previously signed form.",
+  ],
+  [
+    /^continue to signature$/i,
+    "Open the signature step after reviewing this form and answering any required questions. Continuing does not sign or submit the form.",
+  ],
+  [
+    /^review form again$/i,
+    "Return to the form text and questions before signing. This does not submit your signature.",
+  ],
+  [
+    /^next artwork$/i,
+    "Display the next piece in this portfolio. This does not save, share or contact the artist.",
+  ],
+  [
+    /^previous artwork$/i,
+    "Display the previous piece in this portfolio. You can also use the left and right arrow keys while the viewer is focused.",
+  ],
+  [
+    /^add client$/i,
+    "Open a client record form. Enter their name and contact details, then review the record before saving.",
+  ],
+  [
+    /^add service|^edit service/i,
+    "Open the service editor to review its name, price, duration and number of sittings. These values feed booking availability and proposals.",
+  ],
+  [
+    /^add trip|^edit trip/i,
+    "Open the trip editor to set the destination and date range. Saving a trip does not message clients or change working hours.",
+  ],
+  [
+    /^add template|^edit template/i,
+    "Edit reusable message wording. Saving the template does not send a message.",
+  ],
+  [
+    /^add event|^create event/i,
+    "Open the event details. Review format, dates, capacity, location and ticket price before publishing.",
+  ],
+  [
+    /show password|hide password/i,
+    "Show or conceal the password in this field. This does not change the password itself.",
+  ],
+  [
+    /add session|remove session/i,
+    "Change the sittings in this draft. Review the resulting dates and totals before sending the plan.",
+  ],
 
   [
     /^send message$/i,
@@ -263,7 +329,7 @@ export function describeControl(el: HTMLElement, surface: string) {
   const disabled = el.matches(":disabled,[aria-disabled=true]")
     ? " This control is currently unavailable. Check validation, loading status and the access available to this account."
     : "";
-  const section = el.closest('section')?.querySelector('h2')?.textContent || '';
+  const section = el.closest("section")?.querySelector("h2")?.textContent || "";
   let body: string;
   if (el.matches("h2,h3,.v3-facts,.v3-attention,[role=status],[role=alert]"))
     body = el.matches("[role=alert]")
@@ -285,13 +351,13 @@ export function describeControl(el: HTMLElement, surface: string) {
         ? `Choose ${label.toLowerCase()} from the available options.`
         : type === "radio" || role === "radio"
           ? `Select ${label.toLowerCase()}${el.closest("fieldset")?.querySelector("legend")?.textContent ? " for “" + el.closest("fieldset")!.querySelector("legend")!.textContent!.trim() + "”" : ""}. Choose the option that accurately answers this question; selecting it replaces the other choice in this group.`
-        : type === "checkbox" || role === "switch"
-          ? `Turn ${label.toLowerCase()} on or off. Review its current state before changing it.`
-          : type === "file"
-            ? `Choose the file required for ${label.toLowerCase()}. Review the file before using the upload or import action.`
-            : type === "range" || role === "slider"
-              ? `Adjust ${label.toLowerCase()} with the slider or arrow keys and check the displayed value.`
-              : `Enter ${label.toLowerCase()} for ${surface.toLowerCase()}. Follow any format, limits and validation shown alongside the field.`;
+          : type === "checkbox" || role === "switch"
+            ? `Turn ${label.toLowerCase()} on or off. Review its current state before changing it.`
+            : type === "file"
+              ? `Choose the file required for ${label.toLowerCase()}. Review the file before using the upload or import action.`
+              : type === "range" || role === "slider"
+                ? `Adjust ${label.toLowerCase()} with the slider or arrow keys and check the displayed value.`
+                : `Enter ${label.toLowerCase()} for ${surface.toLowerCase()}. Follow any format, limits and validation shown alongside the field.`;
   } else if (tag === "IFRAME")
     body =
       "Complete these provider-hosted fields yourself. Card and identity information stays inside the secure provider interface; review the total before authorising payment.";
@@ -301,11 +367,19 @@ export function describeControl(el: HTMLElement, surface: string) {
   else if (tag === "CANVAS")
     body =
       "Draw your own signature here after reading the form. Use the clear control if you need to start again.";
+  else if (el.getAttribute("aria-haspopup") === "dialog")
+    body = `Open ${label.toLowerCase()} in a bottom sheet. Close the sheet to return to your place on the page.`;
   else if (el.hasAttribute("aria-expanded") || tag === "SUMMARY")
     body = `Expand or collapse ${label.toLowerCase()} to see its related details and actions. The guide follows the newly revealed controls.`;
-  else if (el.matches('button.v3-row') && /Who are you booking/i.test(section)) body='Choose this client for the draft booking. Their saved record stays attached to the plan; you will choose the service and dates next.';
-  else if (el.matches('button.v3-row') && /What are we planning/i.test(section)) body='Choose this saved service. Its duration, price and sitting count populate the draft; review them with the dates before sending.';
-  else if (el.matches('button.v3-row') && surface==='Clients') body='Open this client’s record to review their contact details, appointments, forms and notes. The guide will include those controls when the record opens.';
+  else if (el.matches("button.v3-row") && /Who are you booking/i.test(section))
+    body =
+      "Choose this client for the draft booking. Their saved record stays attached to the plan; you will choose the service and dates next.";
+  else if (el.matches("button.v3-row") && /What are we planning/i.test(section))
+    body =
+      "Choose this saved service. Its duration, price and sitting count populate the draft; review them with the dates before sending.";
+  else if (el.matches("button.v3-row") && surface === "Clients")
+    body =
+      "Open this client’s record to review their contact details, appointments, forms and notes. The guide will include those controls when the record opens.";
   else
     body =
       actions.find(([pattern]) => pattern.test(label))?.[1] ||

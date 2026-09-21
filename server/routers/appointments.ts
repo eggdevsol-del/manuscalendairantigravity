@@ -1,3 +1,4 @@
+import { designProjectName } from "../../shared/projectNames";
 import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import { revisedBookingPrice } from "../domain/paymentState";
@@ -1405,9 +1406,10 @@ export const appointmentsRouter = router({
             status: a.status,
             title: a.title,
             projectName:
-              a.projectName ||
-              (a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null) ||
-              null,
+              designProjectName(a.projectName) ||
+              designProjectName(
+                a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null
+              ),
             sessionIndex: a.sessionIndex,
             sessionTotal: a.sessionTotal,
             serviceName: a.serviceName,

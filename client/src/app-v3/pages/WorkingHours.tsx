@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -496,8 +497,7 @@ export default function WorkingHours() {
               {save.isPending ? "Saving…" : "Save service"}
             </Action>
             {edit !== null && (
-              <details>
-                <summary className="v3-row">Remove service</summary>
+              <DetailsSheet title={<> Remove service </>}>
                 <p>
                   Existing bookings keep their details. This service will no
                   longer be available for new bookings.
@@ -521,7 +521,7 @@ export default function WorkingHours() {
                   <Trash2 />
                   Remove service
                 </Action>
-              </details>
+              </DetailsSheet>
             )}
           </form>
         )}

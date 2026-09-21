@@ -10,6 +10,9 @@ import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CalendarTimeline } from "./CalendarTimeline";
 
+vi.mock("@/_core/contexts/UIDebugContext", () => ({
+  useUIDebug: () => ({ showDebugLabels: false }),
+}));
 const initialDate = new Date(2026, 8, 10);
 const noEvents: any[] = [];
 let frames: Map<number, FrameRequestCallback>;

@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { useState, useEffect } from "react";
 import { useRoute, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -376,8 +377,10 @@ export function PaymentLinkPage({
               </Action>
             )}
             {data.paymentMethods.bank && data.bankDetails && (
-              <details className="v3-panel">
-                <summary>Pay by bank transfer</summary>
+              <DetailsSheet
+                className="v3-panel"
+                title={<> Pay by bank transfer </>}
+              >
                 <div className="v3-stack">
                   <p>
                     Transfer {money(amount)} using your name as the reference.
@@ -398,7 +401,7 @@ export function PaymentLinkPage({
                   </Action>
                   <p>Your artist will verify receipt before marking it paid.</p>
                 </div>
-              </details>
+              </DetailsSheet>
             )}
             {data.paymentMethods.cash && (
               <Action

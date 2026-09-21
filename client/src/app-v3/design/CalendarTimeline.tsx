@@ -78,31 +78,15 @@ export function CalendarTimeline({
       rows.sort((a, b) => +instant(a.startTime) - +instant(b.startTime));
     return result;
   }, [renderedEvents, zone]);
-  const [detailHeights, setDetailHeights] = useState<Record<number, number>>(
-    {}
-  );
-  const selectedEvent = renderedEvents.find(event => event.id === selectedId);
-  const selectedDay =
-    selectedEvent && renderDetails
-      ? formatInTimeZone(instant(selectedEvent.startTime), zone, "yyyy-MM-dd")
-      : null;
-  const extraHeight = selectedId === null ? 0 : detailHeights[selectedId] || 0;
   const offsets = useMemo(() => {
     const positions = [0];
     for (let index = 0; index < windowSize; index++) {
       const count =
         byDay.get(format(addDays(origin, index), "yyyy-MM-dd"))?.length || 0;
-      positions.push(
-        positions[index] +
-          74 +
-          Math.max(1, count) * 64 +
-          (format(addDays(origin, index), "yyyy-MM-dd") === selectedDay
-            ? extraHeight
-            : 0)
-      );
+      positions.push(positions[index] + 74 + Math.max(1, count) * 64);
     }
     return positions;
-  }, [origin, byDay, selectedDay, extraHeight]);
+  }, [origin, byDay]);
   function indexAt(top: number) {
     let low = 0,
       high = windowSize - 1;
@@ -330,13 +314,6 @@ export function CalendarTimeline({
                       expanded={!!renderDetails && selectedId === event.id}
                       onExpandedChange={open =>
                         open ? onSelect(event) : onDeselect?.()
-                      }
-                      onDetailsHeight={height =>
-                        setDetailHeights(previous =>
-                          previous[event.id] === height
-                            ? previous
-                            : { ...previous, [event.id]: height }
-                        )
                       }
                     >
                       {renderDetails?.(event)}

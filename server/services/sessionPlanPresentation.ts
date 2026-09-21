@@ -1,3 +1,4 @@
+import { isDesignProjectName } from "../../shared/projectNames";
 import { inArray } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 
@@ -82,7 +83,7 @@ export function presentSessionPlans<T extends Plan>(
       let projectName: string | null = null;
       try {
         const meta = JSON.parse(p.message?.metadata || "{}");
-        if (typeof meta.projectName === "string")
+        if (isDesignProjectName(meta.projectName))
           projectName = meta.projectName;
       } catch {}
       return {

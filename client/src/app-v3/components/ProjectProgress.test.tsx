@@ -1,7 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { it, expect } from "vitest";
+import { it, expect, vi } from "vitest";
 import { ProjectProgress } from "./ProjectProgress";
 import { ProjectSittings, ProjectDisclosure } from "./ProjectSittings";
+vi.mock("@/_core/contexts/UIDebugContext", () => ({
+  useUIDebug: () => ({ showDebugLabels: false }),
+}));
 const sittings = Array.from({ length: 6 }, (_, i) => ({
   id: i + 1,
   sessionPlanId: 11,
@@ -22,7 +25,7 @@ it("shows unknown progress honestly without an invented bar", () => {
   expect(screen.queryByRole("progressbar")).toBeNull();
   expect(screen.getByText(/total to be confirmed/)).toBeTruthy();
 });
-it("shows date text while collapsed and reveals all sitting controls in one step", async () => {
+it("shows date text and opens sitting controls in a sheet", async () => {
   const { container } = render(
     <ProjectDisclosure
       sittings={sittings.map(s => ({ ...s, rescheduled: s.id === 3 }))}
@@ -38,10 +41,12 @@ it("shows date text while collapsed and reveals all sitting controls in one step
   expect(screen.queryByRole("button", { name: "Sitting 3" })).toBeNull();
   fireEvent.click(screen.getByText("View sittings"));
   await waitFor(() =>
-    expect(container.querySelector("details")?.open).toBe(true)
+    expect(
+      screen.getByRole("dialog", { name: "Project sittings" })
+    ).toBeTruthy()
   );
-  expect(screen.getAllByRole("button")).toHaveLength(6);
-  fireEvent.click(screen.getByText("Hide sittings"));
+  expect(screen.getAllByRole("button", { name: /^Sitting / })).toHaveLength(6);
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
   await waitFor(() =>
     expect(screen.queryByRole("button", { name: "Sitting 3" })).toBeNull()
   );

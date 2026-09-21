@@ -36,3 +36,11 @@ Collapsed projects now list upcoming dates as plain text, with progress always v
 Rescheduled labels are derived from the existing appointment audit log through a shared server reader. Both booking-list and project-summary responses use that reader. The existing reschedule mutation retains appointment ID, session-plan ID and financial state; project grouping continues to use the saved session-plan ID, never the date. No migration or generated example data was added.
 
 Regression coverage checks plain date summaries, hidden secondary actions, rescheduled labels, one-step sitting access, retained project membership after date changes, progress, and existing deep links at 320, 390 and 820 pixels. Browser runs use intercepted fixtures, not live payments or production records.
+
+## Bottom-sheet detail pattern (supersedes inline expansion above)
+
+Booking proposals are compact selectable rows; selecting one opens the existing proposal review/checkout sheet with server-priced deposit and platform fee. All secondary disclosures in the active app-v3 pages now use shared bottom sheets, including project/sitting details, references, payments, completed projects, client notes, design briefs, transaction details, product variants/descriptions, service removal and bank-transfer instructions. Dates, progress and urgent booking actions remain visible on the page. Sheets restore focus to their triggers without scrolling and use the existing portal, safe-area and native-scroll shell. The architecture check rejects new inline `details` elements in app-v3.
+
+Project titles read tattoo design context from text chat and cached design briefs, prioritising recent design decisions and excluding structured system traffic. Operational titles are rejected by a shared guard. Existing invalid names are hidden by presentation readers and repaired on booking/project load; valid saved names are retained. Historical projects use their original proposal boundary when newer plans exist, avoiding renaming an older tattoo from a newer tattoo's chat. Missing design context or LLM failures produce a neutral fallback. No database migration or bulk rewrite is required.
+
+Validation uses mocked LLM responses and isolated browser fixtures, not production chat, live charges or outgoing messages. Physical iPhone behavior still requires device testing.

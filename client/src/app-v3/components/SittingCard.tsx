@@ -1,12 +1,6 @@
-import {
-  useId,
-  useState,
-  useRef,
-  useLayoutEffect,
-  type ReactNode,
-  type CSSProperties,
-} from "react";
-import { ChevronDown } from "lucide-react";
+import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { useState, useRef, type ReactNode, type CSSProperties } from "react";
+import { ChevronRight } from "lucide-react";
 
 /** One disclosure contract for existing and proposed sitting cards. */
 export function SittingCard({
@@ -18,44 +12,31 @@ export function SittingCard({
   icon,
   headerClassName,
   headerStyle,
-  onDetailsHeight,
 }: {
   icon?: ReactNode;
   headerClassName?: string;
   headerStyle?: CSSProperties;
-  onDetailsHeight?: (height: number) => void;
   title: ReactNode;
   detail?: ReactNode;
   children: ReactNode;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
 }) {
+  const trigger = useRef<HTMLButtonElement>(null);
   const [localOpen, setLocalOpen] = useState(false);
   const open = expanded ?? localOpen;
-  const id = useId();
-  const panel = useRef<HTMLDivElement>(null);
-  const onHeight = useRef(onDetailsHeight);
-  onHeight.current = onDetailsHeight;
-  useLayoutEffect(() => {
-    if (!open || !panel.current || !onHeight.current) return;
-    const measure = () =>
-      onHeight.current?.(panel.current!.getBoundingClientRect().height + 8);
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(panel.current);
-    return () => observer.disconnect();
-  }, [open]);
   return (
     <div className="v3-sitting-card">
       <button
+        ref={trigger}
         type="button"
         className={headerClassName || "v3-row"}
         style={headerStyle}
         data-tour-repeat="sitting-disclosure"
         data-tour-title="Sitting details"
-        data-tour-description="Select a sitting to expand its own details directly beneath the card. Its dates, status, forms, amounts and available actions belong to that sitting. Select it again to collapse."
+        data-tour-description="Open this sitting’s dates, status, forms, amounts and actions in a bottom sheet. Close the sheet to return to your place."
         aria-expanded={open}
-        aria-controls={id}
+        aria-haspopup="dialog"
         onClick={() => {
           setLocalOpen(!open);
           onExpandedChange?.(!open);
@@ -66,20 +47,26 @@ export function SittingCard({
           <strong>{title}</strong>
           {detail && <span>{detail}</span>}
         </span>
-        <ChevronDown
+        <ChevronRight
           size={18}
           aria-hidden="true"
           style={{ transform: open ? "rotate(180deg)" : undefined }}
         />
       </button>
-      <div
-        id={id}
-        ref={panel}
-        hidden={!open}
-        className={open ? "v3-sitting-details" : undefined}
+      <SheetShell
+        onCloseAutoFocus={event => {
+          event.preventDefault();
+          trigger.current?.focus({ preventScroll: true });
+        }}
+        isOpen={open}
+        title={typeof title === "string" ? title : "Sitting details"}
+        onClose={() => {
+          setLocalOpen(false);
+          onExpandedChange?.(false);
+        }}
       >
-        {open && children}
-      </div>
+        {open && <div className="v3-sitting-details">{children}</div>}
+      </SheetShell>
     </div>
   );
 }

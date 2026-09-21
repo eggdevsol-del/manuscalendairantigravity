@@ -1,3 +1,5 @@
+import { isDesignProjectName } from "../../../../shared/projectNames";
+import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
 import {
   ProjectSittings,
@@ -161,7 +163,7 @@ function BookingProject({
       const unnamed = [
         ...new Set(
           (data?.sessions || [])
-            .filter(s => !s.projectName && s.sessionPlanId)
+            .filter(s => !isDesignProjectName(s.projectName) && s.sessionPlanId)
             .map(s => s.sessionPlanId!)
         ),
       ];
@@ -536,12 +538,12 @@ function BookingProject({
               )}
             </SheetShell>
             {tab === "Overview" && siblings.length === 0 && overview}
-            <details
+            <DetailsSheet
               open={filesOpen}
-              onToggle={event => setFilesOpen(event.currentTarget.open)}
+              onOpenChange={setFilesOpen}
               className="ivory-project-resource"
+              title={<> Design & references </>}
             >
-              <summary className="v3-row">Design & references</summary>
               <Section title="Project reference images">
                 {briefs.map(b => (
                   <div key={b.id}>
@@ -573,10 +575,9 @@ function BookingProject({
                     ))}
                 </div>
                 {!!unassignedBriefs.length && selectedKey && (
-                  <details>
-                    <summary className="v3-row">
-                      Older conversation references · unassigned
-                    </summary>
+                  <DetailsSheet
+                    title={<>Older conversation references · unassigned</>}
+                  >
                     <p className="v3-muted">
                       These references have no verified project link and may
                       concern a different tattoo.
@@ -602,7 +603,7 @@ function BookingProject({
                         </div>
                       </div>
                     ))}
-                  </details>
+                  </DetailsSheet>
                 )}
                 <ActionLink
                   href={`/projects/${id}?project=${encodeURIComponent(projectId)}&${session ? `session=${session.id}&` : ""}view=Messages`}
@@ -611,13 +612,13 @@ function BookingProject({
                   Share photos in Messages
                 </ActionLink>
               </Section>
-            </details>
-            <details
+            </DetailsSheet>
+            <DetailsSheet
               open={paymentsOpen}
-              onToggle={event => setPaymentsOpen(event.currentTarget.open)}
+              onOpenChange={setPaymentsOpen}
               className="ivory-project-resource"
+              title={<> Payments </>}
             >
-              <summary className="v3-row">Payments</summary>
               <Section title="Project payment history · AUD">
                 <p className="v3-muted">
                   Session totals can include imported payments without a linked
@@ -627,10 +628,9 @@ function BookingProject({
                   <Feedback empty="No linked transactions recorded." />
                 )}
                 {!!unassignedHistory.length && selectedKey && (
-                  <details>
-                    <summary className="v3-row">
-                      Other conversation transactions · unassigned
-                    </summary>
+                  <DetailsSheet
+                    title={<>Other conversation transactions · unassigned</>}
+                  >
                     <p className="v3-muted">
                       These transactions have no verified project link. They are
                       not included as this project’s payments.
@@ -643,7 +643,7 @@ function BookingProject({
                         trailing={<strong>{money(h.amountCents)}</strong>}
                       />
                     ))}
-                  </details>
+                  </DetailsSheet>
                 )}
                 {history.map(h => (
                   <Row
@@ -654,7 +654,7 @@ function BookingProject({
                   />
                 ))}
               </Section>
-            </details>
+            </DetailsSheet>
           </ProjectDisclosure>
         </>
       )}
@@ -703,8 +703,10 @@ function BookingProject({
 function EarlierAppointment({ conversationId }: { conversationId: number }) {
   const join = trpc.waitlist.join.useMutation();
   return (
-    <details className="v3-divider">
-      <summary className="v3-row">Want an earlier appointment?</summary>
+    <DetailsSheet
+      className="v3-divider"
+      title={<> Want an earlier appointment? </>}
+    >
       <p className="v3-muted">
         Join your artist’s cancellation waitlist. Your existing booking stays in
         place.
@@ -717,7 +719,7 @@ function EarlierAppointment({ conversationId }: { conversationId: number }) {
         {join.isSuccess ? "You’re on the waitlist" : "Join waitlist"}
       </Action>
       {join.error && <p role="alert">{join.error.message}</p>}
-    </details>
+    </DetailsSheet>
   );
 }
 function Aftercare({ appointmentId }: { appointmentId: number }) {

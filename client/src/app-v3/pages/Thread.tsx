@@ -1,3 +1,4 @@
+import { DetailsSheet } from "../components/DetailsSheet";
 import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
@@ -146,15 +147,17 @@ export function Thread({
         </header>
         {c.isArtist && <DesignBrief key={id} conversationId={id} />}
         {c.isArtist && c.conversation?.clientId && (
-          <details className="v3-thread-notes">
-            <summary>Client records & private notes</summary>
+          <DetailsSheet
+            className="v3-thread-notes"
+            title={<> Client records & private notes </>}
+          >
             <ClientNotes
               draft={notesDraft}
               onDraftChange={setNotesDraft}
               key={c.conversation.clientId}
               clientId={c.conversation.clientId}
             />
-          </details>
+          </DetailsSheet>
         )}
         <div
           className="v3-messages"

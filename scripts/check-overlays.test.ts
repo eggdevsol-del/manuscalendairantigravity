@@ -20,6 +20,13 @@ it("rejects a lazy app-v3 feature importing a raw dialog and never silently pass
     );
     expect(scanOverlays(root).violations).toHaveLength(1);
     expect(() => scanOverlays(root, "missing.tsx")).toThrow();
+    writeFileSync(
+      join(root, "client/src/app-v3/Bad.tsx"),
+      "export const Bad = () => <details><summary>Details</summary>Extra</details>"
+    );
+    expect(scanOverlays(root).violations).toEqual([
+      "client/src/app-v3/Bad.tsx: use DetailsSheet for secondary information",
+    ]);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
