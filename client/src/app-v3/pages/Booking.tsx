@@ -185,7 +185,6 @@ function BookingProject({
   const [collapsedSitting, setCollapsedSitting] = useState<number | null>(null);
   const [namingFailed, setNamingFailed] = useState(false);
   const [namingRetry, setNamingRetry] = useState(0);
-  const [requestDraft, setRequestDraft] = useState("");
   const [sessionAction, setSessionAction] = useState<SessionActionMode | null>(
     null
   );
@@ -475,30 +474,6 @@ function BookingProject({
             ))}
           </div>
         )}{" "}
-        {client &&
-          session &&
-          !["cancelled", "completed", "no-show"].includes(session.status) && (
-            <Section title="Change this sitting">
-              <p className="v3-muted">
-                Send a request to your artist. Your appointment stays booked
-                until they confirm a change. Their cancellation policy applies.
-              </p>
-              {["Request a date change", "Request cancellation"].map(label => (
-                <Action
-                  key={label}
-                  tone="secondary"
-                  onClick={() => {
-                    setRequestDraft(
-                      `${label} for ${session.projectName || "my tattoo project"}, sitting ${session.sessionIndex || 1} on ${bookingDate(session.startsAt, session.timeZone)}. `
-                    );
-                    navigate("Messages");
-                  }}
-                >
-                  {label}
-                </Action>
-              ))}
-            </Section>
-          )}
         {client && <EarlierAppointment conversationId={id} />}
       </aside>
     </div>
@@ -644,7 +619,7 @@ function BookingProject({
               title="Project messages"
             >
               {tab === "Messages" && (
-                <Thread id={id} initialDraft={requestDraft} />
+                <Thread id={id} />
               )}
             </SheetShell>
             {tab === "Overview" && siblings.length === 0 && overview}
