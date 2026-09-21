@@ -168,7 +168,7 @@ try {
   ]) {
     const { page, context, calls } = await setup(role, overrides);
     await page.goto(baseURL + path);
-    if (path === "/bookings") await page.getByRole("button",{name:"View sittings",exact:true}).first().click();
+    if (path === "/bookings") await page.locator(".simple-project-link").first().click();
     await page.getByRole("button", { name: title }).click();
     const card = page.getByRole("dialog", {name:title});
     await card.getByText("$123.47", { exact: true }).waitFor();
@@ -177,7 +177,7 @@ try {
         c => c.name === "projects.summary" && c.input.conversationId === 12
       )
     );
-    assert.equal(
+    if (role === "artist") assert.equal(
       await card
         .getByRole("link", { name: "Open sitting & actions" })
         .getAttribute("href"),

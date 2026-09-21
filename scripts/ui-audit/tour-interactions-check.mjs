@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
-import {browser,setup,out} from './tour-browser-harness.mjs';
+import {browser,setup,startGuide,out} from './tour-browser-harness.mjs';
 const results=[],url=process.env.AUDIT_URL||'http://127.0.0.1:5198';
 try {
  for(const width of [320,390,820]) {
@@ -10,15 +10,16 @@ try {
    await page.emulateMedia({reducedMotion:'reduce'});
    await page.goto(url+'/calendar');
    await page.getByRole('button',{name:'New booking',exact:true}).click();
-   const help=page.getByRole('button',{name:'Tour this feature',exact:true});
-   await help.waitFor();
+   await page.getByRole('button',{name:/^Mia Chen/}).click();
+   await page.getByRole('button',{name:/^Full day/}).click();
    await page.waitForTimeout(700);
+   await page.getByRole('button',{name:'Find dates automatically',exact:true}).click();
    const heading=page.locator('[data-slot="sheet-title"]');
-   const h=await heading.boundingBox(),b=await help.boundingBox();
-   assert.ok(h&&b,'Sheet header is visible');
-   assert.ok(h.x>=b.x+b.width || h.y>=b.y+b.height || h.y+h.height<=b.y,'Help does not overlap sheet title');
+   assert.ok(await heading.isVisible(),'Sheet header is visible');
+   const focusTarget=page.getByLabel('Start looking from',{exact:true});
+   await focusTarget.focus();
    const before=calls.filter(c=>c.method==='POST').length;
-   await help.click();
+   await startGuide(page);
    const island=page.locator('.tooltip-tour-bubble');
    await island.waitFor();
    await page.waitForTimeout(250);
@@ -38,8 +39,8 @@ try {
    await page.keyboard.press('Escape');
    await island.waitFor({state:'hidden'});
    assert.ok(await heading.isVisible(),'Escape preserves the booking sheet');
-   assert.ok(await help.evaluate(el=>document.activeElement===el),'Focus returns to tour trigger');
-   await help.click();
+   assert.ok(await focusTarget.evaluate(el=>document.activeElement===el),'Focus returns to the initiating control');
+   await startGuide(page);
    await island.getByRole('button',{name:'Skip',exact:true}).click();
    await island.waitFor({state:'hidden'});
    assert.equal(calls.filter(c=>c.method==='POST').length,before,'Tour controls do not submit business mutations');

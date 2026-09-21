@@ -2,9 +2,25 @@ import { spawn, spawnSync } from "node:child_process";
 import { build } from "esbuild";
 const node = process.execPath;
 function run(file, args = []) {
+  console.log(`Release gate: ${file}`);
+  const outputRoot = process.env.AUDIT_OUTPUT || "output/release-regressions";
+  const group = /tour/.test(file)
+    ? "tours"
+    : file
+        .split("/")
+        .at(-1)
+        .replace(/\.m?js$/, "");
   const result = spawnSync(node, [file, ...args], {
     stdio: "inherit",
-    env: { ...process.env, TOUR_CASE: "", TOUR_GROUP: "", TOUR_ROLE: "", TOUR_PATH: "" },
+    env: {
+      ...process.env,
+      AUDIT_OUTPUT: `${outputRoot}/${group}`,
+      AUDIT_URL: process.env.AUDIT_URL || "http://127.0.0.1:5198",
+      TOUR_CASE: "",
+      TOUR_GROUP: "",
+      TOUR_ROLE: "",
+      TOUR_PATH: "",
+    },
   });
   if (result.status !== 0) throw Error(`${file} failed (${result.status})`);
 }

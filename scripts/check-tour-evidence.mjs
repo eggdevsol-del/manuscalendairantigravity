@@ -9,5 +9,5 @@ assert.equal(new Set(cases.map(c=>c.name)).size,cases.length,'Scenario names mus
 const results=cases.map(test=>{const result=latest.get(test.name);return {name:test.name,role:test.role||'artist',route:test.path,passed:result?.passed===true,steps:result?.steps?.length||0,evidence:result?.evidence||null};});
 const missing=results.filter(row=>!row.passed);
 assert.deepEqual(missing,[],'Every declared feature scenario needs passing browser evidence');
-await writeFile('docs/releases/contextual-tour-evidence.json',JSON.stringify({scenarios:results.length,results},null,2)+'\n');
+await writeFile(dir+'/contextual-tour-evidence.json',JSON.stringify({scenarios:results.length,results},null,2)+'\n');
 console.log('Feature evidence complete:',results.length,'of',cases.length);

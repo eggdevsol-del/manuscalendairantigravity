@@ -43,7 +43,7 @@ async function setup(role, override = {}, init) {
     if (u.hostname !== "127.0.0.1") return r.abort();
     if (u.pathname === "/__ivory_artwork.png")
       return r.fulfill({
-        path: root + "/output/tattoi-ivory-complete/assets/botanical.png",
+        body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aM1sAAAAASUVORK5CYII=", "base64"),
         contentType: "image/png",
       });
     if (u.pathname.startsWith("/api/trpc/"))
@@ -87,8 +87,22 @@ async function setup(role, override = {}, init) {
 }
 
 
-async function inspectGuide(page) {
+// Use the same walkthrough URL entry as Settings > Guided walkthroughs.
+// It also preserves an already-open sheet when the feature has no visible help trigger.
+async function startGuide(page) {
+ const help=page.getByRole('button',{name:/^Tour this (page|feature)$/}).filter({visible:true});
+ if(await help.count()) { await help.last().click(); return; }
+ await page.evaluate(()=>{
+   const url=new URL(location.href);url.searchParams.set('walkthrough','1');
+   history.pushState({},'',url);window.dispatchEvent(new PopStateEvent('popstate'));
+ });
+}
+
+async function inspectGuide(page, allowEmpty = false) {
  const island=page.locator('.tooltip-tour-bubble');
+ // A surface with no business-specific guidance intentionally has no tour.
+ await page.waitForTimeout(700);
+ if (allowEmpty && !await island.count()) return [];
  await island.waitFor();
  const steps=[];
  for(let i=0;i<180;i++) {
@@ -98,6 +112,7 @@ async function inspectGuide(page) {
    assert.notEqual(title,'Control','Each control needs an accessible name');
    const target=page.locator('[data-tour-current-target]');
    assert.equal(await target.count(),1,'Exactly one live target');
+   assert(!await target.evaluate(el=>el.matches('h1,h2,h3')||!!el.closest('#bottom-nav')),'Business tours omit headings and primary navigation');
    const rect=await target.boundingBox();
    const box=await island.boundingBox();
    const viewport=page.viewportSize();
@@ -114,4 +129,4 @@ async function inspectGuide(page) {
  throw Error('Tour did not finish in 180 steps');
 }
 
-export {browser,setup,inspectGuide,out};
+export {browser,setup,inspectGuide,startGuide,out};

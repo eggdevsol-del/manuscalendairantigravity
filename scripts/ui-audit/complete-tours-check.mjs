@@ -1,6 +1,7 @@
+import {pagesWithoutGuidance} from './business-tour-policy.mjs';
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
-import {browser,setup,inspectGuide,out} from './tour-browser-harness.mjs';
+import {browser,setup,inspectGuide,startGuide,out} from './tour-browser-harness.mjs';
 const results=[];
 const {readFile}=await import('node:fs/promises');
 const {transform}=await import('esbuild');
@@ -16,12 +17,11 @@ try {
   const {page,context,errors,calls}=await setup(test.role);
   try {
     await page.goto(auditUrl+test.path);
-    await page.getByRole('button',{name:'Tour this page',exact:true}).first().waitFor();
     await page.waitForTimeout(500);
     assert.equal(await page.getByText('Something went wrong',{exact:true}).count(),0,'No error boundary');
     const before=calls.filter(c=>c.method==='POST').map(c=>c.name);
-    await page.getByRole('button',{name:'Tour this page',exact:true}).first().click();
-    const steps=await inspectGuide(page);
+    await startGuide(page);
+    const steps=await inspectGuide(page, pagesWithoutGuidance.has(test.role+':'+test.path));
     assert.deepEqual(errors,[],'No runtime errors');
     const unexpected=calls.filter(c=>c.method==='POST'&&!before.includes(c.name));
     assert.deepEqual(unexpected,[],'Tours do not invoke new mutations');

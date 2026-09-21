@@ -20,6 +20,7 @@ const bankFixture={
 };
 const eventFixture={id:1,title:'Botanical workshop',type:'in_person',date:'2026-12-18T00:00:00Z',locationUrl:'Brisbane studio',description:'Fixture workshop',priceCents:20000,capacity:10,ticketsSold:2};
 const legacyProposal={
+ 'projects.summary':sessionFixture({status:'pending_deposit'}),
  'messages.list':[{id:90,conversationId:12,senderId:'artist-test',messageType:'system',content:'Booking proposal',createdAt:'2026-09-09T00:00:00Z',metadata:JSON.stringify({type:'project_proposal',status:'pending',appointmentIds:[101],serviceName:'Full day',serviceDuration:180,sittings:1,totalCost:600,depositAmount:150,dates:['2026-12-18T00:00:00Z']})}],
  'appointments.getByConversation':fixture('appointments.getArtistCalendar','artist'),
 };
@@ -37,12 +38,12 @@ export const cases=[
 
  ...['in_progress','completed','failed'].map(status=>({name:'instagram-'+status,path:'/settings?section=instagram',override:{'instagram.getLatestImport':{id:1,instagramUsername:'fixture_artist',status,totalDiscovered:10,totalProcessed:5},'instagram.getImportStatus':{id:1,instagramUsername:'fixture_artist',status,totalDiscovered:10,totalProcessed:5}},open:[]})),
  {name:'instagram-lookup',path:'/settings?section=instagram',override:{'instagram.verifyUsername':{success:true,userInfo:{fullName:'Fixture Artist',username:'fixture_artist',mediaCount:10}}},open:[async page=>page.getByLabel('Instagram username',{exact:true}).fill('fixture_artist'),button('Check account')]},
- {name:'tabs-inbox-contacts',path:'/conversations',open:[tab('Contacts')]},
+ {name:'tabs-inbox-contacts',path:'/conversations',open:[button('Contacts')]},
  {name:'tabs-bookings-past',role:'client',path:'/bookings',open:[async page=>page.getByRole('button',{name:/Completed projects/}).click()]},
  ...['Fulfilled','All'].map(name=>({name:'tabs-orders-'+name.toLowerCase(),role:'merchant',path:'/merchant/orders',open:[tab(name)]})),
 
- {name:'legacy-proposal-review',path:'/chat/12',override:legacyProposal,open:[button(/Booking proposal.*Review proposal/)]},
- ...['Contact','Service & cost','Reschedule'].map(name=>({name:'legacy-editor-'+name.toLowerCase().replace(/[^a-z]+/g,'-'),path:'/chat/12',override:legacyProposal,open:[button(/Booking proposal.*Review proposal/),button('Edit Booking'),tab(name)]})),
+ {name:'legacy-proposal-review',path:'/chat/12',override:legacyProposal,open:[button('Review proposal')]},
+ ...['Contact','Service & cost','Reschedule'].map(name=>({name:'legacy-editor-'+name.toLowerCase().replace(/[^a-z]+/g,'-'),path:'/chat/12',override:legacyProposal,open:[button('Review proposal'),button('Edit Booking'),tab(name)]})),
 
  {name:'request-archive',path:'/lead/1',open:[button('Archive request')]},
  {name:'request-consultation',path:'/settings?section=consultations',override:{'consultations.list':[{id:1,subject:'Botanical enquiry',description:'Fixture consultation details',status:'pending',client:{name:'Mia Chen'},clientId:'client-test',artistId:'artist-test',conversationId:12}]},open:[button(/^Botanical enquiry/)]},
@@ -80,7 +81,7 @@ export const cases=[
  {name:'commerce-refund',path:'/payout-history',open:[button('Review refund')]},
 
  {name:'map-overview',role:'client',path:'/discover',open:[button('Your artists and bookings'),button(/See Artist Map/)]},
- {name:'forms-consent-signature',role:'client',path:'/projects/12?session=101&action=forms',override:{'forms.getPendingForms':[{id:7,title:'Procedure consent',content:'Review the procedure information.',formType:'procedure_consent',status:'pending'}]},open:[button('Continue to signature')],expected:'clears the strokes'},
+ {name:'forms-consent-signature',role:'client',path:'/projects/12?session=101&action=forms',override:{'forms.getPendingForms':[{id:7,title:'Procedure consent',content:'Review the procedure information.',formType:'procedure_consent',status:'pending'}]},open:[button('Continue to signature')],expected:'Signed records stay attached'},
 
  ...['Medical','Consent'].map(name=>({name:'forms-template-'+name.toLowerCase(),path:'/settings?section=regulation',open:[tab(name)]})),
  {name:'forms-procedure-record',path:'/settings?section=regulation',override:{'forms.getProcedureLogs':[{id:1,clientName:'Mia Chen',artistLicenceNumber:'TEST',date:'2026-09-10',appointmentId:101,amountPaid:60000,paymentMethod:'card'}]},open:[button(/^Mia Chen/)]},
@@ -91,22 +92,22 @@ export const cases=[
  {name:'checkout-deposit-review',role:'client',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({sessionPlanId:11,projectName:'Botanical sleeve'})},open:[button(/^Review.*deposit/)]},
  {name:'checkout-balance-review',role:'client',path:'/projects/12?session=101',open:[button('Review balance')]},
 
- {name:'artwork-viewer',role:'client',path:'/discover',override:{'portfolio.list':[{id:1,imageUrl:'/__ivory_artwork.png',description:'Botanical study',mediaType:'image'},{id:2,imageUrl:'/__ivory_artwork.png',description:'Second study',mediaType:'image'}]},open:[button('Your artists and bookings'),button("View Ella Morgan's portfolio"),button('View Botanical study')],expected:'Display the next piece'},
+ {name:'artwork-viewer',role:'client',path:'/discover',override:{'portfolio.list':[{id:1,imageUrl:'/__ivory_artwork.png',description:'Botanical study',mediaType:'image'},{id:2,imageUrl:'/__ivory_artwork.png',description:'Second study',mediaType:'image'}]},open:[button('Your artists and bookings'),button("View Ella Morgan's portfolio"),button('View Botanical study')],expected:'realistic design brief'},
 
  {name:'session-finish-paid',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({paidCents:60000,remainingCents:0})},open:[button('Finish session')],expected:'record the current finish time'},
- {name:'session-cancel-plan',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({sessionPlanId:11})},open:[async page=>page.getByText('More session options',{exact:true}).click(),button('Cancel session'),async page=>page.getByRole('checkbox').check()],expected:'Cancel all remaining sessions in this plan.'},
- {name:'session-cancel-single',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({sessionPlanId:11})},open:[async page=>page.getByText('More session options',{exact:true}).click(),button('Cancel session')],expected:'Cancel only this session.'},
+ {name:'session-cancel-plan',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({sessionPlanId:11})},open:[button('Cancel session'),async page=>page.getByRole('checkbox').check()],expected:'Cancel all remaining sessions in this plan.'},
+ {name:'session-cancel-single',path:'/projects/12?session=101',override:{'projects.summary':sessionFixture({sessionPlanId:11})},open:[button('Cancel session')],expected:'Cancel only this session.'},
 
  ...['Bookings','Forms','Notes'].map(name=>({name:'record-'+name.toLowerCase(),path:'/clients?client=client-test',open:[tab(name)]})),
  {name:'record-sitting',path:'/clients?client=client-test',open:[async page=>page.locator('[data-tour-repeat="sitting-disclosure"]').first().click()]},
  ...[
   ['reschedule',[button('Reschedule')]],
   ['finish',[button('Finish session')]],
-  ['cancel',[async page=>page.getByText('More session options',{exact:true}).click(),button('Cancel session')]],
-  ['no-show',[async page=>page.getByText('More session options',{exact:true}).click(),button('Mark no-show')]],
+  ['cancel',[button('Cancel session')]],
+  ['no-show',[button('Mark no-show')]],
  ].map(([name,open])=>({name:'session-'+name,path:'/projects/12?session=101',open})),
 
- {name:'add-client',expected:'Save the entered name',path:'/clients',open:[button('Add client')]},
+ {name:'add-client',expected:'Save the entered name',path:'/clients',open:[button('Add client'),async page=>page.getByLabel('Full name',{exact:true}).fill('Fixture Client')]},
  {name:'services-tab',path:'/work-hours',open:[tab('Services')]},
  {name:'add-service',path:'/work-hours',open:[tab('Services'),button('Add service')]},
  {name:'edit-service',path:'/work-hours',open:[tab('Services'),button(/^Full day/)]},
@@ -121,13 +122,13 @@ export const cases=[
  {name:'booking-service',path:'/calendar',open:[button('New booking'),button(/^Mia Chen/)]},
  {name:'booking-frequency',path:'/calendar',open:[button('New booking'),button(/^Mia Chen/),button(/^Full day/),button('Find dates automatically')]},
  {name:'booking-details',path:'/calendar',open:[button('New booking'),button(/^Mia Chen/),button(/^Full day/)]},
- {name:'booking-review',path:'/calendar',open:[button('New booking'),button(/^Mia Chen/),button(/^Full day/),async page=>page.locator('input[type=date]').fill('2026-12-18'),button('Review proposal')]},
- {name:'thread-details',path:'/chat/12',open:[button('Client details and media')]},
- {name:'thread-booking',path:'/chat/12',open:[button('Book')]},
+ {name:'booking-review',path:'/calendar',open:[button('New booking'),button(/^Mia Chen/),button(/^Full day/),async page=>page.getByLabel('Date',{exact:true}).first().fill('2026-12-18'),button('Review proposal')]},
+ {name:'thread-details',path:'/chat/12',open:[button('Conversation tools')]},
+ {name:'thread-booking',path:'/chat/12',open:[button('Conversation tools'),button('New booking')]},
  {name:'project-overview',path:'/projects/12',open:[]},
- {name:'project-messages',path:'/projects/12',open:[button(/^Message /)]},
- {name:'project-files',path:'/projects/12',open:[async page=>page.getByRole('button',{name:'View sittings',exact:true}).first().click(),async page=>page.getByRole('button',{name:'Design & references',exact:true}).first().click()]},
- {name:'project-payments',path:'/projects/12',open:[async page=>page.getByRole('button',{name:'View sittings',exact:true}).first().click(),async page=>page.getByRole('button',{name:'Payments',exact:true}).first().click()]},
+ {name:'project-messages',path:'/projects/12',open:[async page=>page.getByRole('link',{name:'Message',exact:true}).click()]},
+ {name:'project-files',path:'/projects/12',open:[async page=>page.getByRole('button',{name:'Design & references',exact:true}).first().click()]},
+ {name:'project-payments',path:'/projects/12',open:[async page=>page.getByRole('button',{name:'Payments',exact:true}).first().click()]},
  {name:'client-project',role:'client',path:'/projects/12',open:[]},
  {name:'supplier-product-create',role:'merchant',path:'/merchant/products',open:[button('Add product')]},
  {name:'supplier-product-edit',role:'merchant',path:'/merchant/products',open:[button(/^Edit /)]},

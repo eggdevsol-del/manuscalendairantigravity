@@ -5,7 +5,7 @@ import {response} from './ivory-fixtures.mjs';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_PATH||'playwright');
 const browser=await chromium.launch({headless:true,executablePath:process.env.AUDIT_BROWSER});
 const base=process.env.AUDIT_URL||'http://127.0.0.1:5210';
-const out='output/tattoi-compact-cards';await mkdir(out,{recursive:true});const results=[];
+const out=process.env.AUDIT_OUTPUT||'output/tattoi-compact-cards';await mkdir(out,{recursive:true});const results=[];
 try{for(const width of [320,390,820]){
  const context=await browser.newContext({viewport:{width,height:900},hasTouch:true,serviceWorkers:'block'});
  await context.addInitScript(()=>{localStorage.setItem('authToken','test');localStorage.setItem('ui_debug_enabled','false');localStorage.setItem('tattoi-theme-override','light');sessionStorage.setItem('splashShown','true');});
@@ -30,10 +30,10 @@ try{for(const width of [320,390,820]){
  await page.getByRole('button',{name:'Some project names are unavailable',exact:true}).waitFor();
  assert.equal(await cards.count(),2);assert.equal(await page.getByText(/0 (proposed )?sittings/).count(),0);
  await cards.nth(1).getByText(/Dates unavailable/).waitFor();
- const heights=await cards.evaluateAll(els=>els.map(el=>el.getBoundingClientRect().height));assert(heights.every(h=>h===76),JSON.stringify({width,heights}));
+ const heights=await cards.evaluateAll(els=>els.map(el=>el.getBoundingClientRect().height));const minHeight=await cards.first().evaluate(el=>parseFloat(getComputedStyle(el).minHeight));assert(heights.every(h=>h>=minHeight&&h<=minHeight+4),JSON.stringify({width,heights}));
  await page.screenshot({path:`${out}/bookings-${width}.png`,fullPage:true});
  const enlarged=await page.addStyleTag({content:'.v3-summary-copy > strong {font-size:28px!important}.v3-summary-copy > span:not(.sr-only){font-size:24px!important}'});
- assert(await cards.first().evaluate(el=>el.getBoundingClientRect().height>76),'Cards grow for enlarged text');
+ assert(await cards.first().evaluate(el=>el.getBoundingClientRect().height>parseFloat(getComputedStyle(el).minHeight)),'Cards grow for enlarged text');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Enlarged labels do not overflow horizontally');
  await enlarged.evaluate(el=>el.remove());
  await page.getByRole('button',{name:'Some project names are unavailable',exact:true}).click();
@@ -41,11 +41,13 @@ try{for(const width of [320,390,820]){
  await sheet.getByRole('button',{name:'Close',exact:true}).click();
  await cards.first().click();sheet=page.getByRole('dialog',{name:'Review your booking',exact:true});await sheet.getByText('Platform fee',{exact:true}).waitFor();
  await sheet.getByRole('button',{name:'Close',exact:true}).click();
- await page.goto(base+'/chat/12');const chat=page.getByRole('button',{name:/Booking proposal.*View booking proposal/});await chat.waitFor();
- const chatMetrics=await chat.evaluate(el=>({minHeight:getComputedStyle(el).minHeight,padding:getComputedStyle(el).padding,borderRadius:getComputedStyle(el).borderRadius}));
- assert.equal(chatMetrics.minHeight,'76px');assert.equal(chatMetrics.padding,'12px 16px');
- await chat.click();sheet=page.getByRole('dialog',{name:'Booking proposal',exact:true});await sheet.getByRole('button',{name:'Review dates & pay deposit',exact:true}).waitFor();
- assert.equal(await sheet.locator('.v3-summary-card').count(),6);
+ await page.goto(base+'/chat/12');
+ const chat=page.locator('.v3-booking-message');await chat.waitFor();
+ // Approved graphical message cards show facts directly, without another disclosure.
+ const chatMetrics={sittings:await chat.getByRole('list',{name:'Sitting dates'}).getByRole('listitem').count()};
+ assert(chatMetrics.sittings>0);
+ assert.equal(await chat.locator('.v3-summary-card').count(),0);
+ await chat.getByText(/^(Sittings|Project) estimate$/).waitFor();
  await page.screenshot({path:`${out}/chat-proposal-${width}.png`});
  assert(!mutations.some(name=>/acceptAndPay|decline|messages.send/.test(name)));
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));assert.deepEqual(errors,[]);

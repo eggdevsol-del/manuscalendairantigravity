@@ -1,6 +1,7 @@
+import {featuresWithoutGuidance} from './business-tour-policy.mjs';
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
-import {browser,setup,inspectGuide,out} from './tour-browser-harness.mjs';
+import {browser,setup,inspectGuide,startGuide,out} from './tour-browser-harness.mjs';
 import {cases} from './tour-feature-cases.mjs';
 const url=process.env.AUDIT_URL||'http://127.0.0.1:5198',results=[];
 
@@ -12,10 +13,9 @@ try {
    for(const action of test.open) {await action(page);await page.waitForTimeout(180);}
    await page.waitForTimeout(700);
    assert.equal(await page.getByText('Something went wrong',{exact:true}).count(),0);
-   const modal=page.getByRole('button',{name:'Tour this feature',exact:true});
-   await (await modal.count()?modal.last():page.getByRole('button',{name:'Tour this page',exact:true}).first()).click();
+   await startGuide(page);
    const before=calls.filter(call=>call.method==='POST').length;
-   const steps=await inspectGuide(page);
+   const steps=await inspectGuide(page, featuresWithoutGuidance.has(test.name));
    assert.equal(calls.filter(call=>call.method==='POST').length,before,'Tour does not submit business changes');
    assert.deepEqual(errors,[]);
    if(test.expected) assert.ok(steps.some(step=>step.body.includes(test.expected)),'Tour explains the state-specific effect: '+test.expected);

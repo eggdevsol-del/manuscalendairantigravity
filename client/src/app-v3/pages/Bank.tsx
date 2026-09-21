@@ -201,7 +201,10 @@ function EmbeddedSetup({ onExit }: { onExit: () => void }) {
   }, [attempt, theme]);
   return (
     <div className="v3-stack">
-      <p>
+      <p
+        data-tour-title="Payment account verification"
+        data-tour-description="Complete Stripe’s identity and bank checks before accepting online payments. Returning to Tattoi does not confirm approval; check the account status so you know whether clients can pay and funds can reach your bank."
+      >
         Your identity and bank details are collected securely by Stripe.
         Returning here does not itself confirm verification.
       </p>
