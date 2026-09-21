@@ -71,7 +71,6 @@ export default function Calendar() {
   return (
     <Screen
       title="Calendar"
-      compactTitle
       className="v3-calendar-page"
       subtitle={wide ? period : format(c.activeDate, "EEEE, d MMMM")}
       wide

@@ -29,7 +29,6 @@ export function Screen({
   children,
   wide = false,
   publicView = false,
-  compactTitle = false,
   className = "",
 }: {
   title: string;
@@ -40,7 +39,6 @@ export function Screen({
   children: ReactNode;
   wide?: boolean;
   publicView?: boolean;
-  compactTitle?: boolean;
   className?: string;
 }) {
   const { user } = useAuth();
@@ -58,11 +56,12 @@ export function Screen({
     >
       <header className={back ? "v3-header v3-header-with-back" : "v3-header"}>
         <div className="v3-masthead">
-          {back ? (
+          {back && (
             <Link className="simple-back" aria-label="Back" href={back}>
-              <ChevronLeft size={20} /> Back
+              <ChevronLeft size={20} />
             </Link>
-          ) : (
+          )}
+          <div className="v3-heading-lockup">
             <Link
               href={
                 user?.role === "client"
@@ -75,8 +74,8 @@ export function Screen({
             >
               tattoi
             </Link>
-          )}
-          {compactTitle && <h1 className="v3-inline-title">{title}</h1>}
+            <h1 className="v3-inline-title">{title}</h1>
+          </div>
           <div className="tour-header-actions">
             {action || (
               <Link
@@ -89,7 +88,6 @@ export function Screen({
             )}
           </div>
         </div>
-        {!compactTitle && <h1>{title}</h1>}
         {subtitle && <p className="v3-subtitle">{subtitle}</p>}
       </header>
       {subheader && (

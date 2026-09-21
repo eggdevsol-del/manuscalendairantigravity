@@ -995,18 +995,6 @@
   font-size: 10px;
   color: var(--v3-muted);
 }
-.v3-calendar-page .v3-masthead {
-  gap: 12px;
-  justify-content: flex-start;
-}
-.v3-screen.v3-calendar-page .v3-header h1.v3-inline-title {
-  font-size: 25px;
-  letter-spacing: -0.6px;
-  flex: 1;
-}
-.v3-calendar-page .tour-header-actions {
-  margin-left: auto;
-}
 .v3-calendar-page .v3-header {
   padding-bottom: 10px;
 }
@@ -1081,4 +1069,39 @@ body:has(.v3-calendar-page) .tattoi-notice {
 }
 .v3-payment-history .v3-row > strong {
   flex-shrink: 0;
+}
+
+/* Shared page identity: wordmark and page title share the final text baseline. */
+.v3-screen .v3-header .v3-masthead {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+}
+.v3-heading-lockup {
+  display: flex;
+  align-items: last baseline;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.v3-heading-lockup .v3-wordmark {
+  flex: none;
+  line-height: 1;
+}
+.v3-screen .v3-header .v3-heading-lockup h1.v3-inline-title {
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: -0.6px;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.v3-masthead > .tour-header-actions {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.v3-masthead > .simple-back {
+  flex-shrink: 0;
+  padding: 0;
 }

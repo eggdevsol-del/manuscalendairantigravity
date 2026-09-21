@@ -10,7 +10,7 @@ export function EarningsChart({
   const high = Math.max(0, ...daily.map(d => d.netCents)),
     low = Math.min(0, ...daily.map(d => d.netCents)),
     range = high - low || 1;
-  const y = (value: number) => 6 + ((high - value) / range) * 68;
+  const y = (value: number) => 16 + ((high - value) / range) * 58;
   const baseline = y(0),
     width = 300 / daily.length;
   return (
@@ -35,19 +35,45 @@ export function EarningsChart({
           stroke="var(--v3-line)"
         />
         {daily.map((d, i) => (
-          <rect
-            key={d.date}
-            x={i * width + 1}
-            y={Math.min(y(d.netCents), baseline)}
-            width={Math.max(1, width - 3)}
-            height={Math.abs(y(d.netCents) - baseline)}
-            rx="2"
-            fill={d.netCents < 0 ? "var(--v3-red)" : "var(--v3-green)"}
-          >
-            <title>
-              {d.date}: {money(d.netCents)}
-            </title>
-          </rect>
+          <g key={d.date}>
+            <rect
+              x={i * width + 0.35}
+              y={Math.min(y(d.netCents), baseline)}
+              width={Math.max(0.5, width - 0.7)}
+              height={Math.abs(y(d.netCents) - baseline)}
+              rx="1"
+              fill={d.netCents < 0 ? "var(--v3-red)" : "var(--v3-green)"}
+            >
+              <title>
+                {d.date}: {money(d.netCents)}
+              </title>
+            </rect>
+            {d.netCents !== 0 &&
+              (() => {
+                const label = new Intl.NumberFormat("en-AU", {
+                  notation: "compact",
+                  maximumFractionDigits: 1,
+                }).format(d.netCents / 100);
+                return (
+                  <text
+                    x={(i + 0.5) * width}
+                    y={Math.min(y(d.netCents), baseline) - 3}
+                    textAnchor="middle"
+                    fontSize="6"
+                    fill="var(--v3-ink)"
+                    {...(label.length * 3.6 > width - 1
+                      ? {
+                          textLength: width - 1,
+                          lengthAdjust: "spacingAndGlyphs" as const,
+                        }
+                      : {})}
+                  >
+                    <title>{money(d.netCents)}</title>
+                    {label}
+                  </text>
+                );
+              })()}
+          </g>
         ))}
       </svg>
       <figcaption>
