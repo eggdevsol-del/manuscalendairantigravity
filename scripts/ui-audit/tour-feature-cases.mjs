@@ -32,8 +32,8 @@ const supplyFixture={
 };
 export const cases=[
  {name:'supply-catalogue',path:'/supplies?supplier=1',override:supplyFixture,open:[]},
- {name:'supply-cart',path:'/supplies?supplier=1',override:supplyFixture,open:[button('Add to order'),button('Review order')]},
- {name:'supply-total',path:'/supplies?supplier=1',override:supplyFixture,open:[button('Add to order'),button('Review order'),button('Review checkout total')]},
+ {name:'supply-cart',path:'/supplies?supplier=1',override:supplyFixture,open:[button(/^View /),button('Add to cart'),button(/^Cart ·/)]},
+ {name:'supply-total',path:'/supplies?supplier=1',override:supplyFixture,open:[button(/^View /),button('Add to cart'),button(/^Cart ·/),button('Review checkout total')]},
  {name:'subscription-checkout',path:'/subscriptions',override:{'billing.subscriptionStatus':{tier:'free'},'billing.artistOffer':{priceCents:4900,currency:'AUD',interval:'month'},'billing.createArtistCheckoutSession':{clientSecret:'cs_fixture_secret'}},open:[button('Choose Pro')]},
 
  ...['in_progress','completed','failed'].map(status=>({name:'instagram-'+status,path:'/settings?section=instagram',override:{'instagram.getLatestImport':{id:1,instagramUsername:'fixture_artist',status,totalDiscovered:10,totalProcessed:5},'instagram.getImportStatus':{id:1,instagramUsername:'fixture_artist',status,totalDiscovered:10,totalProcessed:5}},open:[]})),

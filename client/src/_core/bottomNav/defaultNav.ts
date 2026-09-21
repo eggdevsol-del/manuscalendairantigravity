@@ -23,7 +23,7 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
     icon: MessageCircle,
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-  { id: "clients", path: "/clients", label: "Clients", icon: Users },
+  { id: "today", path: "/dashboard", label: "Today", icon: Home },
   {
     id: "business",
     path: "/business",

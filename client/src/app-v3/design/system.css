@@ -2119,3 +2119,27 @@ body:has(.tattoi-notice) .v3-scroll {
 .v3-date-choice-back { justify-self: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; margin-top: 4px; border: 0; border-radius: var(--v3-radius); background: transparent; color: var(--v3-muted); font-size: 13px; cursor: pointer; }
 .v3-date-choice-back:focus-visible { outline: 2px solid var(--v3-gold); outline-offset: 2px; }
 .v3-date-choice-back:disabled { opacity: .5; cursor: default; }
+
+/* Today: visible business tasks and a compact, rolling agenda. */
+.today-task { display: flex; align-items: center; gap: 8px; min-width: 0; border-bottom: 1px solid var(--v3-line); }
+.today-task > .v3-row { flex: 1; min-width: 0; }
+.today-task[data-priority="critical"], .today-task[data-priority="high"] { border-left: 3px solid var(--color-status-warning-text); padding-left: 8px; }
+.today-agenda-day { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--v3-line); }
+.today-agenda-day h3 { font-family: inherit; font-size: 13px; line-height: 1.5; padding-top: 12px; }
+.today-agenda-day .v3-row { padding-block: 10px; }
+.today-agenda-day p { font-size: 13px; }
+.supplier-catalogue .v3-form, .supplier-catalogue .v3-form label, .supplier-catalogue select { min-width: 0; max-width: 100%; }
+.supplier-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; padding-bottom: 100px; }
+.supplier-product-card { min-width: 0; width: 100%; text-align: left; display: flex; flex-direction: column; gap: 6px; padding: 0; color: var(--v3-ink); background: transparent; border: 0; overflow-wrap: anywhere; }
+.supplier-product-card strong { font-size: 14px; line-height: 1.4; }
+.supplier-product-card span, .supplier-product-card small { font-size: 12px; }
+.supplier-product-card small { color: var(--v3-muted); }
+.supplier-image-placeholder { display: grid; place-items: center; }
+.supplier-cart-dock { position: fixed; bottom: var(--simple-nav-height); left: var(--v3-gutter); right: var(--v3-gutter); z-index: 30; background: var(--v3-paper); border: 1px solid var(--v3-line); border-radius: var(--v3-radius); padding: 8px; display: flex; flex-direction: column; gap: 4px; text-align: center; }
+.supplier-cart-dock small { color: var(--v3-muted); font-size: 11px; }
+.supplier-catalogue .v3-content { display: flex; flex-direction: column; min-width: 0; }
+body:has(.tattoi-notice) .supplier-cart-dock { bottom: calc(var(--simple-nav-height) + 100px); }
+@media(min-width: 1100px) { .supplier-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+body:has(.supplier-cart-dock) .simple-nav-fade { bottom: calc(var(--simple-nav-height) + 104px); }
+body:has(.tattoi-notice):has(.supplier-cart-dock) .simple-nav-fade { bottom: calc(var(--simple-nav-height) + 204px); }

@@ -25,19 +25,17 @@ export default function Navigation() {
               (!!item.path && path.startsWith(item.path + "/")) ||
               (item.id === "messages" && path.startsWith("/chat/")) ||
               (artist &&
-                item.id === "clients" &&
-                path.startsWith("/projects/")) ||
+                item.id === "today" &&
+                (["/clients", "/supplies", "/supply-orders"].includes(path) ||
+                  path.startsWith("/projects/"))) ||
               (artist &&
                 item.id === "business" &&
                 [
-                  "/dashboard",
                   "/money",
                   "/shopfront",
                   "/products",
                   "/artist-events",
                   "/store-orders",
-                  "/supplies",
-                  "/supply-orders",
                   "/purchases",
                   "/artist-profile",
                   "/work-hours",

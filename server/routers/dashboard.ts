@@ -17,8 +17,64 @@ import {
 } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
+import { upcomingWeekWindow, upcomingSittings } from "../services/upcomingWeek";
+import { currencyForCountry } from "../services/exchangeRate";
 
 export const dashboardRouter = router({
+  getUpcomingWeek: protectedProcedure
+    .input(
+      z.object({
+        timeZone: z.string().refine(value => {
+          try {
+            new Intl.DateTimeFormat("en", { timeZone: value });
+            return true;
+          } catch {
+            return false;
+          }
+        }),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      if (!["artist", "admin"].includes(ctx.user.role))
+        throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const now = new Date();
+      const window = upcomingWeekWindow(now, input.timeZone);
+      const appointments = await db.query.appointments.findMany({
+        where: and(
+          eq(schema.appointments.artistId, ctx.user.id),
+          ne(schema.appointments.clientId, ctx.user.id),
+          gte(schema.appointments.startTime, window.start),
+          lt(schema.appointments.startTime, window.end),
+          eq(schema.appointments.status, "confirmed")
+        ),
+        with: { client: true },
+        orderBy: asc(schema.appointments.startTime),
+      });
+      const sittings = upcomingSittings(appointments, now, input.timeZone).map(
+        a => ({
+          id: a.id,
+          conversationId: a.conversationId,
+          title: a.projectName || a.title,
+          clientName: a.client?.name || "Client",
+          startTime: a.startTime,
+          endTime: a.endTime,
+          date: a.date,
+          status: a.status,
+          estimateCents: a.estimateCents,
+          remainingCents: a.remainingCents,
+        })
+      );
+      return {
+        dates: window.dates,
+        sittings,
+        currency: currencyForCountry(ctx.user.country || "AU"),
+        estimateCents: sittings.reduce((sum, s) => sum + s.estimateCents, 0),
+        remainingCents: sittings.reduce((sum, s) => sum + s.remainingCents, 0),
+      };
+    }),
+
   getArtistOverview: protectedProcedure
     .input(
       z

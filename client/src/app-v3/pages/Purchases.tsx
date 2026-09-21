@@ -135,11 +135,16 @@ export default function Purchases() {
   );
 }
 export function SupplyOrders() {
+  const orderId = Number(
+    new URLSearchParams(window.location.search).get("order")
+  );
   const query = trpc.supplierOrders.getSupplierOrders.useQuery(undefined, {
     refetchInterval: 15000,
   });
   const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | null>(
+    Number.isInteger(orderId) && orderId > 0 ? orderId : null
+  );
   const filtered = query.data?.filter(order =>
     `${order.id} ${order.supplier?.name} ${order.items.map(item => item.productTitle).join(" ")}`
       .toLowerCase()

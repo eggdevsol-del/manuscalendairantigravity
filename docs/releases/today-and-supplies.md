@@ -1,0 +1,13 @@
+# Today and supplier workspace
+
+Artist navigation now opens Today at `/dashboard`; Clients and Supplies remain its sub-tabs. Existing client and merchant navigation is unchanged.
+
+Today shows backend business tasks directly, opens the existing promotion creation wizard in a sheet, and lists today plus six following local dates. The new authenticated `dashboard.getUpcomingWeek` endpoint scopes appointments to the requesting artist and uses the existing sittingFinancials calculation. Only upcoming confirmed sittings contribute to booked value and remaining-to-collect totals. Pending, cancelled, completed, no-show and expired sittings are excluded. The rolling window uses local calendar-day boundaries, including DST.
+
+Supply orders show actual payment and supplier handoff state. Courier tracking and delivery dates are not available in the current integration; paid orders are not labelled shipped. Buy again suggests an older paid order when that supplier has no recent paid or pending order. Reorders load current products and stock before adding available items to the basket.
+
+Supplier catalogues have two product columns on phones, product/variant sheets and a cart above navigation. Session-scoped baskets are keyed by user and supplier and retain only variant identifiers/quantities; prices and stock come from the current catalogue. Stock reductions/removals are explained. Checkout continues to use the existing server calculation, platform fee, shipping and webhook confirmation. Confirmed payments clear the basket.
+
+Validation: 358 unit/contract tests and TypeScript passed. New isolated browser coverage checks Today navigation, seven dates, financial display, promo entry, reorder, cart retention, two-column layout and checkout fee review at 320/390/820px; the same scenarios passed against the production build. Basket revalidation checks cover reload, live price updates, unavailable stock and empty-cart protection. These checks are included in the release runner. All release browser suites passed, with the final role/viewport replay rerun successfully against the production preview after a development-server navigation timeout and correction of a test assumption that every contextual tour has multiple steps. Next/Back movement remains tested for multi-step guides. The final production checks also verified cart/navigation clearance and scrolling the last product above the cart.
+
+No migrations, real purchases, outgoing client messages or production deployment were performed. Physical iOS keyboard/scroll testing and real supplier/Stripe acceptance are not claimed by fixture browser tests.

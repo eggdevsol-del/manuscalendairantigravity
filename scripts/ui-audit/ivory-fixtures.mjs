@@ -10,6 +10,11 @@ const person = {
   avatar: null,
 };
 export function response(name, role) {
+  if (name === "dashboard.getUpcomingWeek") return {
+    dates: Array.from({length:7}, (_, i) => `2026-09-${22+i}`), currency:"AUD", estimateCents:60000, remainingCents:45000,
+    sittings:[{id:101,conversationId:12,title:"Botanical sleeve",clientName:"Mia Chen",date:"2026-09-22",startTime:"2026-09-22T03:00:00Z",endTime:"2026-09-22T06:00:00Z",status:"confirmed",estimateCents:60000,remainingCents:45000}]
+  };
+
   if(name === "storefront.getOrders") return base(name,role).map(o=>({...o,items:o.items.map(i=>({...i,priceAtPurchaseCents:i.priceCents}))}));
   if (name === "auth.me")
     return role === "public"

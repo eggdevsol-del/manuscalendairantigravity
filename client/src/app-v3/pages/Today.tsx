@@ -1,27 +1,15 @@
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DetailsSheet } from "../components/DetailsSheet";
-import { SittingCard } from "../components/SittingCard";
-import { SittingSummary } from "../components/SittingSummary";
 import { WeekAgenda } from "../design/WeekAgenda";
 import { HomeTabs } from "../design/HomeTabs";
-import { DesignBrief } from "../design/DesignBrief";
+import { PromotionWizardContent } from "@/features/promotions/PromotionWizardContent";
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import {
-  ArrowRight,
-  Bell,
-  CheckCircle2,
-  ChevronRight,
-  Circle,
-} from "lucide-react";
+import { useLocation } from "wouter";
+import { CheckCircle2, Circle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useBusinessTasks } from "@/features/dashboard/useBusinessTasks";
-import {
-  money,
-  bookingTime,
-  instant,
-} from "@/features/workspace/bookingPresentation";
+import { money } from "@/features/workspace/bookingPresentation";
 import {
   Action,
   ActionLink,
@@ -33,182 +21,168 @@ import {
 } from "../design/primitives";
 
 export default function Today() {
-  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const day = trpc.dashboard.getArtistOverview.useQuery({ timeZone: zone });
   const tasks = useBusinessTasks();
-  const [expanded, setExpanded] = useState(false);
   const [, go] = useLocation();
+  const [promo, setPromo] = useState(false);
   const [actionError, setActionError] = useState("");
-  const sessions = (day.data?.todayTimeline || []).filter(
-    s => !["cancelled", "no-show"].includes(s.status)
-  );
-  const next =
-    sessions.find(
-      s => s.status !== "completed" && instant(s.endTime).getTime() > Date.now()
-    ) || day.data?.nextAppointment;
-  const date = new Intl.DateTimeFormat("en-AU", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: zone,
-  }).format(new Date());
-  const href = (s: NonNullable<typeof next>) =>
-    s.conversationId
-      ? `/projects/${s.conversationId}?session=${s.id}`
-      : `/calendar?appointment=${s.id}&date=${encodeURIComponent(s.startTime)}`;
   return (
-    <Screen title="Today" subtitle={date} wide subheader={<HomeTabs />}>
+    <Screen
+      title="Today"
+      subtitle={new Date().toLocaleDateString("en-AU", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      })}
+      wide
+      subheader={<HomeTabs />}
+    >
       <div className="v3-home-workspace">
         <div className="v3-home-main">
-          <Panel>
-            <button
-              className="v3-attention"
-              aria-expanded={expanded}
-              aria-haspopup="dialog"
-              onClick={() =>
-                tasks.error ? tasks.actions.refetch() : setExpanded(!expanded)
-              }
-            >
-              <Bell size={21} />
-              <span>
-                {tasks.error
-                  ? "Couldn’t check your tasks. Try again."
-                  : tasks.isLoading
-                    ? "Checking what needs you…"
-                    : tasks.tasks.length
-                      ? `${tasks.tasks.length} ${tasks.tasks.length === 1 ? "thing needs" : "things need"} you`
-                      : "Nothing needs your attention"}
-              </span>
-              <ChevronRight size={19} />
-            </button>
-            <SheetShell
-              isOpen={expanded}
-              onClose={() => setExpanded(false)}
-              title="Needs your attention"
-            >
-              {expanded && tasks.tasks.length > 0 && (
-                <Section title="Needs your attention">
-                  {tasks.tasks.map(task => (
-                    <div
-                      key={task.id}
-                      className="v3-task-card"
-                      data-priority={task._serverTask.priorityLevel}
-                    >
-                      <Row
-                        title={task.title}
-                        detail={task.context}
-                        onClick={() => {
-                          const t = task._serverTask;
-                          tasks.actions.startTask(t);
-                          if (t.deepLink) go(t.deepLink);
-                          else if (t.conversationId)
-                            go(`/chat/${t.conversationId}`);
-                          else if (t.emailRecipient) tasks.actions.openEmail(t);
-                          else if (t.smsNumber) tasks.actions.openSms(t);
-                          else go("/clients");
-                        }}
-                      />
-                      {task._serverTask.conversationId && (
-                        <DesignBrief
-                          conversationId={task._serverTask.conversationId}
-                        />
-                      )}
-                      <Action
-                        tone="quiet"
-                        disabled={!!tasks.completingTask}
-                        onClick={async () => {
-                          try {
-                            setActionError("");
-                            await tasks.actions.completeTask(
-                              task._serverTask,
-                              "manual"
-                            );
-                          } catch {
-                            setActionError(
-                              "Couldn’t mark this task done. Please try again."
-                            );
-                          }
-                        }}
-                      >
-                        Mark done
-                      </Action>
-                    </div>
-                  ))}
-                  {actionError && <p role="alert">{actionError}</p>}
-                </Section>
-              )}
-              {expanded && !tasks.tasks.length && (
-                <p>Nothing needs your attention.</p>
-              )}
-            </SheetShell>
-          </Panel>
-          <Feedback
-            loading={day.isLoading}
-            error={day.error}
-            onRetry={() => day.refetch()}
-          />
-          {day.data && (
-            <div className="v3-stack">
-              <Section title="Up next">
-                {next ? (
-                  <SittingCard
-                    key={next.id}
-                    title={next.client?.name || next.title}
-                    detail={`${bookingTime(next.startTime, zone)}–${bookingTime(next.endTime, zone)} · ${next.title}`}
-                  >
-                    {next.conversationId ? (
-                      <SittingSummary
-                        conversationId={next.conversationId}
-                        appointmentId={next.id}
-                      />
-                    ) : (
-                      <ActionLink href={href(next)} tone="primary">
-                        Open sitting & actions
-                      </ActionLink>
-                    )}
-                    {next.conversationId && (
-                      <DesignBrief conversationId={next.conversationId} />
-                    )}
-                  </SittingCard>
-                ) : (
-                  <Panel>
-                    <h3>Room for your next piece</h3>
-                    <p>
-                      No upcoming appointments. Your booking link is ready for
-                      your next client.
-                    </p>
-                    <ActionLink href="/artist-profile" tone="quiet">
-                      Your booking profile <ArrowRight />
-                    </ActionLink>
-                  </Panel>
-                )}
-              </Section>
-              <WeekAgenda />
-            </div>
-          )}
+          <Section
+            title="Needs attention"
+            action={
+              <Action
+                tone="quiet"
+                data-tour-title="Create a promotion"
+                data-tour-description="Build a voucher or offer to attract bookings. Review its value and rules before saving; creating it does not send it to clients."
+                onClick={() => setPromo(true)}
+              >
+                Create promo
+              </Action>
+            }
+          >
+            <Feedback
+              loading={tasks.isLoading}
+              error={tasks.error}
+              onRetry={() => tasks.actions.refetch()}
+            />
+            {!tasks.isLoading && !tasks.error && !tasks.tasks.length && (
+              <p className="v3-muted">
+                You’re up to date. Create a promotion to bring in your next
+                booking.
+              </p>
+            )}
+            {tasks.tasks.map(task => (
+              <div
+                className="today-task"
+                key={task.id}
+                data-priority={task._serverTask.priorityLevel}
+              >
+                <Row
+                  title={task.title}
+                  detail={task.context}
+                  onClick={() => {
+                    const t = task._serverTask;
+                    tasks.actions.startTask(t);
+                    if (t.deepLink) go(t.deepLink);
+                    else if (t.conversationId) go(`/chat/${t.conversationId}`);
+                    else if (t.emailRecipient) tasks.actions.openEmail(t);
+                    else if (t.smsNumber) tasks.actions.openSms(t);
+                    else go("/clients");
+                  }}
+                />
+                <button
+                  className="v3-icon-button"
+                  aria-label={`Mark done: ${task.title}`}
+                  disabled={!!tasks.completingTask}
+                  onClick={async () => {
+                    try {
+                      setActionError("");
+                      await tasks.actions.completeTask(
+                        task._serverTask,
+                        "manual"
+                      );
+                    } catch {
+                      setActionError(
+                        "Couldn’t mark this task done. Please try again."
+                      );
+                    }
+                  }}
+                >
+                  <CheckCircle2 size={20} />
+                </button>
+              </div>
+            ))}
+            {actionError && <p role="alert">{actionError}</p>}
+          </Section>
+          <WeekAgenda />
         </div>
         <aside className="v3-home-aside">
           <HomeMoney />
-          <Panel>
-            <h2>Supplies</h2>
-            <p className="v3-muted">
-              Buy from your suppliers without leaving your working day.
-            </p>
-            <ActionLink href="/supplies" tone="primary">
-              Browse suppliers
-            </ActionLink>
-            <Row
-              title="Your orders"
-              detail="Review orders and payment status"
-              href="/supply-orders"
-            />
-          </Panel>
+          <TodaySupplies />
           <ArtistSetup />
         </aside>
       </div>
+      <SheetShell
+        isOpen={promo}
+        onClose={() => setPromo(false)}
+        title="Create promo"
+      >
+        {promo && <PromotionWizardContent onClose={() => setPromo(false)} />}
+      </SheetShell>
     </Screen>
   );
 }
+
+function TodaySupplies() {
+  const query = trpc.supplierOrders.getSupplierOrders.useQuery();
+  // Payment/handoff is the source of truth; the supplier integration has no delivery tracking.
+  const paid = query.data?.filter(o => o.status === "paid") || [];
+  const recent = paid.filter(
+    o => new Date(o.createdAt).getTime() >= Date.now() - 30 * 86400000
+  );
+  const recommendation = paid.find(
+    o => !recent.some(r => r.supplierId === o.supplierId) && !query.data?.some(r => r.supplierId === o.supplierId && r.status === "pending") && o.items.length > 0
+  );
+  return (
+    <Section title="Supplies">
+      <Feedback
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => query.refetch()}
+      />
+      {recent.map(order => (
+        <Row
+          key={order.id}
+          title={`${order.supplier?.name || "Supplier"} · #${order.id}`}
+          detail={`${order.items.reduce((n, item) => n + item.quantity, 0)} items · ${money(order.totalCents, order.currency)} · ${order.shopifyDraftOrderId ? "Sent to supplier" : "Supplier handoff pending"}`}
+          href={`/supply-orders?order=${order.id}`}
+        />
+      ))}
+      {!!recent.length && (
+        <p className="v3-muted">
+          Shipping and delivery dates are not supplied yet. Check your
+          supplier’s shipping confirmation.
+        </p>
+      )}
+      {!query.isLoading && !query.error && !recent.length && (
+        <p className="v3-muted">No paid supply orders in the last 30 days.</p>
+      )}
+      {recommendation && (
+        <Panel>
+          <h3>Buy again</h3>
+          <p>
+            {recommendation.items
+              .map(i => `${i.quantity} × ${i.productTitle}`)
+              .join(" · ")}
+          </p>
+          <p className="v3-muted">
+            Based on your previous order from{" "}
+            {recommendation.supplier?.name || "this supplier"}. Check your stock
+            before ordering.
+          </p>
+          <ActionLink
+            tone="quiet"
+            href={`/supplies?supplier=${recommendation.supplierId}&reorder=${recommendation.id}`}
+          >
+            Review reorder
+          </ActionLink>
+        </Panel>
+      )}
+    </Section>
+  );
+}
+
 function ArtistSetup() {
   const { user, refresh } = useAuth();
   const settings = trpc.artistSettings.get.useQuery();
@@ -320,9 +294,6 @@ function HomeMoney() {
           </div>
         </dl>
       )}
-      <ActionLink href="/money" tone="primary">
-        Payments & payouts
-      </ActionLink>
     </Panel>
   );
 }

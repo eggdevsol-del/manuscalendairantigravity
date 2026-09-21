@@ -1,6 +1,8 @@
+import { createPortal } from "react-dom";
+import { ShoppingBag } from "lucide-react";
 import { HomeTabs } from "../design/HomeTabs";
-import { useEffect, useState } from "react";
-import { useSearch } from "wouter";
+import { useEffect, useState, useRef } from "react";
+import { Link, useSearch } from "wouter";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../../server/routers";
 import { trpc } from "@/lib/trpc";
@@ -57,6 +59,34 @@ function Directory() {
       subheader={<HomeTabs />}
       back="/dashboard"
     >
+      {query.data?.map(supplier => {
+        let count = 0;
+        try {
+          count = Object.values(
+            JSON.parse(
+              sessionStorage.getItem(
+                `tattoi-supply-basket:${user?.id}:${supplier.id}`
+              ) || "{}"
+            )
+          ).reduce<number>(
+            (sum, value) =>
+              sum +
+              (typeof value === "number" && Number.isInteger(value) && value > 0
+                ? value
+                : 0),
+            0
+          );
+        } catch {}
+        return count > 0 ? (
+          <Row
+            key={`cart-${supplier.id}`}
+            title={`${supplier.name} cart`}
+            detail={`${count} items · Review current prices and availability`}
+            icon={<ShoppingBag />}
+            href={`/supplies?supplier=${supplier.id}&cart=1`}
+          />
+        ) : null;
+      })}
       <ActionLink href="/supply-orders">Your supply orders</ActionLink>
       <SearchField
         value={search}
@@ -117,8 +147,111 @@ function Catalogue({ id }: { id: number }) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [stockOnly, setStockOnly] = useState(false);
-  const [cart, setCart] = useState<Item[]>([]);
-  const [checkout, setCheckout] = useState(false);
+  const { user } = useAuth();
+  const basketKey = `tattoi-supply-basket:${user?.id}:${id}`;
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [restoredKey, setRestoredKey] = useState("");
+  const [stockAdjusted, setStockAdjusted] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(basketKey) || "{}");
+      setQuantities(
+        Object.fromEntries(
+          Object.entries(saved).filter(
+            ([key, value]) =>
+              Number.isInteger(Number(key)) &&
+              Number(key) > 0 &&
+              typeof value === "number" &&
+              Number.isInteger(value) &&
+              value > 0
+          )
+        ) as Record<number, number>
+      );
+    } catch {
+      setQuantities({});
+    }
+    setRestoredKey(basketKey);
+  }, [basketKey, user?.id]);
+  useEffect(() => {
+    if (restoredKey !== basketKey) return;
+    try {
+      sessionStorage.setItem(basketKey, JSON.stringify(quantities));
+    } catch {
+      /* Cart remains usable when storage is unavailable. */
+    }
+  }, [basketKey, restoredKey, quantities]);
+  // Only identifiers and quantities are retained. Current catalogue data supplies prices and stock.
+  const cart: Item[] = (restoredKey === basketKey ? query.data || [] : []).flatMap(product =>
+    product.variants.flatMap(v =>
+      quantities[v.id] > 0 && v.inventoryCount > 0
+        ? [
+            {
+              productId: product.id,
+              variantId: v.id,
+              title: product.title,
+              variant: v.title,
+              price: v.priceCents,
+              stock: v.inventoryCount,
+              quantity: Math.min(quantities[v.id], v.inventoryCount),
+            },
+          ]
+        : []
+    )
+  );
+  useEffect(() => {
+    if (!query.data || restoredKey !== basketKey) return;
+    const next = Object.fromEntries(cart.map(item => [item.variantId, item.quantity]));
+    if (Object.keys(next).length !== Object.keys(quantities).length || Object.entries(next).some(([id, qty]) => quantities[Number(id)] !== qty)) {
+      setStockAdjusted(true);
+      setQuantities(next);
+    }
+  }, [query.data, quantities, restoredKey, basketKey]);
+  const setCart = (update: Item[] | ((current: Item[]) => Item[])) => {
+    const next = typeof update === "function" ? update(cart) : update;
+    setQuantities(
+      Object.fromEntries(next.map(item => [item.variantId, item.quantity]))
+    );
+  };
+  const reorderId = Number(new URLSearchParams(useSearch()).get("reorder"));
+  const orders = trpc.supplierOrders.getSupplierOrders.useQuery(undefined, {
+    enabled: reorderId > 0,
+  });
+  const reordered = useRef(false);
+  const [reorderNote, setReorderNote] = useState("");
+  useEffect(() => {
+    if (
+      reordered.current ||
+      !query.data ||
+      !orders.data ||
+      restoredKey !== basketKey
+    )
+      return;
+    const order = orders.data.find(
+      o => o.id === reorderId && o.supplierId === id && o.status === "paid"
+    );
+    if (!order) return;
+    reordered.current = true;
+    const next = { ...quantities };
+    for (const item of order.items) {
+      const variant = query.data
+        .find(p => p.id === item.supplierProductId)
+        ?.variants.find(v => v.id === item.variantId);
+      if (variant && variant.inventoryCount > 0)
+        next[variant.id] = Math.min(
+          Math.max(next[variant.id] || 0, item.quantity),
+          variant.inventoryCount
+        );
+    }
+    setQuantities(next);
+    setReorderNote(
+      "Previous items added where available. Quantities are limited to current stock; review current prices before payment."
+    );
+    setCheckout(true);
+  }, [orders.data, query.data, restoredKey, basketKey, reorderId, id]);
+  const [checkout, setCheckout] = useState(
+    new URLSearchParams(window.location.search).get("cart") === "1"
+  );
   const currency = supplier.data?.currency || "AUD";
   const categories = Array.from(
     new Set(
@@ -137,6 +270,17 @@ function Catalogue({ id }: { id: number }) {
       subtitle="Choose a product and variant. Checkout confirms availability."
       back="/supplies"
       wide
+      className="supplier-catalogue"
+      action={
+        <Action
+          tone="quiet"
+          aria-label={`Cart, ${cart.reduce((n, item) => n + item.quantity, 0)} items`}
+          onClick={() => setCheckout(true)}
+        >
+          <ShoppingBag size={20} />
+          {cart.reduce((n, item) => n + item.quantity, 0)}
+        </Action>
+      }
     >
       <Feedback
         loading={supplier.isLoading || query.isLoading}
@@ -176,30 +320,27 @@ function Catalogue({ id }: { id: number }) {
           </label>
         </div>
       </div>
-      {!!cart.length && (
-        <Panel>
-          <div className="v3-inline">
-            <h2>{cart.reduce((sum, item) => sum + item.quantity, 0)} items</h2>
-            <strong>
-              {money(
-                cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                currency
-              )}{" "}
-              {currency}
-            </strong>
-            <Action onClick={() => setCheckout(true)}>Review order</Action>
-          </div>
-          <p className="v3-muted">
-            Catalogue subtotal before shipping and checkout fees.
-          </p>
-        </Panel>
+      {stockAdjusted && <p role="status">Some saved items are unavailable or quantities have been reduced to current stock. Review your cart before payment.</p>}
+      {reorderNote && <p role="status">{reorderNote}</p>}
+      {!!cart.length && createPortal(
+        <div className="supplier-cart-dock">
+          <Action onClick={() => setCheckout(true)}>
+            <ShoppingBag size={20} /> Cart ·{" "}
+            {cart.reduce((n, item) => n + item.quantity, 0)} items ·{" "}
+            {money(
+              cart.reduce((n, item) => n + item.price * item.quantity, 0),
+              currency
+            )}
+          </Action>
+          <small>Before shipping and checkout fees</small>
+        </div>, document.body
       )}
       {!query.isLoading && !query.error && !products?.length && (
         <Panel>
           <p>No products match these filters.</p>
         </Panel>
       )}
-      <div className="v3-shop-grid">
+      <div className="v3-shop-grid supplier-product-grid">
         {products?.map(product => (
           <CatalogueProduct
             key={product.id}
@@ -244,6 +385,7 @@ function Catalogue({ id }: { id: number }) {
             )
           }
           onClose={() => setCheckout(false)}
+          onConfirmed={() => setCart([])}
           onPaid={() => {
             setCart([]);
             setCheckout(false);
@@ -264,69 +406,110 @@ function CatalogueProduct({
   quantities: Item[];
   onAdd: (item: Item) => void;
 }) {
+  const [open, setOpen] = useState(false);
   const [variantId, setVariantId] = useState(product.variants[0]?.id);
   const variant = product.variants.find(v => v.id === variantId);
   const count =
     quantities.find(item => item.variantId === variantId)?.quantity || 0;
   return (
-    <Panel>
-      {product.imageUrl && (
-        <img
-          className="v3-shop-image"
-          src={product.imageUrl}
-          alt={product.title}
-          loading="lazy"
-        />
-      )}
-      <h2>{product.title}</h2>
-      {variant && (
-        <p>
-          <strong>{money(variant.priceCents, currency)}</strong> {currency}
-        </p>
-      )}
-      <div className="v3-form">
-        <label>
-          Variant
-          <select
-            aria-label={`${product.title} variant`}
-            value={variantId || ""}
-            onChange={e => setVariantId(Number(e.target.value))}
-          >
-            {product.variants.map(v => (
-              <option key={v.id} value={v.id}>
-                {v.title}
-                {v.inventoryCount <= 0 ? " · Out of stock" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <Action
-        disabled={!variant || count >= variant.inventoryCount}
-        onClick={() =>
-          variant &&
-          onAdd({
-            productId: product.id,
-            variantId: variant.id,
-            title: product.title,
-            variant: variant.title,
-            price: variant.priceCents,
-            stock: variant.inventoryCount,
-            quantity: 1,
-          })
-        }
+    <>
+      <button
+        className="supplier-product-card"
+        data-tour-repeat="supplier-product"
+        data-tour-title="Choose supplies"
+        data-tour-description="Open a product to choose the correct variant and check stock. Your cart keeps selected quantities while you browse; checkout verifies current prices, shipping and platform fees before payment."
+        aria-label={`View ${product.title}`}
+        onClick={() => setOpen(true)}
       >
-        {!variant || variant.inventoryCount <= 0
-          ? "Out of stock"
-          : count >= variant.inventoryCount
-            ? "All available stock added"
-            : count
-              ? `Add another · ${count} in order`
-              : "Add to order"}
-      </Action>
-    </Panel>
+        {product.imageUrl ? (
+          <img
+            className="v3-shop-image"
+            src={product.imageUrl}
+            alt=""
+            loading="lazy"
+          />
+        ) : (
+          <div className="v3-shop-image supplier-image-placeholder">
+            <ShoppingBag />
+          </div>
+        )}
+        <strong>{product.title}</strong>
+        <span>
+          {variant ? money(variant.priceCents, currency) : "Unavailable"}{" "}
+          {currency}
+        </span>
+        <small>
+          {product.variants.some(v => v.inventoryCount > 0)
+            ? "In stock"
+            : "Out of stock"}
+        </small>
+      </button>
+      <SheetShell
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        title={product.title}
+      >
+        {open && (
+          <div className="v3-stack">
+            {product.imageUrl && (
+              <img
+                className="v3-shop-image"
+                src={product.imageUrl}
+                alt={product.title}
+              />
+            )}
+            <div className="v3-form">
+              <label>
+                Variant
+                <select
+                  aria-label={`${product.title} variant`}
+                  value={variantId || ""}
+                  onChange={e => setVariantId(Number(e.target.value))}
+                >
+                  {product.variants.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.title}
+                      {v.inventoryCount <= 0 ? " · Out of stock" : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {variant && (
+              <p>
+                {money(variant.priceCents, currency)} {currency} ·{" "}
+                {variant.inventoryCount > 0 ? "In stock" : "Out of stock"}
+              </p>
+            )}
+            <Action
+              disabled={!variant || count >= variant.inventoryCount}
+              onClick={() => {
+                if (!variant) return;
+                onAdd({
+                  productId: product.id,
+                  variantId: variant.id,
+                  title: product.title,
+                  variant: variant.title,
+                  price: variant.priceCents,
+                  stock: variant.inventoryCount,
+                  quantity: 1,
+                });
+                setOpen(false);
+              }}
+            >
+              {!variant || variant.inventoryCount <= 0
+                ? "Out of stock"
+                : count >= variant.inventoryCount
+                  ? "All available stock added"
+                  : "Add to cart"}
+            </Action>
+          </div>
+        )}
+      </SheetShell>
+    </>
   );
 }
+
 function SupplyCheckout({
   supplierId,
   supplierName,
@@ -335,6 +518,7 @@ function SupplyCheckout({
   onQuantity,
   onClose,
   onPaid,
+  onConfirmed,
 }: {
   supplierId: number;
   supplierName: string;
@@ -343,6 +527,7 @@ function SupplyCheckout({
   onQuantity: (id: number, quantity: number) => void;
   onClose: () => void;
   onPaid: () => void;
+  onConfirmed: () => void;
 }) {
   const [step, setStep] = useState<
     "cart" | "review" | "payment" | "confirming"
@@ -361,17 +546,20 @@ function SupplyCheckout({
     }
   );
   const utils = trpc.useUtils();
+  const cleared = useRef(false);
   useEffect(() => {
     if (step !== "confirming") return;
     const timeout = setTimeout(() => setTimedOut(true), 60000);
     return () => clearTimeout(timeout);
   }, [step]);
   useEffect(() => {
-    if (confirmation.data?.success) {
+    if (confirmation.data?.success && !cleared.current) {
+      cleared.current = true;
+      onConfirmed();
       void utils.supplierOrders.getSupplierOrders.invalidate();
       void utils.suppliers.invalidate();
     }
-  }, [confirmation.data?.success, utils]);
+  }, [confirmation.data?.success, utils, onConfirmed]);
   const data = create.data;
   const localSubtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -409,7 +597,13 @@ function SupplyCheckout({
               Your payment is confirmed. Supplier handoff is being processed.
               Shipping confirmation comes from the supplier.
             </p>
-            <ActionLink href="/supply-orders">View order status</ActionLink>
+            <Link
+              className="v3-action v3-action-secondary"
+              href="/supply-orders"
+              onClick={onPaid}
+            >
+              View order status
+            </Link>
             <Action onClick={onPaid}>Done</Action>
           </Panel>
         ) : step === "confirming" ? (
