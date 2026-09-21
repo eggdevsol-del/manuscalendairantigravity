@@ -739,14 +739,56 @@ export function BookingProject({
                     ))}
                   </DetailsSheet>
                 )}
-                {history.map(h => (
-                  <Row
-                    key={h.id}
-                    title={`${statusLabel(h.type)} · ${h.method || "Payment"}`}
-                    detail={h.createdAt && bookingDate(h.createdAt)}
-                    trailing={<strong>{money(h.amountCents)}</strong>}
-                  />
-                ))}
+                <div className="v3-payment-history">
+                  {history.map(h => {
+                    const linked = data.sessions.filter(s =>
+                      h.sittingIds?.includes(s.id)
+                    );
+                    const names = [
+                      ...new Set(
+                        h.projectKeys.map(
+                          key =>
+                            data.sessions.find(s => projectKey(s) === key)
+                              ?.projectName ||
+                            data.plans.find(p => `plan:${p.id}` === key)
+                              ?.projectName ||
+                            "Tattoo project"
+                        )
+                      ),
+                    ];
+                    const indices = [
+                      ...new Set(
+                        linked
+                          .map(s => s.sessionIndex)
+                          .filter((n): n is number => !!n)
+                      ),
+                    ].sort((a, b) => a - b);
+                    const sitting =
+                      linked.length && indices.length === linked.length
+                        ? `${indices.length === 1 ? "Sitting" : "Sittings"} ${indices.join(", ")}`
+                        : linked.length === 1
+                          ? "Sitting"
+                          : h.projectKeys.length
+                            ? "Project payment"
+                            : "Unassigned payment";
+                    const label = [sitting, ...names].join(" · ");
+                    const detail = [
+                      statusLabel(h.type),
+                      h.method,
+                      h.createdAt && bookingDate(h.createdAt),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      <Row
+                        key={h.id}
+                        title={<span title={label}>{label}</span>}
+                        detail={<span title={detail}>{detail}</span>}
+                        trailing={<strong>{money(h.amountCents)}</strong>}
+                      />
+                    );
+                  })}
+                </div>
               </Section>
             </DetailsSheet>
           </div>

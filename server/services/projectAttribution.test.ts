@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { paymentProjectKeys, briefProjectKeys } from "./projectAttribution";
+import {
+  paymentProjectKeys,
+  paymentSessions,
+  briefProjectKeys,
+} from "./projectAttribution";
 const sessions = [
   {
     id: 1,
@@ -57,4 +61,34 @@ describe("Project attribution", () => {
   it("does not attach old conversation-wide references to another tattoo", () => {
     expect(briefProjectKeys({ id: 9, paymentId: null }, plans)).toEqual([]);
   });
+});
+
+it("identifies all sittings in a shared deposit and only the linked balance sitting", () => {
+  const rows = [
+    {
+      id: 1,
+      sessionPlanId: 11,
+      depositPaymentId: "shared",
+      balancePaymentId: "balance_1",
+    },
+    {
+      id: 2,
+      sessionPlanId: 11,
+      depositPaymentId: "shared",
+      balancePaymentId: null,
+    },
+  ];
+  expect(
+    paymentSessions({ bookingId: null, stripePaymentId: "shared" }, rows).map(
+      s => s.id
+    )
+  ).toEqual([1, 2]);
+  expect(
+    paymentSessions({ bookingId: 1, stripePaymentId: "balance_1" }, rows).map(
+      s => s.id
+    )
+  ).toEqual([1]);
+  expect(
+    paymentSessions({ bookingId: null, stripePaymentId: "missing" }, rows)
+  ).toEqual([]);
 });

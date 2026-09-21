@@ -6,6 +6,7 @@ import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import {
   paymentProjectKeys,
+  paymentSessions,
   briefProjectKeys,
 } from "../services/projectAttribution";
 import { generateProjectName } from "../services/llmEnrichment";
@@ -394,6 +395,10 @@ export const projectsRouter = router({
         })),
         history: history.map(({ stripePaymentId, ...entry }) => ({
           ...entry,
+          sittingIds: paymentSessions(
+            { ...entry, stripePaymentId },
+            sessions
+          ).map(s => s.id),
           projectKeys: paymentProjectKeys(
             { ...entry, stripePaymentId },
             sessions,

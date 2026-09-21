@@ -6,6 +6,19 @@ type Session = {
   balancePaymentId: string | null;
 };
 type Plan = { id: number; stripeSessionId: string | null };
+export function paymentSessions<T extends Session>(
+  entry: { bookingId: number | null; stripePaymentId: string | null },
+  sessions: T[]
+): T[] {
+  return sessions.filter(
+    s =>
+      s.id === entry.bookingId ||
+      (!!entry.stripePaymentId &&
+        [s.depositPaymentId, s.balancePaymentId].includes(
+          entry.stripePaymentId
+        ))
+  );
+}
 /** Only stable record/payment links establish project ownership; a shared conversation is not evidence. */
 export function paymentProjectKeys(
   entry: { bookingId: number | null; stripePaymentId: string | null },
@@ -15,13 +28,7 @@ export function paymentProjectKeys(
   const paymentId = entry.stripePaymentId;
   return [
     ...new Set(
-      sessions
-        .filter(
-          s =>
-            s.id === entry.bookingId ||
-            (!!paymentId &&
-              [s.depositPaymentId, s.balancePaymentId].includes(paymentId))
-        )
+      paymentSessions(entry, sessions)
         .map(bookingProjectKey)
         .concat(
           plans

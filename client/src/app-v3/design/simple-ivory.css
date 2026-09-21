@@ -1064,3 +1064,21 @@ body:has(.v3-calendar-page) .simple-nav-fade {
 body:has(.v3-calendar-page) .tattoi-notice {
   bottom: calc(var(--simple-nav-height) + 70px);
 }
+
+/* Preserve the shared two-line payment row footprint for long project names. */
+.v3-payment-history .v3-row-copy {
+  min-width: 0;
+  flex: 1;
+}
+.v3-payment-history .v3-row-copy > strong,
+.v3-payment-history .v3-row-copy > span,
+.v3-payment-history .v3-row-copy > strong > span,
+.v3-payment-history .v3-row-copy > span > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.v3-payment-history .v3-row > strong {
+  flex-shrink: 0;
+}
