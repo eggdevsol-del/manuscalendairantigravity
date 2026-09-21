@@ -9,6 +9,14 @@
   --ivory-shadow: 0 8px 28px rgb(56 44 36 / 5%);
   --v3-radius: 22px;
   --v3-gutter: 20px;
+  --v3-panel-padding: 20px;
+  --v3-row-min-height: 68px;
+  --v3-row-padding-block: 16px;
+  --v3-summary-min-height: 76px;
+  --v3-summary-padding-block: 12px;
+  --v3-summary-padding-inline: 16px;
+  --v3-summary-radius: 16px;
+  --v3-summary-gap: 12px;
   --color-primary: var(--primary);
 }
 .dark {
@@ -98,7 +106,7 @@ body {
 .v3-panel {
   border-color: color-mix(in srgb, var(--v3-line) 60%, transparent);
   box-shadow: var(--ivory-shadow);
-  padding: 20px;
+  padding: var(--v3-panel-padding);
 }
 .v3-panel h2,
 .v3-panel h3 {
@@ -109,9 +117,9 @@ body {
   background: var(--v3-gold-soft);
 }
 .v3-row {
-  padding: 16px 4px;
+  padding: var(--v3-row-padding-block) 4px;
   gap: 12px;
-  min-height: 68px;
+  min-height: var(--v3-row-min-height);
   font-size: 16px;
 }
 .v3-row-copy strong {
@@ -1012,3 +1020,30 @@ body .booking-form-chip {
 .ivory-project-disclosure > details > summary { cursor: pointer; min-height: 44px; }
 .ivory-project-disclosure > details > summary::after { content: "⌄"; margin-left: auto; }
 .ivory-project-disclosure > details[open] > summary::after { content: "⌃"; }
+
+/* One geometry for compact card summaries in lists, messages and sheets. */
+.v3-summary-card {
+  display: flex; align-items: center; width: 100%; min-width: 0;
+  min-height: var(--v3-summary-min-height);
+  padding: var(--v3-summary-padding-block) var(--v3-summary-padding-inline);
+  gap: var(--v3-summary-gap); border: 1px solid var(--v3-line);
+  border-radius: var(--v3-summary-radius); background: var(--v3-surface);
+  color: var(--v3-ink); text-align: left; font-family: var(--ivory-body);
+}
+.v3-summary-card-attention { background: var(--v3-gold-soft); }
+.v3-summary-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.v3-summary-copy > strong { font-size: 16px; line-height: 1.35; font-weight: 550; }
+.v3-summary-copy > span:not(.sr-only) { font-size: 14px; line-height: 1.4; color: var(--v3-muted); }
+.v3-summary-copy > strong, .v3-summary-copy > span:not(.sr-only) { overflow-wrap: anywhere; }
+.v3-summary-card > svg { flex: none; color: var(--v3-muted); }
+.v3-summary-card:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.v3-summary-card:active { background: var(--v3-soft); }
+.v3-summary-card:disabled { opacity: .6; }
+.v3-summary-list { display: grid; gap: var(--v3-summary-gap); }
+.v3-compact-notice > .v3-row { min-height: 44px; padding-block: 8px; font-size: 14px; }
+
+.v3-sitting-list { gap: var(--v3-summary-gap); }
+.v3-sitting-list > li, .v3-sitting-list > li[data-next="true"] { padding: 0; border: 0; background: transparent; border-radius: var(--v3-summary-radius); }
+.v3-sitting-list > li[data-next="true"] .v3-summary-card { background: var(--v3-gold-soft); }
+.v3-sitting-card + .v3-sitting-card { border-top: 0; margin-top: var(--v3-summary-gap); }
+.v3-timeline-day .v3-sitting-card + .v3-sitting-card { margin-top: 0; }

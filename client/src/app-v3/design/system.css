@@ -230,7 +230,7 @@
 .v3-panel {
   border: 1px solid var(--v3-line);
   border-radius: var(--v3-radius);
-  padding: 20px;
+  padding: var(--v3-panel-padding);
   background: transparent;
 }
 .v3-panel-attention {
@@ -2100,7 +2100,8 @@ body:has(.tattoi-notice) .v3-scroll {
 }
 
 .v3-sitting-card { min-width: 0; width: 100%; }
-.v3-sitting-card > button { width: 100%; min-height: 44px; }
+.v3-sitting-card > button { width: 100%; }
+.v3-sitting-card > button:not(.v3-summary-card) { min-height: 44px; }
 .v3-sitting-card > button > svg { flex-shrink: 0; }
 .v3-sitting-card + .v3-sitting-card { border-top: 1px solid var(--v3-line); }
 

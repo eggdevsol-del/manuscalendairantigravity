@@ -25,6 +25,7 @@ import {
   Panel,
   Row,
   Status,
+  SummaryCard,
 } from "../design/primitives";
 import {
   mediaUrls,
@@ -225,18 +226,16 @@ export function Thread({
                 );
               else if (metadata.type === "project_proposal")
                 body = (
-                  <Panel>
-                    <h3>Booking proposal</h3>
-                    <p>{statusLabel(metadata.status || "pending")}</p>
-                    <Action
-                      onClick={() => {
-                        c.handleViewProposal(message, metadata);
-                        setBooking(true);
-                      }}
-                    >
-                      Review proposal
-                    </Action>
-                  </Panel>
+                  <SummaryCard
+                    title="Booking proposal"
+                    detail={statusLabel(metadata.status || "pending")}
+                    actionLabel="Review proposal"
+                    aria-haspopup="dialog"
+                    onClick={() => {
+                      c.handleViewProposal(message, metadata);
+                      setBooking(true);
+                    }}
+                  />
                 );
               else if (
                 metadata.type === "payment_request" ||
@@ -502,6 +501,7 @@ function PlanMessage({
     { sessionPlanId: id },
     { enabled: id > 0 }
   );
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [declining, setDeclining] = useState(false);
   const me = trpc.auth.me.useQuery();
@@ -513,64 +513,82 @@ function PlanMessage({
   });
   const plan = query.data;
   return (
-    <Panel>
-      <h3>Session plan</h3>
-      <Feedback
-        loading={query.isLoading}
-        error={query.error}
-        onRetry={() => query.refetch()}
+    <>
+      <SummaryCard
+        title={plan?.projectName || "Booking proposal"}
+        detail={
+          plan
+            ? `${plan.items.length ? `${plan.items.length} ${plan.items.length === 1 ? "sitting" : "sittings"}` : "Dates unavailable"} · ${plan.depositRecorded ? "Deposit recorded" : statusLabel(plan.status)}`
+            : query.error
+              ? "Couldn’t load proposal · open to retry"
+              : "Loading proposal…"
+        }
+        actionLabel="View booking proposal"
+        aria-haspopup="dialog"
+        onClick={() => setDetailsOpen(true)}
       />
-      {plan && (
-        <>
-          <Status tone={plan.status === "accepted" ? "success" : "neutral"}>
-            {plan.depositRecorded
-              ? "Deposit recorded"
-              : statusLabel(plan.status)}
-          </Status>
-          {plan.items.map(item => (
-            <ProposedSittingCard key={item.id} item={item} />
-          ))}
-          <p>Deposit {money(plan.depositTotalCents)}</p>
-          {(plan.requiresDeposit ?? plan.status === "pending") &&
-            me.data?.id === plan.clientId && (
-              <>
-                <Action onClick={() => setCheckout(true)}>
-                  Review dates & pay deposit
-                </Action>
-                <Action tone="quiet" onClick={() => setDeclining(true)}>
-                  Decline plan
-                </Action>
-              </>
-            )}
-          {declining && (
-            <div role="alert">
-              <p>Decline these proposed dates?</p>
-              <Action
-                tone="danger"
-                disabled={decline.isPending}
-                onClick={() => decline.mutate({ sessionPlanId: id })}
-              >
-                Decline
-              </Action>
-              <Action tone="quiet" onClick={() => setDeclining(false)}>
-                Keep plan
-              </Action>
-            </div>
-          )}
-          {decline.error && <p role="alert">{decline.error.message}</p>}
-        </>
-      )}
-      {checkout && (
-        <SessionPlanCheckoutSheet
-          sessionPlanId={id}
-          conversationId={conversationId}
-          onClose={() => {
-            setCheckout(false);
-            void query.refetch();
-          }}
+      <SheetShell
+        isOpen={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title="Booking proposal"
+      >
+        <Feedback
+          loading={query.isLoading}
+          error={query.error}
+          onRetry={() => query.refetch()}
         />
-      )}
-    </Panel>
+        {plan && (
+          <>
+            <Status tone={plan.status === "accepted" ? "success" : "neutral"}>
+              {plan.depositRecorded
+                ? "Deposit recorded"
+                : statusLabel(plan.status)}
+            </Status>
+            {plan.items.map(item => (
+              <ProposedSittingCard key={item.id} item={item} />
+            ))}
+            <p>Deposit {money(plan.depositTotalCents)}</p>
+            {(plan.requiresDeposit ?? plan.status === "pending") &&
+              me.data?.id === plan.clientId && (
+                <>
+                  <Action onClick={() => setCheckout(true)}>
+                    Review dates & pay deposit
+                  </Action>
+                  <Action tone="quiet" onClick={() => setDeclining(true)}>
+                    Decline plan
+                  </Action>
+                </>
+              )}
+            {declining && (
+              <div role="alert">
+                <p>Decline these proposed dates?</p>
+                <Action
+                  tone="danger"
+                  disabled={decline.isPending}
+                  onClick={() => decline.mutate({ sessionPlanId: id })}
+                >
+                  Decline
+                </Action>
+                <Action tone="quiet" onClick={() => setDeclining(false)}>
+                  Keep plan
+                </Action>
+              </div>
+            )}
+            {decline.error && <p role="alert">{decline.error.message}</p>}
+          </>
+        )}
+        {checkout && (
+          <SessionPlanCheckoutSheet
+            sessionPlanId={id}
+            conversationId={conversationId}
+            onClose={() => {
+              setCheckout(false);
+              void query.refetch();
+            }}
+          />
+        )}
+      </SheetShell>
+    </>
   );
 }
 function InviteMessage({

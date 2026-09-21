@@ -27,6 +27,7 @@ import {
   Panel,
   Row,
   Screen,
+  SummaryCard,
   Section,
   Status,
 } from "../design/primitives";
@@ -48,6 +49,9 @@ export default function ClientBookings() {
     p => p.paymentState || (p.requiresDeposit ?? p.status === "pending")
   );
   const appointments = bookings.data?.appointments || [];
+  const standaloneProposals = pending.filter(
+    p => !appointments.some(a => a.sessionPlanId === p.id)
+  );
   const attemptedNames = useRef(new Set<number>());
   const [nameError, setNameError] = useState(false);
   const [nameRetry, setNameRetry] = useState(0);
@@ -271,10 +275,14 @@ export default function ClientBookings() {
         }}
       />
       {nameError && (
-        <Panel>
+        <DetailsSheet
+          title="Project names"
+          label="Some project names are unavailable"
+          className="v3-compact-notice"
+        >
           <p>
-            Some project names couldn’t be loaded. Your sitting dates are still
-            available.
+            Your sitting dates and booking details remain available. Some
+            imported proposals may need an artist-provided name.
           </p>
           <Action
             tone="secondary"
@@ -286,36 +294,30 @@ export default function ClientBookings() {
           >
             Retry project names
           </Action>
-        </Panel>
+        </DetailsSheet>
       )}
-      {pending
-        .filter(p => !appointments.some(a => a.sessionPlanId === p.id))
-        .map(p => (
-          <Panel key={p.id} tone="attention">
-            <button
-              type="button"
-              className="v3-row"
+      {standaloneProposals.length > 0 && (
+        <div className="v3-summary-list">
+          {standaloneProposals.map(p => (
+            <SummaryCard
+              key={p.id}
+              tone="attention"
+              title={p.projectName || "Booking proposal"}
+              detail={`${p.artist?.name || "Your artist"} · ${p.paymentState ? "Payment review" : p.items.length ? `${p.items.length} ${p.items.length === 1 ? "sitting" : "sittings"}` : "Dates unavailable"}`}
+              actionLabel={
+                p.paymentState
+                  ? "Check payment status"
+                  : "View booking proposal"
+              }
               aria-haspopup="dialog"
               onClick={() =>
                 setPlan({ id: p.id, conversationId: p.conversationId || 0 })
               }
-            >
-              <span className="v3-row-copy">
-                <strong>{p.projectName || "Booking proposal"}</strong>
-                <span>
-                  {p.artist?.name || "Your artist"} · {p.items.length} proposed
-                  sittings
-                </span>
-                <span>
-                  {p.paymentState
-                    ? "Check payment status"
-                    : "View booking proposal"}
-                </span>
-              </span>
-            </button>
-          </Panel>
-        ))}
-      {projectCards(groups)}
+            />
+          ))}
+        </div>
+      )}
+      {groups.length > 0 && projectCards(groups)}
       <DetailsSheet
         className="ivory-completed-projects"
         title={
@@ -329,7 +331,7 @@ export default function ClientBookings() {
           error={past.error}
           onRetry={() => past.refetch()}
         />
-        {projectCards(completedGroups)}
+        {completedGroups.length > 0 && projectCards(completedGroups)}
         {!past.isLoading && !past.error && !completedGroups.length && (
           <p className="v3-muted">No completed projects yet.</p>
         )}

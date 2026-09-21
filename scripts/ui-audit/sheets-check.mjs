@@ -27,11 +27,16 @@ try{for(const width of [320,390,820]){
  assert.equal(await page.getByRole('dialog').count(),0);
  assert.equal(await page.getByText('Platform fee',{exact:true}).count(),0);
  await page.screenshot({path:`${out}/bookings-${width}.png`,fullPage:true});
+ const compactHeight=await proposal.evaluate(el=>el.getBoundingClientRect().height);
+ assert(compactHeight>=76&&compactHeight<=80,`Compact proposal height: ${compactHeight}`);
  await proposal.click();
  let sheet=page.getByRole('dialog',{name:'Review your booking',exact:true});await sheet.waitFor();
  await sheet.getByText('Platform fee',{exact:true}).waitFor();await sheet.getByText('$5.10',{exact:true}).waitFor();
  assert(await sheet.evaluate(el=>el.dataset.side==='bottom'&&!el.closest('main')));
- await sheet.getByRole('button',{name:/Sitting 1/}).click();
+ const sittingCard=sheet.getByRole('button',{name:/Sitting 1/});
+ const sittingHeight=await sittingCard.evaluate(el=>el.getBoundingClientRect().height);
+ assert.equal(sittingHeight,compactHeight,'Proposal and sitting summaries share one geometry');
+ await sittingCard.click();
  let detail=page.getByRole('dialog',{name:'Sitting 1',exact:true});await detail.waitFor();await detail.getByText('180 minutes',{exact:true}).waitFor();
  assert.equal(await detail.getByRole('button',{name:'Close',exact:true}).count(),1);
  await detail.getByRole('button',{name:'Close',exact:true}).click();await sheet.waitFor();
@@ -54,7 +59,7 @@ try{for(const width of [320,390,820]){
  await page.getByRole('textbox',{name:'Message',exact:true}).waitFor();
  assert(!calls.includes('messages.send'));
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
- assert.deepEqual(errors,[]);results.push({width,status:'passed',checks:['compact proposal','review and platform fee','portalled bottom sheets','nested sitting details','one close per sheet','return to parent','project sitting details','payment deep link','message draft without sending','no overflow or runtime errors']});
+ assert.deepEqual(errors,[]);results.push({width,status:'passed',checks:['shared compact card dimensions','compact proposal','review and platform fee','portalled bottom sheets','nested sitting details','one close per sheet','return to parent','project sitting details','payment deep link','message draft without sending','no overflow or runtime errors']});
  await context.close();
 }}finally{await browser.close();await writeFile(`${out}/results.json`,JSON.stringify(results,null,2));}
 console.log(JSON.stringify(results,null,2));

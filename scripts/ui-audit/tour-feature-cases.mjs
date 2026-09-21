@@ -41,8 +41,8 @@ export const cases=[
  {name:'tabs-bookings-past',role:'client',path:'/bookings',open:[async page=>page.getByRole('button',{name:/Completed projects/}).click()]},
  ...['Fulfilled','All'].map(name=>({name:'tabs-orders-'+name.toLowerCase(),role:'merchant',path:'/merchant/orders',open:[tab(name)]})),
 
- {name:'legacy-proposal-review',path:'/chat/12',override:legacyProposal,open:[button('Review proposal')]},
- ...['Contact','Service & cost','Reschedule'].map(name=>({name:'legacy-editor-'+name.toLowerCase().replace(/[^a-z]+/g,'-'),path:'/chat/12',override:legacyProposal,open:[button('Review proposal'),button('Edit Booking'),tab(name)]})),
+ {name:'legacy-proposal-review',path:'/chat/12',override:legacyProposal,open:[button(/Booking proposal.*Review proposal/)]},
+ ...['Contact','Service & cost','Reschedule'].map(name=>({name:'legacy-editor-'+name.toLowerCase().replace(/[^a-z]+/g,'-'),path:'/chat/12',override:legacyProposal,open:[button(/Booking proposal.*Review proposal/),button('Edit Booking'),tab(name)]})),
 
  {name:'request-archive',path:'/lead/1',open:[button('Archive request')]},
  {name:'request-consultation',path:'/settings?section=consultations',override:{'consultations.list':[{id:1,subject:'Botanical enquiry',description:'Fixture consultation details',status:'pending',client:{name:'Mia Chen'},clientId:'client-test',artistId:'artist-test',conversationId:12}]},open:[button(/^Botanical enquiry/)]},

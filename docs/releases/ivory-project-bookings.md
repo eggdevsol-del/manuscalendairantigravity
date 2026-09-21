@@ -44,3 +44,9 @@ Booking proposals are compact selectable rows; selecting one opens the existing 
 Project titles read tattoo design context from text chat and cached design briefs, prioritising recent design decisions and excluding structured system traffic. Operational titles are rejected by a shared guard. Existing invalid names are hidden by presentation readers and repaired on booking/project load; valid saved names are retained. Historical projects use their original proposal boundary when newer plans exist, avoiding renaming an older tattoo from a newer tattoo's chat. Missing design context or LLM failures produce a neutral fallback. No database migration or bulk rewrite is required.
 
 Validation uses mocked LLM responses and isolated browser fixtures, not production chat, live charges or outgoing messages. Physical iPhone behavior still requires device testing.
+
+## Compact summary geometry
+
+Booking proposal cards, chat proposals and default sitting summaries now share `SummaryCard`. Its dimensions are defined by Ivory CSS tokens: 76px minimum height, 12px vertical / 16px horizontal padding, 16px radius and 12px gap. Height can grow for wrapping/large text. Calendar timeline events retain their time-grid geometry. Removed nested panel/row padding and sitting-list padding; the entire compact card opens the existing detail/review sheet. No payment logic or database changes.
+
+Naming failures use a compact detail-sheet link instead of a large error panel. Empty proposal schedules show “Dates unavailable” rather than “0 sittings”; payment-review states remain visible. The compact-card browser gate measures geometry at 320, 390 and 820 pixels, checks chat uses the same tokens, and verifies naming-error details, retry availability and proposal-sheet access without sending or charging anything.

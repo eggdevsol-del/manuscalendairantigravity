@@ -5,6 +5,7 @@ import {
   isValidElement,
   useId,
   type ReactNode,
+  type Ref,
   type ButtonHTMLAttributes,
 } from "react";
 import { Link } from "wouter";
@@ -249,6 +250,37 @@ export function Row({
     </button>
   ) : (
     <div className="v3-row">{content}</div>
+  );
+}
+/** Compact, tappable summary. Geometry belongs to shared CSS tokens, never page wrappers. */
+export function SummaryCard({
+  title,
+  detail,
+  actionLabel,
+  tone = "default",
+  className = "",
+  ...buttonProps
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, "title"> & {
+  title: ReactNode;
+  detail?: ReactNode;
+  actionLabel?: string;
+  ref?: Ref<HTMLButtonElement>;
+  tone?: "default" | "attention";
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      {...buttonProps}
+      className={`v3-summary-card v3-summary-card-${tone} ${className}`}
+    >
+      <span className="v3-summary-copy">
+        <strong>{title}</strong>
+        {detail && <span>{detail}</span>}
+        {actionLabel && <span className="sr-only">{actionLabel}</span>}
+      </span>
+      <ChevronRight size={18} aria-hidden="true" />
+    </button>
   );
 }
 export function SearchField({
