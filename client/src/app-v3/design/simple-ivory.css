@@ -791,3 +791,109 @@
   width: 100%;
   text-align: left;
 }
+
+/* A booking message is one readable timeline, never nested sitting disclosures. */
+.v3-message:has(.v3-booking-message) {
+  width: 100%;
+  max-width: 100%;
+}
+.v3-message:has(.v3-booking-message) > div {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+.v3-booking-message {
+  border: 1px solid var(--v3-line);
+  border-radius: var(--v3-radius);
+  padding: var(--v3-panel-padding);
+  background: var(--v3-surface);
+  color: var(--v3-ink);
+  overflow-wrap: anywhere;
+}
+.v3-booking-message-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.v3-booking-message-heading > div {
+  min-width: 0;
+}
+.v3-booking-message-heading small {
+  color: var(--v3-muted);
+  font-size: 12px;
+}
+.v3-booking-message-heading h3 {
+  font: 400 24px/1.2 var(--ivory-display);
+  margin-top: 3px;
+}
+.v3-booking-message-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 14px;
+  background: var(--v3-green-soft);
+  color: var(--v3-green);
+}
+.v3-booking-message-dates {
+  list-style: none;
+  margin: 18px 0;
+  padding: 0;
+}
+.v3-booking-message-dates li {
+  display: flex;
+  gap: 12px;
+  padding: 0 0 18px;
+  position: relative;
+}
+.v3-booking-message-dates li:not(:last-child):before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 28px;
+  bottom: 0;
+  width: 1px;
+  background: var(--v3-line);
+}
+.v3-booking-message-marker {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  background: var(--v3-green-soft);
+  color: var(--v3-green);
+}
+.v3-booking-message-dates li > div {
+  min-width: 0;
+}
+.v3-booking-message-dates strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.v3-booking-message-dates li > div > span {
+  display: block;
+  font-size: 12px;
+  color: var(--v3-muted);
+  margin-top: 4px;
+}
+.v3-booking-message-totals {
+  border-top: 1px solid var(--v3-line);
+  padding-top: 12px;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.v3-booking-message-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.v3-booking-message-totals dd {
+  font-weight: 600;
+  text-align: right;
+}

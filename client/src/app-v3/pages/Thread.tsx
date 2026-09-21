@@ -1,6 +1,5 @@
 import { nextProjectSitting } from "../data/projectProgress";
 import { DetailsSheet } from "../components/DetailsSheet";
-import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
 import { DesignBrief } from "../design/DesignBrief";
@@ -32,7 +31,6 @@ import {
   Panel,
   Row,
   Status,
-  SummaryCard,
 } from "../design/primitives";
 import {
   mediaUrls,
@@ -225,12 +223,10 @@ export function Thread({
                 );
               else if (metadata.type === "project_proposal")
                 body = (
-                  <SummaryCard
-                    title="Booking proposal"
-                    detail={statusLabel(metadata.status || "pending")}
-                    actionLabel="Review proposal"
-                    aria-haspopup="dialog"
-                    onClick={() => {
+                  <LegacyBookingMessage
+                    conversationId={id}
+                    metadata={metadata}
+                    onReview={() => {
                       c.handleViewProposal(message, metadata);
                       setBooking(true);
                     }}
@@ -506,6 +502,143 @@ export function Thread({
     </div>
   );
 }
+function LegacyBookingMessage({
+  conversationId,
+  metadata,
+  onReview,
+}: {
+  conversationId: number;
+  metadata: Record<string, any>;
+  onReview: () => void;
+}) {
+  const query = trpc.projects.summary.useQuery({ conversationId });
+  const ids = Array.isArray(metadata.appointmentIds)
+    ? metadata.appointmentIds
+    : [metadata.appointmentId || metadata.bookingId || metadata.id];
+  const sessions = (query.data?.sessions || []).filter(s =>
+    ids.map(Number).includes(s.id)
+  );
+  const booked = sessions.some(s =>
+    ["confirmed", "completed", "cancelled", "no-show"].includes(s.status)
+  );
+  return (
+    <section
+      className="v3-booking-message"
+      aria-label={booked ? "Tattoo booking" : "Booking proposal"}
+    >
+      <header className="v3-booking-message-heading">
+        <span className="v3-booking-message-icon">
+          <CalendarDays size={24} />
+        </span>
+        <div>
+          <small>{booked ? "Tattoo booking" : "Booking proposal"}</small>
+          <h3>
+            {sessions.find(s => s.projectName)?.projectName ||
+              metadata.serviceName ||
+              "Tattoo sittings"}
+          </h3>
+        </div>
+      </header>
+      <Feedback
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => query.refetch()}
+      />
+      {query.data?.location && (
+        <p className="v3-muted">{query.data.location}</p>
+      )}
+      <ol className="v3-booking-message-dates" aria-label="Sitting dates">
+        {sessions.map((s, index) => (
+          <li key={s.id}>
+            <span className="v3-booking-message-marker">
+              {s.sessionIndex || index + 1}
+            </span>
+            <div>
+              <strong>{bookingDate(s.startsAt, s.timeZone)}</strong>
+              <span>
+                {statusLabel(s.status)}
+                {s.rescheduled ? " · Rescheduled" : ""} ·{" "}
+                {Math.round(
+                  (+new Date(s.endsAt) - +new Date(s.startsAt)) / 60000
+                )}{" "}
+                min
+              </span>
+              <span>
+                {money(s.estimateCents)} estimate · {money(s.paidCents)} paid ·{" "}
+                {money(s.remainingCents)} remaining
+              </span>
+            </div>
+          </li>
+        ))}
+        {!sessions.length &&
+          Array.isArray(metadata.dates) &&
+          metadata.dates
+            .filter((d: unknown) => typeof d === "string")
+            .map((date: string, index: number) => (
+              <li key={`${date}-${index}`}>
+                <span className="v3-booking-message-marker">{index + 1}</span>
+                <div>
+                  <strong>{bookingDate(date)}</strong>
+                  <span>
+                    Originally proposed
+                    {typeof metadata.serviceDuration === "number"
+                      ? ` · ${metadata.serviceDuration} min`
+                      : ""}
+                  </span>
+                </div>
+              </li>
+            ))}
+      </ol>
+      {!sessions.length && (
+        <Status>{statusLabel(metadata.status || "pending")}</Status>
+      )}
+      {sessions.length > 0 ? (
+        <dl className="v3-booking-message-totals">
+          <div>
+            <dt>Estimate</dt>
+            <dd>
+              {money(sessions.reduce((sum, s) => sum + s.estimateCents, 0))}
+            </dd>
+          </div>
+          <div>
+            <dt>Paid</dt>
+            <dd>{money(sessions.reduce((sum, s) => sum + s.paidCents, 0))}</dd>
+          </div>
+          <div>
+            <dt>Remaining balance</dt>
+            <dd>
+              {money(sessions.reduce((sum, s) => sum + s.remainingCents, 0))}
+            </dd>
+          </div>
+        </dl>
+      ) : (
+        <dl className="v3-booking-message-totals">
+          {typeof metadata.totalCost === "number" && (
+            <div>
+              <dt>Proposed estimate</dt>
+              <dd>{money(Math.round(metadata.totalCost * 100))}</dd>
+            </div>
+          )}
+          {typeof metadata.depositAmount === "number" && (
+            <div>
+              <dt>Proposed deposit</dt>
+              <dd>{money(Math.round(metadata.depositAmount * 100))}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {!booked &&
+        !["declined", "withdrawn", "cancelled", "accepted"].includes(
+          metadata.status
+        ) && (
+          <div className="simple-actions">
+            <Action onClick={onReview}>Review proposal</Action>
+          </div>
+        )}
+    </section>
+  );
+}
+
 function PlanMessage({
   id,
   conversationId,
@@ -517,7 +650,6 @@ function PlanMessage({
     { sessionPlanId: id },
     { enabled: id > 0 }
   );
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [declining, setDeclining] = useState(false);
   const me = trpc.auth.me.useQuery();
@@ -527,27 +659,35 @@ function PlanMessage({
       void query.refetch();
     },
   });
+  const summary = trpc.projects.summary.useQuery(
+    { conversationId },
+    { enabled: conversationId > 0 }
+  );
   const plan = query.data;
+  const sessions = (summary.data?.sessions || []).filter(
+    s =>
+      s.sessionPlanId === id || plan?.items.some(i => i.appointmentId === s.id)
+  );
+  const booked = !!sessions.length || plan?.status === "accepted";
   return (
     <>
-      <SummaryCard
-        title={plan?.projectName || "Booking proposal"}
-        detail={
-          plan
-            ? `${plan.items.length ? `${plan.items.length} ${plan.items.length === 1 ? "sitting" : "sittings"}` : "Dates unavailable"} · ${plan.depositRecorded ? "Deposit recorded" : statusLabel(plan.status)}`
-            : query.error
-              ? "Couldn’t load proposal · open to retry"
-              : "Loading proposal…"
-        }
-        actionLabel="View booking proposal"
-        aria-haspopup="dialog"
-        onClick={() => setDetailsOpen(true)}
-      />
-      <SheetShell
-        isOpen={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        title="Booking proposal"
+      <section
+        className="v3-booking-message"
+        aria-label={booked ? "Tattoo booking" : "Booking proposal"}
       >
+        <header className="v3-booking-message-heading">
+          <span className="v3-booking-message-icon">
+            <CalendarDays size={24} />
+          </span>
+          <div>
+            <small>{booked ? "Your tattoo booking" : "Booking proposal"}</small>
+            <h3>
+              {sessions.find(s => s.projectName)?.projectName ||
+                plan?.projectName ||
+                "Tattoo sittings"}
+            </h3>
+          </div>
+        </header>
         <Feedback
           loading={query.isLoading}
           error={query.error}
@@ -555,33 +695,118 @@ function PlanMessage({
         />
         {plan && (
           <>
-            <Status tone={plan.status === "accepted" ? "success" : "neutral"}>
-              {plan.depositRecorded
-                ? "Deposit recorded"
-                : statusLabel(plan.status)}
-            </Status>
-            {plan.items.map(item => (
-              <ProposedSittingCard key={item.id} item={item} />
-            ))}
-            <p>Deposit {money(plan.depositTotalCents)}</p>
+            <div className="simple-between">
+              <span>{plan.artist?.name || "Your artist"}</span>
+              <Status tone={booked ? "success" : "neutral"}>
+                {sessions.length &&
+                sessions.every(s => s.status === sessions[0].status)
+                  ? statusLabel(sessions[0].status)
+                  : sessions.length
+                    ? "See sitting statuses"
+                    : statusLabel(plan.status)}
+              </Status>
+            </div>
+            {summary.data?.location && (
+              <p className="v3-muted">{summary.data.location}</p>
+            )}
+            <Feedback error={summary.error} onRetry={() => summary.refetch()} />
+            <ol className="v3-booking-message-dates" aria-label="Sitting dates">
+              {sessions.length
+                ? sessions.map((s, index) => (
+                    <li key={s.id}>
+                      <span className="v3-booking-message-marker">
+                        {s.sessionIndex || index + 1}
+                      </span>
+                      <div>
+                        <strong>{bookingDate(s.startsAt, s.timeZone)}</strong>
+                        <span>
+                          {statusLabel(s.status)}
+                          {s.rescheduled ? " · Rescheduled" : ""} ·{" "}
+                          {Math.round(
+                            (+new Date(s.endsAt) - +new Date(s.startsAt)) /
+                              60000
+                          )}{" "}
+                          min
+                        </span>
+                        <span>
+                          {money(s.estimateCents)} estimate ·{" "}
+                          {money(s.paidCents)} paid · {money(s.remainingCents)}{" "}
+                          remaining
+                        </span>
+                      </div>
+                    </li>
+                  ))
+                : plan.items.map(item => (
+                    <li key={item.id}>
+                      <span className="v3-booking-message-marker">
+                        {item.sessionIndex}
+                      </span>
+                      <div>
+                        <strong>{bookingDate(item.startsAt)}</strong>
+                        <span>
+                          {item.durationMinutes} min ·{" "}
+                          {money(item.estimateCents)} estimate
+                        </span>
+                        <span>{money(item.depositCents)} deposit</span>
+                        {booked && (
+                          <span>
+                            Original proposed date · current sitting details{" "}
+                            {summary.isLoading ? "loading" : "unavailable"}
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+            </ol>
+            {!plan.items.length && !sessions.length && (
+              <p>Dates to be arranged</p>
+            )}
+            <dl className="v3-booking-message-totals">
+              <div>
+                <dt>
+                  {sessions.length ? "Sittings estimate" : "Project estimate"}
+                </dt>
+                <dd>
+                  {money(
+                    sessions.length
+                      ? sessions.reduce((sum, s) => sum + s.estimateCents, 0)
+                      : plan.totalEstimateCents
+                  )}
+                </dd>
+              </div>
+              <div>
+                <dt>{plan.depositRecorded ? "Deposit recorded" : "Deposit"}</dt>
+                <dd>{money(plan.depositTotalCents)}</dd>
+              </div>
+              <div>
+                <dt>Platform fee</dt>
+                <dd>{money(plan.platformFeeCents || 0)}</dd>
+              </div>
+              {sessions.length > 0 && (
+                <div>
+                  <dt>Remaining balance</dt>
+                  <dd>
+                    {money(
+                      sessions.reduce((sum, s) => sum + s.remainingCents, 0)
+                    )}
+                  </dd>
+                </div>
+              )}
+            </dl>
             {(plan.requiresDeposit ?? plan.status === "pending") &&
-              me.data?.id === plan.clientId && (
-                <>
-                  <Action
-                    onClick={() => {
-                      setDetailsOpen(false);
-                      setCheckout(true);
-                    }}
-                  >
-                    Review dates & pay deposit
+              me.data?.id === plan.clientId &&
+              !booked && (
+                <div className="simple-actions">
+                  <Action onClick={() => setCheckout(true)}>
+                    Review & pay deposit
                   </Action>
                   <Action tone="quiet" onClick={() => setDeclining(true)}>
                     Decline plan
                   </Action>
-                </>
+                </div>
               )}
             {declining && (
-              <div role="alert">
+              <div role="alert" className="simple-actions">
                 <p>Decline these proposed dates?</p>
                 <Action
                   tone="danger"
@@ -598,7 +823,7 @@ function PlanMessage({
             {decline.error && <p role="alert">{decline.error.message}</p>}
           </>
         )}
-      </SheetShell>
+      </section>
       {checkout && (
         <SessionPlanCheckoutSheet
           sessionPlanId={id}
@@ -606,12 +831,14 @@ function PlanMessage({
           onClose={() => {
             setCheckout(false);
             void query.refetch();
+            void summary.refetch();
           }}
         />
       )}
     </>
   );
 }
+
 function InviteMessage({
   metadata,
   own,
