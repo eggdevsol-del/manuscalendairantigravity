@@ -19,6 +19,7 @@ interface SheetShellProps {
   description?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  headerAction?: React.ReactNode;
   className?: string;
   side?: "top" | "bottom" | "left" | "right";
   overlayName?: string;
@@ -33,6 +34,7 @@ export function SheetShell({
   description,
   children,
   footer,
+  headerAction,
   className,
   side = "bottom",
   overlayName = "Sheet",
@@ -76,6 +78,9 @@ export function SheetShell({
             <SheetDescription className="text-center text-xs text-muted-foreground">
               {description}
             </SheetDescription>
+          )}
+          {headerAction && (
+            <div className="v3-sheet-header-action">{headerAction}</div>
           )}
         </SheetHeader>
 

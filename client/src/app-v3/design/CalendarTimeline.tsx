@@ -249,7 +249,7 @@ export function CalendarTimeline({
         tabIndex={0}
         role="region"
         aria-label="Scrollable calendar timeline"
-        data-tour-description="Scroll through the calendar to browse dates. Appointment cards expand directly below the selected card; the plus control starts a booking on its date. Browsing does not move or reschedule appointments."
+        data-tour-description="Review upcoming work and unfilled days before proposing dates. Open a sitting to check its client, forms and balance, or use the plus on a date to start a booking. This keeps preparation and capacity visible without changing existing appointments."
       >
         <div
           style={{ height: offsets[offsets.length - 1], position: "relative" }}

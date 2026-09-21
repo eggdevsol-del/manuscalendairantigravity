@@ -29,6 +29,7 @@ export function Screen({
   children,
   wide = false,
   publicView = false,
+  compactTitle = false,
   className = "",
 }: {
   title: string;
@@ -39,6 +40,7 @@ export function Screen({
   children: ReactNode;
   wide?: boolean;
   publicView?: boolean;
+  compactTitle?: boolean;
   className?: string;
 }) {
   const { user } = useAuth();
@@ -74,6 +76,7 @@ export function Screen({
               tattoi
             </Link>
           )}
+          {compactTitle && <h1 className="v3-inline-title">{title}</h1>}
           <div className="tour-header-actions">
             {action || (
               <Link
@@ -86,7 +89,7 @@ export function Screen({
             )}
           </div>
         </div>
-        <h1>{title}</h1>
+        {!compactTitle && <h1>{title}</h1>}
         {subtitle && <p className="v3-subtitle">{subtitle}</p>}
       </header>
       {subheader && (

@@ -1,3 +1,4 @@
+import { businessGuidance } from "./businessGuidance";
 /** Live UI inventory. No sample records, business mutations or positional selectors. */
 import type { TourStep } from "./TooltipTourProvider";
 import { describeControl, describeSurface } from "./tourCopy";
@@ -13,7 +14,8 @@ export function isTourVisible(el: HTMLElement | null): el is HTMLElement {
     )
   )
     return false;
-  if(el.classList.contains("sr-only") && document.activeElement !== el) return false;
+  if (el.classList.contains("sr-only") && document.activeElement !== el)
+    return false;
   const style = getComputedStyle(el);
   return (
     !!el.getClientRects().length &&
@@ -50,7 +52,7 @@ export function surfaceTitle(surface: HTMLElement): string {
   );
 }
 export function controlLabel(el: HTMLElement): string {
-  if(el.dataset.tourTitle) return el.dataset.tourTitle;
+  if (el.dataset.tourTitle) return el.dataset.tourTitle;
   const ids = el.getAttribute("aria-labelledby")?.split(/\s+/) || [];
   const explicit =
     el.getAttribute("aria-label") ||
@@ -91,7 +93,9 @@ export function controlLabel(el: HTMLElement): string {
     el.textContent?.replace(/\s+/g, " ").trim() ||
     el.getAttribute("title") ||
     [...el.querySelectorAll<HTMLImageElement>("img[alt]")]
-      .map(image => image.alt.trim()).filter(Boolean).join(" · ") ||
+      .map(image => image.alt.trim())
+      .filter(Boolean)
+      .join(" · ") ||
     "Control"
   ).slice(0, 100);
 }
@@ -110,7 +114,12 @@ export function collectTourSteps(
   surface: HTMLElement
 ): (TourStep & { element: HTMLElement })[] {
   const title = surfaceTitle(surface);
-  const heading = [...surface.querySelectorAll<HTMLElement>('[data-tour-intro],h1,[data-slot=sheet-title],[data-slot=dialog-title],h2,h3')].find(isTourVisible) || surface;
+  const heading =
+    [
+      ...surface.querySelectorAll<HTMLElement>(
+        "[data-tour-intro],h1,[data-slot=sheet-title],[data-slot=dialog-title],h2,h3"
+      ),
+    ].find(isTourVisible) || surface;
   const candidates = [...surface.querySelectorAll<HTMLElement>(TOUR_CONTROLS)];
   if (!surface.matches("[role=dialog],[role=alertdialog]"))
     candidates.push(
@@ -119,27 +128,52 @@ export function collectTourSteps(
       )
     );
   const repeated = new Set<string>();
-  const controls = [...new Set(candidates)].sort((a,b)=>a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1).filter(el => {
-    if (!isTourVisible(el)) return false;
-    const repeat=el.dataset.tourRepeat;
-    if(repeat && repeated.has(repeat)) return false;
-    if(repeat) repeated.add(repeat);
-    // Composite buttons are one control; their icons and labels aren't separate steps.
-    if (el.parentElement?.closest("button,a[href],[role=button]")) return false;
-    return !el.matches("[data-slot=sheet-close],[data-slot=dialog-close]");
-  });
+  const controls = [...new Set(candidates)]
+    .sort((a, b) =>
+      a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+    )
+    .filter(el => {
+      if (!isTourVisible(el)) return false;
+      if (
+        el.matches(
+          "h1,h2,h3,[data-slot=sheet-title],[data-slot=dialog-title]"
+        ) ||
+        el.closest("#bottom-nav") ||
+        el.closest("[data-tour-skip]")
+      )
+        return false;
+      if (!businessGuidance(controlLabel(el)) && !el.dataset.tourDescription)
+        return false;
+      const repeat = el.dataset.tourRepeat;
+      if (repeat && repeated.has(repeat)) return false;
+      if (repeat) repeated.add(repeat);
+      // Composite buttons are one control; their icons and labels aren't separate steps.
+      if (el.parentElement?.closest("button,a[href],[role=button]"))
+        return false;
+      return !el.matches("[data-slot=sheet-close],[data-slot=dialog-close]");
+    });
+  const seenGuidance = new Set<string>();
   return [
-    {
-      element: heading,
-      targetId: liveTargetId(heading),
-      title,
-      body: describeSurface(title),
-    },
-    ...controls.map(element => ({
-      element,
-      targetId: element.dataset.tourRepeat ? `css:[data-tour-repeat="${element.dataset.tourRepeat}"]` : liveTargetId(element),
-      title: controlLabel(element),
-      body: describeControl(element, title),
-    })),
+    ...controls
+      .filter(el => {
+        const copy =
+          el.dataset.tourDescription ||
+          businessGuidance(controlLabel(el)) ||
+          "";
+        if (seenGuidance.has(copy)) return false;
+        seenGuidance.add(copy);
+        return true;
+      })
+      .map(element => ({
+        element,
+        targetId: element.dataset.tourRepeat
+          ? `css:[data-tour-repeat="${element.dataset.tourRepeat}"]`
+          : liveTargetId(element),
+        title: controlLabel(element),
+        body:
+          element.dataset.tourDescription ||
+          businessGuidance(controlLabel(element)) ||
+          describeControl(element, title),
+      })),
   ];
 }

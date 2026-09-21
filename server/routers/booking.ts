@@ -12,8 +12,8 @@ export const bookingRouter = router({
         conversationId: z.number(),
         artistId: z.string().optional(),
         serviceName: z.string(),
-        serviceDuration: z.number(),
-        sittings: z.number(),
+        serviceDuration: z.number().int().min(1).max(1440),
+        sittings: z.number().int().min(1).max(52),
         price: z.number(),
         frequency: z.enum([
           "single",
@@ -23,6 +23,7 @@ export const bookingRouter = router({
           "monthly",
         ]),
         startDate: z.date(),
+        completedBy: z.date().optional(),
         timeZone: z.string(),
       })
     )
@@ -95,6 +96,7 @@ export const bookingRouter = router({
           sittings,
           frequency,
           startDate: input.startDate,
+          completedBy: input.completedBy,
           workSchedule,
           existingAppointments,
           timeZone: input.timeZone,

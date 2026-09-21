@@ -146,18 +146,23 @@ export default function Booking() {
   );
 }
 
-function BookingProject({
+export function BookingProject({
   projectId,
   focused,
+  conversationId,
+  embedded = false,
 }: {
   projectId: string;
   focused: boolean;
+  conversationId?: number;
+  embedded?: boolean;
 }) {
   const [, params] = useRoute("/projects/:id");
-  const id = Number(params?.id);
+  const id = conversationId || Number(params?.id);
   const search = useSearch();
   const [, go] = useLocation();
-  const qs = new URLSearchParams(search);
+  const [inlineSearch, setInlineSearch] = useState("");
+  const qs = new URLSearchParams(embedded ? inlineSearch : search);
   const selectedId = focused ? Number(qs.get("session")) || null : null;
   const active = focused ? qs.get("view") : null;
   const tab =
@@ -273,7 +278,8 @@ function BookingProject({
     q.set("project", projectId);
     if (sessionId) q.set("session", String(sessionId));
     if (view !== "Overview") q.set("view", view);
-    go(`/projects/${id}?${q}`);
+    if (embedded) setInlineSearch(q.toString());
+    else go(`/projects/${id}?${q}`);
   };
   const overview = data && (
     <div className="v3-grid">
@@ -591,6 +597,7 @@ function BookingProject({
                 selectedId={selectedId}
                 render={(s, i) => (
                   <SittingCard
+                    inline={embedded}
                     headerClassName="v3-row"
                     title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}${s.rescheduled ? " · Rescheduled" : ""}`}
                     detail={bookingDate(s.startsAt, s.timeZone)}
@@ -618,12 +625,11 @@ function BookingProject({
               onClose={() => navigate("Overview")}
               title="Project messages"
             >
-              {tab === "Messages" && (
-                <Thread id={id} />
-              )}
+              {tab === "Messages" && <Thread id={id} />}
             </SheetShell>
             {tab === "Overview" && siblings.length === 0 && overview}
             <DetailsSheet
+              inline={embedded}
               open={filesOpen}
               onOpenChange={setFilesOpen}
               className="ivory-project-resource"
@@ -661,6 +667,7 @@ function BookingProject({
                 </div>
                 {!!unassignedBriefs.length && selectedKey && (
                   <DetailsSheet
+                    inline={embedded}
                     title={<>Older conversation references · unassigned</>}
                   >
                     <p className="v3-muted">
@@ -699,6 +706,7 @@ function BookingProject({
               </Section>
             </DetailsSheet>
             <DetailsSheet
+              inline={embedded}
               open={paymentsOpen}
               onOpenChange={setPaymentsOpen}
               className="ivory-project-resource"
@@ -714,6 +722,7 @@ function BookingProject({
                 )}
                 {!!unassignedHistory.length && selectedKey && (
                   <DetailsSheet
+                    inline={embedded}
                     title={<>Other conversation transactions · unassigned</>}
                   >
                     <p className="v3-muted">

@@ -1,3 +1,7 @@
+import { projectProgress } from "../data/projectProgress";
+import { BookingProject } from "../pages/Booking";
+import { projectKey } from "../data/projectSessions";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
   bookingDate,
@@ -20,40 +24,74 @@ export function ConversationContext({
   onDraftChange: (value: string) => void;
 }) {
   const query = trpc.projects.summary.useQuery({ conversationId: id });
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const keys = [
+    ...new Set([
+      ...(query.data?.sessions || []).map(projectKey),
+      ...(query.data?.plans || [])
+        .filter(
+          p => p.paymentState || (p.requiresDeposit ?? p.status === "pending")
+        )
+        .map(p => `plan:${p.id}`),
+    ]),
+  ];
   return (
     <aside
       className="v3-conversation-context"
       aria-label="Client and booking context"
     >
-      <Panel>
-        <h3>Session plan</h3>
-        <Feedback
-          loading={query.isLoading}
-          error={query.error}
-          onRetry={() => query.refetch()}
-        />
-        {query.data?.sessions.map(session => (
-          <div key={session.id} className="v3-context-session">
-            <strong>{bookingDate(session.startsAt)}</strong>
-            <p>{session.title}</p>
-            <Status>{statusLabel(session.status)}</Status>
-            <p className="v3-muted">
-              {money(session.remainingCents)} remaining
-            </p>
-            <ActionLink
-              tone="quiet"
-              href={`/projects/${id}?session=${session.id}`}
+      <Feedback
+        loading={query.isLoading}
+        error={query.error}
+        onRetry={() => query.refetch()}
+      />
+      {keys.map(key => {
+        const sessions = query.data!.sessions.filter(
+          s => projectKey(s) === key
+        );
+        const plan = query.data!.plans.find(p => `plan:${p.id}` === key);
+        const progress = projectProgress(sessions);
+        const title =
+          sessions.find(s => s.projectName)?.projectName ||
+          plan?.projectName ||
+          "Tattoo project";
+        return (
+          <section className="v3-conversation-project" key={key}>
+            <button
+              className="v3-row"
+              aria-expanded={expanded === key}
+              onClick={() => setExpanded(expanded === key ? null : key)}
+              data-tour-repeat="conversation-project"
+              data-tour-description="Expand one project to review its sittings, progress, forms and payments without leaving the conversation. Keeping returning clients' projects separate helps you avoid changing or collecting payment for the wrong work."
             >
-              Forms & payments
-            </ActionLink>
-          </div>
-        ))}
-        {query.data && !query.data.sessions.length && (
-          <p className="v3-muted">
-            No sessions scheduled yet. Use Book to create a plan.
-          </p>
-        )}
-      </Panel>
+              <span className="v3-row-copy">
+                <strong>{title}</strong>
+                <span>
+                  {sessions.length
+                    ? `${progress.completed}${progress.total === null ? "" : ` of ${progress.total}`} sittings complete`
+                    : "Proposal"}
+                </span>
+              </span>
+              <span aria-hidden="true">{expanded === key ? "−" : "+"}</span>
+            </button>
+            {expanded === key && (
+              <div className="v3-inline-project">
+                <BookingProject
+                  conversationId={id}
+                  projectId={key}
+                  focused
+                  embedded
+                />
+              </div>
+            )}
+          </section>
+        );
+      })}
+      {!keys.length && (
+        <p className="v3-muted">
+          No tattoo projects yet. Start a new booking to propose dates.
+        </p>
+      )}
       <Panel>
         <h3>Shared references</h3>
         <div className="v3-file-grid">

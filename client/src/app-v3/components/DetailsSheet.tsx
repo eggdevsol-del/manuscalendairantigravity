@@ -23,6 +23,7 @@ function textOf(node: ReactNode): string {
 /** Shared secondary-information control: the page never grows an inline detail panel. */
 export function DetailsSheet({
   title,
+  inline = false,
   sheetTitle,
   label,
   children,
@@ -31,6 +32,7 @@ export function DetailsSheet({
   className,
   reveal = false,
 }: {
+  inline?: boolean;
   title: ReactNode;
   sheetTitle?: string;
   label?: ReactNode;
@@ -56,26 +58,30 @@ export function DetailsSheet({
         ref={trigger}
         type="button"
         className="v3-row"
-        aria-haspopup="dialog"
+        aria-haspopup={inline ? undefined : "dialog"}
         aria-expanded={visible}
-        onClick={() => change(true)}
+        onClick={() => change(inline ? !visible : true)}
       >
         <span className="v3-row-copy">{label || title}</span>
         <ChevronRight size={18} aria-hidden="true" />
       </button>
-      <SheetShell
-        onCloseAutoFocus={event => {
-          event.preventDefault();
-          trigger.current?.focus({ preventScroll: true });
-        }}
-        isOpen={visible}
-        onClose={() => change(false)}
-        title={
-          sheetTitle || textOf(title).replace(/\s+/g, " ").trim() || "Details"
-        }
-      >
-        {visible && children}
-      </SheetShell>
+      {inline ? (
+        visible && <div className="v3-stack">{children}</div>
+      ) : (
+        <SheetShell
+          onCloseAutoFocus={event => {
+            event.preventDefault();
+            trigger.current?.focus({ preventScroll: true });
+          }}
+          isOpen={visible}
+          onClose={() => change(false)}
+          title={
+            sheetTitle || textOf(title).replace(/\s+/g, " ").trim() || "Details"
+          }
+        >
+          {visible && children}
+        </SheetShell>
+      )}
     </div>
   );
 }

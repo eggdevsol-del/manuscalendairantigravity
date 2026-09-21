@@ -31,6 +31,21 @@ export const sessionPlansRouter = router({
         clientId: z.string().optional(), // Resolved from conversation if not provided
         conversationId: z.number(),
         serviceName: z.string().optional(), // For display context
+        scheduling: z
+          .object({
+            autoScheduled: z.boolean().optional(),
+            frequency: z.enum(["weekly", "biweekly", "monthly", "consecutive"]),
+            completedBy: z.string().datetime().optional(),
+            timeZone: z.string().refine(zone => {
+              try {
+                new Intl.DateTimeFormat("en", { timeZone: zone });
+                return true;
+              } catch {
+                return false;
+              }
+            }),
+          })
+          .optional(),
         sessions: z
           .array(
             z.object({
@@ -46,6 +61,19 @@ export const sessionPlansRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      if (
+        input.scheduling?.completedBy &&
+        input.sessions.some(
+          s =>
+            +new Date(s.startsAt) + s.durationMinutes * 60000 >
+            +new Date(input.scheduling!.completedBy!)
+        )
+      )
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "Every sitting must finish by the project completion deadline.",
+        });
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -201,6 +229,7 @@ export const sessionPlansRouter = router({
             totalEstimateCents,
             depositTotalCents,
             sessions: input.sessions,
+            scheduling: input.scheduling,
           }),
         });
 

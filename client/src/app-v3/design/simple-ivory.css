@@ -897,3 +897,170 @@
   font-weight: 600;
   text-align: right;
 }
+
+.v3-service-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 4px;
+  max-width: 48%;
+}
+.v3-service-price strong {
+  font-size: 15px;
+}
+.v3-service-price small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--v3-muted);
+}
+.v3-schedule-gap {
+  display: block;
+  margin: 8px 0;
+  color: var(--ivory-warning);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ivory-sheet [data-slot="sheet-header"]:has(.v3-sheet-header-action) {
+  padding: 8px 20px 14px;
+}
+.ivory-sheet
+  [data-slot="sheet-header"]:has(.v3-sheet-header-action)
+  > div:first-child {
+  padding-right: 44px;
+}
+.ivory-sheet .v3-sheet-header-action {
+  display: flex;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 8px 0 0 !important;
+}
+.v3-sheet-header-action .v3-action {
+  width: auto;
+  min-width: 180px;
+}
+.v3-conversation-project {
+  border: 1px solid var(--v3-line);
+  border-radius: var(--v3-radius);
+  background: var(--v3-surface);
+  padding: 0 16px;
+}
+.v3-conversation-project > .v3-row {
+  width: 100%;
+  text-align: left;
+}
+.v3-inline-project > .v3-panel {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.v3-inline-project .ivory-project-heading h2 {
+  display: none;
+}
+.v3-inline-project .v3-grid {
+  display: flex;
+  flex-direction: column;
+}
+.v3-inline-project .v3-sitting-details {
+  padding: 12px 0;
+}
+.v3-inline-project .v3-sitting-details .v3-panel {
+  box-shadow: none;
+}
+.v3-earnings-chart {
+  margin: 18px 0 6px;
+}
+.v3-earnings-bars {
+  height: 70px;
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--v3-line);
+}
+.v3-earnings-bars > span {
+  flex: 1;
+  background: var(--v3-green);
+  border-radius: 3px 3px 0 0;
+  min-width: 0;
+}
+.v3-earnings-bars > span[data-negative="true"] {
+  background: var(--v3-red);
+}
+.v3-earnings-chart figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--v3-muted);
+}
+.v3-calendar-page .v3-masthead {
+  gap: 12px;
+  justify-content: flex-start;
+}
+.v3-screen.v3-calendar-page .v3-header h1.v3-inline-title {
+  font-size: 25px;
+  letter-spacing: -0.6px;
+  flex: 1;
+}
+.v3-calendar-page .tour-header-actions {
+  margin-left: auto;
+}
+.v3-calendar-page .v3-header {
+  padding-bottom: 10px;
+}
+.v3-calendar-page .v3-calendar-toolbar[hidden] {
+  display: none;
+}
+.v3-calendar-page .v3-content {
+  gap: 10px;
+}
+.v3-calendar-page > .v3-scroll {
+  padding-bottom: calc(var(--simple-nav-height) + 64px) !important;
+}
+.v3-calendar-date-controls {
+  position: fixed;
+  bottom: var(--simple-nav-height);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px max(20px, var(--app-safe-left));
+  background: var(--simple-nav-tint);
+  backdrop-filter: blur(12px);
+}
+.v3-calendar-date-controls .v3-action {
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px;
+}
+.v3-calendar-date-controls svg {
+  width: 18px;
+}
+.v3-calendar-date-controls span {
+  font-size: 13px;
+}
+body:has(.v3-calendar-page) .simple-nav-fade {
+  bottom: calc(var(--simple-nav-height) + 60px);
+}
+@media (max-width: 600px) {
+  .v3-calendar-new span {
+    display: none;
+  }
+  .v3-calendar-new {
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+  .v3-calendar-page .v3-week-strip {
+    flex-shrink: 0;
+  }
+}
+/* Notices must not cover the calendar's persistent date controls. */
+body:has(.v3-calendar-page) .tattoi-notice {
+  bottom: calc(var(--simple-nav-height) + 70px);
+}

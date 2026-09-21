@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react";
 /** One disclosure contract for existing and proposed sitting cards. */
 export function SittingCard({
   title,
+  inline = false,
   detail,
   children,
   expanded,
@@ -14,6 +15,7 @@ export function SittingCard({
   headerClassName,
   headerStyle,
 }: {
+  inline?: boolean;
   icon?: ReactNode;
   headerClassName?: string;
   headerStyle?: CSSProperties;
@@ -38,7 +40,7 @@ export function SittingCard({
           data-tour-title="Sitting details"
           data-tour-description="Open this sitting’s dates, status, forms, amounts and actions in a bottom sheet. Close the sheet to return to your place."
           aria-expanded={open}
-          aria-haspopup="dialog"
+          aria-haspopup={inline ? undefined : "dialog"}
           onClick={() => {
             setLocalOpen(!open);
             onExpandedChange?.(!open);
@@ -60,7 +62,7 @@ export function SittingCard({
           ref={trigger}
           title={title}
           detail={detail}
-          aria-haspopup="dialog"
+          aria-haspopup={inline ? undefined : "dialog"}
           aria-expanded={open}
           data-tour-repeat="sitting-disclosure"
           data-tour-title="Sitting details"
@@ -71,20 +73,24 @@ export function SittingCard({
           }}
         />
       )}
-      <SheetShell
-        onCloseAutoFocus={event => {
-          event.preventDefault();
-          trigger.current?.focus({ preventScroll: true });
-        }}
-        isOpen={open}
-        title={typeof title === "string" ? title : "Sitting details"}
-        onClose={() => {
-          setLocalOpen(false);
-          onExpandedChange?.(false);
-        }}
-      >
-        {open && <div className="v3-sitting-details">{children}</div>}
-      </SheetShell>
+      {inline ? (
+        open && <div className="v3-sitting-details">{children}</div>
+      ) : (
+        <SheetShell
+          onCloseAutoFocus={event => {
+            event.preventDefault();
+            trigger.current?.focus({ preventScroll: true });
+          }}
+          isOpen={open}
+          title={typeof title === "string" ? title : "Sitting details"}
+          onClose={() => {
+            setLocalOpen(false);
+            onExpandedChange?.(false);
+          }}
+        >
+          {open && <div className="v3-sitting-details">{children}</div>}
+        </SheetShell>
+      )}
     </div>
   );
 }

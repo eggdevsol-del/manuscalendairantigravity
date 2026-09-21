@@ -1,3 +1,5 @@
+import { fromZonedTime, formatInTimeZone } from "date-fns-tz";
+import { selectConsecutiveSlots } from "../../shared/projectSchedule";
 import { TRPCError } from "@trpc/server";
 
 // --- Types ---
@@ -27,6 +29,7 @@ export interface ProjectAvailabilityInput {
   sittings: number;
   frequency: "single" | "consecutive" | "weekly" | "biweekly" | "monthly";
   startDate: Date;
+  completedBy?: Date;
   workSchedule: any[];
   existingAppointments: AppointmentInterval[];
   timeZone: string;
@@ -276,10 +279,12 @@ export function findNextAvailableSlotOptimized(
   durationMinutes: number,
   workSchedule: WorkDay[],
   existingAppointments: AppointmentInterval[],
-  timeZone: string
+  timeZone: string,
+  deadline?: Date
 ): Date | null {
   const endSearchLimit = new Date(startDate);
   endSearchLimit.setFullYear(endSearchLimit.getFullYear() + 1);
+  if (deadline && deadline < endSearchLimit) endSearchLimit.setTime(+deadline);
 
   // Re-implementing the loop to be robust:
   let searchPointer = new Date(startDate);
@@ -452,6 +457,70 @@ export function calculateProjectDates(input: ProjectAvailabilityInput): Date[] {
     currentDateSearch.setMilliseconds(0);
   }
 
+  if (input.completedBy && input.completedBy <= currentDateSearch)
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Project completion must be after the search start.",
+    });
+  if (input.frequency === "consecutive") {
+    const limit =
+      input.completedBy || new Date(+currentDateSearch + 366 * 86400000);
+    const candidates: Date[] = [];
+    let cursor = new Date(currentDateSearch);
+    while (cursor < limit && candidates.length < 367) {
+      const slot = findNextAvailableSlotOptimized(
+        cursor,
+        input.serviceDuration,
+        input.workSchedule,
+        input.existingAppointments,
+        input.timeZone,
+        limit
+      );
+      if (!slot || +slot + input.serviceDuration * 60000 > +limit) break;
+      candidates.push(slot);
+      const run = candidates.slice(-input.sittings);
+      if (
+        run.length === input.sittings &&
+        run.every(
+          (d, i) =>
+            !i ||
+            formatInTimeZone(d, input.timeZone, "yyyy-MM-dd") ===
+              new Date(
+                new Date(
+                  formatInTimeZone(run[i - 1], input.timeZone, "yyyy-MM-dd") +
+                    "T12:00:00Z"
+                ).getTime() + 86400000
+              )
+                .toISOString()
+                .slice(0, 10)
+        )
+      )
+        return run;
+      // Advance local date at midnight, not 24 elapsed hours across a DST change.
+      const key = formatInTimeZone(slot, input.timeZone, "yyyy-MM-dd");
+      const next = new Date(key + "T12:00:00Z");
+      next.setUTCDate(next.getUTCDate() + 1);
+      cursor = fromZonedTime(
+        next.toISOString().slice(0, 10) + "T00:00:00",
+        input.timeZone
+      );
+    }
+    const selected = selectConsecutiveSlots(
+      candidates,
+      input.sittings,
+      input.timeZone,
+      !!input.completedBy
+    );
+    if (selected.length !== input.sittings)
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: input.completedBy
+          ? "All sittings cannot finish before this deadline. Change the start date, deadline or sitting count."
+          : "No complete consecutive-day run was found within a year. Choose another frequency or set a completion deadline to allow split dates.",
+      });
+    return selected;
+  }
+
   // Clone appointments so we can "book" them temporarily to prevent self-overlap
   const tempAppointments = [...input.existingAppointments];
 
@@ -484,6 +553,15 @@ export function calculateProjectDates(input: ProjectAvailabilityInput): Date[] {
       });
     }
 
+    if (
+      input.completedBy &&
+      +slot + input.serviceDuration * 60000 > +input.completedBy
+    )
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message:
+          "All sittings cannot finish before this deadline. Adjust your dates or deadline.",
+      });
     suggestedDates.push(slot);
 
     // Add to temp appointments
@@ -503,7 +581,6 @@ export function calculateProjectDates(input: ProjectAvailabilityInput): Date[] {
 
     switch (input.frequency) {
       case "single":
-      case "consecutive":
         nextDate.setDate(nextDate.getDate() + 1);
         break;
       case "weekly":

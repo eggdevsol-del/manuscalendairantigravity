@@ -71,39 +71,27 @@ export default function Calendar() {
   return (
     <Screen
       title="Calendar"
+      compactTitle
+      className="v3-calendar-page"
       subtitle={wide ? period : format(c.activeDate, "EEEE, d MMMM")}
       wide
       action={
-        <Action onClick={() => setBookingDateValue(c.activeDate)}>
+        <Action
+          className="v3-calendar-new"
+          aria-label="New booking"
+          onClick={() => setBookingDateValue(c.activeDate)}
+        >
           <Plus />
-          New booking
+          <span>New booking</span>
         </Action>
       }
     >
-      <div className="v3-calendar-toolbar">
-        <div className="v3-inline">
-          <Action
-            tone="secondary"
-            aria-label="Previous week"
-            onClick={() => goDay(addDays(monday, -7))}
-          >
-            <ChevronLeft />
-          </Action>
-          <Action
-            tone="secondary"
-            aria-label="Next week"
-            onClick={() => goDay(addDays(monday, 7))}
-          >
-            <ChevronRight />
-          </Action>
-          <Action tone="quiet" onClick={() => goDay(new Date())}>
-            Today
-          </Action>
-        </div>
+      <div className="v3-calendar-toolbar" hidden={c.activeArtists.length <= 1}>
         <div className="v3-inline">
           {c.activeArtists.length > 1 && (
             <select
               aria-label="Calendar artist"
+              data-tour-description="Filter the calendar to one artist or view the studio together. This helps you check the right person’s availability before discussing dates with a client."
               value={artist}
               onChange={e => {
                 setArtist(e.target.value);
@@ -125,9 +113,6 @@ export default function Calendar() {
           <button
             key={date.toISOString()}
             type="button"
-            data-tour-repeat="calendar-week-day"
-            data-tour-title="Choose a calendar day"
-            data-tour-description="Select a date in the week strip to bring that day into view. Use the week arrows or Today to move to another week; this does not change an appointment."
             aria-label={format(date, "EEEE, d MMMM yyyy")}
             aria-pressed={
               format(date, "yyyy-MM-dd") === format(c.activeDate, "yyyy-MM-dd")
@@ -165,6 +150,31 @@ export default function Calendar() {
           onBook={setBookingDateValue}
           services={c.artistServices}
         />
+      </div>
+      <div
+        className="v3-calendar-date-controls"
+        role="group"
+        aria-label="Calendar date navigation"
+      >
+        <Action
+          tone="quiet"
+          aria-label="Previous week"
+          onClick={() => goDay(addDays(monday, -7))}
+        >
+          <ChevronLeft />
+          <span>Previous</span>
+        </Action>
+        <Action tone="secondary" onClick={() => goDay(new Date())}>
+          Today
+        </Action>
+        <Action
+          tone="quiet"
+          aria-label="Next week"
+          onClick={() => goDay(addDays(monday, 7))}
+        >
+          <span>Next</span>
+          <ChevronRight />
+        </Action>
       </div>
       <SheetShell
         isOpen={!!bookingDateValue}

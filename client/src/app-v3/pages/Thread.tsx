@@ -1,3 +1,7 @@
+import {
+  scheduleGapDays,
+  scheduleGapNote,
+} from "../../../../shared/projectSchedule";
 import { nextProjectSitting } from "../data/projectProgress";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
@@ -469,10 +473,8 @@ export function Thread({
         isOpen={contextOpen}
         onClose={() => setContextOpen(false)}
         title="Conversation tools"
-      >
-        <div className="v3-stack">
-          <ActionLink href={`/projects/${id}`}>View tattoo project</ActionLink>
-          {c.isArtist && (
+        headerAction={
+          c.isArtist ? (
             <Action
               tone="secondary"
               onClick={() => {
@@ -484,7 +486,10 @@ export function Thread({
               <CalendarDays />
               New booking
             </Action>
-          )}
+          ) : undefined
+        }
+      >
+        <div className="v3-stack">
           {c.isArtist && <DesignBrief key={id} conversationId={id} inline />}
         </div>
         {contextOpen && c.isArtist && c.conversation?.clientId && (
@@ -664,6 +669,11 @@ function PlanMessage({
     { enabled: conversationId > 0 }
   );
   const plan = query.data;
+  const scheduling = objectFromJson(plan?.message?.metadata).scheduling;
+  const gap = (previous: string, next: string) =>
+    scheduling?.frequency === "consecutive"
+      ? scheduleGapDays(previous, next, scheduling.timeZone || "UTC")
+      : 0;
   const sessions = (summary.data?.sessions || []).filter(
     s =>
       s.sessionPlanId === id || plan?.items.some(i => i.appointmentId === s.id)
@@ -710,6 +720,14 @@ function PlanMessage({
               <p className="v3-muted">{summary.data.location}</p>
             )}
             <Feedback error={summary.error} onRetry={() => summary.refetch()} />
+            {scheduling?.completedBy && (
+              <p className="v3-muted">
+                Complete by{" "}
+                {new Date(scheduling.completedBy).toLocaleDateString("en-AU", {
+                  timeZone: scheduling.timeZone || "UTC",
+                })}
+              </p>
+            )}
             <ol className="v3-booking-message-dates" aria-label="Sitting dates">
               {sessions.length
                 ? sessions.map((s, index) => (
@@ -736,13 +754,30 @@ function PlanMessage({
                       </div>
                     </li>
                   ))
-                : plan.items.map(item => (
+                : plan.items.map((item, index) => (
                     <li key={item.id}>
                       <span className="v3-booking-message-marker">
                         {item.sessionIndex}
                       </span>
                       <div>
-                        <strong>{bookingDate(item.startsAt)}</strong>
+                        {index > 0 &&
+                          gap(plan.items[index - 1].startsAt, item.startsAt) >
+                            0 && (
+                            <small className="v3-schedule-gap">
+                              {scheduling?.completedBy &&
+                              scheduling?.autoScheduled
+                                ? scheduleGapNote(
+                                    gap(
+                                      plan.items[index - 1].startsAt,
+                                      item.startsAt
+                                    )
+                                  )
+                                : `Schedule gap · ${gap(plan.items[index - 1].startsAt, item.startsAt)} days between sittings.`}
+                            </small>
+                          )}
+                        <strong>
+                          {bookingDate(item.startsAt, scheduling?.timeZone)}
+                        </strong>
                         <span>
                           {item.durationMinutes} min ·{" "}
                           {money(item.estimateCents)} estimate

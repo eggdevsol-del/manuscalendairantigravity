@@ -1,3 +1,4 @@
+import { EarningsChart } from "../components/EarningsChart";
 import { DetailsSheet } from "../components/DetailsSheet";
 import {
   Wallet,
@@ -26,7 +27,10 @@ import {
   Tabs,
 } from "../design/primitives";
 export default function Business() {
-  const earnings = trpc.payouts.earningsBreakdown.useQuery({ period: "30d" });
+  const earnings = trpc.payouts.earningsBreakdown.useQuery({
+    period: "30d",
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
   return (
     <Screen title="Business" subtitle="Your studio, at a glance">
       <Feedback
@@ -39,6 +43,10 @@ export default function Business() {
           <span className="simple-eyebrow">Last 30 days</span>
           <h2>{money(earnings.data.netCents)}</h2>
           <p>Net earnings</p>
+          <EarningsChart
+            daily={earnings.data.daily || []}
+            timeZone={earnings.data.timeZone || "UTC"}
+          />
           <Row title="Income & payouts" href="/money" />
         </Panel>
       )}

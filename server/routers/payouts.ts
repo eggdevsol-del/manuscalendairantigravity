@@ -1,3 +1,4 @@
+import { dailyEarnings, sumLedgerEarnings } from "../services/dailyEarnings";
 /**
  * Payouts Router — Artist Dashboard Queries
  *
@@ -143,6 +144,17 @@ export const payoutsRouter = router({
     .input(
       z.object({
         period: z.enum(["7d", "30d", "90d", "all"]).default("30d"),
+        timeZone: z
+          .string()
+          .default("UTC")
+          .refine(zone => {
+            try {
+              new Intl.DateTimeFormat("en", { timeZone: zone });
+              return true;
+            } catch {
+              return false;
+            }
+          }),
       })
     )
     .query(async ({ ctx, input }) => {
@@ -174,35 +186,49 @@ export const payoutsRouter = router({
         conditions.push(gte(paymentLedger.createdAt, startDate));
       }
 
-      const result = await db
-        .select({
-          grossCents: sql<number>`COALESCE(SUM(
+      const ledgerRows = days
+        ? await db
+            .select({
+              createdAt: paymentLedger.createdAt,
+              transactionType: paymentLedger.transactionType,
+              amountCents: paymentLedger.amountCents,
+              artistFeeCents: paymentLedger.artistFeeCents,
+              platformFeeCents: paymentLedger.platformFeeCents,
+            })
+            .from(paymentLedger)
+            .where(and(...conditions))
+        : [];
+      const result = days
+        ? [sumLedgerEarnings(ledgerRows)]
+        : await db
+            .select({
+              grossCents: sql<number>`COALESCE(SUM(
             CASE WHEN ${paymentLedger.transactionType} IN ('deposit', 'balance', 'store_order')
             THEN ${paymentLedger.amountCents} ELSE 0 END
           ), 0)`,
-          totalPlatformFeeCents: sql<number>`COALESCE(SUM(
+              totalPlatformFeeCents: sql<number>`COALESCE(SUM(
             CASE WHEN ${paymentLedger.transactionType} IN ('deposit', 'balance', 'store_order')
             THEN ${paymentLedger.platformFeeCents} ELSE 0 END
           ), 0)`,
-          totalArtistFeeCents: sql<number>`COALESCE(SUM(
+              totalArtistFeeCents: sql<number>`COALESCE(SUM(
             CASE WHEN ${paymentLedger.transactionType} IN ('deposit', 'balance', 'store_order', 'refund')
             THEN ${paymentLedger.artistFeeCents} ELSE 0 END
           ), 0)`,
-          refundsCents: sql<number>`COALESCE(SUM(
+              refundsCents: sql<number>`COALESCE(SUM(
             CASE WHEN ${paymentLedger.transactionType} = 'refund'
             THEN ABS(${paymentLedger.amountCents}) ELSE 0 END
           ), 0)`,
-          disputesCents: sql<number>`COALESCE(SUM(
+              disputesCents: sql<number>`COALESCE(SUM(
             CASE WHEN ${paymentLedger.transactionType} = 'dispute'
             THEN ABS(${paymentLedger.amountCents}) ELSE 0 END
           ), 0)`,
-          transactionCount: sql<number>`COUNT(
+              transactionCount: sql<number>`COUNT(
             CASE WHEN ${paymentLedger.transactionType} IN ('deposit', 'balance', 'store_order')
             THEN 1 END
           )`,
-        })
-        .from(paymentLedger)
-        .where(and(...conditions));
+            })
+            .from(paymentLedger)
+            .where(and(...conditions));
 
       const row = result[0];
       const grossCents = Number(row?.grossCents || 0);
@@ -214,8 +240,18 @@ export const payoutsRouter = router({
       // Net = gross - artist fees - refunds
       const netCents = grossCents - artistFeeCents - refundsCents;
 
+      const daily = days
+        ? dailyEarnings(
+            ledgerRows,
+            new Date(startDate!.replace(" ", "T") + "Z"),
+            new Date(),
+            input.timeZone
+          )
+        : [];
       return {
         period: input.period,
+        daily,
+        timeZone: input.timeZone,
         grossCents,
         platformFeeCents,
         artistFeeCents,

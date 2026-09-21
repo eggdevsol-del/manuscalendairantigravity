@@ -104,6 +104,8 @@ export function PortfolioExpand({
                 className="relative aspect-square rounded-xl overflow-hidden bg-secondary/30 active:scale-95 transition-transform"
               >
                 <img
+                  data-tour-title="Assess the artwork"
+                  data-tour-description="Review the artist’s line work, style and finished tattoos before making an enquiry. Choosing work that matches your idea helps you and the artist agree a realistic design brief."
                   src={item.displayUrl || item.imageUrl}
                   alt={item.description || `Portfolio ${index + 1}`}
                   className="w-full h-full object-cover"
@@ -182,10 +184,13 @@ export function PortfolioExpand({
                   <Dialog.Title className="sr-only">
                     {artistName}’s portfolio
                   </Dialog.Title>
-                  <div className="absolute z-10" style={{
-                    top: "calc(var(--app-safe-top, 0px) + 12px)",
-                    left: "calc(var(--app-safe-left, 0px) + 12px)",
-                  }}>
+                  <div
+                    className="absolute z-10"
+                    style={{
+                      top: "calc(var(--app-safe-top, 0px) + 12px)",
+                      left: "calc(var(--app-safe-left, 0px) + 12px)",
+                    }}
+                  >
                     <TourHelp feature />
                   </div>
                   <Dialog.Close asChild>
@@ -233,6 +238,8 @@ export function PortfolioExpand({
                     />
                   ) : (
                     <motion.img
+                      data-tour-title="Assess the artwork"
+                      data-tour-description="Review the artist’s line work, style and finished tattoos before making an enquiry. Choosing work that matches your idea helps you and the artist agree a realistic design brief."
                       key={lightboxIndex}
                       src={portfolio[lightboxIndex].imageUrl}
                       alt={

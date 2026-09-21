@@ -1,3 +1,7 @@
+import {
+  scheduleGapDays,
+  scheduleGapNote,
+} from "../../../../shared/projectSchedule";
 import { useState } from "react";
 import { addDays, format, isSameDay } from "date-fns";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
@@ -67,6 +71,10 @@ export function BookingComposer({
     "weekly" | "biweekly" | "monthly" | "consecutive"
   >("weekly");
   const [findingDates, setFindingDates] = useState(false);
+  const [completedBy, setCompletedBy] = useState("");
+  const [autoScheduled, setAutoScheduled] = useState(false);
+  const deadline = () =>
+    completedBy ? new Date(completedBy + "T23:59:59.999") : undefined;
   const [step, setStep] = useState<
     "client" | "service" | "frequency" | "details" | "review"
   >(conversationId ? "service" : "client");
@@ -106,12 +114,14 @@ export function BookingComposer({
         price: Number(sessions[0].price) || 0,
         frequency,
         startDate,
+        completedBy: deadline(),
         timeZone: zone,
       });
       if (result.dates.length !== sessions.length)
         throw new Error(
           "Not enough available dates were found. Try a different starting date."
         );
+      setAutoScheduled(true);
       setStep("review");
       setSessions(current =>
         current.map((s, i) => ({
@@ -131,6 +141,7 @@ export function BookingComposer({
     }
   }
   const update = (index: number, patch: Partial<DraftSession>) => {
+    setAutoScheduled(false);
     setError("");
     if (fixedDeposit && patch.price !== undefined) {
       patch.deposit = String(Math.round(Number(patch.price) * 25) / 100);
@@ -148,6 +159,12 @@ export function BookingComposer({
   const validate = () => {
     if (!clientId || !service) return "Choose a client and service.";
     for (const s of sessions) {
+      if (
+        completedBy &&
+        (!Number.isFinite(+deadline()!) ||
+          +new Date(`${s.date}T${s.time}`) + s.duration * 60000 > +deadline()!)
+      )
+        return "Every sitting must finish by the project completion date. Adjust the dates or deadline.";
       if (
         !s.date ||
         !s.time ||
@@ -205,6 +222,12 @@ export function BookingComposer({
         clientId: clientId!,
         serviceName: service,
         sessions: asItems(),
+        scheduling: {
+          frequency,
+          completedBy: deadline()?.toISOString(),
+          timeZone: zone,
+          autoScheduled,
+        },
       });
       await Promise.all([
         utils.messages.list.invalidate({ conversationId: target }),
@@ -224,6 +247,7 @@ export function BookingComposer({
     }
   }
   function chooseService(name: string) {
+    setAutoScheduled(false);
     setService(name);
     const svc = services.find(s => s.name === name);
     if (svc) {
@@ -315,15 +339,34 @@ export function BookingComposer({
             Choose a saved service. Its sitting count, duration and price carry
             through to the plan.
           </p>
-          {services.map((svc, i) => (
-            <Row
-              key={i}
-              title={svc.name}
-              detail={`${svc.sittings || 1} sitting${(svc.sittings || 1) > 1 ? "s" : ""} · ${svc.duration} minutes per sitting`}
-              trailing={<strong>{money(Math.round(svc.price * 100))}</strong>}
-              onClick={() => chooseService(svc.name)}
-            />
-          ))}
+          <div
+            data-tour-title="Saved services"
+            data-tour-description="Choose the service you agreed with this client. Its duration, sitting count and price populate the whole proposal; compare the per-sitting and project totals here to avoid underquoting multi-session work."
+          >
+            {services.map((svc, i) => (
+              <Row
+                key={i}
+                title={svc.name}
+                detail={`${svc.sittings || 1} sitting${(svc.sittings || 1) > 1 ? "s" : ""} · ${svc.duration} minutes per sitting`}
+                trailing={
+                  <span className="v3-service-price">
+                    <strong>
+                      {money(Math.round(svc.price * 100))}{" "}
+                      <small>per sitting</small>
+                    </strong>
+                    <small>
+                      {money(
+                        Math.round(svc.price * 100) *
+                          Math.max(1, Math.min(52, Number(svc.sittings) || 1))
+                      )}{" "}
+                      project total
+                    </small>
+                  </span>
+                }
+                onClick={() => chooseService(svc.name)}
+              />
+            ))}
+          </div>
           {!settings.isLoading && !services.length && (
             <ActionLink href="/settings?section=work-hours">
               Set up your services
@@ -345,7 +388,7 @@ export function BookingComposer({
           <div className="v3-choice-grid">
             {(
               [
-                ["consecutive", "Consecutive working days"],
+                ["consecutive", "Consecutive dates"],
                 ["weekly", "Weekly"],
                 ["biweekly", "Every two weeks"],
                 ["monthly", "Monthly"],
@@ -355,7 +398,10 @@ export function BookingComposer({
                 key={value}
                 className="v3-choice"
                 aria-pressed={frequency === value}
-                onClick={() => setFrequency(value)}
+                onClick={() => {
+                  setAutoScheduled(false);
+                  setFrequency(value);
+                }}
                 disabled={findingDates}
               >
                 {label}
@@ -369,6 +415,22 @@ export function BookingComposer({
               value={sessions[0].date}
               disabled={findingDates}
               onChange={e => update(0, { date: e.target.value })}
+            />
+          </label>
+          <label
+            className="v3-form"
+            data-tour-description="Set the client's finish-by date before finding sittings. Tattoi must fit the final sitting before this deadline; for consecutive dates it prefers an unbroken run and clearly marks any necessary gaps. This helps you agree a realistic completion date before taking a deposit."
+          >
+            Project completed by (optional)
+            <input
+              type="date"
+              value={completedBy}
+              min={sessions[0].date}
+              disabled={findingDates}
+              onChange={e => {
+                setAutoScheduled(false);
+                setCompletedBy(e.target.value);
+              }}
             />
           </label>
           <p className="v3-muted">
@@ -426,9 +488,10 @@ export function BookingComposer({
                     <Action
                       tone="quiet"
                       aria-label={`Remove session ${i + 1}`}
-                      onClick={() =>
-                        setSessions(rows => rows.filter((_, n) => n !== i))
-                      }
+                      onClick={() => {
+                        setAutoScheduled(false);
+                        setSessions(rows => rows.filter((_, n) => n !== i));
+                      }}
                     >
                       <Trash2 />
                     </Action>
@@ -513,6 +576,7 @@ export function BookingComposer({
               tone="secondary"
               disabled={sessions.length >= 52}
               onClick={() => {
+                setAutoScheduled(false);
                 const last = sessions[sessions.length - 1];
                 const next = new Date(`${last.date}T${last.time}`);
                 next.setDate(next.getDate() + 7);
@@ -537,11 +601,38 @@ export function BookingComposer({
               {clientName} · {sessions.length} session
               {sessions.length === 1 ? "" : "s"}
             </p>
-            {asItems().map(s => (
+            {completedBy && (
+              <p className="v3-muted">Complete by {completedBy}</p>
+            )}
+            {asItems().map((s, index, items) => (
               <Row
                 key={s.sessionIndex}
                 title={bookingDate(s.startsAt, zone)}
-                detail={`${s.durationMinutes} minutes · Deposit ${money(s.depositCents)}`}
+                detail={
+                  <>
+                    {s.durationMinutes} minutes · Deposit{" "}
+                    {money(s.depositCents)}
+                    {frequency === "consecutive" &&
+                      index > 0 &&
+                      scheduleGapDays(
+                        items[index - 1].startsAt,
+                        s.startsAt,
+                        zone
+                      ) > 0 && (
+                        <small className="v3-schedule-gap">
+                          {completedBy && autoScheduled
+                            ? scheduleGapNote(
+                                scheduleGapDays(
+                                  items[index - 1].startsAt,
+                                  s.startsAt,
+                                  zone
+                                )
+                              )
+                            : `Schedule gap · ${scheduleGapDays(items[index - 1].startsAt, s.startsAt, zone)} days between sittings.`}
+                        </small>
+                      )}
+                  </>
+                }
                 trailing={<strong>{money(s.estimateCents)}</strong>}
               />
             ))}
