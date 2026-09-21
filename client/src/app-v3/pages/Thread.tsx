@@ -1,13 +1,19 @@
+import { nextProjectSitting } from "../data/projectProgress";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
 import { DesignBrief } from "../design/DesignBrief";
-import { ClientNotes } from "../design/ClientNotes";
 import { BookingComposer } from "./BookingComposer";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
-import { ImagePlus, Send, CalendarDays, ArrowLeft } from "lucide-react";
+import {
+  ImagePlus,
+  Send,
+  CalendarDays,
+  ArrowLeft,
+  MoreHorizontal,
+} from "lucide-react";
 import { useChatController } from "@/features/chat/useChatController";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
@@ -19,6 +25,7 @@ import {
   statusLabel,
 } from "@/features/workspace/bookingPresentation";
 import {
+  Avatar,
   Action,
   ActionLink,
   Feedback,
@@ -41,6 +48,11 @@ export function Thread({
   initialDraft?: string;
 }) {
   const c = useChatController(id);
+  const project = trpc.projects.summary.useQuery(
+    { conversationId: id },
+    { enabled: id > 0 && c.user?.role !== "merchant" }
+  );
+  const next = nextProjectSitting(project.data?.sessions || []);
   const appliedDraft = useRef("");
   useEffect(() => {
     if (initialDraft && appliedDraft.current !== initialDraft) {
@@ -115,50 +127,37 @@ export function Thread({
           >
             <ArrowLeft />
           </Link>
-          <div>
+          <Avatar name={c.otherUserName} />
+          <div className="simple-thread-person">
             <h2>{c.otherUserName}</h2>
             {c.user?.role !== "merchant" && (
               <Link className="v3-muted" href={`/projects/${id}`}>
-                Open booking
+                {next?.projectName || "Tattoo project"}
               </Link>
             )}
           </div>
-          {c.isArtist && (
-            <Action
-              tone="secondary"
-              onClick={() => {
-                c.setSelectedProposal(null);
-                setBooking(true);
-              }}
-            >
-              <CalendarDays />
-              Book
-            </Action>
-          )}
-          {c.isArtist && c.conversation?.clientId && (
-            <Action
-              className="v3-context-toggle"
-              tone="quiet"
-              aria-label="Client details and media"
-              onClick={() => setContextOpen(true)}
-            >
-              Details
-            </Action>
-          )}
-        </header>
-        {c.isArtist && <DesignBrief key={id} conversationId={id} />}
-        {c.isArtist && c.conversation?.clientId && (
-          <DetailsSheet
-            className="v3-thread-notes"
-            title={<> Client records & private notes </>}
+          <button
+            className="v3-icon-button"
+            aria-label="Conversation tools"
+            onClick={() => setContextOpen(true)}
           >
-            <ClientNotes
-              draft={notesDraft}
-              onDraftChange={setNotesDraft}
-              key={c.conversation.clientId}
-              clientId={c.conversation.clientId}
-            />
-          </DetailsSheet>
+            <MoreHorizontal />
+          </button>
+        </header>
+        {next && (
+          <Link
+            className="simple-pin"
+            href={`/projects/${id}?session=${next.id}`}
+          >
+            <CalendarDays size={20} />
+            <span>
+              <strong>{bookingDate(next.startsAt, next.timeZone)}</strong>
+              <small>
+                Sitting {next.sessionIndex || 1} · {statusLabel(next.status)} ·{" "}
+                {money(next.remainingCents)} remaining
+              </small>
+            </span>
+          </Link>
         )}
         <div
           className="v3-messages"
@@ -473,8 +472,25 @@ export function Thread({
       <SheetShell
         isOpen={contextOpen}
         onClose={() => setContextOpen(false)}
-        title="Client details & media"
+        title="Conversation tools"
       >
+        <div className="v3-stack">
+          <ActionLink href={`/projects/${id}`}>View tattoo project</ActionLink>
+          {c.isArtist && (
+            <Action
+              tone="secondary"
+              onClick={() => {
+                setContextOpen(false);
+                c.setSelectedProposal(null);
+                setBooking(true);
+              }}
+            >
+              <CalendarDays />
+              New booking
+            </Action>
+          )}
+          {c.isArtist && <DesignBrief key={id} conversationId={id} inline />}
+        </div>
         {contextOpen && c.isArtist && c.conversation?.clientId && (
           <div className="v3-context-sheet">
             <ConversationContext
@@ -551,7 +567,12 @@ function PlanMessage({
             {(plan.requiresDeposit ?? plan.status === "pending") &&
               me.data?.id === plan.clientId && (
                 <>
-                  <Action onClick={() => setCheckout(true)}>
+                  <Action
+                    onClick={() => {
+                      setDetailsOpen(false);
+                      setCheckout(true);
+                    }}
+                  >
                     Review dates & pay deposit
                   </Action>
                   <Action tone="quiet" onClick={() => setDeclining(true)}>
@@ -577,17 +598,17 @@ function PlanMessage({
             {decline.error && <p role="alert">{decline.error.message}</p>}
           </>
         )}
-        {checkout && (
-          <SessionPlanCheckoutSheet
-            sessionPlanId={id}
-            conversationId={conversationId}
-            onClose={() => {
-              setCheckout(false);
-              void query.refetch();
-            }}
-          />
-        )}
       </SheetShell>
+      {checkout && (
+        <SessionPlanCheckoutSheet
+          sessionPlanId={id}
+          conversationId={conversationId}
+          onClose={() => {
+            setCheckout(false);
+            void query.refetch();
+          }}
+        />
+      )}
     </>
   );
 }

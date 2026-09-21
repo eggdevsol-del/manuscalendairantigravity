@@ -26,75 +26,109 @@ import {
   Tabs,
 } from "../design/primitives";
 export default function Business() {
+  const earnings = trpc.payouts.earningsBreakdown.useQuery({ period: "30d" });
   return (
-    <Screen title="Business" subtitle="More time for the work you love">
-      <div className="v3-grid">
-        <Section title="Your studio day">
-          <Row
-            title="Money"
-            detail="Income, balances and payouts"
-            icon={<Wallet />}
-            href="/money"
-          />
-          <Row
-            title="Working hours & services"
-            detail="Availability, session lengths and pricing"
-            icon={<CalendarDays />}
-            href="/work-hours"
-          />
-          <Row
-            title="Your profile & booking link"
-            detail="The front door for your clients"
-            icon={<UserRound />}
-            href="/artist-profile"
-          />
-          <Row
-            title="Cancellation waitlist"
-            detail="Fill available appointments"
-            icon={<ListChecks />}
-            href="/waitlist"
-          />
-        </Section>
-        <Section title="Shop & events">
-          <Row
-            title="Your products"
-            detail="Catalogue and availability"
-            icon={<Package />}
-            href="/products"
-          />
-          <Row
-            title="Store orders"
-            detail="Payment and fulfilment"
-            icon={<ListChecks />}
-            href="/store-orders"
-          />
-          <Row
-            title="Workshops & events"
-            detail="Create an event and review registrations"
-            icon={<CalendarDays />}
-            href="/artist-events"
-          />
-        </Section>
-        <Section title="Behind the scenes">
-          <Row
-            title="Supplies"
-            detail="Stock and supplier orders"
-            icon={<Package />}
-            href="/supplies"
-          />
-          <Row
-            title="Studio"
-            detail="People and shared workspace"
-            icon={<Users />}
-            href="/studio"
-          />
-          <Row
-            title="Settings"
-            detail="Your account, business and preferences"
-            icon={<Settings />}
-            href="/settings"
-          />
-        </Section>
+    <Screen title="Business" subtitle="Your studio, at a glance">
+      <Feedback
+        loading={earnings.isLoading}
+        error={earnings.error}
+        onRetry={() => earnings.refetch()}
+      />
+      {earnings.data && (
+        <Panel tone="next">
+          <span className="simple-eyebrow">Last 30 days</span>
+          <h2>{money(earnings.data.netCents)}</h2>
+          <p>Net earnings</p>
+          <Row title="Income & payouts" href="/money" />
+        </Panel>
+      )}
+      <div className="simple-business-list">
+        <Row
+          title="Income & payouts"
+          detail="Payments, transactions and your balance"
+          icon={<Wallet />}
+          href="/money"
+        />
+        <Row
+          title="Services & availability"
+          detail="Pricing, working hours and time off"
+          icon={<CalendarDays />}
+          href="/work-hours"
+        />
+        <Row
+          title="Profile & portfolio"
+          detail="Your work and public booking page"
+          icon={<UserRound />}
+          href="/artist-profile"
+        />
+        <Row
+          title="Shopfront"
+          detail="Products, orders and events"
+          icon={<Package />}
+          href="/shopfront"
+        />
+        <Row
+          title="Supplies"
+          detail="Stock and supplier orders"
+          icon={<Package />}
+          href="/supplies"
+        />
+        <Row
+          title="Studio"
+          detail="Your people and shared workspace"
+          icon={<Users />}
+          href="/studio"
+        />
+        <Row
+          title="Account & settings"
+          detail="Notifications, subscriptions and preferences"
+          icon={<Settings />}
+          href="/settings"
+        />
+      </div>
+      <DetailsSheet title="Daily tools">
+        <Row
+          title="Needs attention"
+          detail="Your tasks and today's appointments"
+          href="/dashboard"
+        />
+        <Row title="Cancellation waitlist" href="/waitlist" />
+      </DetailsSheet>
+    </Screen>
+  );
+}
+export function Shopfront() {
+  return (
+    <Screen
+      title="Shopfront"
+      back="/business"
+      subtitle="Your products and experiences"
+    >
+      <div className="simple-business-list">
+        <Row
+          title="Products"
+          detail="Catalogue, prices and availability"
+          icon={<Package />}
+          href="/products"
+        />
+        <Row
+          title="Orders"
+          detail="Payments and fulfilment"
+          icon={<ListChecks />}
+          href="/store-orders"
+        />
+        <Row
+          title="Events"
+          detail="Workshops and registrations"
+          icon={<CalendarDays />}
+          href="/artist-events"
+        />
+        <Row
+          title="Public profile"
+          detail="Manage your public presence and booking link"
+          icon={<UserRound />}
+          href="/artist-profile"
+        />
       </div>
     </Screen>
   );

@@ -504,7 +504,11 @@ function CompleteProfileForm({
     onSuccess: async () => {
       await utils.auth.me.invalidate();
       window.location.assign(
-        user.role === "client" ? "/bookings" : "/dashboard"
+        user.role === "client"
+          ? "/bookings"
+          : user.role === "merchant"
+            ? "/dashboard"
+            : "/conversations"
       );
     },
   });

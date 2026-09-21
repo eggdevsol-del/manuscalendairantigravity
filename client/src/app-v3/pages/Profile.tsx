@@ -46,62 +46,79 @@ export default function Profile() {
         icon={<Avatar name={user?.name} src={user?.avatar} />}
       />
       {!documentsOnly && (
-        <Section title="Personal details">
-          <Row title="Phone" detail={user?.phone || "Not added"} />
+        <div className="simple-business-list">
           <Row
-            title="Location"
-            detail={
-              [user?.city, user?.country].filter(Boolean).join(", ") ||
-              "Not added"
-            }
+            title="Personal details"
+            detail="Your contact and appointment information"
+            href="/profile?edit=true"
+            icon={<UserRound />}
           />
-          {user?.bio && <p>{user.bio}</p>}
-          <ActionLink href="/profile?edit=true">
-            <UserRound />
-            Edit your details
-          </ActionLink>
+          <Row
+            title="Forms & documents"
+            detail={
+              forms.data
+                ? `${forms.data.filter(f => f.status === "pending").length} awaiting your review`
+                : "Consent forms from your artists"
+            }
+            href="/profile?tab=forms"
+            icon={<FileCheck />}
+          />
+          <Row
+            title="Your tattoos"
+            detail="Appointments and completed projects"
+            href="/bookings"
+          />
+          <Row title="Purchases" href="/purchases" />
+          <Row title="Cancellation offers" href="/waitlist" />
+          <Row
+            title="Account & settings"
+            href="/settings"
+            icon={<Settings />}
+          />
+        </div>
+      )}
+      {documentsOnly && (
+        <Section title="Your consent forms">
+          <Feedback
+            loading={forms.isLoading}
+            error={forms.error}
+            onRetry={() => forms.refetch()}
+          />
+          {forms.data?.map(form => (
+            <Row
+              key={form.id}
+              title={form.title}
+              detail={
+                form.status === "signed"
+                  ? "Signed"
+                  : form.status === "pending"
+                    ? "Ready for your review"
+                    : form.status
+              }
+              icon={<FileCheck />}
+              trailing={
+                form.status === "pending" && form.appointmentId ? (
+                  <Action
+                    tone="secondary"
+                    onClick={() => setSign(form.appointmentId)}
+                  >
+                    Review & sign
+                  </Action>
+                ) : (
+                  <Status
+                    tone={form.status === "signed" ? "success" : "neutral"}
+                  >
+                    {form.status === "signed" ? "Complete" : form.status}
+                  </Status>
+                )
+              }
+            />
+          ))}
+          {!forms.isLoading && !forms.error && !forms.data?.length && (
+            <Feedback empty="Forms from your artist will appear here when they’re ready." />
+          )}
         </Section>
       )}
-      <Section title="Your consent forms">
-        <Feedback
-          loading={forms.isLoading}
-          error={forms.error}
-          onRetry={() => forms.refetch()}
-        />
-        {forms.data?.map(form => (
-          <Row
-            key={form.id}
-            title={form.title}
-            detail={
-              form.status === "signed"
-                ? "Signed"
-                : form.status === "pending"
-                  ? "Ready for your review"
-                  : form.status
-            }
-            icon={<FileCheck />}
-            trailing={
-              form.status === "pending" && form.appointmentId ? (
-                <Action
-                  tone="secondary"
-                  onClick={() => setSign(form.appointmentId)}
-                >
-                  Review & sign
-                </Action>
-              ) : (
-                <Status tone={form.status === "signed" ? "success" : "neutral"}>
-                  {form.status === "signed" ? "Complete" : form.status}
-                </Status>
-              )
-            }
-          />
-        ))}
-        {!forms.isLoading && !forms.error && !forms.data?.length && (
-          <Feedback empty="Forms from your artist will appear here when they’re ready." />
-        )}
-      </Section>
-      <Row href="/purchases" title="Your purchases" />
-      <Row href="/waitlist" title="Cancellation offers" />
       <SheetShell
         isOpen={sign !== null}
         onClose={() => setSign(null)}

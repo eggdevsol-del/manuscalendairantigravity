@@ -1,11 +1,11 @@
 import { isDesignProjectName } from "../../../../shared/projectNames";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
+import { ProjectSittings } from "../components/ProjectSittings";
 import {
-  ProjectSittings,
-  ProjectDisclosure,
-} from "../components/ProjectSittings";
-import { orderedProjectGroups } from "../data/projectProgress";
+  nextProjectSitting,
+  orderedProjectGroups,
+} from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
@@ -31,6 +31,7 @@ import {
   statusLabel,
 } from "@/features/workspace/bookingPresentation";
 import {
+  SittingDate,
   Action,
   ActionLink,
   Feedback,
@@ -41,7 +42,11 @@ import {
   Status,
 } from "../design/primitives";
 import { Thread } from "./Thread";
-import { SessionActions } from "./SessionActions";
+import {
+  SessionActions,
+  availableSessionActions,
+  type SessionActionMode,
+} from "./SessionActions";
 
 export default function Booking() {
   const [, params] = useRoute("/projects/:id");
@@ -82,7 +87,14 @@ export default function Booking() {
   }, [query.data, selectedId, focusedKey, requestedProject, id]);
   return (
     <Screen
-      title="Tattoo projects"
+      title={
+        selected?.projectName ||
+        query.data?.sessions.find(s => projectKey(s) === focusedKey)
+          ?.projectName ||
+        query.data?.plans.find(p => `plan:${p.id}` === focusedKey)
+          ?.projectName ||
+        "Tattoo project"
+      }
       subtitle={
         user?.role === "client"
           ? query.data?.artist?.name
@@ -102,13 +114,34 @@ export default function Booking() {
       {query.data && selectedId > 0 && !selected && (
         <Feedback empty="This sitting is no longer available. Your other projects are below." />
       )}
-      <div className="ivory-project-list">
-        {keys.map(key => (
-          <section id={`project-${key}`} key={`${id}:${key}`}>
-            <BookingProject projectId={key} focused={key === focusedKey} />
-          </section>
-        ))}
+      <div className="ivory-project-list simple-project-workspace">
+        {keys
+          .filter(key => key === focusedKey)
+          .map(key => (
+            <section id={`project-${key}`} key={`${id}:${key}`}>
+              <BookingProject projectId={key} focused={key === focusedKey} />
+            </section>
+          ))}
       </div>
+      {keys.length > 1 && (
+        <Section title="Other projects">
+          {keys
+            .filter(key => key !== focusedKey)
+            .map(key => (
+              <Row
+                key={key}
+                title={
+                  query.data?.sessions.find(s => projectKey(s) === key)
+                    ?.projectName ||
+                  query.data?.plans.find(p => `plan:${p.id}` === key)
+                    ?.projectName ||
+                  "Tattoo project"
+                }
+                href={`/projects/${id}?project=${encodeURIComponent(key)}`}
+              />
+            ))}
+        </Section>
+      )}
     </Screen>
   );
 }
@@ -153,6 +186,9 @@ function BookingProject({
   const [namingFailed, setNamingFailed] = useState(false);
   const [namingRetry, setNamingRetry] = useState(0);
   const [requestDraft, setRequestDraft] = useState("");
+  const [sessionAction, setSessionAction] = useState<SessionActionMode | null>(
+    null
+  );
   const namingAttempts = useRef(new Set<number>());
   const nameProject = trpc.projects.nameProject.useMutation({
     onSuccess: () => query.refetch(),
@@ -199,7 +235,7 @@ function BookingProject({
       formAction.current !== key
     ) {
       formAction.current = key;
-      setSign(true);
+      (setCollapsedSitting(session?.id || null), setSign(true));
     }
   }, [search, id, session?.id, forms.data, focused]);
   const siblings = projectSessions(data?.sessions || [], session);
@@ -304,7 +340,10 @@ function BookingProject({
                     icon={f.status === "signed" ? <CheckCircle2 /> : <Circle />}
                     onClick={
                       client && f.status !== "signed"
-                        ? () => setSign(true)
+                        ? () => (
+                            setCollapsedSitting(session?.id || null),
+                            setSign(true)
+                          )
                         : undefined
                     }
                   />
@@ -313,7 +352,12 @@ function BookingProject({
                 <p className="v3-muted">No forms attached to this session.</p>
               )}
               {client && !!forms.data?.length && (
-                <Action onClick={() => setSign(true)}>
+                <Action
+                  onClick={() => (
+                    setCollapsedSitting(session?.id || null),
+                    setSign(true)
+                  )}
+                >
                   Complete your consent forms
                 </Action>
               )}
@@ -381,7 +425,14 @@ function BookingProject({
               !session.pendingRequest &&
               session.remainingCents > 0 &&
               !["cancelled", "no-show"].includes(session.status) && (
-                <Action onClick={() => setBalance(true)}>Review balance</Action>
+                <Action
+                  onClick={() => (
+                    setCollapsedSitting(session?.id || null),
+                    setBalance(true)
+                  )}
+                >
+                  Review balance
+                </Action>
               )}
           </Section>
         )}
@@ -395,7 +446,34 @@ function BookingProject({
             : data.client?.name || "client"}
         </ActionLink>
         {!client && session && (
-          <SessionActions session={session} onChange={refresh} />
+          <div className="simple-actions">
+            {availableSessionActions(session).map(action => (
+              <Action
+                key={action}
+                tone={
+                  action === "finish"
+                    ? "primary"
+                    : action === "reschedule"
+                      ? "secondary"
+                      : "quiet"
+                }
+                onClick={() => {
+                  setCollapsedSitting(session.id);
+                  setSessionAction(action);
+                }}
+              >
+                {action === "finish"
+                  ? session.status === "completed"
+                    ? "Request remaining balance"
+                    : "Finish session"
+                  : action === "reschedule"
+                    ? "Reschedule"
+                    : action === "no-show"
+                      ? "Mark no-show"
+                      : "Cancel session"}
+              </Action>
+            ))}
+          </div>
         )}{" "}
         {client &&
           session &&
@@ -436,6 +514,14 @@ function BookingProject({
     ) || [];
   return (
     <Panel className="ivory-project-card">
+      {sessionAction && session && (
+        <SessionActions
+          session={session}
+          initialMode={sessionAction}
+          onChange={refresh}
+          onClose={() => setSessionAction(null)}
+        />
+      )}
       {data && (
         <>
           <div className="ivory-project-heading">
@@ -444,9 +530,6 @@ function BookingProject({
                 data.plans[0]?.projectName ||
                 "Tattoo project"}
             </h2>
-            <p className="v3-muted">
-              {client ? data.artist?.name : data.client?.name}
-            </p>
             {!!siblings.length && <ProjectProgress sittings={siblings} />}
             <div className="ivory-project-actions">
               {client &&
@@ -490,23 +573,56 @@ function BookingProject({
               </Action>
             </Panel>
           )}
-          <ProjectDisclosure
-            sittings={siblings}
-            reveal={
-              !!selectedId ||
-              tab !== "Overview" ||
-              (focused && qs.get("action") === "forms")
-            }
-          >
+          {nextProjectSitting(siblings) &&
+            (() => {
+              const next = nextProjectSitting(siblings)!;
+              return (
+                <Panel tone="next" className="simple-next">
+                  <div className="simple-between">
+                    <span className="simple-eyebrow">Next sitting</span>
+                    <Status>
+                      {next.rescheduled
+                        ? "Rescheduled"
+                        : statusLabel(next.status)}
+                    </Status>
+                  </div>
+                  <h2>
+                    <SittingDate
+                      label={bookingDate(next.startsAt, next.timeZone)}
+                    />
+                  </h2>
+
+                  <p>{money(next.remainingCents)} remaining</p>
+                  <div className="simple-action-pair">
+                    <Action
+                      onClick={() => {
+                        setCollapsedSitting(null);
+                        navigate("Overview", next.id);
+                      }}
+                    >
+                      Details
+                    </Action>
+                    <ActionLink tone="secondary" href={`/chat/${id}`}>
+                      Message
+                    </ActionLink>
+                  </div>
+                </Panel>
+              );
+            })()}
+          <div className="simple-project-details">
             {siblings.length > 0 && (
               <ProjectSittings
                 sittings={siblings}
                 selectedId={selectedId}
                 render={(s, i) => (
                   <SittingCard
+                    headerClassName="v3-row"
                     title={`Sitting ${s.sessionIndex || i + 1} · ${statusLabel(s.status)}${s.rescheduled ? " · Rescheduled" : ""}`}
                     detail={bookingDate(s.startsAt, s.timeZone)}
                     expanded={
+                      !sign &&
+                      !balance &&
+                      !sessionAction &&
                       tab === "Overview" &&
                       !!selectedId &&
                       s.id === session?.id &&
@@ -522,12 +638,6 @@ function BookingProject({
                 )}
               />
             )}
-            <Action tone="quiet" onClick={() => navigate("Messages")}>
-              Message{" "}
-              {client
-                ? data.artist?.name || "your artist"
-                : data.client?.name || "client"}
-            </Action>
             <SheetShell
               isOpen={tab === "Messages"}
               onClose={() => navigate("Overview")}
@@ -655,7 +765,7 @@ function BookingProject({
                 ))}
               </Section>
             </DetailsSheet>
-          </ProjectDisclosure>
+          </div>
         </>
       )}
       <SheetShell

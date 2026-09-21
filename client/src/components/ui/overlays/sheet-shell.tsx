@@ -84,7 +84,7 @@ export function SheetShell({
         </div>
 
         {footer && (
-          <div className="p-6 pt-4 shrink-0 border-t border-border">
+          <div className="simple-sheet-footer p-6 pt-4 shrink-0 border-t border-border">
             {footer}
           </div>
         )}

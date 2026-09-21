@@ -1,4 +1,3 @@
-import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import {
   createContext,
   useContext,
@@ -9,7 +8,13 @@ import {
   type ButtonHTMLAttributes,
 } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, Search, UserRound } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  UserRound,
+  Settings,
+} from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 const SectionPanelContext = createContext<string | undefined>(undefined);
@@ -24,6 +29,7 @@ export function Screen({
   children,
   wide = false,
   publicView = false,
+  className = "",
 }: {
   title: string;
   subtitle?: ReactNode;
@@ -33,6 +39,7 @@ export function Screen({
   children: ReactNode;
   wide?: boolean;
   publicView?: boolean;
+  className?: string;
 }) {
   const { user } = useAuth();
   const panelId = useId();
@@ -45,55 +52,42 @@ export function Screen({
   return (
     <div
       data-tour-surface={title}
-      className={`v3-screen v3-screen-${publicView ? "public" : user?.role || "public"} ${wide ? "v3-screen-wide" : ""}`}
+      className={`v3-screen v3-screen-${publicView ? "public" : user?.role || "public"} ${wide ? "v3-screen-wide" : ""} ${className}`}
     >
       <header className={back ? "v3-header v3-header-with-back" : "v3-header"}>
         <div className="v3-masthead">
           {back ? (
-            <Link className="v3-icon-button" aria-label="Back" href={back}>
-              <ChevronLeft size={26} />
+            <Link className="simple-back" aria-label="Back" href={back}>
+              <ChevronLeft size={20} /> Back
             </Link>
           ) : (
             <Link
-              href={user?.role === "client" ? "/bookings" : "/dashboard"}
+              href={
+                user?.role === "client"
+                  ? "/bookings"
+                  : user?.role === "merchant"
+                    ? "/dashboard"
+                    : "/conversations"
+              }
               className="v3-wordmark"
             >
               tattoi
             </Link>
           )}
           <div className="tour-header-actions">
-            <TourHelp />
             {action || (
               <Link
-                className="v3-avatar"
-                href={
-                  user?.role === "client"
-                    ? "/profile"
-                    : user?.role === "merchant"
-                      ? "/settings"
-                      : "/business"
-                }
-                aria-label={
-                  user?.role === "client"
-                    ? "Your profile"
-                    : user?.role === "merchant"
-                      ? "Store settings"
-                      : "Your business"
-                }
+                className="v3-icon-button"
+                href="/settings"
+                aria-label="Settings"
               >
-                {user?.avatar ? (
-                  <img src={user.avatar} alt="" />
-                ) : (
-                  <UserRound size={22} />
-                )}
+                <Settings size={22} />
               </Link>
             )}
           </div>
         </div>
         <h1>{title}</h1>
-        <p className="v3-subtitle" aria-hidden={subtitle ? undefined : true}>
-          {subtitle || "\u00a0"}
-        </p>
+        {subtitle && <p className="v3-subtitle">{subtitle}</p>}
       </header>
       {subheader && (
         <div className="v3-subheader">
@@ -173,7 +167,7 @@ export function Panel({
   className = "",
 }: {
   children: ReactNode;
-  tone?: "plain" | "attention";
+  tone?: "plain" | "attention" | "next";
   className?: string;
 }) {
   return (
@@ -397,4 +391,17 @@ export function Feedback({
       </div>
     );
   return null;
+}
+
+/** Keep the time together when a date wraps on a narrow screen. */
+export function SittingDate({ label }: { label: string }) {
+  const split = label.lastIndexOf(", ");
+  return split < 0 ? (
+    <>{label}</>
+  ) : (
+    <>
+      {label.slice(0, split)},{" "}
+      <span style={{ whiteSpace: "nowrap" }}>{label.slice(split + 2)}</span>
+    </>
+  );
 }

@@ -7,7 +7,7 @@ import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
 import WaitlistPage from "@/app-v3/pages/Waitlist";
 import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
-import BusinessPage, { Money as MoneyPage } from "@/app-v3/pages/Business";
+import BusinessPage, { Money as MoneyPage, Shopfront } from "@/app-v3/pages/Business";
 import SuppliesPage from "@/app-v3/pages/Supplies";
 import { Redirect, Route, Switch } from "wouter";
 import BottomNav from "@/app-v3/design/Navigation";
@@ -43,10 +43,11 @@ export default function ArtistShell() {
           <Route path="/studio" component={Studio} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
-            <Redirect to="/dashboard" />
+            <Redirect to="/conversations" />
           </Route>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/business" component={BusinessPage} />
+          <Route path="/shopfront" component={Shopfront} />
           <Route path="/products" component={Products} />
           <Route path="/artist-events" component={Events} />
           <Route path="/store-orders" component={StoreOrders} />

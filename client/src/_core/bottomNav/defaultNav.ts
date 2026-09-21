@@ -10,31 +10,37 @@ import {
   ShoppingBag,
   Search,
   Heart,
+  Leaf,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { BottomNavButton } from "./types";
 
 export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
-  { id: "dashboard", path: "/dashboard", label: "Today", icon: Home },
   {
     id: "messages",
     path: "/conversations",
     label: "Messages",
     icon: MessageCircle,
-    badgeCount: 0,
   },
   { id: "calendar", path: "/calendar", label: "Calendar", icon: Calendar },
-  { id: "profile", path: "/artist-profile", label: "Profile", icon: User },
+  { id: "clients", path: "/clients", label: "Clients", icon: Users },
+  {
+    id: "business",
+    path: "/business",
+    label: "Business",
+    icon: BriefcaseBusiness,
+  },
 ];
 
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
-  { id: "discover", path: "/discover", label: "Discover", icon: Search },
+  { id: "bookings", path: "/bookings", label: "My Tattoos", icon: Leaf },
   {
     id: "messages",
     path: "/conversations",
     label: "Messages",
     icon: MessageCircle,
   },
-  { id: "bookings", path: "/bookings", label: "Bookings", icon: Calendar },
+  { id: "discover", path: "/discover", label: "Discover", icon: Compass },
   { id: "profile", path: "/profile", label: "Profile", icon: User },
 ];
 

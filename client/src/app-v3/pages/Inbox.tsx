@@ -1,6 +1,7 @@
+import { bookingDate } from "@/features/workspace/bookingPresentation";
 import { useState } from "react";
-import { useLocation, useRoute } from "wouter";
-import { MessageCircle } from "lucide-react";
+import { Link, useLocation, useRoute } from "wouter";
+import { MessageCircle, Plus } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useInboxRequests } from "@/features/chat/hooks/useInboxRequests";
@@ -14,7 +15,6 @@ import {
   SearchField,
   Section,
   Status,
-  Tabs,
 } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
 import { Thread } from "./Thread";
@@ -26,10 +26,17 @@ export default function Inbox() {
   const { user } = useAuth();
   const isArtist = user?.role === "artist" || user?.role === "admin";
   const query = useConversations();
+  const day = trpc.dashboard.getArtistOverview.useQuery(
+    { timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+    { enabled: isArtist }
+  );
+  const next = day.data?.nextAppointment;
   const requests = useInboxRequests();
   useArtistReferral();
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState<"Clients" | "Contacts">("Clients");
+  const [tab, setTab] = useState<"All" | "Unread" | "Enquiries" | "Contacts">(
+    "All"
+  );
   const create = trpc.conversations.getOrCreate.useMutation({
     onSuccess: c => {
       if (c) go(`/chat/${c.id}`);
@@ -37,28 +44,39 @@ export default function Inbox() {
   });
   const conversations = (query.data || []).filter(
     c =>
-      (!isArtist || (tab === "Clients") === (c.otherUser?.role === "client")) &&
+      tab !== "Enquiries" &&
+      (tab !== "Unread" || (c.unreadCount || 0) > 0) &&
+      (!isArtist || tab !== "Contacts" || c.otherUser?.role !== "client") &&
       `${c.otherUser?.name} ${messagePreview(c.lastMessage?.content, c.lastMessage?.messageType)}`
         .toLowerCase()
         .includes(search.toLowerCase())
   );
   const leads = requests.requestItems.filter(
     r =>
-      tab === "Clients" &&
+      (tab === "All" || tab === "Enquiries") &&
       `${r.name} ${r.subject}`.toLowerCase().includes(search.toLowerCase())
   );
   return (
     <Screen
       title="Messages"
       wide
-      subheader={
-        isArtist && (
-          <Tabs
-            items={["Clients", "Contacts"] as const}
-            value={tab}
-            onChange={setTab}
-            label="Inbox views"
-          />
+      action={
+        isArtist ? (
+          <button
+            className="v3-icon-button"
+            aria-label="Contacts"
+            onClick={() => setTab(tab === "Contacts" ? "All" : "Contacts")}
+          >
+            <Plus />
+          </button>
+        ) : (
+          <Link
+            className="v3-icon-button"
+            href="/discover"
+            aria-label="Find an artist"
+          >
+            <Plus />
+          </Link>
         )
       }
     >
@@ -69,6 +87,22 @@ export default function Inbox() {
             onChange={setSearch}
             label="Search conversations"
           />
+          <div className="simple-inbox-filters" aria-label="Inbox views">
+            {(["All", "Unread", "Enquiries"] as const).map(view => (
+              <button
+                key={view}
+                aria-pressed={tab === view}
+                onClick={() => setTab(view)}
+              >
+                {view}
+              </button>
+            ))}
+            {tab === "Contacts" && (
+              <button aria-pressed="true" onClick={() => setTab("Contacts")}>
+                Contacts
+              </button>
+            )}
+          </div>
           <Feedback
             loading={query.isLoading || requests.isLoading}
             error={query.error || requests.error || create.error}
@@ -78,6 +112,21 @@ export default function Inbox() {
               void requests.refetch();
             }}
           />
+          {isArtist && next && tab === "All" && !search && (
+            <Link
+              className="simple-pin"
+              href={
+                next.conversationId
+                  ? `/projects/${next.conversationId}?session=${next.id}`
+                  : `/calendar?appointment=${next.id}`
+              }
+            >
+              <span>
+                <strong>{next.client?.name || next.title}</strong>
+                <small>{bookingDate(next.startTime)} · Next sitting</small>
+              </span>
+            </Link>
+          )}
           {leads.length > 0 && (
             <Section title="New requests">
               {leads.map(r => (

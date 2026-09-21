@@ -3,22 +3,23 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { Action, Feedback } from "./primitives";
-export function DesignBrief({ conversationId }: { conversationId: number }) {
+export function DesignBrief({
+  conversationId,
+  inline = false,
+}: {
+  conversationId: number;
+  inline?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const query = trpc.designBrief.get.useQuery(
     { conversationId },
-    { enabled: open && conversationId > 0 }
+    { enabled: (open || inline) && conversationId > 0 }
   );
   const refresh = trpc.designBrief.refresh.useMutation({
     onSuccess: () => query.refetch(),
   });
-  return (
-    <DetailsSheet
-      title="Design brief"
-      open={open}
-      onOpenChange={setOpen}
-      className="v3-design-brief"
-    >
+  const content = (
+    <>
       <Action
         tone="quiet"
         aria-label="Refresh design brief"
@@ -27,7 +28,7 @@ export function DesignBrief({ conversationId }: { conversationId: number }) {
       >
         <RefreshCw size={18} />
       </Action>
-      {open && (
+      {(open || inline) && (
         <>
           <Feedback
             loading={query.isLoading}
@@ -52,6 +53,21 @@ export function DesignBrief({ conversationId }: { conversationId: number }) {
           )}
         </>
       )}
+    </>
+  );
+  return inline ? (
+    <section className="v3-stack">
+      <h3>Design brief</h3>
+      {content}
+    </section>
+  ) : (
+    <DetailsSheet
+      title="Design brief"
+      open={open}
+      onOpenChange={setOpen}
+      className="v3-design-brief"
+    >
+      {content}
     </DetailsSheet>
   );
 }

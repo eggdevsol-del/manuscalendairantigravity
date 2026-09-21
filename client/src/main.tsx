@@ -12,6 +12,7 @@ import "./index.css";
 import "./features/workspace/workspace.css";
 import "./app-v3/design/system.css";
 import "./app-v3/design/ivory.css";
+import "./app-v3/design/simple-ivory.css";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeAnalytics } from "./lib/analytics";
 import { initGlobalErrorListeners } from "./lib/errorReporter";

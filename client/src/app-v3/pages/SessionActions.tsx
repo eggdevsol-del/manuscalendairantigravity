@@ -1,5 +1,5 @@
 import { DetailsSheet } from "../components/DetailsSheet";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
@@ -19,12 +19,39 @@ interface Session {
     expiresAt: string | null;
   } | null;
 }
+export type SessionActionMode = "finish" | "reschedule" | "cancel" | "no-show";
+/** Shared action availability for page shortcuts and the review sheet. */
+export function availableSessionActions(
+  s: Session,
+  now = new Date()
+): SessionActionMode[] {
+  if (
+    ["cancelled", "no-show"].includes(s.status) ||
+    (s.status === "completed" && s.remainingCents <= 0)
+  )
+    return [];
+  const canFinish =
+    s.status === "completed" ||
+    (s.status === "confirmed" && instant(s.startsAt) <= now);
+  const actions: SessionActionMode[] = [];
+  if (canFinish && !s.pendingRequest) actions.push("finish");
+  if (s.status !== "completed") {
+    actions.push("reschedule");
+    if (canFinish) actions.push("no-show");
+    actions.push("cancel");
+  }
+  return actions;
+}
 export function SessionActions({
   session: s,
   onChange,
+  initialMode,
+  onClose,
 }: {
   session: Session;
   onChange: () => void;
+  initialMode?: SessionActionMode;
+  onClose?: () => void;
 }) {
   const [mode, setMode] = useState<
     "finish" | "reschedule" | "cancel" | "no-show" | null
@@ -39,9 +66,8 @@ export function SessionActions({
   const cancelAll = trpc.appointments.cancelProjectSessions.useMutation();
   const request = trpc.dashboard.requestPayment.useMutation();
   const [all, setAll] = useState(false);
-  const canFinish =
-    s.status === "completed" ||
-    (s.status === "confirmed" && instant(s.startsAt) <= new Date());
+  const actions = availableSessionActions(s);
+  const canFinish = s.status === "completed" || actions.includes("no-show");
   const open = (next: typeof mode) => {
     setError("");
     setAll(false);
@@ -49,6 +75,9 @@ export function SessionActions({
     setTime(formatInTimeZone(instant(s.startsAt), s.timeZone, "HH:mm"));
     setMode(next);
   };
+  useEffect(() => {
+    if (initialMode) open(initialMode);
+  }, [initialMode, s.id]);
   async function save() {
     if (busy) return;
     if ((mode === "finish" || mode === "no-show") && !canFinish) {
@@ -91,6 +120,7 @@ export function SessionActions({
       }
       setMode(null);
       onChange();
+      onClose?.();
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Couldn’t save this change. Try again."
@@ -106,60 +136,69 @@ export function SessionActions({
     return null;
   return (
     <>
-      {s.pendingRequest && (
-        <Panel>
-          <strong>Payment request already sent</strong>
-          <p>
-            {money(s.pendingRequest.amountCents)} ·{" "}
-            {!s.pendingRequest.expiresAt ||
-            instant(s.pendingRequest.expiresAt) > new Date()
-              ? "Awaiting payment"
-              : "Link expired — review the existing request before sending another."}
-          </p>
-        </Panel>
-      )}
-      {canFinish && !s.pendingRequest && (
-        <Action
-          onClick={() => open("finish")}
-          data-tour-description={
-            s.remainingCents > 0
-              ? "Review the outstanding balance before sending a payment request. Opening this review does not collect payment or complete the session."
-              : "Review this fully paid session before marking it complete and recording its finish time."
-          }
-        >
-          {s.status === "completed"
-            ? "Request remaining balance"
-            : "Finish session"}
-        </Action>
-      )}
-      {s.status !== "completed" && (
+      {!initialMode && (
         <>
-          <Action
-            tone="quiet"
-            onClick={() => open("reschedule")}
-            data-tour-description="Choose a replacement date and time. Saving moves this session while preserving its duration and existing payments."
-          >
-            Reschedule
-          </Action>
-          <DetailsSheet title={<> More session options </>}>
-            {canFinish && (
+          {s.pendingRequest && (
+            <Panel>
+              <strong>Payment request already sent</strong>
+              <p>
+                {money(s.pendingRequest.amountCents)} ·{" "}
+                {!s.pendingRequest.expiresAt ||
+                instant(s.pendingRequest.expiresAt) > new Date()
+                  ? "Awaiting payment"
+                  : "Link expired — review the existing request before sending another."}
+              </p>
+            </Panel>
+          )}
+          {canFinish && !s.pendingRequest && (
+            <Action
+              onClick={() => open("finish")}
+              data-tour-description={
+                s.remainingCents > 0
+                  ? "Review the outstanding balance before sending a payment request. Opening this review does not collect payment or complete the session."
+                  : "Review this fully paid session before marking it complete and recording its finish time."
+              }
+            >
+              {s.status === "completed"
+                ? "Request remaining balance"
+                : "Finish session"}
+            </Action>
+          )}
+          {s.status !== "completed" && (
+            <>
               <Action
                 tone="quiet"
-                onClick={() => open("no-show")}
-                data-tour-description="Open the no-show confirmation only if the client did not attend. Reviewing it does not yet change the appointment status."
+                onClick={() => open("reschedule")}
+                data-tour-description="Choose a replacement date and time. Saving moves this session while preserving its duration and existing payments."
               >
-                Mark no-show
+                Reschedule
               </Action>
-            )}
-            <Action tone="danger" onClick={() => open("cancel")}>
-              Cancel session
-            </Action>
-          </DetailsSheet>
+              <DetailsSheet title={<> More session options </>}>
+                {canFinish && (
+                  <Action
+                    tone="quiet"
+                    onClick={() => open("no-show")}
+                    data-tour-description="Open the no-show confirmation only if the client did not attend. Reviewing it does not yet change the appointment status."
+                  >
+                    Mark no-show
+                  </Action>
+                )}
+                <Action tone="danger" onClick={() => open("cancel")}>
+                  Cancel session
+                </Action>
+              </DetailsSheet>
+            </>
+          )}
         </>
       )}
       <SheetShell
         isOpen={!!mode}
-        onClose={() => !busy && setMode(null)}
+        onClose={() => {
+          if (!busy) {
+            setMode(null);
+            onClose?.();
+          }
+        }}
         title={
           mode === "reschedule"
             ? "Reschedule session"
@@ -260,7 +299,14 @@ export function SessionActions({
                       ? "Confirm no-show"
                       : "Complete session"}
           </Action>
-          <Action tone="quiet" disabled={busy} onClick={() => setMode(null)}>
+          <Action
+            tone="quiet"
+            disabled={busy}
+            onClick={() => {
+              setMode(null);
+              onClose?.();
+            }}
+          >
             Go back
           </Action>
         </div>

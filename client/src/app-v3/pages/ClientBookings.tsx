@@ -1,16 +1,13 @@
+import { Link } from "wouter";
+import { ChevronRight, ClipboardCheck } from "lucide-react";
 import { isDesignProjectName } from "../../../../shared/projectNames";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
-import {
-  ProjectSittings,
-  ProjectDisclosure,
-} from "../components/ProjectSittings";
 import {
   orderedProjectGroups,
   nextProjectSitting,
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
-import { SittingSummary } from "../components/SittingSummary";
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { bookingProjectKey } from "../../../../shared/clientBookingGroups";
@@ -21,6 +18,7 @@ import {
 } from "@/features/workspace/bookingPresentation";
 import { SessionPlanCheckoutSheet } from "./Checkout";
 import {
+  SittingDate,
   Action,
   ActionLink,
   Feedback,
@@ -33,9 +31,6 @@ import {
 } from "../design/primitives";
 
 export default function ClientBookings() {
-  const [openSittings, setOpenSittings] = useState<
-    Record<string, number | null>
-  >({});
   const bookings = trpc.appointments.getClientBookings.useQuery({
     tab: "upcoming",
   });
@@ -98,6 +93,13 @@ export default function ClientBookings() {
   const completedGroups = orderedProjectGroups(past.data?.appointments || []);
   const requests = bookings.data?.pendingRequests || [];
   const consults = bookings.data?.pendingConsults || [];
+  const next = nextProjectSitting(appointments);
+  const dueForms = appointments.find(
+    a =>
+      a.pendingFormCount > 0 &&
+      a.conversationId &&
+      !["completed", "cancelled", "no-show"].includes(a.status)
+  );
   const projectCards = (
     groups: ReturnType<
       typeof orderedProjectGroups<(typeof appointments)[number]>
@@ -106,155 +108,94 @@ export default function ClientBookings() {
     <div className="ivory-project-list">
       {groups.map(sittings => {
         const first = sittings[0];
-        const next =
-          nextProjectSitting(sittings) ||
-          sittings.find(a => a.balanceDueCents > 0) ||
-          first;
         const key = bookingProjectKey(first);
+        const upcoming = nextProjectSitting(sittings);
         const proposal = pending.find(p => p.id === first.sessionPlanId);
-        const requested = sittings.filter(a => a.paymentRequest);
-        const forms = sittings.find(
-          a =>
-            a.pendingFormCount > 0 &&
-            !["completed", "cancelled", "no-show"].includes(a.status)
-        );
-        const destination = (a: typeof first) =>
-          `/projects/${a.conversationId}?session=${a.id}`;
         return (
           <Panel key={key} className="ivory-project-card">
-            <div className="v3-stack">
-              <div>
-                <h2>
-                  {sittings.find(a => a.projectName)?.projectName ||
-                    first.serviceName ||
-                    "Tattoo project"}
-                </h2>
-                <p>{first.artist.name}</p>
-              </div>
-              <ProjectProgress sittings={sittings} />
-              <div className="ivory-project-actions">
-                {proposal && (
-                  <Action
-                    onClick={() =>
-                      setPlan({
-                        id: proposal.id,
-                        conversationId: proposal.conversationId || 0,
-                      })
-                    }
-                  >
-                    {proposal.paymentState
-                      ? "Check payment status"
-                      : `Review ${money(proposal.depositTotalCents + (proposal.platformFeeCents || 0))} deposit & fee`}
-                  </Action>
-                )}
-                {requested.map(
-                  a =>
-                    a.paymentRequest && (
-                      <ActionLink
-                        key={a.id}
-                        href={`/pay/${a.paymentRequest.token}`}
-                        tone="primary"
-                      >
-                        Sitting {a.sessionIndex || sittings.indexOf(a) + 1}:
-                        review {money(a.paymentRequest.amountCents)} request
-                      </ActionLink>
-                    )
-                )}
-                {forms?.conversationId && (
-                  <ActionLink
-                    href={destination(forms) + "&action=forms"}
-                    tone="secondary"
-                  >
-                    Complete sitting {forms.sessionIndex || 1} forms
-                  </ActionLink>
-                )}
-              </div>
-              <ProjectDisclosure sittings={sittings}>
-                <p className="ivory-project-money">
-                  {money(
-                    sittings.reduce(
-                      (sum, a) => sum + (a.amountPaidCents || 0),
-                      0
-                    )
-                  )}{" "}
-                  paid ·{" "}
-                  {money(
-                    sittings.reduce(
-                      (sum, a) => sum + (a.balanceDueCents || 0),
-                      0
-                    )
-                  )}{" "}
-                  remaining
-                </p>
-                <ProjectSittings
-                  sittings={sittings}
-                  selectedId={openSittings[key]}
-                  render={(a, index) => (
-                    <SittingCard
-                      expanded={openSittings[key] === a.id}
-                      onExpandedChange={open =>
-                        setOpenSittings(previous => ({
-                          ...previous,
-                          [key]: open ? a.id : null,
-                        }))
-                      }
-                      title={`Sitting ${a.sessionIndex || index + 1} · ${statusLabel(a.status)}${a.rescheduled ? " · Rescheduled" : ""}`}
-                      detail={bookingDate(a.startsAt, a.timeZone)}
-                    >
-                      {a.conversationId ? (
-                        <SittingSummary
-                          conversationId={a.conversationId}
-                          appointmentId={a.id}
-                        />
-                      ) : (
-                        <>
-                          <p className="v3-muted">
-                            {a.depositPaidCents > 0
-                              ? "Deposit received"
-                              : "No deposit recorded"}{" "}
-                            · {money(a.balanceDueCents)} remaining
-                            {a.pendingFormCount
-                              ? ` · ${a.pendingFormCount} ${a.pendingFormCount === 1 ? "form" : "forms"} to complete`
-                              : ""}
-                          </p>
-                          {a.paymentRequest &&
-                            !requested.some(r => r.id === a.id) && (
-                              <ActionLink
-                                href={`/pay/${a.paymentRequest.token}`}
-                              >
-                                Review {money(a.paymentRequest.amountCents)}{" "}
-                                request
-                              </ActionLink>
-                            )}
-                        </>
-                      )}
-                    </SittingCard>
-                  )}
+            {first.conversationId ? (
+              <Link
+                className="simple-project-link"
+                href={`/projects/${first.conversationId}?project=${encodeURIComponent(key)}`}
+              >
+                <span>
+                  <strong>
+                    {sittings.find(a => a.projectName)?.projectName ||
+                      first.serviceName ||
+                      "Tattoo project"}
+                  </strong>
+                  <small>{first.artist.name}</small>
+                </span>
+                <ChevronRight size={18} />
+              </Link>
+            ) : (
+              <h2>{first.serviceName || "Tattoo project"}</h2>
+            )}
+            <ProjectProgress sittings={sittings} />
+            <ul className="simple-project-dates" aria-label="Project dates">
+              {sittings.map(a => (
+                <li
+                  key={a.id}
+                  data-next={a.id === upcoming?.id}
+                  data-status={a.status}
+                >
+                  <span>
+                    {a.startsAt
+                      ? bookingDate(a.startsAt, a.timeZone)
+                      : "Date to be arranged"}
+                  </span>
+                  {a.rescheduled ? (
+                    <Status>Rescheduled</Status>
+                  ) : a.status === "completed" ? (
+                    <Status tone="success">Done</Status>
+                  ) : a.id === upcoming?.id ? (
+                    <Status>Next</Status>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            {proposal && (
+              <Row
+                title={
+                  proposal.paymentState
+                    ? "Check payment status"
+                    : "Review proposal"
+                }
+                detail={
+                  proposal.paymentState
+                    ? undefined
+                    : `${money(proposal.depositTotalCents + (proposal.platformFeeCents || 0))} deposit & fee`
+                }
+                onClick={() =>
+                  setPlan({
+                    id: proposal.id,
+                    conversationId: proposal.conversationId || 0,
+                  })
+                }
+              />
+            )}
+            {sittings
+              .filter(a => a.paymentRequest)
+              .map(a => (
+                <Row
+                  key={a.id}
+                  title={`Payment requested · ${money(a.paymentRequest!.amountCents)}`}
+                  href={`/pay/${a.paymentRequest!.token}`}
                 />
-                {first.conversationId && (
-                  <div className="ivory-project-links">
-                    <ActionLink
-                      href={`/chat/${first.conversationId}`}
-                      tone="quiet"
-                    >
-                      Message artist
-                    </ActionLink>
-                    <ActionLink
-                      href={destination(next) + "&view=Files"}
-                      tone="quiet"
-                    >
-                      Design & references
-                    </ActionLink>
-                    <ActionLink
-                      href={destination(next) + "&view=Payments"}
-                      tone="quiet"
-                    >
-                      Payments
-                    </ActionLink>
-                  </div>
-                )}
-              </ProjectDisclosure>
-            </div>
+              ))}
+            {!first.conversationId &&
+              sittings.map((a, index) => (
+                <SittingCard
+                  key={a.id}
+                  title={`Sitting ${a.sessionIndex || index + 1}`}
+                  detail={bookingDate(a.startsAt, a.timeZone)}
+                >
+                  <p>
+                    {money(a.balanceDueCents)} remaining ·{" "}
+                    {statusLabel(a.status)}
+                  </p>
+                </SittingCard>
+              ))}
           </Panel>
         );
       })}
@@ -262,8 +203,8 @@ export default function ClientBookings() {
   );
   return (
     <Screen
-      title="Bookings"
-      subtitle="Your tattoos, sittings and next steps"
+      title="My Tattoos"
+      subtitle="Your next sitting, and everything around it"
       wide
     >
       <Feedback
@@ -274,6 +215,56 @@ export default function ClientBookings() {
           void plans.refetch();
         }}
       />
+      {next && (
+        <Panel tone="next" className="simple-next">
+          <div className="simple-between">
+            <span className="simple-eyebrow">Your next sitting</span>
+            <Status>
+              {next.rescheduled ? "Rescheduled" : statusLabel(next.status)}
+            </Status>
+          </div>
+          <h2>
+            <SittingDate label={bookingDate(next.startsAt, next.timeZone)} />
+          </h2>
+          <p>
+            {next.artist.name} ·{" "}
+            {next.projectName || next.serviceName || "Tattoo sitting"}
+          </p>
+          <p>
+            {next.studioName ? `${next.studioName} · ` : ""}
+            {next.durationMinutes ? `${next.durationMinutes / 60}h · ` : ""}
+            {money(next.balanceDueCents)} remaining
+          </p>
+          {next.conversationId && (
+            <div className="simple-action-pair">
+              <ActionLink
+                href={`/projects/${next.conversationId}?session=${next.id}`}
+                tone="secondary"
+              >
+                Sitting details
+              </ActionLink>
+              <ActionLink href={`/chat/${next.conversationId}`} tone="primary">
+                Message
+              </ActionLink>
+            </div>
+          )}
+        </Panel>
+      )}
+      {dueForms && (
+        <Link
+          className="simple-notice"
+          href={`/projects/${dueForms.conversationId}?session=${dueForms.id}&action=forms`}
+        >
+          <ClipboardCheck />
+          <span>
+            <strong>Complete your forms</strong>
+            <small>
+              Before your sitting · {dueForms.pendingFormCount} to complete
+            </small>
+          </span>
+          <ChevronRight />
+        </Link>
+      )}
       {nameError && (
         <DetailsSheet
           title="Project names"
@@ -317,7 +308,9 @@ export default function ClientBookings() {
           ))}
         </div>
       )}
-      {groups.length > 0 && projectCards(groups)}
+      {groups.length > 0 && (
+        <Section title="Your projects">{projectCards(groups)}</Section>
+      )}
       <DetailsSheet
         className="ivory-completed-projects"
         title={
