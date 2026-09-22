@@ -12,3 +12,14 @@ it('issues a dedicated 30-minute session from the ordinary sign-in endpoint',asy
 it('denies an unconfigured developer account',async()=>{vi.stubEnv('MASTER_DEV_USER_ID','someone-else');await expect(caller().login({email:'owner@example.test',password:'test-only'})).rejects.toMatchObject({code:'UNAUTHORIZED'});});
 it('denies an incorrect password',async()=>{mocks.compare.mockResolvedValue(false);await expect(caller().login({email:'owner@example.test',password:'wrong'})).rejects.toMatchObject({code:'UNAUTHORIZED'});expect(mocks.update).not.toHaveBeenCalled();});
 it('preserves ordinary sign-in',async()=>{mocks.get.mockResolvedValue({id:'artist',email:'artist@example.test',role:'artist',password:'hashed'});expect((await caller().login({email:'artist@example.test',password:'test-only'})).token).toBe('ordinary');});
+
+it('preserves developer privileges and original expiry during refresh',async()=>{
+ const result=await caller().login({email:'owner@example.test',password:'test-only'});
+ const refresh=authRouter.createCaller({user:{id:'owner',role:'master_dev'},req:{headers:{authorization:'Bearer '+result.token}},res:{}} as any);
+ expect((await refresh.refreshToken()).token).toBe(result.token);
+ expect(mocks.ordinary).not.toHaveBeenCalled();
+});
+it('does not elevate an ordinary token through developer refresh',async()=>{
+ const refresh=authRouter.createCaller({user:{id:'owner',role:'master_dev'},req:{headers:{authorization:'Bearer ordinary'}},res:{}} as any);
+ await expect(refresh.refreshToken()).rejects.toMatchObject({code:'UNAUTHORIZED'});
+});

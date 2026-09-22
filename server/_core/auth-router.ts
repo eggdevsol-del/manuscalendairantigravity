@@ -1,4 +1,4 @@
-import { accountEnabled, masterDevIdentity, masterDevLoginAttempt, createMasterDevToken } from "../services/masterDevAccess";
+import { accountEnabled, masterDevIdentity, masterDevSession, masterDevLoginAttempt, createMasterDevToken } from "../services/masterDevAccess";
 import { getAuthSecret } from "./auth-secret";
 import {
   createPasswordRecoveryToken,
@@ -773,6 +773,14 @@ export const authRouter = router({
    * Silently re-mint a JWT — called once per app load to create a rolling session
    */
   refreshToken: protectedProcedure.mutation(async ({ ctx }) => {
+    // Developer sessions retain their original privilege and fixed expiry.
+    // Never replace them with a normal 90-day token or extend their lifetime.
+    if (ctx.user.role === "master_dev") {
+      if (!masterDevSession(ctx.user, ctx.req.headers.authorization)) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Sign in again to access the developer dashboard." });
+      }
+      return { token: ctx.req.headers.authorization!.slice(7) };
+    }
     const token = generateToken({
       id: ctx.user.id,
       email: ctx.user.email || "",

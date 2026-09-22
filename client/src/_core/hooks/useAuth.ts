@@ -99,7 +99,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   // One refresh per signed-in user per app load, shared by all hook consumers.
   useEffect(() => {
-    if (!meQuery.data || refreshedUsers.has(meQuery.data.id)) return;
+    if (!meQuery.data || meQuery.data.role === "master_dev" || refreshedUsers.has(meQuery.data.id)) return;
     refreshedUsers.add(meQuery.data.id);
     const generation = sessionGeneration;
     const token =

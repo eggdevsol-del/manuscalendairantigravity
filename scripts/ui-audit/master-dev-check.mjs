@@ -52,7 +52,7 @@ try {
   await page.getByRole('tab',{name:'Insights',exact:true}).click();
   await page.getByText('Geographic concentration',{exact:true}).waitFor();
   await page.screenshot({path:`${out}/insights-${width}.png`});
-  assert.deepEqual(errors,[]);await context.close();console.log('PASS developer dashboard',width);
+  assert.deepEqual(errors,[]);assert(!calls.some(c=>c.name==='auth.refreshToken'),'Developer sessions must never silently refresh');await context.close();console.log('PASS developer dashboard',width);
  }
  const {page,context,calls}=await setup('client',{'auth.me':{id:'client',role:'client'}});
  await page.goto(base+'/dev');await page.getByText('Welcome back',{exact:true}).waitFor();
