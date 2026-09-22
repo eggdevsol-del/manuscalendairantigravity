@@ -1,4 +1,3 @@
-import { isDesignProjectName } from "../../../../shared/projectNames";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
 import { ProjectSittings } from "../components/ProjectSittings";
@@ -187,41 +186,18 @@ export function BookingProject({
           !["cancelled", "completed", "no-show"].includes(s.status) &&
           instant(s.endsAt) > new Date()
       ) || data?.sessions.at(-1);
+  const [editingName, setEditingName] = useState<number | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
+  const saveName = trpc.projects.setProjectName.useMutation({
+    onSuccess: async () => {
+      await query.refetch();
+      setEditingName(null);
+    },
+  });
   const [collapsedSitting, setCollapsedSitting] = useState<number | null>(null);
-  const [namingFailed, setNamingFailed] = useState(false);
-  const [namingRetry, setNamingRetry] = useState(0);
   const [sessionAction, setSessionAction] = useState<SessionActionMode | null>(
     null
   );
-  const namingAttempts = useRef(new Set<number>());
-  const nameProject = trpc.projects.nameProject.useMutation({
-    onSuccess: () => query.refetch(),
-  });
-  useEffect(() => {
-    let stopped = false;
-    void (async () => {
-      const unnamed = [
-        ...new Set(
-          (data?.sessions || [])
-            .filter(s => !isDesignProjectName(s.projectName) && s.sessionPlanId)
-            .map(s => s.sessionPlanId!)
-        ),
-      ];
-      for (const sessionPlanId of unnamed) {
-        if (stopped) return;
-        if (namingAttempts.current.has(sessionPlanId)) continue;
-        namingAttempts.current.add(sessionPlanId);
-        try {
-          await nameProject.mutateAsync({ conversationId: id, sessionPlanId });
-        } catch {
-          setNamingFailed(true);
-        }
-      }
-    })();
-    return () => {
-      stopped = true;
-    };
-  }, [id, data?.sessions, namingRetry]);
   const [sign, setSign] = useState(false),
     [balance, setBalance] = useState(false);
   const [plan, setPlan] = useState<number | null>(null);
@@ -511,6 +487,20 @@ export function BookingProject({
                 data.plans[0]?.projectName ||
                 "Tattoo project"}
             </h2>
+            {!client && (session?.sessionPlanId || data.plans.length === 1) && (
+              <Action
+                tone="quiet"
+                onClick={() => {
+                  setEditingName(session?.sessionPlanId || data.plans[0].id);
+                  setNameDraft(
+                    session?.projectName || data.plans[0]?.projectName || ""
+                  );
+                  saveName.reset();
+                }}
+              >
+                Edit project name
+              </Action>
+            )}
             {!!siblings.length && <ProjectProgress sittings={siblings} />}
             <div className="ivory-project-actions">
               {client &&
@@ -536,24 +526,6 @@ export function BookingProject({
               )}
             </div>
           </div>
-          {namingFailed && (
-            <Panel>
-              <p>
-                We couldn’t name every project. Your bookings are still
-                available.
-              </p>
-              <Action
-                tone="secondary"
-                onClick={() => {
-                  namingAttempts.current.clear();
-                  setNamingFailed(false);
-                  setNamingRetry(n => n + 1);
-                }}
-              >
-                Retry project names
-              </Action>
-            </Panel>
-          )}
           {nextProjectSitting(siblings) &&
             (() => {
               const next = nextProjectSitting(siblings)!;
@@ -794,6 +766,42 @@ export function BookingProject({
           </div>
         </>
       )}
+      <SheetShell
+        isOpen={editingName !== null}
+        onClose={() => setEditingName(null)}
+        title="Project name"
+      >
+        <form
+          className="v3-form"
+          onSubmit={event => {
+            event.preventDefault();
+            if (editingName && nameDraft.trim())
+              saveName.mutate({
+                sessionPlanId: editingName,
+                name: nameDraft.trim(),
+              });
+          }}
+        >
+          <label htmlFor="project-name">Name this tattoo design</label>
+          <input
+            id="project-name"
+            value={nameDraft}
+            maxLength={60}
+            required
+            onChange={event => setNameDraft(event.target.value)}
+          />
+          <p>
+            Use the design or subject so your client can recognise the project.
+          </p>
+          {saveName.error && <p role="alert">{saveName.error.message}</p>}
+          <Action
+            type="submit"
+            disabled={saveName.isPending || !nameDraft.trim()}
+          >
+            {saveName.isPending ? "Saving…" : "Save name"}
+          </Action>
+        </form>
+      </SheetShell>
       <SheetShell
         isOpen={sign}
         onClose={() => setSign(false)}

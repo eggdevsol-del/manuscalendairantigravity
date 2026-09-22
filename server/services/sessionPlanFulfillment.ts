@@ -61,14 +61,14 @@ export async function fulfillSessionPlan(
         eq(schema.studioMembers.status, "active")
       ),
     });
-    let projectName: string | null = null;
+    let projectName: string | null = plan.projectName || null;
     if (plan.messageId) {
       const message = await tx.query.messages.findFirst({
         where: eq(schema.messages.id, plan.messageId),
       });
       try {
         const metadata = JSON.parse(message?.metadata || "{}");
-        if (typeof metadata.projectName === "string")
+        if (!projectName && typeof metadata.projectName === "string")
           projectName = metadata.projectName.slice(0, 60);
       } catch {}
     }

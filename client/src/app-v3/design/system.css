@@ -2143,3 +2143,13 @@ body:has(.tattoi-notice) .supplier-cart-dock { bottom: calc(var(--simple-nav-hei
 
 body:has(.supplier-cart-dock) .simple-nav-fade { bottom: calc(var(--simple-nav-height) + 104px); }
 body:has(.tattoi-notice):has(.supplier-cart-dock) .simple-nav-fade { bottom: calc(var(--simple-nav-height) + 204px); }
+
+.supplier-quantity { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 12px; width: 100%; }
+.supplier-quantity > label { display: flex; justify-content: center; align-items: center; gap: 8px; min-width: 0; }
+.supplier-quantity > span { text-align: center; }
+.supplier-quantity input { min-height: 48px; border: 1px solid var(--v3-line); border-radius: var(--v3-radius); background: var(--v3-surface); }
+
+.dev-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--v3-space-3,12px); }
+.dev-list-row { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; padding:16px 0; text-align:left; border-bottom:1px solid var(--v3-line); overflow-wrap:anywhere; }
+.dev-list-row span,.dev-list-row small { color:var(--v3-muted); }
+.dev-sheet { padding:20px; }

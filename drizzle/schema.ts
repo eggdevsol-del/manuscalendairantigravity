@@ -2181,6 +2181,7 @@ export const productVariantsRelations = relations(
 );
 
 export const suppliers = mysqlTable("suppliers", {
+  isActive: tinyint().notNull().default(1),
   id: int().autoincrement().primaryKey(),
   name: varchar({ length: 255 }).notNull(),
   websiteUrl: text(),
@@ -2711,6 +2712,9 @@ export const sessionPlans = mysqlTable("sessionPlans", {
   conversationId: int().references(() => conversations.id, {
     onDelete: "cascade",
   }),
+  projectName: varchar({ length: 60 }),
+  projectNameAttempts: int().notNull().default(0),
+  projectNameRetryAt: datetime({ mode: "string" }),
   status: mysqlEnum([
     "pending",
     "accepted",

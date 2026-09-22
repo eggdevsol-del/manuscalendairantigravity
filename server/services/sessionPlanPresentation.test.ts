@@ -78,3 +78,18 @@ describe("deposit actions", () => {
       ).filter(p => p.requiresDeposit)
     ).toHaveLength(0));
 });
+
+it("uses the canonical project name ahead of stale proposal metadata", () => {
+  expect(
+    presentSessionPlans(
+      [
+        {
+          ...plan,
+          projectName: "Native flower sleeve",
+          message: { metadata: JSON.stringify({ projectName: "Rose sleeve" }) },
+        },
+      ],
+      []
+    )[0].projectName
+  ).toBe("Native flower sleeve");
+});

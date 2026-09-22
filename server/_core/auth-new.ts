@@ -1,3 +1,4 @@
+import { accountEnabled } from "../services/masterDevAccess";
 import { getAuthSecret } from "./auth-secret";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
@@ -107,7 +108,7 @@ export async function authenticateRequest(
 
     // Get user from database
     const user = await getUserById(payload.userId);
-    if (!user) {
+    if (!user || !accountEnabled(user)) {
       res.status(401).json({ error: "User not found" });
       return;
     }
@@ -143,7 +144,7 @@ export async function optionalAuth(
       const payload = verifyToken(token);
       if (payload) {
         const user = await getUserById(payload.userId);
-        if (user) {
+        if (user && accountEnabled(user)) {
           (req as any).user = {
             id: user.id,
             email: user.email,

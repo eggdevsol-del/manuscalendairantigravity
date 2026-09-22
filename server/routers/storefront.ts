@@ -263,6 +263,13 @@ export const storefrontRouter = router({
           where: eq(schema.merchants.id, Number(merchantMatch[1])),
         });
         if (!merchant || merchant.status !== "active") return null;
+        const hidden = await db.query.suppliers.findFirst({
+          where: and(
+            eq(schema.suppliers.merchantId, merchant.id),
+            eq(schema.suppliers.isActive, 0)
+          ),
+        });
+        if (hidden) return null;
         const products = await db.query.products.findMany({
           where: and(
             eq(schema.products.artistId, merchant.userId),
@@ -888,6 +895,17 @@ async function storeSeller(
       throw new TRPCError({
         code: "PRECONDITION_FAILED",
         message: "This store is not ready to accept payments.",
+      });
+    const hidden = await db.query.suppliers.findFirst({
+      where: and(
+        eq(schema.suppliers.merchantId, merchant.id),
+        eq(schema.suppliers.isActive, 0)
+      ),
+    });
+    if (hidden)
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "This supplier is no longer available for new orders.",
       });
     return {
       accountId: merchant.stripeAccountId,

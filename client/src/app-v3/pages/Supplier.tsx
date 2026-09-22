@@ -1,3 +1,4 @@
+import { ShopifyImportSimulator } from "../components/ShopifyImportSimulator";
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -42,6 +43,7 @@ export default function SupplierToday() {
           void profile.refetch();
         }}
       />
+      <ShopifyImportSimulator />
       {data && (
         <div className="v3-grid">
           <Section title="Needs you">
@@ -267,6 +269,7 @@ export function SupplierSettings() {
         <SupplierProfile key={query.data.id} initial={query.data} />
       )}
       <SupplierPayments />
+      <ShopifyImportSimulator />
       <Section title="Shopify">
         <ShopifySyncTier />
       </Section>

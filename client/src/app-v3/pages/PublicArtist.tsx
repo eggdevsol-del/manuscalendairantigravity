@@ -212,6 +212,8 @@ function Intake({
     size: "",
     timeframe: "",
   });
+  const [requestId] = useState(() => crypto.randomUUID());
+  const utils = trpc.useUtils();
   const [service, setService] = useState("");
   const [step, setStep] = useState(1);
   const [selectedStyles, setStyles] = useState<string[]>([]);
@@ -222,6 +224,7 @@ function Intake({
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState<{
     leadToken?: string;
+    conversationId?: number;
     existingUser?: boolean;
   } | null>(null);
   const uploadPublic = trpc.funnel.uploadPublicImage.useMutation();
@@ -306,7 +309,8 @@ function Intake({
         ]
           .filter(Boolean)
           .join("\n");
-        await consultation.mutateAsync({
+        const saved = await consultation.mutateAsync({
+          requestId,
           artistId,
           subject: "Booking request from " + (user.name || "Client"),
           description,
@@ -314,10 +318,20 @@ function Intake({
           style: selectedStyles.join(", "),
           referenceUrls: [...referenceUrls, ...placementUrls],
         });
-        setSubmitted({});
+        if (!saved?.id || !saved.conversationId)
+          throw new Error(
+            "Your request could not be confirmed. Your details are still here; please try again."
+          );
+        setSubmitted({ conversationId: saved.conversationId });
+        void utils.conversations.invalidate();
+        void utils.consultations.invalidate();
+        void utils.messages.list.invalidate({
+          conversationId: saved.conversationId,
+        });
       } else {
         const result = await submit.mutateAsync({
           ...draft,
+          requestId,
           firstName: draft.firstName.trim(),
           lastName: draft.lastName.trim(),
           email: draft.email.trim().toLowerCase(),
@@ -334,6 +348,15 @@ function Intake({
           referenceUrls,
           placementUrls,
         });
+        if (
+          !result?.success ||
+          !result.leadId ||
+          !result.conversationId ||
+          !result.leadToken
+        )
+          throw new Error(
+            "Your request could not be confirmed. Your details are still here; please try again."
+          );
         setSubmitted({
           leadToken: result.leadToken,
           existingUser: result.existingUser,
@@ -425,7 +448,14 @@ function Intake({
               existing={!!submitted.existingUser}
             />
           ) : (
-            <ActionLink href="/conversations" tone="primary">
+            <ActionLink
+              href={
+                submitted.conversationId
+                  ? `/chat/${submitted.conversationId}`
+                  : "/conversations"
+              }
+              tone="primary"
+            >
               Open your messages
             </ActionLink>
           )}

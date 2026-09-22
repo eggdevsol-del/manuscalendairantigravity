@@ -73,6 +73,9 @@ try {
   run("scripts/ui-audit/compact-cards-check.mjs");
   run("scripts/ui-audit/today-supplies-check.mjs");
   run("scripts/ui-audit/supply-basket-revalidation.mjs");
+  run("scripts/ui-audit/supplier-testing-check.mjs");
+  run("scripts/ui-audit/master-dev-check.mjs");
+  run("scripts/ui-audit/booking-request-check.mjs");
   // Exercise contextual tours against the release build, including nested UI.
   run("scripts/ui-audit/complete-tours-check.mjs");
   run("scripts/ui-audit/tour-public-check.mjs");

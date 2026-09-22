@@ -1,0 +1,20 @@
+/** Bounded operational telemetry: action names only, never inputs or message contents. */
+export const usageActions: Record<string, string> = {
+  "messages.send": "Send message",
+  "messages.requestBalance": "Request balance payment",
+  "messages.requestAdditional": "Request additional payment",
+  "booking.bookProject": "Create project booking",
+  "appointments.bookProject": "Create project booking",
+  "appointments.create": "Create sitting",
+  "appointments.reschedule": "Reschedule sitting",
+  "appointments.cancelSession": "Cancel sitting",
+  "appointments.confirmDeposit": "Confirm deposit",
+  "sessionPlans.create": "Create proposal",
+  "sessionPlans.accept": "Accept proposal",
+  "sessionPlans.decline": "Decline proposal",
+  "supplierOrders.createSupplierCheckout": "Review supplier checkout",
+  "promotions.issuePromotion": "Issue promotion",
+  "promotions.createTemplate": "Create promotion template",
+  "waitlist.join": "Join waitlist",
+  "waitlist.accept": "Accept waitlist offer",
+};

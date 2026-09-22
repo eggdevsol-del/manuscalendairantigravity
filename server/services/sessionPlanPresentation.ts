@@ -3,6 +3,7 @@ import { inArray } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 
 type Plan = {
+  projectName?: string | null;
   message?: { metadata: string | null } | null;
   id: number;
   artistId: string;
@@ -80,10 +81,10 @@ export function presentSessionPlans<T extends Plan>(
         seen.add(key);
         seen.add(signature(p));
       }
-      let projectName: string | null = null;
+      let projectName: string | null = p.projectName || null;
       try {
         const meta = JSON.parse(p.message?.metadata || "{}");
-        if (isDesignProjectName(meta.projectName))
+        if (!projectName && isDesignProjectName(meta.projectName))
           projectName = meta.projectName;
       } catch {}
       return {

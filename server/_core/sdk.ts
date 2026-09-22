@@ -1,3 +1,4 @@
+import { accountEnabled } from "../services/masterDevAccess";
 import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ForbiddenError } from "@shared/_core/errors";
 import axios, { type AxiosInstance } from "axios";
@@ -267,7 +268,7 @@ class SDKServer {
         const payload = verifyToken(token);
         if (payload) {
           const user = await db.getUserById(payload.userId);
-          if (user) {
+          if (user && accountEnabled(user)) {
             return user;
           }
         }
@@ -284,7 +285,7 @@ class SDKServer {
       const session = await this.verifySession(sessionCookie);
       if (session) {
         const user = await db.getUser(session.openId);
-        if (user) {
+        if (user && accountEnabled(user)) {
           return user;
         }
       }

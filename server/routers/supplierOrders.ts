@@ -1,3 +1,4 @@
+import { supplierRecommendations } from "../domain/supplierRecommendations";
 import {
   validateSupplierItem,
   resolveSupplierShipping,
@@ -30,6 +31,18 @@ import {
 } from "../services/exchangeRate";
 
 export const supplierOrdersRouter = router({
+  getReorderRecommendations: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const orders = await db.query.supplierOrders.findMany({
+      where: eq(schema.supplierOrders.artistId, ctx.user.id),
+      with: { supplier: true, items: true },
+      orderBy: [desc(schema.supplierOrders.createdAt)],
+    });
+    return supplierRecommendations(
+      orders.filter(order => order.supplier?.isActive !== 0)
+    );
+  }),
   /**
    * Get shipping rates for a supplier, filtered by artist's country.
    */
@@ -118,7 +131,8 @@ export const supplierOrdersRouter = router({
       const supplier = await db.query.suppliers.findFirst({
         where: eq(schema.suppliers.id, input.supplierId),
       });
-      if (!supplier) throw new Error("Supplier not found");
+      if (!supplier || supplier.isActive === 0)
+        throw new Error("Supplier is no longer available for new orders");
 
       const supplierCurrency = supplier.currency || "AUD";
 

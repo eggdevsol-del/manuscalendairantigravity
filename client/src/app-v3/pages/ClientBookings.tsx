@@ -1,6 +1,5 @@
 import { Link } from "wouter";
 import { ChevronRight, ClipboardCheck } from "lucide-react";
-import { isDesignProjectName } from "../../../../shared/projectNames";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
 import {
@@ -8,7 +7,7 @@ import {
   nextProjectSitting,
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { bookingProjectKey } from "../../../../shared/clientBookingGroups";
 import {
@@ -47,48 +46,6 @@ export default function ClientBookings() {
   const standaloneProposals = pending.filter(
     p => !appointments.some(a => a.sessionPlanId === p.id)
   );
-  const attemptedNames = useRef(new Set<number>());
-  const [nameError, setNameError] = useState(false);
-  const [nameRetry, setNameRetry] = useState(0);
-  const nameProject = trpc.projects.nameProject.useMutation();
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      for (const a of [
-        ...(bookings.data?.appointments || []),
-        ...(plans.data || []).map(p => ({
-          projectName: p.projectName,
-          sessionPlanId: p.id,
-          conversationId: p.conversationId,
-        })),
-      ]) {
-        if (cancelled) return;
-        if (
-          isDesignProjectName(a.projectName) ||
-          !a.sessionPlanId ||
-          !a.conversationId ||
-          attemptedNames.current.has(a.sessionPlanId)
-        )
-          continue;
-        attemptedNames.current.add(a.sessionPlanId);
-        try {
-          await nameProject.mutateAsync({
-            conversationId: a.conversationId,
-            sessionPlanId: a.sessionPlanId,
-          });
-          if (!cancelled) {
-            await bookings.refetch();
-            await plans.refetch();
-          }
-        } catch {
-          if (!cancelled) setNameError(true);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [bookings.data, plans.data, nameRetry]);
   const groups = orderedProjectGroups(appointments);
   const completedGroups = orderedProjectGroups(past.data?.appointments || []);
   const requests = bookings.data?.pendingRequests || [];
@@ -264,28 +221,6 @@ export default function ClientBookings() {
           </span>
           <ChevronRight />
         </Link>
-      )}
-      {nameError && (
-        <DetailsSheet
-          title="Project names"
-          label="Some project names are unavailable"
-          className="v3-compact-notice"
-        >
-          <p>
-            Your sitting dates and booking details remain available. Some
-            imported proposals may need an artist-provided name.
-          </p>
-          <Action
-            tone="secondary"
-            onClick={() => {
-              attemptedNames.current.clear();
-              setNameError(false);
-              setNameRetry(n => n + 1);
-            }}
-          >
-            Retry project names
-          </Action>
-        </DetailsSheet>
       )}
       {standaloneProposals.length > 0 && (
         <div className="v3-summary-list">

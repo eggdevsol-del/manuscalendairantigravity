@@ -2,7 +2,6 @@ import {
   readPresentedPlans,
   sessionPlanSignature,
 } from "../services/sessionPlanPresentation";
-import { generateProjectName } from "../services/llmEnrichment";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { calculateTransactionFees, resolvePaymentTier } from "../domain/fees";
 import { withDatabaseTransaction } from "../services/core";
@@ -84,11 +83,7 @@ export const sessionPlansRouter = router({
         ctx.user.id,
         true
       );
-      const projectName = await generateProjectName(
-        database,
-        input.conversationId,
-        input.serviceName
-      );
+      const projectName = null; // Named asynchronously; sending never waits for AI.
       return database.transaction(async dbRef => {
         requireArtist(ctx.user);
         const conversation = await requireConversationAccess(

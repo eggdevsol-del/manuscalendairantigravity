@@ -1,3 +1,4 @@
+import { startProjectNamingWorker } from "../services/projectNaming";
 import {
   withDatabaseTransaction,
   withDatabaseSavepoint,
@@ -11,6 +12,7 @@ let running = false;
 let timer: ReturnType<typeof setInterval> | undefined;
 const mysql = (date: Date) => date.toISOString().slice(0, 19).replace("T", " ");
 export function startOutboxWorker() {
+  startProjectNamingWorker();
   if (timer) return;
   timer = setInterval(() => void processOutbox(), 5000);
   timer.unref();

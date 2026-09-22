@@ -1,43 +1,113 @@
-import { desc, eq, and, lt } from "drizzle-orm";
-import { consultations, InsertConsultation } from "../../drizzle/schema";
-import { getDb } from "./core";
-import { eventBus } from "../_core/eventBus";
+import { desc, eq, and, lt, sql } from "drizzle-orm";
+import {
+  consultations,
+  conversations,
+  messages,
+  users,
+  notificationOutbox,
+  InsertConsultation,
+} from "../../drizzle/schema";
+import { getDb, withDatabaseTransaction } from "./core";
 
 // ============================================================================
 // Consultation operations
 // ============================================================================
 
-export async function createConsultation(consultation: InsertConsultation) {
-  const db = await getDb();
-  if (!db) return undefined;
-
-  const result = await db.insert(consultations).values(consultation);
-  const inserted = await db
-    .select()
-    .from(consultations)
-    .where(eq(consultations.id, Number(result[0].insertId)))
-    .limit(1);
-
-  const newConsultation = inserted[0];
-
-  // Give orchestrator a chance to create a push notification
-  if (newConsultation) {
-    eventBus
-      .publish("consultation.created", {
-        targetUserId: newConsultation.artistId,
-        title: "New Consultation Request",
-        body: `You have a new consultation request`,
-        data: { consultationId: newConsultation.id },
-      })
-      .catch(err => {
-        console.error(
-          "[EventBus] Failed to publish consultation.created:",
-          err
-        );
+export async function createConsultation(
+  input: InsertConsultation & { requestId?: string }
+) {
+  const { requestId, ...consultation } = input;
+  return withDatabaseTransaction(async db => {
+    if (
+      !consultation.clientId ||
+      consultation.clientId === consultation.artistId
+    )
+      throw new Error("Choose another artist to send a booking request.");
+    // Serialize thread creation for this artist so concurrent requests reuse one thread.
+    const [artist] = await db
+      .select({ id: users.id, role: users.role })
+      .from(users)
+      .where(eq(users.id, consultation.artistId))
+      .limit(1)
+      .for("update");
+    if (!artist || !["artist", "admin"].includes(artist.role))
+      throw new Error("This artist is not available for booking requests.");
+    const conversation = await db.query.conversations.findFirst({
+      where: and(
+        eq(conversations.artistId, consultation.artistId),
+        eq(conversations.clientId, consultation.clientId)
+      ),
+    });
+    if (requestId && conversation) {
+      const previous = await db.query.messages.findFirst({
+        where: and(
+          eq(messages.conversationId, conversation.id),
+          eq(messages.senderId, consultation.clientId),
+          sql`case when json_valid(${messages.metadata}) then json_unquote(json_extract(${messages.metadata}, '$.bookingRequestId')) else null end = ${requestId}`
+        ),
       });
-  }
-
-  return newConsultation;
+      if (previous?.metadata) {
+        const previousId = JSON.parse(previous.metadata).consultationId;
+        const saved = await db.query.consultations.findFirst({
+          where: and(
+            eq(consultations.id, previousId),
+            eq(consultations.clientId, consultation.clientId),
+            eq(consultations.artistId, consultation.artistId)
+          ),
+        });
+        if (saved?.conversationId) return saved;
+        throw new Error(
+          "The saved request could not be verified. Please contact your artist."
+        );
+      }
+    }
+    let conversationId = conversation?.id;
+    if (!conversationId) {
+      const [result] = await db.insert(conversations).values({
+        artistId: consultation.artistId,
+        clientId: consultation.clientId,
+      });
+      conversationId = Number(result.insertId);
+    }
+    if (!conversationId)
+      throw new Error("Could not save the booking conversation.");
+    const [result] = await db
+      .insert(consultations)
+      .values({ ...consultation, conversationId });
+    const id = Number(result.insertId);
+    if (!id) throw new Error("Could not save the booking request.");
+    await db.insert(messages).values({
+      conversationId,
+      senderId: consultation.clientId,
+      messageType: "text",
+      metadata: requestId
+        ? JSON.stringify({ bookingRequestId: requestId, consultationId: id })
+        : null,
+      content: `${consultation.subject}\n\n${consultation.description}`,
+    });
+    await db
+      .update(conversations)
+      .set({
+        pinnedConsultationId: id,
+        lastMessageAt: new Date().toISOString().slice(0, 19).replace("T", " "),
+      })
+      .where(eq(conversations.id, conversationId));
+    await db.insert(notificationOutbox).values({
+      eventType: "push_message",
+      status: "pending",
+      payloadJson: JSON.stringify({
+        targetUserId: consultation.artistId,
+        title: "New booking request",
+        body: "You have a new booking request",
+        data: {
+          consultationId: id,
+          conversationId,
+          url: `/chat/${conversationId}`,
+        },
+      }),
+    });
+    return { ...consultation, id, conversationId };
+  });
 }
 
 export async function getConsultation(id: number) {

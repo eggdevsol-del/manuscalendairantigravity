@@ -13,6 +13,7 @@ try {
    'suppliers.getSuppliers':[{id:1,name:'Studio Supply',currency:'AUD'}],
    'suppliers.getSupplierProducts':[...products,{...products[0],id:2,title:'Extra long professional studio supply product name',variants:[{id:2,title:'An extra long variant label that must not stretch the shop',priceCents:4200,inventoryCount:4}]}],
    'dashboardTasks.getBusinessTasks':{tasks:[{taskType:'lead_follow_up',taskTier:'tier1',relatedEntityId:'12',title:'Follow up with Mia',context:'Botanical sleeve · awaiting a reply',priorityLevel:'high',priorityScore:90,actionType:'in_app',conversationId:12}],summary:{},counts:{}},
+   'supplierOrders.getReorderRecommendations':[{supplierId:1,supplierName:'Studio Supply',orderId:7,intervalDays:30,due:true,dueAt:'2026-02-01',sampleOrders:2,items:[{quantity:2,productTitle:'Needle cartridges'}]}],
    'supplierOrders.getSupplierOrders':[{id:7,supplierId:1,status:'paid',supplier:{name:'Studio Supply'},createdAt:'2026-01-01T00:00:00Z',totalCents:6400,currency:'AUD',items:[{id:1,supplierProductId:1,variantId:1,quantity:2,productTitle:'Needle cartridges',variantTitle:'Round liner',priceCents:3200}]}],
   };
   const {page,context,errors,calls}=await setup('artist',overrides);

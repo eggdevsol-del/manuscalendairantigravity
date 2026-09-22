@@ -1,3 +1,4 @@
+import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { WeekAgenda } from "../design/WeekAgenda";
@@ -131,9 +132,6 @@ function TodaySupplies() {
   const recent = paid.filter(
     o => new Date(o.createdAt).getTime() >= Date.now() - 30 * 86400000
   );
-  const recommendation = paid.find(
-    o => !recent.some(r => r.supplierId === o.supplierId) && !query.data?.some(r => r.supplierId === o.supplierId && r.status === "pending") && o.items.length > 0
-  );
   return (
     <Section title="Supplies">
       <Feedback
@@ -158,27 +156,7 @@ function TodaySupplies() {
       {!query.isLoading && !query.error && !recent.length && (
         <p className="v3-muted">No paid supply orders in the last 30 days.</p>
       )}
-      {recommendation && (
-        <Panel>
-          <h3>Buy again</h3>
-          <p>
-            {recommendation.items
-              .map(i => `${i.quantity} × ${i.productTitle}`)
-              .join(" · ")}
-          </p>
-          <p className="v3-muted">
-            Based on your previous order from{" "}
-            {recommendation.supplier?.name || "this supplier"}. Check your stock
-            before ordering.
-          </p>
-          <ActionLink
-            tone="quiet"
-            href={`/supplies?supplier=${recommendation.supplierId}&reorder=${recommendation.id}`}
-          >
-            Review reorder
-          </ActionLink>
-        </Panel>
-      )}
+      <ReorderRecommendations />
     </Section>
   );
 }

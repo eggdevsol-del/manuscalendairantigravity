@@ -1,3 +1,4 @@
+import { MasterDev, MasterDevLogin } from "@/app-v3/pages/MasterDev";
 import { ContextualTourArrival } from "@/components/tooltip-tour/ContextualTourArrival";
 import React, { Suspense } from "react";
 import { Feedback, Screen } from "@/app-v3/design/primitives";
@@ -88,7 +89,7 @@ function GuardedShell() {
   }, [user, loading, isSessionChecked, setLocation]);
 
   if (loading || !isSessionChecked) return null;
-  if (!user) return null;
+  if (!user || user.role === "master_dev") return null;
 
   const userRole = user.role;
   const isArtist = userRole === "artist" || userRole === "admin";
@@ -215,7 +216,7 @@ function Router() {
 
   // Initialize OneSignal user & request push permissions
   React.useEffect(() => {
-    if (user?.id) {
+    if (user?.id && user.role !== "master_dev") {
       import("@/lib/onesignal").then(({ setExternalUserId }) => {
         void setExternalUserId(user.id);
       });
@@ -234,6 +235,8 @@ function Router() {
     <div className="min-h-screen">
       {!isPublicFunnel && <SplashScreen />}
       <Switch>
+        <Route path="/dev/login" component={MasterDevLogin} />
+        <Route path="/dev" component={MasterDev} />
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
@@ -271,7 +274,7 @@ function Router() {
 /** Account-specific banners only; updates must also work before sign-in. */
 function AuthOnlyBanners() {
   const { user } = useAuth();
-  if (!user) return null;
+  if (!user || user.role === "master_dev") return null;
   return (
     <>
       <InstallAppBanner />

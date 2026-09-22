@@ -1,3 +1,4 @@
+import { getAuthSecret } from "../_core/auth-secret";
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import jwt from "jsonwebtoken";
@@ -29,7 +30,7 @@ const caller = authRouter.createCaller({ user: null, req: {}, res: {} } as any);
 const token = () =>
   jwt.sign(
     { leadId: 12, email: "client@example.test", conversationId: 9 },
-    process.env.JWT_SECRET || "your-secret-key-change-in-production"
+    getAuthSecret()
   );
 beforeEach(() => {
   vi.clearAllMocks();

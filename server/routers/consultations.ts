@@ -64,6 +64,7 @@ export const consultationsRouter = router({
     .input(
       z.object({
         artistId: z.string(),
+        requestId: z.string().uuid().optional(),
         subject: z.string(),
         description: z.string(),
         placement: z.string().optional(),
@@ -84,6 +85,7 @@ export const consultationsRouter = router({
       }
 
       return db.createConsultation({
+        requestId: input.requestId,
         clientId: ctx.user.id,
         artistId: input.artistId,
         subject: input.subject,

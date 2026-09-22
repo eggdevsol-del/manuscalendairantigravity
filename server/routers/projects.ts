@@ -1,7 +1,4 @@
-import {
-  isDesignProjectName,
-  designProjectName,
-} from "../../shared/projectNames";
+import { designProjectName } from "../../shared/projectNames";
 import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
 import {
@@ -9,11 +6,12 @@ import {
   paymentSessions,
   briefProjectKeys,
 } from "../services/projectAttribution";
-import { generateProjectName } from "../services/llmEnrichment";
+import { persistProjectName } from "../services/projectNaming";
+import { withDatabaseTransaction } from "../services/core";
 import { readPresentedPlans } from "../services/sessionPlanPresentation";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { and, eq, inArray, or, asc, desc, gt } from "drizzle-orm";
+import { and, eq, inArray, or, asc, desc } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
 import { requireConversationAccess, requireArtist } from "../services/access";
@@ -141,49 +139,40 @@ export const projectsRouter = router({
           eq(schema.sessionPlans.conversationId, input.conversationId)
         ),
       });
-      if (!plan?.messageId)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "This imported project needs an artist-provided name.",
-        });
-      const message = await db.query.messages.findFirst({
-        where: eq(schema.messages.id, plan.messageId),
+      if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+      // Compatibility for older clients: reads never invoke AI or expose repair errors.
+      return { projectName: plan.projectName || "Tattoo project" };
+    }),
+  setProjectName: protectedProcedure
+    .input(
+      z.object({
+        sessionPlanId: z.number().int().positive(),
+        name: z
+          .string()
+          .trim()
+          .min(1)
+          .max(60)
+          .regex(/^[^\r\n]+$/),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      requireArtist(ctx.user);
+      return withDatabaseTransaction(async db => {
+        const [plan] = await db
+          .select()
+          .from(schema.sessionPlans)
+          .where(
+            and(
+              eq(schema.sessionPlans.id, input.sessionPlanId),
+              eq(schema.sessionPlans.artistId, ctx.user.id)
+            )
+          )
+          .limit(1)
+          .for("update");
+        if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+        await persistProjectName(db, plan, input.name);
+        return { projectName: input.name };
       });
-      let metadata: Record<string, any> = {};
-      try {
-        metadata = JSON.parse(message?.metadata || "{}");
-      } catch {}
-      const existing = await db.query.appointments.findFirst({
-        where: eq(schema.appointments.sessionPlanId, plan.id),
-      });
-      // Keep an older project's context separate from later tattoos in the same chat.
-      const laterPlan = plan.createdAt
-        ? await db.query.sessionPlans.findFirst({
-            where: and(
-              eq(schema.sessionPlans.conversationId, input.conversationId),
-              gt(schema.sessionPlans.createdAt, plan.createdAt)
-            ),
-            orderBy: [asc(schema.sessionPlans.createdAt)],
-          })
-        : undefined;
-      const saved = existing?.projectName || metadata.projectName;
-      const name = isDesignProjectName(saved)
-        ? saved
-        : await generateProjectName(
-            db,
-            input.conversationId,
-            undefined,
-            laterPlan ? plan.createdAt || undefined : undefined
-          );
-      await db
-        .update(schema.messages)
-        .set({ metadata: JSON.stringify({ ...metadata, projectName: name }) })
-        .where(eq(schema.messages.id, plan.messageId));
-      await db
-        .update(schema.appointments)
-        .set({ projectName: name })
-        .where(and(eq(schema.appointments.sessionPlanId, plan.id)));
-      return { projectName: name };
     }),
   summary: protectedProcedure
     .input(z.object({ conversationId: z.number().int().positive() }))
@@ -359,7 +348,9 @@ export const projectsRouter = router({
             ...s
           }) => ({
             ...s,
-            projectName: designProjectName(s.projectName),
+            projectName:
+              presentedPlans.find(p => p.id === s.sessionPlanId)?.projectName ||
+              designProjectName(s.projectName),
             pendingRequest:
               requests.find(
                 r =>

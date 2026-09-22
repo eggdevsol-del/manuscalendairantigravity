@@ -1,3 +1,4 @@
+import { masterDevRouter } from "./masterDev";
 import { waitlistRouter } from "./waitlist";
 import { projectsRouter } from "./projects";
 import { reconciliationRouter } from "./reconciliation";
@@ -45,6 +46,7 @@ import { sessionPlansRouter } from "./sessionPlans";
 import { aftercareRouter } from "./aftercare";
 
 export const appRouter = router({
+  masterDev: masterDevRouter,
   waitlist: waitlistRouter,
   projects: projectsRouter,
   reconciliation: reconciliationRouter,

@@ -1306,10 +1306,10 @@ export const appointmentsRouter = router({
         : [];
       const savedNames = new Map(
         savedPlans.map(p => {
-          let name: string | null = null;
+          let name: string | null = p.projectName || null;
           try {
             const meta = JSON.parse(p.message?.metadata || "{}");
-            if (typeof meta.projectName === "string") name = meta.projectName;
+            if (!name) name = designProjectName(meta.projectName);
           } catch {}
           return [p.id, name];
         })
@@ -1406,10 +1406,8 @@ export const appointmentsRouter = router({
             status: a.status,
             title: a.title,
             projectName:
-              designProjectName(a.projectName) ||
-              designProjectName(
-                a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null
-              ),
+              (a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null) ||
+              designProjectName(a.projectName),
             sessionIndex: a.sessionIndex,
             sessionTotal: a.sessionTotal,
             serviceName: a.serviceName,

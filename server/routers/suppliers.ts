@@ -4,7 +4,7 @@ import { getDb } from "../db";
 import { withDatabaseTransaction } from "../services/core";
 import { runStoreScraper } from "../services/scraper";
 import * as schema from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { publicStoreFetch, parseStoreUrl } from "../services/publicStoreFetch";
 
 export const suppliersRouter = router({
@@ -195,6 +195,7 @@ export const suppliersRouter = router({
     const db = await getDb();
     if (!db) throw new Error("Database connection failed");
     return db.query.suppliers.findMany({
+      where: eq(schema.suppliers.isActive, 1),
       orderBy: (suppliers, { desc }) => [desc(suppliers.createdAt)],
     });
   }),
@@ -216,7 +217,10 @@ export const suppliersRouter = router({
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
       return db.query.suppliers.findFirst({
-        where: eq(schema.suppliers.id, input.id),
+        where: and(
+          eq(schema.suppliers.id, input.id),
+          eq(schema.suppliers.isActive, 1)
+        ),
       });
     }),
 
@@ -225,6 +229,13 @@ export const suppliersRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
+      const supplier = await db.query.suppliers.findFirst({
+        where: and(
+          eq(schema.suppliers.id, input.supplierId),
+          eq(schema.suppliers.isActive, 1)
+        ),
+      });
+      if (!supplier) return [];
       return db.query.supplierProducts.findMany({
         where: eq(schema.supplierProducts.supplierId, input.supplierId),
         with: {

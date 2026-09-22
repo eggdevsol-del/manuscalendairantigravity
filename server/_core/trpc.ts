@@ -1,3 +1,4 @@
+import { usageActions } from "../services/usageActions";
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from "@shared/const";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
@@ -47,7 +48,7 @@ export const publicProcedure = t.procedure.use(loggingMiddleware);
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
 
-  if (!ctx.user) {
+  if (!ctx.user || ctx.user.role?.startsWith("disabled_")) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
   }
 
@@ -59,7 +60,27 @@ const requireUser = t.middleware(async opts => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(requireUser);
+const usageMiddleware = t.middleware(async ({ next, type, path, ctx }) => {
+  const result = await next();
+  const action = usageActions[path];
+  if (
+    result.ok &&
+    type === "mutation" &&
+    action &&
+    ctx.user &&
+    ctx.user.role !== "master_dev"
+  )
+    await createLog({
+      level: "info",
+      category: "usage:action",
+      message: action,
+      userId: ctx.user.id,
+    });
+  return result;
+});
+export const protectedProcedure = t.procedure
+  .use(requireUser)
+  .use(usageMiddleware);
 
 export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {

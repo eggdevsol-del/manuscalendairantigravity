@@ -1,3 +1,4 @@
+import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
 import { ShoppingBag } from "lucide-react";
 import { HomeTabs } from "../design/HomeTabs";
@@ -112,6 +113,7 @@ function Directory() {
           href={`/supplies?supplier=${item.id}`}
         />
       ))}
+      <ReorderRecommendations showUpcoming />
       {user?.role === "admin" && (
         <Section title="Import a supplier catalogue">
           <form
@@ -357,7 +359,7 @@ function Catalogue({ id }: { id: number }) {
                       i.variantId === item.variantId
                         ? {
                             ...i,
-                            quantity: Math.min(i.quantity + 1, item.stock),
+                            quantity: Math.min(i.quantity + item.quantity, item.stock),
                           }
                         : i
                     )
@@ -408,6 +410,7 @@ function CatalogueProduct({
 }) {
   const [open, setOpen] = useState(false);
   const [variantId, setVariantId] = useState(product.variants[0]?.id);
+  const [quantity, setQuantity] = useState(1);
   const variant = product.variants.find(v => v.id === variantId);
   const count =
     quantities.find(item => item.variantId === variantId)?.quantity || 0;
@@ -464,7 +467,7 @@ function CatalogueProduct({
                 <select
                   aria-label={`${product.title} variant`}
                   value={variantId || ""}
-                  onChange={e => setVariantId(Number(e.target.value))}
+                  onChange={e => { setVariantId(Number(e.target.value)); setQuantity(1); }}
                 >
                   {product.variants.map(v => (
                     <option key={v.id} value={v.id}>
@@ -481,8 +484,14 @@ function CatalogueProduct({
                 {variant.inventoryCount > 0 ? "In stock" : "Out of stock"}
               </p>
             )}
+            <div className="v3-inline supplier-quantity" role="group" aria-label="Quantity">
+              <Action tone="secondary" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</Action>
+              <label>Quantity <input aria-label="Quantity" type="number" inputMode="numeric" min={1} max={Math.max(1, (variant?.inventoryCount || 0) - count)} value={quantity} style={{width:"4rem",textAlign:"center"}} onChange={e => setQuantity(Math.max(1, Math.min(Math.floor(Number(e.target.value)) || 1, Math.max(1, (variant?.inventoryCount || 0)-count))))} /></label>
+              <Action tone="secondary" aria-label="Increase quantity" disabled={!variant || quantity >= variant.inventoryCount-count} onClick={() => setQuantity(q => Math.min(q+1, (variant?.inventoryCount || 0)-count))}>+</Action>
+            </div>
+            {count > 0 && <p className="v3-muted">{count} already in your cart</p>}
             <Action
-              disabled={!variant || count >= variant.inventoryCount}
+              disabled={!variant || count >= variant.inventoryCount || quantity > variant.inventoryCount-count}
               onClick={() => {
                 if (!variant) return;
                 onAdd({
@@ -492,8 +501,10 @@ function CatalogueProduct({
                   variant: variant.title,
                   price: variant.priceCents,
                   stock: variant.inventoryCount,
-                  quantity: 1,
+                  quantity,
+
                 });
+                setQuantity(1);
                 setOpen(false);
               }}
             >
@@ -685,7 +696,7 @@ function SupplyCheckout({
                     </strong>
                   }
                 />
-                <div className="v3-inline">
+                <div className="v3-inline supplier-quantity">
                   <Action
                     tone="secondary"
                     aria-label={`Remove one ${item.title}`}

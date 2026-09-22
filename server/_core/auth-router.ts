@@ -1,3 +1,4 @@
+import { getAuthSecret } from "./auth-secret";
 import {
   createPasswordRecoveryToken,
   readPasswordRecoveryToken,
@@ -787,8 +788,7 @@ export const authRouter = router({
     )
     .mutation(async ({ input }) => {
       const jwt = (await import("jsonwebtoken")).default;
-      const JWT_SECRET =
-        process.env.JWT_SECRET || "your-secret-key-change-in-production";
+      const JWT_SECRET = getAuthSecret();
 
       // 1. Verify lead token
       let payload: { leadId: number; email: string; conversationId: number };

@@ -336,6 +336,7 @@ function response(name, role, test) {
   if (name === "funnel.submitPublicBooking")
     return {
       leadToken: "fixture-lead",
+      leadId: 91,
       existingUser: test === "public-existing",
       conversationId: 12,
       success: true,

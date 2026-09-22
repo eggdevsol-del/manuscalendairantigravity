@@ -1,3 +1,5 @@
+import { shopifyImportSimulatorEnabled } from "../services/shopifyImportSimulator";
+import { parseStoreUrl } from "../services/publicStoreFetch";
 import { withDatabaseTransaction } from "../services/core";
 import { z } from "zod";
 import { router, publicProcedure, merchantProcedure } from "../_core/trpc";
@@ -94,6 +96,7 @@ export const merchantAuthRouter = router({
       claimed: merchant.claimed,
       lowStockThreshold: merchant.lowStockThreshold,
       shopifyConnected: !!merchant.shopifyToken,
+      shopifySimulatorEnabled: shopifyImportSimulatorEnabled(),
     };
   }),
 
@@ -378,6 +381,28 @@ export const merchantAuthRouter = router({
   /**
    * Polling query to check background scraper progress
    */
+  simulateShopifyImport: merchantProcedure
+    .input(z.object({ storeUrl: z.string().trim().min(1).max(2048) }).strict())
+    .mutation(async ({ ctx, input }) => {
+      if (!shopifyImportSimulatorEnabled()) throw new TRPCError({ code: "FORBIDDEN", message: "The Shopify import simulator is disabled." });
+      let storeUrl: string;
+      try { storeUrl = parseStoreUrl(input.storeUrl).origin; }
+      catch (error) { throw new TRPCError({ code:"BAD_REQUEST",message:error instanceof Error ? error.message : "Enter a public store URL." }); }
+      const db = await getDb();
+      if (!db) throw new TRPCError({code:"INTERNAL_SERVER_ERROR"});
+      const merchant = await db.query.merchants.findFirst({where:eq(schema.merchants.userId,ctx.user.id)});
+      if (!merchant) throw new TRPCError({code:"NOT_FOUND",message:"Supplier account not found."});
+      const pending = await db.query.notificationOutbox.findFirst({where:and(
+        eq(schema.notificationOutbox.eventType,"public_catalogue_import"),
+        eq(schema.notificationOutbox.status,"pending"),
+        sql`JSON_EXTRACT(${schema.notificationOutbox.payloadJson}, '$.merchantId') = ${merchant.id}`
+      )});
+      if (!pending) await db.insert(schema.notificationOutbox).values({
+        eventType:"public_catalogue_import",payloadJson:JSON.stringify({merchantId:merchant.id,storeUrl}),status:"pending",
+      });
+      return { queued:true, alreadyQueued:!!pending };
+    }),
+
   getSyncStatus: merchantProcedure.query(async ({ ctx }) => {
     const db = await getDb();
     if (!db) throw new Error("Database connection failed");

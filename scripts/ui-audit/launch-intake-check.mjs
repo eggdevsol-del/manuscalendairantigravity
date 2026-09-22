@@ -43,7 +43,7 @@ await context.route("**/*", async route => {
         };
       if (name === "funnel.submitPublicBooking") {
         submittedInput = JSON.parse(route.request().postData());
-        value = { leadToken: "test-token", existingUser: false };
+        value = { leadToken: "test-token", existingUser: false, success: true, leadId: 91, conversationId: 12 };
       }
       return { result: { data: { json: value } } };
     });

@@ -9,7 +9,7 @@ export const systemRouter = router({
     .input(
       z.object({
         level: z.enum(["debug", "info", "warn", "error"]),
-        category: z.string(),
+        category: z.string().refine(value => !value.startsWith("usage:") && !value.startsWith("master_dev:"), "Reserved category"),
         message: z.string(),
         metadata: z.string().optional(),
       })
