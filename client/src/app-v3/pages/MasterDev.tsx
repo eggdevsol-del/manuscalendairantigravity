@@ -1,17 +1,41 @@
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import { Redirect } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import {
   Action,
-  Feedback,
+  Feedback as BaseFeedback,
   Panel,
   Row,
   Screen,
   Section,
   Tabs,
 } from "../design/primitives";
+
+function needsDeveloperSignIn(error: unknown) {
+  const code = (error as { data?: { code?: string } } | null)?.data?.code;
+  return code === "UNAUTHORIZED" || code === "FORBIDDEN";
+}
+function developerSignOut() {
+  for (const storage of [sessionStorage, localStorage]) {
+    storage.removeItem("authToken");
+    storage.removeItem("user");
+  }
+  window.location.assign("/login");
+}
+function Feedback(props: ComponentProps<typeof BaseFeedback>) {
+  if (needsDeveloperSignIn(props.error)) return (
+    <Panel>
+      <div role="alert">
+        <h2>Sign in to continue</h2>
+        <p>Your developer session has expired or is no longer authorised. Sign in again to access platform information.</p>
+      </div>
+      <Action onClick={developerSignOut}>Sign in again</Action>
+    </Panel>
+  );
+  return <BaseFeedback {...props} />;
+}
 
 const amount = (cents: number, country?: string | null) =>
   new Intl.NumberFormat("en-AU", {
@@ -84,7 +108,8 @@ export function MasterDev() {
         <Feedback loading />
       </Screen>
     );
-  if (!user || user.role !== "master_dev") return <Redirect to="/dev/login" />;
+  if (!user || user.role !== "master_dev") return <Redirect to="/login" />;
+  if (needsDeveloperSignIn(overview.error)) return <Screen title="Developer"><Feedback error={overview.error} /></Screen>;
   const data = overview.data;
   return (
     <Screen
@@ -93,11 +118,7 @@ export function MasterDev() {
       action={
         <Action
           tone="quiet"
-          onClick={() => {
-            sessionStorage.removeItem("authToken");
-            sessionStorage.removeItem("user");
-            window.location.assign("/dev/login");
-          }}
+          onClick={developerSignOut}
         >
           Sign out
         </Action>
@@ -116,7 +137,6 @@ export function MasterDev() {
         error={overview.error}
         onRetry={() => overview.refetch()}
       />
-      {overview.error && <a href="/dev/login">Sign in again</a>}
       {data && tab === "Overview" && (
         <>
           <Section title="Last 30 days">
@@ -247,7 +267,8 @@ function People() {
   const [role, setRole] = useState("all");
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
-  const q = trpc.masterDev.people.useQuery({ search, role, page });
+  const q = trpc.masterDev.people.useQuery({ search, role, page }, { retry: false });
+  if (needsDeveloperSignIn(q.error)) return <Feedback error={q.error} />;
   return (
     <>
       <div className="v3-form">
@@ -368,6 +389,8 @@ function Person({
       setConfirm(false);
     },
   });
+  const authError = [q.error, save.error, toggle.error].find(needsDeveloperSignIn);
+  if (authError) return <SheetShell isOpen onClose={close} title="Developer session"><Feedback error={authError} /></SheetShell>;
   const p = q.data?.person;
   return (
     <SheetShell isOpen onClose={close} title={p?.name || "Add account"}>
@@ -520,7 +543,7 @@ function Person({
   );
 }
 function Suppliers() {
-  const q = trpc.masterDev.suppliers.useQuery();
+  const q = trpc.masterDev.suppliers.useQuery(undefined, { retry: false });
   const [selected, setSelected] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [confirm, setConfirm] = useState(false);
@@ -536,6 +559,8 @@ function Suppliers() {
       setSelected(null);
     },
   });
+  const authError = [q.error, save.error, remove.error].find(needsDeveloperSignIn);
+  if (authError) return <Feedback error={authError} />;
   const item = q.data?.find(s => s.id === selected);
   return (
     <>

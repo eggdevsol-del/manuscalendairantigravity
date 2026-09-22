@@ -55,7 +55,7 @@ try {
   assert.deepEqual(errors,[]);await context.close();console.log('PASS developer dashboard',width);
  }
  const {page,context,calls}=await setup('client',{'auth.me':{id:'client',role:'client'}});
- await page.goto(base+'/dev');await page.getByText('Private sign-in',{exact:true}).waitFor();
+ await page.goto(base+'/dev');await page.getByText('Welcome back',{exact:true}).waitFor();
  assert(!calls.some(c=>c.name==='masterDev.overview'));
  await context.close();console.log('PASS ordinary account excluded from dashboard');
 }finally{await browser.close();}
