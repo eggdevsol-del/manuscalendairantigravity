@@ -1,7 +1,7 @@
 # Private developer dashboard
 
 ## Access and activation
-The unlinked `/dev/login` page accepts the configured username (default `MasterDevP`) and the provisioned account's hashed password. `/dev` is the dashboard. Neither role selection nor ordinary navigation advertises this role. Hiding the link is not the authorization boundary: every endpoint requires the `master_dev` database role, the matching `MASTER_DEV_USER_ID` environment setting and a dedicated signed session that expires after 30 minutes. Existing administrators do not automatically gain access.
+The main `/login` page accepts the provisioned developer email/password and routes the authorised account to `/dev`. Developer sessions use session storage even when Remember me is selected and expire after 30 minutes. The unlinked `/dev/login` page also accepts the configured username (default `MasterDevP`) and the provisioned account's hashed password. `/dev` is the dashboard. Neither role selection nor ordinary navigation advertises this role. Hiding the link is not the authorization boundary: every endpoint requires the `master_dev` database role, the matching `MASTER_DEV_USER_ID` environment setting and a dedicated signed session that expires after 30 minutes. Existing administrators do not automatically gain access.
 
 No account has been provisioned and no production configuration was changed. Apply `server/migrations/20260922-supplier-visibility.sql` before deploying this release; it adds an active flag and leaves existing suppliers visible. Do not reuse a password posted in a conversation. From an interactive terminal against the intended database, run:
 

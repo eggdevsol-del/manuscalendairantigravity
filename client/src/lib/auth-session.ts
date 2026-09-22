@@ -6,7 +6,7 @@ export function finishSignIn(
     storage.removeItem("authToken");
     storage.removeItem("user");
   }
-  const storage = remember ? localStorage : sessionStorage;
+  const storage = remember && data.user.role !== "master_dev" ? localStorage : sessionStorage;
   storage.setItem("authToken", data.token);
   storage.setItem("user", JSON.stringify(data.user));
   const returnTo = sessionStorage.getItem("tattoi-return-to");
@@ -17,7 +17,7 @@ export function finishSignIn(
     !returnTo.includes("\\") &&
     !/^\/(login|signup|auth)(\/|\?|$)/.test(returnTo);
   window.location.assign(
-    safeReturn && returnTo
+    data.user.role === "master_dev" ? "/dev" : safeReturn && returnTo
       ? returnTo
       : data.user.role === "client"
         ? "/bookings"

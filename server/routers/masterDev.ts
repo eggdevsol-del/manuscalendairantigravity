@@ -1,10 +1,9 @@
+import { masterDevLoginAttempt, createMasterDevToken } from "../services/masterDevAccess";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, gte, like, ne, or, sql } from "drizzle-orm";
-import jwt from "jsonwebtoken";
 import { randomBytes } from "node:crypto";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
-import { getAuthSecret } from "../_core/auth-secret";
 import { comparePassword, hashPassword } from "../_core/auth-new";
 import { getDb, withDatabaseTransaction } from "../services/core";
 import {
@@ -43,18 +42,6 @@ async function database() {
       message: "Database unavailable",
     });
   return db;
-}
-const attempts = new Map<string, { count: number; until: number }>();
-function loginAttempt(key: string) {
-  const now = Date.now();
-  for (const [k, v] of attempts) if (v.until < now) attempts.delete(k);
-  const entry = attempts.get(key) || { count: 0, until: now + 15 * 60_000 };
-  if (++entry.count > 5)
-    throw new TRPCError({
-      code: "TOO_MANY_REQUESTS",
-      message: "Try again in 15 minutes.",
-    });
-  attempts.set(key, entry);
 }
 async function audit(
   db: Awaited<ReturnType<typeof database>>,
@@ -97,7 +84,7 @@ export const masterDevRouter = router({
         .strict()
     )
     .mutation(async ({ ctx, input }) => {
-      loginAttempt(ctx.req.ip || ctx.req.socket?.remoteAddress || "unknown");
+      masterDevLoginAttempt(ctx.req.ip || ctx.req.socket?.remoteAddress || "unknown");
       const db = await database();
       const [user] = process.env.MASTER_DEV_USER_ID
         ? await db
@@ -122,11 +109,7 @@ export const masterDevRouter = router({
           message: "Invalid credentials",
         });
       await audit(db, user.id, "Developer sign-in", user.id);
-      const token = jwt.sign(
-        { userId: user.id, email: user.email || "", masterDev: true },
-        getAuthSecret(),
-        { expiresIn: "30m" }
-      );
+      const token = createMasterDevToken(user);
       return { token, user: { id: user.id, name: user.name, role: user.role } };
     }),
   overview: dev.query(async ({ ctx }) => {

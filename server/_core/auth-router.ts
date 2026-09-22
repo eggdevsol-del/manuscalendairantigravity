@@ -1,3 +1,4 @@
+import { accountEnabled, masterDevIdentity, masterDevLoginAttempt, createMasterDevToken } from "../services/masterDevAccess";
 import { getAuthSecret } from "./auth-secret";
 import {
   createPasswordRecoveryToken,
@@ -178,7 +179,7 @@ export const authRouter = router({
         password: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { email, password } = input;
 
       // Get user by email
@@ -189,6 +190,11 @@ export const authRouter = router({
           message: "Invalid email or password",
         });
       }
+
+      if (!accountEnabled(user) || (user.role === "master_dev" && !masterDevIdentity(user))) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Invalid email or password" });
+      }
+      if (user.role === "master_dev") masterDevLoginAttempt(ctx.req.ip || ctx.req.socket?.remoteAddress || "unknown");
 
       // Check if user has a password (might be social auth only)
       if (!user.password) {
@@ -212,7 +218,7 @@ export const authRouter = router({
       await updateUserLastSignedIn(user.id);
 
       // Generate JWT token
-      const token = generateToken({ id: user.id, email: user.email || "" });
+      const token = user.role === "master_dev" ? createMasterDevToken(user) : generateToken({ id: user.id, email: user.email || "" });
 
       return {
         user: {
