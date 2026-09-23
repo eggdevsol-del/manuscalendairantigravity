@@ -134,6 +134,11 @@ export const supplierOrdersRouter = router({
       if (!supplier || supplier.isActive === 0)
         throw new Error("Supplier is no longer available for new orders");
 
+      if (supplier.merchantId) {
+        const merchant = await db.query.merchants.findFirst({ where: eq(schema.merchants.id, supplier.merchantId) });
+        if (merchant?.status !== "active") throw new Error("Supplier is no longer available for new orders");
+      }
+
       const supplierCurrency = supplier.currency || "AUD";
 
       // 2. Get artist info

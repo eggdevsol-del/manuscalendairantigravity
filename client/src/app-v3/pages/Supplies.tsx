@@ -110,7 +110,7 @@ function Directory() {
           title={item.name}
           detail={item.currency || "AUD"}
           icon={<Avatar name={item.name} src={item.logoUrl} />}
-          href={`/supplies?supplier=${item.id}`}
+          href={item.merchantId ? `/shop/supplier-${item.merchantId}` : `/supplies?supplier=${item.id}`}
         />
       ))}
       <ReorderRecommendations showUpcoming />

@@ -100,6 +100,29 @@ export const merchantAuthRouter = router({
     };
   }),
 
+  setStorePublished: merchantProcedure
+    .input(z.object({ published: z.boolean() }))
+    .mutation(async ({ ctx, input }) => withDatabaseTransaction(async db => {
+      const [merchant] = await db.select().from(schema.merchants)
+        .where(eq(schema.merchants.userId, ctx.user.id)).for("update");
+      if (!merchant) throw new TRPCError({ code: "NOT_FOUND" });
+      if (merchant.status === "suspended") throw new TRPCError({ code: "FORBIDDEN", message: "This store is suspended. Contact support." });
+      const listings = await db.query.suppliers.findMany({ where: eq(schema.suppliers.merchantId, merchant.id) });
+      if (input.published) {
+        if (listings.some(s => s.isActive === 0)) throw new TRPCError({ code: "FORBIDDEN", message: "This store has been removed by an administrator. Contact support." });
+        const product = await db.query.products.findFirst({ where: and(
+          eq(schema.products.artistId, ctx.user.id), eq(schema.products.ownerType, "merchant"), eq(schema.products.isActive, 1)
+        ) });
+        if (!product) throw new TRPCError({ code: "BAD_REQUEST", message: "Publish at least one product in Catalogue & stock before publishing your store." });
+        if (!listings.length) await db.insert(schema.suppliers).values({
+          merchantId: merchant.id, name: merchant.businessName, claimed: 1,
+          isActive: 1, currency: merchant.country === "NZ" ? "NZD" : "AUD",
+        });
+      }
+      await db.update(schema.merchants).set({ status: input.published ? "active" : "pending" }).where(eq(schema.merchants.id, merchant.id));
+      return { published: input.published };
+    })),
+
   updateProfile: merchantProcedure
     .input(
       z.object({

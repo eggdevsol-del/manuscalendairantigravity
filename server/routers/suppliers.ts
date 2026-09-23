@@ -194,10 +194,17 @@ export const suppliersRouter = router({
   getSuppliers: protectedProcedure.query(async () => {
     const db = await getDb();
     if (!db) throw new Error("Database connection failed");
-    return db.query.suppliers.findMany({
-      where: eq(schema.suppliers.isActive, 1),
-      orderBy: (suppliers, { desc }) => [desc(suppliers.createdAt)],
-    });
+    const [listings, merchants] = await Promise.all([
+      db.query.suppliers.findMany({
+        where: eq(schema.suppliers.isActive, 1),
+        orderBy: (suppliers, { desc }) => [desc(suppliers.createdAt)],
+      }),
+      db.query.merchants.findMany({ where: eq(schema.merchants.status, "active"), columns: { id: true, businessName: true } }),
+    ]);
+    const active = new Map(merchants.map(m => [m.id, m]));
+    return listings.filter(s => !s.merchantId || active.has(s.merchantId)).map(s => ({
+      ...s, name: active.get(s.merchantId!)?.businessName || s.name,
+    }));
   }),
 
   deleteSupplier: adminProcedure
@@ -216,12 +223,17 @@ export const suppliersRouter = router({
     .query(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
-      return db.query.suppliers.findFirst({
+      const supplier = await db.query.suppliers.findFirst({
         where: and(
           eq(schema.suppliers.id, input.id),
           eq(schema.suppliers.isActive, 1)
         ),
       });
+      if (supplier?.merchantId) {
+        const merchant = await db.query.merchants.findFirst({ where: eq(schema.merchants.id, supplier.merchantId) });
+        if (merchant?.status !== "active") return undefined;
+      }
+      return supplier;
     }),
 
   getSupplierProducts: protectedProcedure
@@ -236,6 +248,10 @@ export const suppliersRouter = router({
         ),
       });
       if (!supplier) return [];
+      if (supplier.merchantId) {
+        const merchant = await db.query.merchants.findFirst({ where: eq(schema.merchants.id, supplier.merchantId) });
+        if (merchant?.status !== "active") return [];
+      }
       return db.query.supplierProducts.findMany({
         where: eq(schema.supplierProducts.supplierId, input.supplierId),
         with: {
