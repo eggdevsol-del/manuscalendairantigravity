@@ -30,7 +30,7 @@ export default function SupplierToday() {
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
   const utils = trpc.useUtils();
   const publish = trpc.merchantAuth.setStorePublished.useMutation({ onSuccess: async () => {
-    await Promise.all([profile.refetch(), utils.suppliers.getSuppliers.invalidate(), utils.storefront.getArtistStorefront.invalidate()]);
+    await Promise.all([profile.refetch(), utils.suppliers.getSuppliers.invalidate(), utils.storefront.getProducts.invalidate(), utils.storefront.getArtistStorefront.invalidate()]);
   } });
   const stats = trpc.merchantAuth.getDashboardStats.useQuery();
   const data = stats.data;
@@ -49,11 +49,11 @@ export default function SupplierToday() {
       />
       {profile.data && <Panel>
         <Status>{profile.data.status === "active" ? "Live on Tattoi" : profile.data.status === "suspended" ? "Suspended" : "Draft · only you can see your store"}</Status>
-        <p className="v3-muted">{profile.data.status === "active" ? "Artists can find your store and browse your published products." : "Import your catalogue and publish the products you want to sell, then publish your store when you’re ready."}</p>
+        <p className="v3-muted">{profile.data.status === "active" ? "Artists can find your store and browse your published products." : "Publish your store here when you’re ready. On your first launch, if no products are published yet, your imported catalogue goes live too."}</p>
         {publish.error && <p role="alert">{publish.error.message}</p>}
         <Action disabled={publish.isPending || profile.data.status === "suspended"}
           onClick={() => publish.mutate({ published: profile.data!.status !== "active" })}>
-          {publish.isPending ? "Saving…" : profile.data.status === "active" ? "Unpublish store" : "Publish store"}
+          {publish.isPending ? "Updating store…" : profile.data.status === "active" ? "Unpublish store" : "Publish store"}
         </Action>
       </Panel>}
       <ShopifyImportSimulator />

@@ -113,7 +113,19 @@ export const merchantAuthRouter = router({
         const product = await db.query.products.findFirst({ where: and(
           eq(schema.products.artistId, ctx.user.id), eq(schema.products.ownerType, "merchant"), eq(schema.products.isActive, 1)
         ) });
-        if (!product) throw new TRPCError({ code: "BAD_REQUEST", message: "Publish at least one product in Catalogue & stock before publishing your store." });
+        if (!product && !listings.length) {
+          const imported = await db.query.products.findFirst({ where: and(
+            eq(schema.products.artistId, ctx.user.id), eq(schema.products.ownerType, "merchant"),
+            sql`${schema.products.externalId} LIKE 'store:%'`
+          ) });
+          if (!imported) throw new TRPCError({ code: "BAD_REQUEST", message: "Import your store’s products first, then publish your store here." });
+          // First launch: make the imported catalogue available in the same transaction.
+          // Later launches preserve individually hidden products.
+          await db.update(schema.products).set({ isActive: 1 }).where(and(
+            eq(schema.products.artistId, ctx.user.id), eq(schema.products.ownerType, "merchant"),
+            sql`${schema.products.externalId} LIKE 'store:%'`
+          ));
+        }
         if (!listings.length) await db.insert(schema.suppliers).values({
           merchantId: merchant.id, name: merchant.businessName, claimed: 1,
           isActive: 1, currency: merchant.country === "NZ" ? "NZD" : "AUD",
