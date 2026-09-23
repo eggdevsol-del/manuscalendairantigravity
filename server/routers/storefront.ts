@@ -67,14 +67,16 @@ export const storefrontRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role === "merchant")
+        throw new TRPCError({ code: "FORBIDDEN", message: "Supplier products must be imported from your store." });
       const db = await getDb();
       if (!db) throw new Error("Database connection failed");
 
-      if (!["artist", "admin", "merchant"].includes(ctx.user.role))
+      if (!["artist", "admin"].includes(ctx.user.role))
         throw new TRPCError({ code: "FORBIDDEN" });
       const [result] = await db.insert(schema.products).values({
         artistId: ctx.user.id,
-        ownerType: ctx.user.role === "merchant" ? "merchant" : "artist",
+        ownerType: "artist",
         title: input.title,
         description: input.description,
         priceCents: input.priceCents,

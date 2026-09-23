@@ -28,7 +28,7 @@ try {
  }
  const {page,context,calls,errors}=await setup('merchant',{
   'merchantAuth.getMerchantProfile':{id:7,businessName:'Studio Supply',country:'AU',shopifySimulatorEnabled:true},
-  'merchantAuth.simulateShopifyImport':{queued:true,alreadyQueued:false},
+  'merchantAuth.simulateShopifyImport':{queued:true,alreadyQueued:false,jobId:42,storeUrl:'https://example.com'},
   'merchantAuth.getSyncStatus':{status:'complete',count:5,message:'Import complete.'},
  });
  await page.goto(base+'/settings');
@@ -44,6 +44,10 @@ try {
  await page.getByText('Import complete. Review your products before publishing.',{exact:true}).waitFor();
  assert.deepEqual(calls.find(c=>c.name==='merchantAuth.simulateShopifyImport').input,{storeUrl:'https://example.com'});
  assert(!JSON.stringify(calls).includes('not-a-real-password'));
+ assert(calls.some(c=>c.name==='merchantAuth.getSyncStatus' && c.input?.jobId===42));
+ await page.goto(base+'/merchant/products');
+ assert.equal(await page.getByRole('button',{name:'Add product',exact:true}).count(),0);
+ await page.getByRole('link',{name:'Import from store',exact:true}).waitFor();
  await page.screenshot({path:`${out}/shopify-simulation.png`});
  assert.deepEqual(errors,[]);await context.close();console.log('PASS Shopify simulation; only storefront URL transmitted');
 } finally {await browser.close();}

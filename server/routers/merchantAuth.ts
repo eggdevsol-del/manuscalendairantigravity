@@ -397,13 +397,20 @@ export const merchantAuthRouter = router({
         eq(schema.notificationOutbox.status,"pending"),
         sql`JSON_EXTRACT(${schema.notificationOutbox.payloadJson}, '$.merchantId') = ${merchant.id}`
       )});
-      if (!pending) await db.insert(schema.notificationOutbox).values({
+      if (pending) {
+        const previous = JSON.parse(pending.payloadJson);
+        if (previous.storeUrl !== storeUrl) throw new TRPCError({ code: "CONFLICT", message: "Another store import is running. Wait for it to finish before importing a different URL." });
+        return { queued: true, alreadyQueued: true, jobId: pending.id, storeUrl };
+      }
+      const [job] = await db.insert(schema.notificationOutbox).values({
         eventType:"public_catalogue_import",payloadJson:JSON.stringify({merchantId:merchant.id,storeUrl}),status:"pending",
       });
-      return { queued:true, alreadyQueued:!!pending };
+      return { queued:true, alreadyQueued:false, jobId: Number(job.insertId), storeUrl };
     }),
 
-  getSyncStatus: merchantProcedure.query(async ({ ctx }) => {
+  getSyncStatus: merchantProcedure
+    .input(z.object({ jobId: z.number().int().positive() }).optional())
+    .query(async ({ ctx, input }) => {
     const db = await getDb();
     if (!db) throw new Error("Database connection failed");
 
@@ -418,6 +425,7 @@ export const merchantAuthRouter = router({
     const latest = await db.query.notificationOutbox.findFirst({
       where: and(
         sql`${schema.notificationOutbox.eventType} IN ('shopify_catalogue_sync','public_catalogue_import')`,
+        input?.jobId ? eq(schema.notificationOutbox.id, input.jobId) : undefined,
         sql`JSON_EXTRACT(${schema.notificationOutbox.payloadJson}, '$.merchantId') = ${merchant.id}`
       ),
       orderBy: desc(schema.notificationOutbox.id),
@@ -446,7 +454,7 @@ export const merchantAuthRouter = router({
             : "Catalogue import queued.",
       };
     }
-    return progress || { status: "idle" as const, count: 0 };
+    return input?.jobId ? { status: "failed" as const, count: 0, error: "Import job was not found. Start a new import." } : progress || { status: "idle" as const, count: 0 };
   }),
 
   /**

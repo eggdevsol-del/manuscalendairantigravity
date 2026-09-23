@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import {
@@ -9,23 +10,31 @@ import {
   Status,
 } from "../design/primitives";
 export function ShopifyImportSimulator() {
+  const utils = trpc.useUtils();
+  const [jobId, setJobId] = useState<number>();
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"credentials" | "store" | "status">(
     "credentials"
   );
   const [storeUrl, setStoreUrl] = useState("");
-  const progress = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
-    enabled: open && step === "status",
+  const progress = trpc.merchantAuth.getSyncStatus.useQuery(jobId ? { jobId } : undefined, {
+    enabled: open && step === "status" && !!jobId,
     refetchInterval: query =>
-      query.state.data?.status === "syncing" ? 2000 : false,
+      query.state.data?.status === "complete" || query.state.data?.status === "failed" ? false : 2000,
   });
   const run = trpc.merchantAuth.simulateShopifyImport.useMutation({
-    onSuccess: () => {
+    onSuccess: data => {
+      setJobId(data.jobId);
       setStep("status");
-      void progress.refetch();
     },
   });
+  useEffect(() => {
+    if (progress.data?.status === "complete") {
+      void utils.storefront.getProducts.invalidate();
+      void utils.merchantAuth.getDashboardStats.invalidate();
+    }
+  }, [progress.data?.status, utils]);
   if (!profile.data?.shopifySimulatorEnabled) return null;
   return (
     <>
@@ -38,6 +47,7 @@ export function ShopifyImportSimulator() {
         </p>
         <Action
           onClick={() => {
+            setJobId(undefined);
             run.reset();
             setStep("credentials");
             setOpen(true);
@@ -120,6 +130,14 @@ export function ShopifyImportSimulator() {
               error={progress.error}
               onRetry={() => progress.refetch()}
             />
+            {progress.data?.status !== "complete" && progress.data?.status !== "failed" && (
+              <div role="status" aria-live="polite" aria-busy="true" className="v3-stack">
+                <Loader2 className="animate-spin" aria-hidden="true" size={32} />
+                <h3>Importing your store</h3>
+                <p className="v3-muted">{run.data?.storeUrl || storeUrl}</p>
+                <p>Fetching products, images and variants, then saving your catalogue. You can close this sheet while the import continues.</p>
+              </div>
+            )}
             <p role="status">
               {progress.data?.status === "failed"
                 ? progress.data.error
@@ -138,7 +156,7 @@ export function ShopifyImportSimulator() {
                 Try another import
               </Action>
             )}
-            <ActionLink href="/merchant/products">Review products</ActionLink>
+            {progress.data?.status === "complete" && <ActionLink href="/merchant/products">Review products</ActionLink>}
           </div>
         )}
       </SheetShell>

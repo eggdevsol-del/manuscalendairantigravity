@@ -65,3 +65,9 @@ describe("product image editing", () => {
     expect(fixture.saved).toBeNull();
   });
 });
+
+it("rejects manual supplier product creation before accessing the database", async () => {
+  const merchant = storefrontRouter.createCaller({ user: { id: "supplier", role: "merchant" }, req: {}, res: {} } as any);
+  await expect(merchant.createProduct(product)).rejects.toThrow("Supplier products must be imported");
+  expect(fixture.saved).toBeNull();
+});

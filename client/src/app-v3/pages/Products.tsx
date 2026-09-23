@@ -53,6 +53,7 @@ export default function Products() {
   });
   const busy = create.isPending || update.isPending;
   const edit = (product?: NonNullable<typeof query.data>[number]) => {
+    if (isMerchant && !product) return;
     create.reset();
     update.reset();
     setSaved(false);
@@ -101,7 +102,7 @@ export default function Products() {
       title="Products"
       subtitle="Your catalogue, ready for your customers"
       back={isMerchant ? undefined : "/business"}
-      action={<Action onClick={() => edit()}>Add product</Action>}
+      action={isMerchant ? <ActionLink href="/settings">Import from store</ActionLink> : <Action onClick={() => edit()}>Add product</Action>}
     >
       <p className="v3-muted">
         Set your Tattoi prices, available stock and publishing status here.
