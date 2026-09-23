@@ -1,3 +1,4 @@
+import { ShopifyImportSimulator } from "../components/ShopifyImportSimulator";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import {
@@ -237,6 +238,8 @@ export function ShopifyCatalogue() {
   });
   const connected = profile.data?.shopifyConnected;
   const busy = save.isPending || sync.isPending;
+  if (profile.isLoading || profile.error) return <Feedback loading={profile.isLoading} error={profile.error} onRetry={() => profile.refetch()} />;
+  if (profile.data?.shopifySimulatorEnabled) return <ShopifyImportSimulator />;
   return (
     <Section title="Shopify catalogue">
       <p>

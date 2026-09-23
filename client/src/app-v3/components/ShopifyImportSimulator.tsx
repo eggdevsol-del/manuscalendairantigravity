@@ -30,7 +30,7 @@ export function ShopifyImportSimulator() {
   return (
     <>
       <Panel>
-        <Status>Development simulation</Status>
+        <Status>Test mode</Status>
         <h3>Test your Shopify catalogue</h3>
         <p className="v3-muted">
           Simulate sign-in, then import your public store. This does not connect
@@ -43,7 +43,7 @@ export function ShopifyImportSimulator() {
             setOpen(true);
           }}
         >
-          Shopify sign-in (test)
+          Connect with Shopify
         </Action>
       </Panel>
       <SheetShell

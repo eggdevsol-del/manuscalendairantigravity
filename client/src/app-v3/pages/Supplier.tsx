@@ -269,7 +269,6 @@ export function SupplierSettings() {
         <SupplierProfile key={query.data.id} initial={query.data} />
       )}
       <SupplierPayments />
-      <ShopifyImportSimulator />
       <Section title="Shopify">
         <ShopifySyncTier />
       </Section>

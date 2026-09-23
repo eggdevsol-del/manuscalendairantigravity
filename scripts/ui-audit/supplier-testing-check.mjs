@@ -31,8 +31,9 @@ try {
   'merchantAuth.simulateShopifyImport':{queued:true,alreadyQueued:false},
   'merchantAuth.getSyncStatus':{status:'complete',count:5,message:'Import complete.'},
  });
- await page.goto(base+'/dashboard');
- await page.getByRole('button',{name:'Shopify sign-in (test)',exact:true}).click();
+ await page.goto(base+'/settings');
+ assert.equal(await page.getByLabel('Admin API token',{exact:true}).count(),0);
+ await page.getByRole('button',{name:'Connect with Shopify',exact:true}).click();
  await page.getByLabel('Dummy username',{exact:true}).fill('test-user');
  await page.getByLabel('Dummy password',{exact:true}).fill('not-a-real-password');
  await page.getByRole('button',{name:'Continue simulation',exact:true}).click();
