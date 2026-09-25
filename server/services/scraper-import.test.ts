@@ -1,8 +1,8 @@
 // @vitest-environment node
 import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ fetch: vi.fn(), save: vi.fn() }));
+const mocks = vi.hoisted(() => ({ fetch: vi.fn(), save: vi.fn(), image: vi.fn() }));
 vi.mock("./publicStoreFetch", () => ({ parseStoreUrl: (url: string) => new URL(url), publicStoreFetch: mocks.fetch }));
-vi.mock("../db", () => ({ getDb: async () => ({}) }));
+vi.mock("../db", () => ({ getDb: async () => ({ update: () => ({ set: (data: unknown) => ({ where: async () => mocks.image(data) }) }) }) }));
 vi.mock("./catalogueImport", () => ({ importCatalogue: mocks.save }));
 import { scrapeForMerchant, syncStatusMap } from "./scraper";
 beforeEach(() => { vi.resetAllMocks(); syncStatusMap.clear(); });
@@ -20,4 +20,11 @@ it("reports a failed import and saves nothing when the store blocks public catal
   await expect(scrapeForMerchant(7,"supplier-user","https://supplier.example")).rejects.toThrow("Could not find public products");
   expect(mocks.save).not.toHaveBeenCalled();
   expect(syncStatusMap.get(7)?.status).toBe("failed");
+});
+
+it("persists the homepage image to the linked supplier after importing", async () => {
+  mocks.fetch.mockResolvedValueOnce(new Response(JSON.stringify({products:[{id:12,variants:[{id:13,price:"20"}],images:[]}]}),{headers:{"content-type":"application/json"}}));
+  mocks.fetch.mockResolvedValueOnce(new Response('<meta content="/main.jpg" property="og:image">'));
+  await scrapeForMerchant(7,"supplier-user","https://supplier.example");
+  expect(mocks.image).toHaveBeenCalledWith({logoUrl:"https://supplier.example/main.jpg",websiteUrl:"https://supplier.example"});
 });

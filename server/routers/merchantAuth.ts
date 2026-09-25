@@ -1,3 +1,4 @@
+import { fetchStorefrontImage } from "../services/storefrontImage";
 import { shopifyImportSimulatorEnabled } from "../services/shopifyImportSimulator";
 import { parseStoreUrl } from "../services/publicStoreFetch";
 import { withDatabaseTransaction } from "../services/core";
@@ -110,7 +111,7 @@ export const merchantAuthRouter = router({
       const listings = await db.query.suppliers.findMany({ where: eq(schema.suppliers.merchantId, merchant.id) });
       if (input.published) {
         if (listings.some(s => s.isActive === 0)) throw new TRPCError({ code: "FORBIDDEN", message: "This store has been removed by an administrator. Contact support." });
-        const product = await db.query.products.findFirst({ where: and(
+        let product = await db.query.products.findFirst({ where: and(
           eq(schema.products.artistId, ctx.user.id), eq(schema.products.ownerType, "merchant"), eq(schema.products.isActive, 1)
         ) });
         if (!product && !listings.length) {
@@ -119,6 +120,7 @@ export const merchantAuthRouter = router({
             sql`${schema.products.externalId} LIKE 'store:%'`
           ) });
           if (!imported) throw new TRPCError({ code: "BAD_REQUEST", message: "Import your store’s products first, then publish your store here." });
+          product = imported;
           // First launch: make the imported catalogue available in the same transaction.
           // Later launches preserve individually hidden products.
           await db.update(schema.products).set({ isActive: 1 }).where(and(
@@ -126,7 +128,12 @@ export const merchantAuthRouter = router({
             sql`${schema.products.externalId} LIKE 'store:%'`
           ));
         }
+        const sourceHost = /^store:([^:]+):/.exec(product?.externalId || "")?.[1];
+        const websiteUrl = sourceHost ? `https://${sourceHost}` : null;
+        const logoUrl = websiteUrl ? await fetchStorefrontImage(websiteUrl) : null;
+        if (listings.length && logoUrl) await db.update(schema.suppliers).set({ logoUrl, websiteUrl }).where(eq(schema.suppliers.merchantId, merchant.id));
         if (!listings.length) await db.insert(schema.suppliers).values({
+          logoUrl, websiteUrl,
           merchantId: merchant.id, name: merchant.businessName, claimed: 1,
           isActive: 1, currency: merchant.country === "NZ" ? "NZD" : "AUD",
         });

@@ -2153,3 +2153,41 @@ body:has(.tattoi-notice):has(.supplier-cart-dock) .simple-nav-fade { bottom: cal
 .dev-list-row { display:flex; flex-direction:column; align-items:flex-start; gap:4px; width:100%; padding:16px 0; text-align:left; border-bottom:1px solid var(--v3-line); overflow-wrap:anywhere; }
 .dev-list-row span,.dev-list-row small { color:var(--v3-muted); }
 .dev-sheet { padding:20px; }
+
+.supplier-directory-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  min-height: 112px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--v3-card-radius, 20px);
+  background: var(--v3-surface);
+  padding: var(--v3-panel-padding);
+  color: var(--foreground);
+  text-decoration: none;
+}
+.supplier-directory-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  mask-image: linear-gradient(to right, black 0%, transparent 60%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, transparent 60%);
+}
+.supplier-directory-copy {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  margin-left: 48%;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.supplier-directory-copy > span { color: var(--muted-foreground); }
+.supplier-directory-card > svg { position: relative; flex-shrink: 0; }
+.supplier-directory-card:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }

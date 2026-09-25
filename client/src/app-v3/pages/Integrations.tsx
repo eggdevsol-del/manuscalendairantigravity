@@ -1,3 +1,4 @@
+import { ImportProgressSheet } from "../components/ImportProgressSheet";
 import { ShopifyImportSimulator } from "../components/ShopifyImportSimulator";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
@@ -13,6 +14,7 @@ import {
   Status,
 } from "../design/primitives";
 export function InstagramImport() {
+  const [progressOpen, setProgressOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [checked, setChecked] = useState("");
   const [maxPosts, setMaxPosts] = useState(50);
@@ -35,6 +37,7 @@ export function InstagramImport() {
   const start = trpc.instagram.startImport.useMutation({
     onSuccess: data => {
       setImportId(data.importId);
+      setProgressOpen(true);
       void latest.refetch();
     },
   });
@@ -61,6 +64,12 @@ export function InstagramImport() {
       subtitle="Bring your existing work into your portfolio."
       back="/settings"
     >
+      <ImportProgressSheet open={progressOpen} onClose={() => setProgressOpen(false)} kind="instagram"
+        task={status?.totalDiscovered ? `Processing ${status.totalProcessed || 0} of ${status.totalDiscovered} posts` : "Discovering portfolio posts…"}
+        complete={status?.status === "completed"} stopped={status?.status === "cancelled"}
+        percent={status?.totalDiscovered ? ((status.totalProcessed || 0) / status.totalDiscovered) * 100 : undefined}
+        error={progress.error?.message || (status?.status === "failed" ? "The import failed. Review the account and try again." : undefined)}
+        detail={status?.status === "cancelled" ? "Import stopped. Review the posts already imported." : "Your import continues in the background."} />
       <Feedback
         loading={latest.isLoading}
         error={latest.error}
@@ -78,6 +87,7 @@ export function InstagramImport() {
       </Panel>
       {status && (
         <Section title="Latest import">
+          <Action onClick={() => setProgressOpen(true)}>View import progress</Action>
           <Panel>
             <Row
               title={`@${status.instagramUsername}`}
@@ -218,6 +228,7 @@ export function InstagramImport() {
   );
 }
 export function ShopifyCatalogue() {
+  const [syncOpen, setSyncOpen] = useState(false);
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
   const progress = trpc.merchantAuth.getSyncStatus.useQuery(undefined, {
     refetchInterval: query =>
@@ -234,7 +245,7 @@ export function ShopifyCatalogue() {
     },
   });
   const sync = trpc.merchantAuth.triggerShopifySync.useMutation({
-    onSuccess: () => void progress.refetch(),
+    onSuccess: () => { setSyncOpen(true); void progress.refetch(); },
   });
   const connected = profile.data?.shopifyConnected;
   const busy = save.isPending || sync.isPending;
@@ -242,6 +253,12 @@ export function ShopifyCatalogue() {
   if (profile.data?.shopifySimulatorEnabled) return <ShopifyImportSimulator />;
   return (
     <Section title="Shopify catalogue">
+      <ImportProgressSheet open={syncOpen} onClose={() => setSyncOpen(false)} kind="shopify"
+        task={progress.data && "message" in progress.data ? progress.data.message || "Importing catalogue…" : "Checking import status…"}
+        complete={progress.data?.status === "complete"}
+        error={progress.error?.message || (progress.data?.status === "failed" ? progress.data.error : undefined)}
+        detail="Review your imported products before publishing." />
+
       <p>
         Import products and variants. New products start hidden so you can
         review pricing and delivery before publishing.
@@ -321,6 +338,7 @@ export function ShopifyCatalogue() {
       {connected && (
         <Panel>
           <h3>Import status</h3>
+          <Action onClick={() => setSyncOpen(true)}>View import progress</Action>
           <Feedback
             loading={progress.isLoading}
             error={progress.error}

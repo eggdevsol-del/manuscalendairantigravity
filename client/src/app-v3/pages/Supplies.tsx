@@ -1,6 +1,6 @@
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
-import { ShoppingBag } from "lucide-react";
+import { ChevronRight, ShoppingBag } from "lucide-react";
 import { HomeTabs } from "../design/HomeTabs";
 import { useEffect, useState, useRef } from "react";
 import { Link, useSearch } from "wouter";
@@ -105,13 +105,11 @@ function Directory() {
         </Panel>
       )}
       {items?.map(item => (
-        <Row
-          key={item.id}
-          title={item.name}
-          detail={item.currency || "AUD"}
-          icon={<Avatar name={item.name} src={item.logoUrl} />}
-          href={item.merchantId ? `/shop/supplier-${item.merchantId}` : `/supplies?supplier=${item.id}`}
-        />
+        <Link key={item.id} className="supplier-directory-card" href={item.merchantId ? `/shop/supplier-${item.merchantId}` : `/supplies?supplier=${item.id}`}>
+          {item.logoUrl && <img className="supplier-directory-image" src={item.logoUrl} alt="" loading="lazy" onError={e => { e.currentTarget.hidden = true; }} />}
+          <span className="supplier-directory-copy"><strong>{item.name}</strong><span>{item.currency || "AUD"}</span></span>
+          <ChevronRight size={18} aria-hidden="true" />
+        </Link>
       ))}
       <ReorderRecommendations showUpcoming />
       {user?.role === "admin" && (

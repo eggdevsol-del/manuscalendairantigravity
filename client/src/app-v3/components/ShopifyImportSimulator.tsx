@@ -1,11 +1,10 @@
+import { ImportProgressSheet } from "./ImportProgressSheet";
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import {
   Action,
-  ActionLink,
-  Feedback,
   Panel,
   Status,
 } from "../design/primitives";
@@ -57,7 +56,7 @@ export function ShopifyImportSimulator() {
         </Action>
       </Panel>
       <SheetShell
-        isOpen={open}
+        isOpen={open && step !== "status"}
         onClose={() => {
           if (!run.isPending) setOpen(false);
         }}
@@ -118,48 +117,17 @@ export function ShopifyImportSimulator() {
             </Action>
           </form>
         )}
-        {step === "status" && (
-          <div className="v3-stack">
-            {run.data?.alreadyQueued && (
-              <p>
-                A catalogue import was already queued. Showing its progress.
-              </p>
-            )}
-            <Feedback
-              loading={progress.isLoading}
-              error={progress.error}
-              onRetry={() => progress.refetch()}
-            />
-            {progress.data?.status !== "complete" && progress.data?.status !== "failed" && (
-              <div role="status" aria-live="polite" aria-busy="true" className="v3-stack">
-                <Loader2 className="animate-spin" aria-hidden="true" size={32} />
-                <h3>Importing your store</h3>
-                <p className="v3-muted">{run.data?.storeUrl || storeUrl}</p>
-                <p>Fetching products, images and variants, then saving your catalogue. You can close this sheet while the import continues.</p>
-              </div>
-            )}
-            <p role="status">
-              {progress.data?.status === "failed"
-                ? progress.data.error
-                : progress.data?.status === "complete"
-                  ? "Import complete. Review your products before publishing."
-                  : (progress.data && "message" in progress.data ? progress.data.message : undefined) ||
-                    "Import queued. You can leave this screen while it runs."}
-            </p>
-            {progress.data?.status === "failed" && (
-              <Action
-                onClick={() => {
-                  run.reset();
-                  setStep("store");
-                }}
-              >
-                Try another import
-              </Action>
-            )}
-            {progress.data?.status === "complete" && <ActionLink href="/merchant/products">Review products</ActionLink>}
-          </div>
-        )}
+
       </SheetShell>
+      <ImportProgressSheet open={open && step === "status"} onClose={() => setOpen(false)} kind="shopify"
+        task={progress.data && "message" in progress.data ? progress.data.message || "Importing catalogue…" : "Checking import status…"}
+        complete={progress.data?.status === "complete"}
+        error={progress.error?.message || (progress.data?.status === "failed" ? progress.data.error : undefined)}
+        detail="Review your products before publishing your store." />
+      {jobId && progress.data?.status === "complete" && <a href="/merchant/products">Review products</a>}
+      {jobId && progress.data?.status === "failed" && <Action onClick={() => { setStep("store"); setOpen(true); }}>Retry import</Action>}
+      {jobId && <Action onClick={() => { setStep("status"); setOpen(true); }}>View import progress</Action>}
+
     </>
   );
 }

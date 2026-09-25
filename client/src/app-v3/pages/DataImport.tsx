@@ -1,3 +1,4 @@
+import { ImportProgressSheet } from "../components/ImportProgressSheet";
 import { useState } from "react";
 import Papa from "papaparse";
 import { trpc } from "@/lib/trpc";
@@ -32,6 +33,7 @@ const labels = {
   price: "Price (AUD)",
 };
 export default function DataImport() {
+  const [progressOpen, setProgressOpen] = useState(false);
   const [mode, setMode] = useState<"clients" | "appointments">("clients");
   const [rows, setRows] = useState<Record<string, string>[]>([]),
     [headers, setHeaders] = useState<string[]>([]);
@@ -163,6 +165,7 @@ export default function DataImport() {
       .filter(r => ["new", "matched", "failed"].includes(r.status))
       .map(r => payload.rows[r.index]);
     const next = { ...payload, rows: selected };
+    setProgressOpen(true);
     commit.mutate(next);
   };
   const eligible = results.filter(r =>
@@ -179,6 +182,10 @@ export default function DataImport() {
       subtitle="Review matches and duplicates before adding anything."
       back="/settings"
     >
+      <ImportProgressSheet open={progressOpen} onClose={() => setProgressOpen(false)} kind="calendar"
+        title={mode === "appointments" ? "Bringing your sittings over" : "Bringing your clients over"}
+        task="Checking and importing records…" complete={commit.isSuccess} error={commit.error?.message}
+        detail={commit.isSuccess ? "Review the row results below, including any skipped or failed records." : "Please keep this page open until the import finishes."} />
       <Feedback
         loading={settings.isLoading}
         error={settings.error}

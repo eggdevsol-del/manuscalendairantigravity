@@ -1,3 +1,4 @@
+import { fetchStorefrontImage } from "./storefrontImage";
 import { importCatalogue } from "./catalogueImport";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
@@ -160,26 +161,7 @@ export async function runStoreScraper(storeUrl: string) {
   // Capitalize
   storeName = storeName.charAt(0).toUpperCase() + storeName.slice(1);
 
-  let logoUrl = null;
-  try {
-    const htmlResponse = await publicStoreFetch(baseUrl, {
-      signal: AbortSignal.timeout(8000),
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml",
-      },
-    });
-    const html = await htmlResponse.text();
-    const match =
-      html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
-      html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i);
-    if (match && match[1]) {
-      logoUrl = match[1].startsWith("//") ? "https:" + match[1] : match[1];
-    }
-  } catch (e) {
-    // ignore
-  }
+  let logoUrl = await fetchStorefrontImage(baseUrl);
 
   if (!logoUrl && allProducts.length > 0) {
     const productWithImage = allProducts.find(
@@ -222,7 +204,7 @@ export async function scrapeForMerchant(
       throw new Error("DB connection failed");
     }
 
-    const { allProducts, baseUrl } = await runStoreScraper(storeUrl);
+    const { allProducts, baseUrl, logoUrl } = await runStoreScraper(storeUrl);
 
     syncStatusMap.set(merchantId, {
       status: "syncing",
@@ -245,6 +227,8 @@ export async function scrapeForMerchant(
       new URL(baseUrl).hostname,
       allProducts
     );
+    if (logoUrl) await db.update(schema.suppliers).set({ logoUrl, websiteUrl: baseUrl })
+      .where(eq(schema.suppliers.merchantId, merchantId));
     syncStatusMap.set(merchantId, {
       status: "complete",
       count: allProducts.length,
