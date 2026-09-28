@@ -1,3 +1,4 @@
+import { isClientPortalPath } from "@shared/clientPortalRoute";
 import { trpc } from "@/lib/trpc";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
@@ -62,8 +63,7 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
     normalizedPath.startsWith("/deposit/") ||
     normalizedPath.startsWith("/balance/") ||
     normalizedPath.startsWith("/pay/") ||
-    normalizedPath === "/client-portal" ||
-    normalizedPath === "/client-portal/" ||
+    isClientPortalPath(normalizedPath) ||
     normalizedPath.startsWith("/studio/") ||
     normalizedPath.startsWith("/book/");
 

@@ -1,3 +1,4 @@
+import { isClientPortalPath } from "@shared/clientPortalRoute";
 import ClientPortal from "@/app-v3/pages/ClientPortal";
 import { MasterDev, MasterDevLogin } from "@/app-v3/pages/MasterDev";
 import { ContextualTourArrival } from "@/components/tooltip-tour/ContextualTourArrival";
@@ -167,7 +168,7 @@ function CatchAllRoute() {
   const firstSegment = segments[0] || "";
 
   // Reserve portal URLs before public artist-slug resolution.
-  if (firstSegment === "client-portal") return <ClientPortal />;
+  if (isClientPortalPath(location)) return <ClientPortal />;
 
   // For client users (or unauthenticated), route unknown slugs to public pages
   const isClient = !user || user.role === "client";
@@ -232,7 +233,7 @@ function Router() {
     location.startsWith("/deposit/") ||
     location.startsWith("/balance/") ||
     location.startsWith("/pay/") ||
-    location.startsWith("/client-portal") ||
+    isClientPortalPath(location) ||
     location.startsWith("/studio/") ||
     location.startsWith("/book/");
 
@@ -240,6 +241,7 @@ function Router() {
     <div className="min-h-screen">
       {!isPublicFunnel && <SplashScreen />}
       <Switch>
+        <Route path="/api/client-portal" component={ClientPortal} />
         <Route path="/client-portal" component={ClientPortal} />
         <Route path="/dev/login" component={MasterDevLogin} />
         <Route path="/dev" component={MasterDev} />

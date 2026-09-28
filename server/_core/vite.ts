@@ -77,6 +77,13 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "manifest.webmanifest"));
   });
 
+  // Private portal entry must bypass old service workers and HTML caches.
+  app.get("/api/client-portal", (_req, res) => {
+    res.setHeader("Cache-Control", "no-store, max-age=0");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.sendFile(path.resolve(distPath, "index.html"));
+  });
+
   // Serve all other static assets with long-term caching (hashed filenames)
   app.use(
     express.static(distPath, {

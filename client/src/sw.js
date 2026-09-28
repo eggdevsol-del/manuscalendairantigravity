@@ -134,6 +134,8 @@ registerRoute(
 // Never replay cached account, message, consent or payment responses across sessions.
 registerRoute(({ url }) => url.pathname.startsWith("/api/"), new NetworkOnly());
 
+registerRoute(({ request, url }) => request.mode === "navigate" && /^\/client-portal\/?$/.test(url.pathname), new NetworkOnly());
+
 import { NavigationRoute } from "workbox-routing";
 import { createHandlerBoundToURL } from "workbox-precaching";
 
@@ -146,6 +148,7 @@ try {
   const navigationRoute = new NavigationRoute(handler, {
     denylist: [
       /^\/api\//,
+      /^\/client-portal\/?$/,
       /^\/onesignal\//,
     ],
   });
