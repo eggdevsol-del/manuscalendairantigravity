@@ -1,3 +1,4 @@
+import { ClientPortalInvite } from "../components/ClientPortalInvite";
 import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
 import { HomeTabs } from "../design/HomeTabs";
@@ -210,6 +211,7 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
             <MessageCircle />
             Message {data.client.name?.split(" ")[0]}
           </ActionLink>
+          <ClientPortalInvite clientId={id} phone={data.client.phone} />
           <Tabs
             items={["Bookings", "Forms", "Notes"] as const}
             value={tab}

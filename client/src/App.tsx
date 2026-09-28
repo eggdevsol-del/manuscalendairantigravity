@@ -1,3 +1,4 @@
+import ClientPortal from "@/app-v3/pages/ClientPortal";
 import { MasterDev, MasterDevLogin } from "@/app-v3/pages/MasterDev";
 import { ContextualTourArrival } from "@/components/tooltip-tour/ContextualTourArrival";
 import React, { Suspense } from "react";
@@ -228,6 +229,7 @@ function Router() {
     location.startsWith("/deposit/") ||
     location.startsWith("/balance/") ||
     location.startsWith("/pay/") ||
+    location.startsWith("/client-portal") ||
     location.startsWith("/studio/") ||
     location.startsWith("/book/");
 
@@ -235,6 +237,7 @@ function Router() {
     <div className="min-h-screen">
       {!isPublicFunnel && <SplashScreen />}
       <Switch>
+        <Route path="/client-portal" component={ClientPortal} />
         <Route path="/dev/login" component={MasterDevLogin} />
         <Route path="/dev" component={MasterDev} />
         <Route path="/" component={Login} />

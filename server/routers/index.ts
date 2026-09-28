@@ -1,3 +1,4 @@
+import { clientPortalRouter } from "./clientPortal";
 import { masterDevRouter } from "./masterDev";
 import { waitlistRouter } from "./waitlist";
 import { projectsRouter } from "./projects";
@@ -46,6 +47,7 @@ import { sessionPlansRouter } from "./sessionPlans";
 import { aftercareRouter } from "./aftercare";
 
 export const appRouter = router({
+  clientPortal: clientPortalRouter,
   masterDev: masterDevRouter,
   waitlist: waitlistRouter,
   projects: projectsRouter,
