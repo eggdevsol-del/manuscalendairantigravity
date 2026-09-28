@@ -1,3 +1,4 @@
+import { useQuery as usePortalQuery } from "@tanstack/react-query";
 import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { useEffect, useState } from "react";
 import { CheckCircle2, LockKeyhole } from "lucide-react";
@@ -57,28 +58,57 @@ function Confirming({
   );
 }
 export function SessionPlanCheckoutSheet({
+  portalToken,
   sessionPlanId,
   conversationId,
   onClose,
 }: {
+  portalToken?: string;
   sessionPlanId: number;
   conversationId: number;
   onClose: () => void;
 }) {
   const [step, setStep] = useState<Step>("review");
   const [timedOut, setTimedOut] = useState(false);
-  const query = trpc.sessionPlans.getById.useQuery(
+  const client = trpc.useUtils().client;
+  const signedInQuery = trpc.sessionPlans.getById.useQuery(
     { sessionPlanId },
     {
+      enabled: !portalToken,
       refetchInterval: q =>
         !timedOut && (step === "confirming" || q.state.data?.paymentState)
           ? 2000
           : false,
     }
   );
-  const accept = trpc.sessionPlans.accept.useMutation({
+  const portalQuery = usePortalQuery({
+    queryKey: ["portal-plan", portalToken, sessionPlanId],
+    enabled: !!portalToken,
+    queryFn: () =>
+      client.clientPortal.plan.mutate({
+        token: portalToken!,
+        planId: sessionPlanId,
+      }),
+    retry: false,
+    refetchInterval: q =>
+      !timedOut && (step === "confirming" || q.state.data?.paymentState)
+        ? 2000
+        : false,
+  });
+  const query = portalToken ? portalQuery : signedInQuery;
+  const portalAccept = trpc.clientPortal.acceptPlan.useMutation({
     onSuccess: () => setStep("payment"),
   });
+  const signedInAccept = trpc.sessionPlans.accept.useMutation({
+    onSuccess: () => setStep("payment"),
+  });
+  const accept = portalToken
+    ? {
+        ...portalAccept,
+        mutate: ({ sessionPlanId }: { sessionPlanId: number }) =>
+          portalAccept.mutate({ token: portalToken, planId: sessionPlanId }),
+      }
+    : signedInAccept;
   const plan = query.data;
   const paid = plan?.depositRecorded || plan?.status === "accepted";
   usePaymentRefresh(step === "confirming" || paid);

@@ -11,12 +11,14 @@ type Form = {
   status?: string;
 };
 interface Props {
+  portalToken?: string;
   pendingForms: Form[];
   initialForm?: Form;
   onSuccess?: () => void;
   onClose?: () => void;
 }
 export function InlineFormSigning({
+  portalToken,
   pendingForms,
   initialForm,
   onSuccess,
@@ -35,6 +37,7 @@ export function InlineFormSigning({
   return form ? (
     <SignForm
       key={form.id}
+      portalToken={portalToken}
       form={form}
       remaining={queue.length}
       onClose={onClose}
@@ -49,11 +52,13 @@ export function InlineFormSigning({
   );
 }
 function SignForm({
+  portalToken,
   form,
   remaining,
   onSigned,
   onClose,
 }: {
+  portalToken?: string;
   form: Form;
   remaining: number;
   onSigned: () => void;
@@ -63,8 +68,20 @@ function SignForm({
   const [answers, setAnswers] = useState<Record<string, "yes" | "no">>({});
   const [photoPermission, setPhotoPermission] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
-  const profile = trpc.auth.me.useQuery();
-  const sign = trpc.forms.signForm.useMutation();
+  const profile = trpc.auth.me.useQuery(undefined, { enabled: !portalToken });
+  const regularSign = trpc.forms.signForm.useMutation();
+  const portalSign = trpc.clientPortal.signForm.useMutation();
+  const sign = portalToken
+    ? {
+        ...portalSign,
+        mutateAsync: (input: {
+          formId: number;
+          signature: string;
+          answers: Record<string, "yes" | "no">;
+          photoPermission: boolean;
+        }) => portalSign.mutateAsync({ ...input, token: portalToken }),
+      }
+    : regularSign;
   const utils = trpc.useUtils();
   const questions =
     form.formType === "medical_release"
@@ -187,7 +204,7 @@ function SignForm({
               this version.
             </span>
           </label>
-          {profile.data?.savedSignature && (
+          {!portalToken && profile.data?.savedSignature && (
             <Panel>
               <img
                 className="v3-saved-signature"

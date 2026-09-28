@@ -29,6 +29,7 @@ export function Screen({
   children,
   wide = false,
   publicView = false,
+  homeHref,
   className = "",
 }: {
   title: string;
@@ -39,6 +40,7 @@ export function Screen({
   children: ReactNode;
   wide?: boolean;
   publicView?: boolean;
+  homeHref?: string;
   className?: string;
 }) {
   const { user } = useAuth();
@@ -64,11 +66,12 @@ export function Screen({
           <div className="v3-heading-lockup">
             <Link
               href={
-                user?.role === "client"
+                homeHref ||
+                (user?.role === "client"
                   ? "/bookings"
                   : user?.role === "merchant"
                     ? "/dashboard"
-                    : "/conversations"
+                    : "/conversations")
               }
               className="v3-wordmark"
             >

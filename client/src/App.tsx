@@ -268,7 +268,7 @@ function Router() {
         </Route>
         <Route path="/deposit/:token" component={DepositSheet} />
         <Route path="/balance/:id" component={BalanceSheet} />
-        <Route path="/pay/:token" component={PaymentRequestSheet} />
+        <Route path="/pay/:token"><PaymentRequestSheet /></Route>
 
         {/* Smart catch-all: app routes vs public slug pages */}
         <Route path="*">

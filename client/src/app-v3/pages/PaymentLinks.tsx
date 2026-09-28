@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useState, useEffect } from "react";
 import { useRoute, useSearch } from "wouter";
@@ -16,9 +17,25 @@ import {
   bookingDate,
 } from "@/features/workspace/bookingPresentation";
 
-export function PaymentRequestPage() {
+function EmbeddedPayment({
+  children,
+}: {
+  children: ReactNode;
+  title?: string;
+  subtitle?: ReactNode;
+  action?: ReactNode;
+  publicView?: boolean;
+}) {
+  return <div className="v3-stack">{children}</div>;
+}
+
+export function PaymentRequestPage({
+  paymentToken,
+  embedded = false,
+  onDone,
+}: { paymentToken?: string; embedded?: boolean; onDone?: () => void } = {}) {
   const [, params] = useRoute("/pay/:token");
-  const token = params?.token || "";
+  const token = paymentToken || params?.token || "";
   const search = new URLSearchParams(useSearch());
   const [submitted, setSubmitted] = useState(
     search.get("status") === "success" ||
@@ -80,8 +97,9 @@ export function PaymentRequestPage() {
       setError(e instanceof Error ? e.message : "Couldn’t prepare checkout.");
     }
   }
+  const Wrapper = embedded ? EmbeddedPayment : Screen;
   return (
-    <Screen
+    <Wrapper
       publicView
       title={
         paid
@@ -92,9 +110,11 @@ export function PaymentRequestPage() {
       }
       subtitle={info?.artistName}
       action={
-        <ActionLink href="/login" tone="quiet">
-          Sign in
-        </ActionLink>
+        embedded ? undefined : (
+          <ActionLink href="/login" tone="quiet">
+            Sign in
+          </ActionLink>
+        )
       }
     >
       <Feedback loading={query.isLoading} />
@@ -102,7 +122,11 @@ export function PaymentRequestPage() {
         <Panel>
           <Status tone="success">Payment received</Status>
           <p>Your artist has the payment confirmation.</p>
-          <ActionLink href="/bookings">Open my bookings</ActionLink>
+          {embedded ? (
+            <Action onClick={onDone}>Back to your tattoo</Action>
+          ) : (
+            <ActionLink href="/bookings">Open my bookings</ActionLink>
+          )}
         </Panel>
       ) : unavailable ? (
         <Panel>
@@ -124,7 +148,11 @@ export function PaymentRequestPage() {
             its status.
           </p>
           <Action onClick={() => query.refetch()}>Check confirmation</Action>
-          <ActionLink href="/bookings">Open my bookings</ActionLink>
+          {embedded ? (
+            <Action onClick={onDone}>Back to your tattoo</Action>
+          ) : (
+            <ActionLink href="/bookings">Open my bookings</ActionLink>
+          )}
         </Panel>
       ) : (
         info &&
@@ -172,7 +200,7 @@ export function PaymentRequestPage() {
           </>
         ))
       )}
-    </Screen>
+    </Wrapper>
   );
 }
 
