@@ -62,6 +62,8 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
     normalizedPath.startsWith("/deposit/") ||
     normalizedPath.startsWith("/balance/") ||
     normalizedPath.startsWith("/pay/") ||
+    normalizedPath === "/client-portal" ||
+    normalizedPath === "/client-portal/" ||
     normalizedPath.startsWith("/studio/") ||
     normalizedPath.startsWith("/book/");
 

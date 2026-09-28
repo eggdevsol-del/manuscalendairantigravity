@@ -1,7 +1,9 @@
+import { activateWaitingSWForPublicPage } from "@/lib/pwa";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Action, ActionLink, Feedback, Panel, Screen, Section, Status } from "../design/primitives";
 export default function ClientPortal() {
+  useEffect(() => { void activateWaitingSWForPublicPage(); }, []);
   const [token] = useState(() => new URLSearchParams(location.hash.slice(1)).get("access") || sessionStorage.getItem("tattoi-portal-access") || "");
   useEffect(() => { if (token) { sessionStorage.setItem("tattoi-portal-access", token); history.replaceState(null, "", location.pathname); } }, [token]);
   const query = trpc.clientPortal.view.useMutation();

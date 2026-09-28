@@ -166,6 +166,9 @@ function CatchAllRoute() {
   const segments = location.replace(/^\//, "").split("/");
   const firstSegment = segments[0] || "";
 
+  // Reserve portal URLs before public artist-slug resolution.
+  if (firstSegment === "client-portal") return <ClientPortal />;
+
   // For client users (or unauthenticated), route unknown slugs to public pages
   const isClient = !user || user.role === "client";
   if (firstSegment && !KNOWN_APP_ROUTES.has(firstSegment)) {
