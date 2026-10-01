@@ -294,7 +294,7 @@ function OfferEditor({
           <NumericInput
             type="number"
             required
-            min="0.01"
+            min={r.valueType === "percentage" ? 1 : 0.01}
             step={r.valueType === "percentage" ? "1" : "0.01"}
             max={r.valueType === "percentage" ? 100 : 100000}
             value={r.valueType === "fixed" ? r.value / 100 : r.value}
