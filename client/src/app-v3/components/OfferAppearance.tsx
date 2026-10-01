@@ -3,7 +3,7 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { trpc } from "@/lib/trpc";
 import type { OfferRules } from "../../../../shared/offerRules";
 export function OfferAppearance({ rules, onChange, onUploading }: { rules: OfferRules; onChange: Dispatch<SetStateAction<OfferRules>>; onUploading: (busy: boolean) => void }) {
-  const upload = trpc.upload.getUploadUrl.useMutation();
+  const upload = trpc.upload.uploadImage.useMutation();
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -14,10 +14,16 @@ export function OfferAppearance({ rules, onChange, onUploading }: { rules: Offer
     try {
       const body = await preparePromotionImage(file);
       setStatus("Uploading image…");
-      const result = await upload.mutateAsync({ filename: "promotion.webp", contentType: "image/webp", folder: "promotions" });
-      const response = await fetch(result.uploadUrl, { method: "PUT", headers: { "Content-Type": "image/webp" }, body });
-      if (!response.ok) throw new Error("Image upload failed. Please try again.");
-      onChange(current => ({ ...current, backgroundImageUrl: result.publicUrl }));
+      // Send the compressed image through our authenticated API. The server
+      // writes to R2, without requiring browser-to-bucket CORS permissions.
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Couldn’t prepare the upload. Please try again."));
+        reader.readAsDataURL(body);
+      });
+      const result = await upload.mutateAsync({ filename: "promotion.webp", contentType: "image/webp", base64, folder: "promotions" });
+      onChange(current => ({ ...current, backgroundImageUrl: result.url }));
     } catch (e) { setError(e instanceof Error ? e.message : "Image upload failed. Please try again."); }
     finally { onUploading(false); setProcessing(false); setStatus(""); }
   }
