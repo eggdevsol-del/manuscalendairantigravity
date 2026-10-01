@@ -46,6 +46,7 @@ import {
 } from "../design/primitives";
 import {
   mediaUrls,
+  conversationMedia,
   objectFromJson,
   messageText,
 } from "../data/messagePresentation";
@@ -182,9 +183,7 @@ export function Thread({
       setLoadingEdit(false);
     }
   }
-  const sharedMedia = (c.messages || []).flatMap(message =>
-    mediaUrls(objectFromJson(message.content))
-  );
+  const sharedMedia = conversationMedia(c.messages || []);
   const file = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
   const refresh = () => {

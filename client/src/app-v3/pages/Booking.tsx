@@ -1,3 +1,4 @@
+import { conversationMedia } from "../data/messagePresentation";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { ProjectProgress } from "../components/ProjectProgress";
 import { ProjectSittings } from "../components/ProjectSittings";
@@ -240,6 +241,14 @@ export function BookingProject({
     h => !selectedKey || h.projectKeys?.includes(selectedKey)
   );
   const [filesOpen, setFilesOpen] = useState(tab === "Files");
+  const referenceMessages = trpc.messages.references.useQuery(
+    { conversationId: id },
+    { enabled: id > 0 && filesOpen }
+  );
+  const conversationReferences = conversationMedia(
+    referenceMessages.data || []
+  );
+
   const [paymentsOpen, setPaymentsOpen] = useState(tab === "Payments");
   useEffect(() => {
     if (tab === "Files") setFilesOpen(true);
@@ -607,6 +616,24 @@ export function BookingProject({
               className="ivory-project-resource"
               title={<> Design & references </>}
             >
+              <Section title="Photos shared in this conversation">
+                <p className="v3-muted">
+                  Shared across this conversation; these photos are not
+                  automatically assigned to a particular project.
+                </p>
+                <Feedback
+                  loading={referenceMessages.isLoading}
+                  error={referenceMessages.error}
+                  onRetry={() => referenceMessages.refetch()}
+                />
+                <div className="v3-file-grid">
+                  {conversationReferences.map(url => (
+                    <a key={url} href={url} target="_blank" rel="noreferrer">
+                      <img src={url} alt="Shared reference" loading="lazy" />
+                    </a>
+                  ))}
+                </div>
+              </Section>
               <Section title="Project reference images">
                 {briefs.map(b => (
                   <div key={b.id}>

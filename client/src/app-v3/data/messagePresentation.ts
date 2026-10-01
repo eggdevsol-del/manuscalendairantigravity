@@ -35,3 +35,19 @@ export function messageText(content: string) {
   }
   return "Booking update";
 }
+
+/** Derive every reference view from the original conversation attachments. */
+export function conversationMedia(
+  messages: { content: string | null; messageType: string }[]
+): string[] {
+  return [
+    ...new Set(
+      messages.flatMap(message =>
+        message.messageType === "image" &&
+        /^https?:\/\//i.test(message.content || "")
+          ? [message.content!]
+          : mediaUrls(objectFromJson(message.content))
+      )
+    ),
+  ];
+}

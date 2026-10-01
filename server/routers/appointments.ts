@@ -1,5 +1,13 @@
+import {
+  parseWorkSchedule,
+  validateAppointmentForWorkHours,
+} from "../services/booking.service";
+import { offerEligibility, offerRulesSchema } from "../../shared/offerRules";
 import { offersEnabled } from "../services/offerAvailability";
-import { startOfferBalance, cancelOfferBalance } from "../services/offerBalance";
+import {
+  startOfferBalance,
+  cancelOfferBalance,
+} from "../services/offerBalance";
 import { designProjectName } from "../../shared/projectNames";
 import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
@@ -458,6 +466,7 @@ export const appointmentsRouter = router({
         appointmentId: z.number(),
         newStartTime: z.string(), // ISO string
         newEndTime: z.string(), // ISO string
+        allowOutsideOfferDates: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -495,29 +504,129 @@ export const appointmentsRouter = router({
           message: "This time is already booked.",
         });
 
-      const nowStr = new Date().toISOString().slice(0, 19).replace("T", " ");
-
-      // Deposit carries over — simple date move
-      await db.updateAppointment(
-        input.appointmentId,
-        {
-          startTime: input.newStartTime,
-          endTime: input.newEndTime,
-
-          updatedAt: nowStr,
-        },
-        ctx.user.id
-      );
-
-      // Send reschedule confirmation message to conversation
-      if (appointment.conversationId) {
-        await db.createMessage({
-          conversationId: appointment.conversationId,
-          senderId: ctx.user.id,
-          content: `Appointment rescheduled to ${new Date(input.newStartTime).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}. Your existing deposit has been transferred.`,
-          messageType: "system" as any,
-        });
-      }
+      await priceTransaction(async tx => {
+        // Serialize against other booking writers before validating and saving.
+        await tx
+          .select({ id: schema.users.id })
+          .from(schema.users)
+          .where(eq(schema.users.id, appointment.artistId))
+          .for("update");
+        const current = await db.getAppointment(appointment.id);
+        if (!current || current.status !== "confirmed")
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Only confirmed sittings can be rescheduled.",
+          });
+        if (
+          start <= new Date() ||
+          +end - +start !==
+            +new Date(current.endTime) - +new Date(current.startTime)
+        )
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Choose a future time and keep the sitting duration unchanged.",
+          });
+        const settings = await db.getArtistSettings(current.artistId);
+        const timeZone = current.timeZone || getBusinessTimezone();
+        const hours = validateAppointmentForWorkHours(
+          start,
+          (+end - +start) / 60000,
+          parseWorkSchedule(settings?.workSchedule),
+          timeZone
+        );
+        if (!hours.valid)
+          throw new TRPCError({ code: "BAD_REQUEST", message: hours.reason });
+        let overridden = false;
+        if (current.sessionPlanId) {
+          const application = await tx.query.offerApplications.findFirst({
+            where: and(
+              eq(schema.offerApplications.planId, current.sessionPlanId),
+              inArray(schema.offerApplications.status, ["redeemed", "reserved"])
+            ),
+          });
+          if (application) {
+            const offer = await tx.query.clientOffers.findFirst({
+              where: eq(schema.clientOffers.id, application.offerId),
+            });
+            if (!offer)
+              throw new TRPCError({
+                code: "PRECONDITION_FAILED",
+                message: "The booking offer could not be verified.",
+              });
+            // A confirmed discount survives campaign expiry; only its sitting-date restrictions apply.
+            const rules = offerRulesSchema.parse(JSON.parse(offer.rulesJson));
+            const reason = offerEligibility(
+              { ...rules, expiresAt: null, eligibility: "unpaid" },
+              start.toISOString(),
+              start.toISOString(),
+              [start.toISOString()],
+              Date.now(),
+              timeZone
+            );
+            if (reason && !input.allowOutsideOfferDates)
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message:
+                  reason +
+                  " Explicitly approve keeping the discount outside the offer dates to continue.",
+              });
+            overridden = !!reason;
+          }
+        }
+        if (
+          await db.checkAppointmentOverlap(
+            current.artistId,
+            start,
+            end,
+            current.id
+          )
+        )
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This time is already booked.",
+          });
+        await db.updateAppointment(
+          current.id,
+          { startTime: input.newStartTime, endTime: input.newEndTime },
+          ctx.user.id
+        );
+        const format = (date: Date) =>
+          date.toLocaleString("en-AU", {
+            timeZone,
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          });
+        const body = `Sitting ${current.sessionIndex || 1} rescheduled from ${format(new Date(current.startTime))} to ${format(start)} (${timeZone}). Existing payments and pricing are unchanged.${overridden ? " Your artist approved keeping the promotion outside its original sitting dates." : ""}`;
+        if (current.conversationId)
+          await db.createMessage({
+            conversationId: current.conversationId,
+            senderId: ctx.user.id,
+            content: body,
+            messageType: "system" as any,
+          });
+        await tx
+          .insert(notificationOutbox)
+          .values({
+            eventType: "push_message",
+            status: "pending",
+            payloadJson: JSON.stringify({
+              targetUserId: current.clientId,
+              title: "Sitting rescheduled",
+              body,
+              url: `/projects/${current.conversationId}?session=${current.id}`,
+              data: {
+                type: "appointment_rescheduled",
+                appointmentId: current.id,
+                conversationId: current.conversationId,
+              },
+            }),
+          });
+      });
 
       return { success: true, depositForfeited: false };
     }),
@@ -1164,7 +1273,7 @@ export const appointmentsRouter = router({
           },
         }));
         for (const change of changes) {
-          await cancelOfferBalance(database,change.id);
+          await cancelOfferBalance(database, change.id);
           await database
             .update(schema.appointments)
             .set(change.values)
@@ -1195,9 +1304,20 @@ export const appointmentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      if(offersEnabled()) {
-        const result=await priceTransaction(tx=>startOfferBalance(tx,appointment.id,ctx.user.id,null));
-        return {clientSecret:result.clientSecret as string,balanceAmountCents:result.cashCents,platformFeeCents:result.platformFeeCents,totalCents:result.totalCents,artistName:"Your artist",projectName:appointment.projectName||appointment.title||"Session",depositPaidCents:appointment.totalPaidAmountCents||0};
+      if (offersEnabled()) {
+        const result = await priceTransaction(tx =>
+          startOfferBalance(tx, appointment.id, ctx.user.id, null)
+        );
+        return {
+          clientSecret: result.clientSecret as string,
+          balanceAmountCents: result.cashCents,
+          platformFeeCents: result.platformFeeCents,
+          totalCents: result.totalCents,
+          artistName: "Your artist",
+          projectName:
+            appointment.projectName || appointment.title || "Session",
+          depositPaidCents: appointment.totalPaidAmountCents || 0,
+        };
       }
       // Must have a balance remaining
       const remaining = appointment.remainingBalanceCents || 0;
@@ -1558,8 +1678,14 @@ export const appointmentsRouter = router({
       const apptIds = planAppointments.map(a => a.id);
 
       // Use the same cancellation transaction and credit restoration as individual sittings.
-      await priceTransaction(async()=>{for (const appointment of planAppointments)
-        await db.updateAppointment(appointment.id, {status:"cancelled"}, ctx.user.id);});
+      await priceTransaction(async () => {
+        for (const appointment of planAppointments)
+          await db.updateAppointment(
+            appointment.id,
+            { status: "cancelled" },
+            ctx.user.id
+          );
+      });
 
       // Log each
       for (const appt of planAppointments) {

@@ -1,3 +1,5 @@
+import { requireConversationAccess } from "../services/access";
+import { messages } from "../../drizzle/schema";
 import { declineLegacyProposal } from "../services/declineLegacyProposal";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -8,6 +10,25 @@ import { notificationOutbox, appointments } from "../../drizzle/schema";
 import { and, eq, gt, ne } from "drizzle-orm";
 
 export const messagesRouter = router({
+  references: protectedProcedure
+    .input(z.object({ conversationId: z.number().int().positive() }))
+    .query(async ({ input, ctx }) => {
+      const database = await db.getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id
+      );
+      // Reference browsing is independent of the chat's last-100-message window.
+      return database
+        .select({
+          content: messages.content,
+          messageType: messages.messageType,
+        })
+        .from(messages)
+        .where(eq(messages.conversationId, input.conversationId));
+    }),
   declineProposal: protectedProcedure
     .input(z.object({ messageId: z.number().int().positive() }))
     .mutation(({ input, ctx }) =>

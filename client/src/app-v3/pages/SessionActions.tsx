@@ -34,7 +34,8 @@ export function availableSessionActions(
     s.status === "completed" ||
     (s.status === "confirmed" && instant(s.startsAt) <= now);
   const actions: SessionActionMode[] = [];
-  if (canFinish && (s.status !== "completed" || !s.pendingRequest)) actions.push("finish");
+  if (canFinish && (s.status !== "completed" || !s.pendingRequest))
+    actions.push("finish");
   if (s.status !== "completed") {
     actions.push("reschedule");
     if (canFinish) actions.push("no-show");
@@ -61,6 +62,7 @@ export function SessionActions({
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const update = trpc.appointments.update.useMutation();
+  const [allowOutsideOfferDates, setAllowOutsideOfferDates] = useState(false);
   const reschedule = trpc.appointments.reschedule.useMutation();
   const cancel = trpc.appointments.cancelSession.useMutation();
   const cancelAll = trpc.appointments.cancelProjectSessions.useMutation();
@@ -73,6 +75,7 @@ export function SessionActions({
     setAll(false);
     setDate(formatInTimeZone(instant(s.startsAt), s.timeZone, "yyyy-MM-dd"));
     setTime(formatInTimeZone(instant(s.startsAt), s.timeZone, "HH:mm"));
+    setAllowOutsideOfferDates(false);
     setMode(next);
   };
   useEffect(() => {
@@ -98,6 +101,7 @@ export function SessionActions({
           appointmentId: s.id,
           newStartTime: start.toISOString(),
           newEndTime: end.toISOString(),
+          allowOutsideOfferDates,
         });
       } else if (mode === "cancel") {
         if (all && s.sessionPlanId)
@@ -228,6 +232,15 @@ export function SessionActions({
                   value={time}
                   onChange={e => setTime(e.target.value)}
                 />
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={allowOutsideOfferDates}
+                  onChange={e => setAllowOutsideOfferDates(e.target.checked)}
+                />
+                Keep the confirmed promotion if moving outside its eligible
+                dates
               </label>
               <small>
                 {s.timeZone.replaceAll("_", " ")}. The session duration and
