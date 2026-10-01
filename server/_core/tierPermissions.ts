@@ -53,7 +53,7 @@ export const TIER_CONFIGS: Record<SubscriptionTier, TierConfig> = {
         canUseDepositEngine: false,
         canUseWizard: false,
         canUseAutomatedReminders: false,
-        canUsePromotions: false,
+        canUsePromotions: true, // Promotions and gift cards are available on every plan.
         canRemoveBranding: false,
         canUseCustomMessaging: false,
         canUseMarketingBroadcasts: false,

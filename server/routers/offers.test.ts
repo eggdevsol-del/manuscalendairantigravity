@@ -65,3 +65,15 @@ describe("offer access and activation", () => {
   });
 
 });
+
+describe("conversation promotion recipient", () => {
+  for (const [clientId, expected] of [["client-b", 1], ["unrelated-client", 0]] as const) {
+    it(`limits the audience for ${clientId} to ${expected}`, async () => {
+      state.db = { select: () => ({ from: (table: any) => ({ where: async () =>
+        table === schema.conversations ? [{ id: "client-a" }, { id: "client-b" }] : []
+      }) }) };
+      const result = await caller("artist").audience({ clientId });
+      expect(result.count).toBe(expected);
+    });
+  }
+});

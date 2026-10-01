@@ -42,6 +42,7 @@ export const offerRulesSchema = z
   });
 export type OfferRules = z.infer<typeof offerRulesSchema>;
 export const audienceSchema = z.object({
+  clientId: z.string().min(1).max(64).optional(),
   minSpendCents: z.number().int().nonnegative().default(0),
   minBookings: z.number().int().nonnegative().default(0),
   inactiveDays: z.number().int().nonnegative().max(3650).default(0),

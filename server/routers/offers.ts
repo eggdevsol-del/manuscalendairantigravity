@@ -58,6 +58,7 @@ async function audience(
     .where(eq(s.paymentLedger.artistId, artistId));
   const clients = [...new Set<string>(conversations.map((c: any) => c.id))];
   return clients.filter(id => {
+    if (filters.clientId && id !== filters.clientId) return false;
     const rows = appointments.filter((a: any) => a.clientId === id);
     const completed = rows.filter((a: any) => a.status === "completed");
     const spend = Math.max(
@@ -453,6 +454,18 @@ export const offersRouter = router({
             issuanceKey: `${c.id}:${clientId}`,
             issuedAt: now(),
           });
+        if (input.filters.clientId && ids.includes(input.filters.clientId)) {
+          const conversation = await db.query.conversations.findFirst({
+            where: and(eq(s.conversations.artistId, ctx.user.id), eq(s.conversations.clientId, input.filters.clientId)),
+          });
+          if (!conversation) fail("This client conversation is unavailable.");
+          await db.insert(s.messages).values({
+            conversationId: conversation.id, senderId: ctx.user.id, messageType: "system",
+            content: `I’ve sent you “${rules.name}”. ${rules.funding === "sale" ? "Purchase your gift card" : "View your offer"} in My Tattoos.`,
+            metadata: JSON.stringify({ type: "promotion_sent", campaignId: c.id }),
+          });
+          await db.update(s.conversations).set({ lastMessageAt: now() }).where(eq(s.conversations.id, conversation.id));
+        }
         const issuedOffers = await db
           .select()
           .from(s.clientOffers)

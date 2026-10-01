@@ -6,7 +6,7 @@ import { nextProjectSitting } from "../data/projectProgress";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
-import { DesignBrief } from "../design/DesignBrief";
+import { ClientPromotion } from "../components/ClientPromotion";
 import { BookingComposer } from "./BookingComposer";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
@@ -16,6 +16,7 @@ import {
   CalendarDays,
   ArrowLeft,
   MoreHorizontal,
+  Gift,
 } from "lucide-react";
 import { useChatController } from "@/features/chat/useChatController";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
@@ -66,6 +67,7 @@ export function Thread({
   }, [initialDraft, c.setMessageText]);
   const [notesDraft, setNotesDraft] = useState("");
   const [contextOpen, setContextOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
   const [booking, setBooking] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<any>(null);
   const [proposalError, setProposalError] = useState("");
@@ -473,36 +475,23 @@ export function Thread({
         isOpen={contextOpen}
         onClose={() => setContextOpen(false)}
         title="Conversation tools"
-        headerAction={
-          c.isArtist ? (
-            <Action
-              tone="secondary"
-              onClick={() => {
-                setContextOpen(false);
-                c.setSelectedProposal(null);
-                setBooking(true);
-              }}
-            >
-              <CalendarDays />
-              New booking
-            </Action>
-          ) : undefined
-        }
       >
-        <div className="v3-stack">
-          {c.isArtist && <DesignBrief key={id} conversationId={id} inline />}
-        </div>
-        {contextOpen && c.isArtist && c.conversation?.clientId && (
-          <div className="v3-context-sheet">
-            <ConversationContext
-              id={id}
-              clientId={c.conversation.clientId}
-              draft={notesDraft}
-              onDraftChange={setNotesDraft}
-              media={sharedMedia}
-            />
-          </div>
-        )}
+        {c.isArtist && <div className="v3-stack">
+          <Action tone="secondary" onClick={() => {
+            setContextOpen(false);
+            c.setSelectedProposal(null);
+            setBooking(true);
+          }}><CalendarDays />Book in</Action>
+          <Action tone="secondary" disabled={!c.conversation?.clientId} onClick={() => {
+            setContextOpen(false);
+            setPromoOpen(true);
+          }}><Gift />Create promo</Action>
+        </div>}
+      </SheetShell>
+      <SheetShell isOpen={promoOpen} onClose={() => setPromoOpen(false)} title="Create promo">
+        {promoOpen && c.isArtist && c.conversation?.clientId && <ClientPromotion
+          clientId={c.conversation.clientId} clientName={c.otherUserName}
+          onDone={() => { setPromoOpen(false); refresh(); }} />}
       </SheetShell>
     </div>
   );
