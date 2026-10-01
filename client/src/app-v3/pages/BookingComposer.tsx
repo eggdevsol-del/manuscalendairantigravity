@@ -6,7 +6,12 @@ import {
   scheduleGapDays,
   scheduleGapNote,
 } from "../../../../shared/projectSchedule";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  OFFER_FREQUENCIES,
+  feasibleOfferFrequencies,
+  type OfferFrequency,
+} from "../data/offerFrequencies";
 import { addDays, format, isSameDay } from "date-fns";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -88,6 +93,10 @@ export function BookingComposer({
     "weekly" | "biweekly" | "monthly" | "consecutive"
   >("weekly");
   const [findingDates, setFindingDates] = useState(false);
+  const [autoFindSingle, setAutoFindSingle] = useState(false);
+  const [checkingFrequencies, setCheckingFrequencies] = useState(false);
+  const [feasible, setFeasible] = useState<OfferFrequency[]>([]);
+  const [frequencyError, setFrequencyError] = useState("");
   const [completedBy, setCompletedBy] = useState("");
   const [autoScheduled, setAutoScheduled] = useState(false);
   const deadline = () =>
@@ -112,7 +121,7 @@ export function BookingComposer({
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const tier = settings.data?.subscriptionTier?.toLowerCase();
   const fixedDeposit = !tier || tier === "free" || tier === "basic";
-  async function findDates() {
+  async function findDates(selectedFrequency = frequency) {
     if (!user || !service || findingDates) return;
     const startDate = new Date(sessions[0].date + "T" + sessions[0].time);
     if (!Number.isFinite(startDate.getTime())) {
@@ -129,7 +138,7 @@ export function BookingComposer({
         serviceDuration: sessions[0].duration,
         sittings: sessions.length,
         price: Number(sessions[0].price) || 0,
-        frequency,
+        frequency: sessions.length === 1 ? "single" : selectedFrequency,
         startDate,
         completedBy: deadline(),
         offerId: offer?.id,
@@ -158,6 +167,77 @@ export function BookingComposer({
       setFindingDates(false);
     }
   }
+  useEffect(() => {
+    if (!autoFindSingle || !offer || !service || !user) return;
+    setAutoFindSingle(false);
+    void findDates();
+  }, [autoFindSingle, service, user?.id]);
+  useEffect(() => {
+    if (!offer || step !== "frequency" || !service || !user) return;
+    let cancelled = false;
+    setCheckingFrequencies(true);
+    setFeasible([]);
+    setFrequencyError("");
+    const startDate = new Date(`${sessions[0].date}T${sessions[0].time}`);
+    if (!Number.isFinite(+startDate)) {
+      setCheckingFrequencies(false);
+      setFrequencyError("Choose a valid starting date.");
+      return;
+    }
+    void feasibleOfferFrequencies(sessions.length, f =>
+      utils.booking.checkAvailability.fetch({
+        conversationId: conversationId || 0,
+        artistId: user.id,
+        serviceName: service,
+        serviceDuration: sessions[0].duration,
+        sittings: sessions.length,
+        price: Number(sessions[0].price) || 0,
+        frequency: f,
+        startDate,
+        completedBy: deadline(),
+        offerId: offer.id,
+        timeZone: zone,
+      })
+    )
+      .then(result => {
+        if (cancelled) return;
+        setFeasible(result.feasible);
+        if (result.failure)
+          setFrequencyError(
+            "Some scheduling options could not be checked. Change the start date to retry, or choose an option that was verified."
+          );
+        else if (!result.feasible.length)
+          setFrequencyError(
+            `No automatic schedule fits all ${sessions.length} sittings within this offer’s dates. Change the start date or service, or arrange eligible dates manually.`
+          );
+        else
+          setFrequency(current =>
+            result.feasible.includes(current) ? current : result.feasible[0]
+          );
+      })
+      .catch(() => {
+        if (!cancelled)
+          setFrequencyError("Couldn’t check scheduling options. Try again.");
+      })
+      .finally(() => {
+        if (!cancelled) setCheckingFrequencies(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    offer?.id,
+    step,
+    service,
+    user?.id,
+    sessions.length,
+    sessions[0].date,
+    sessions[0].time,
+    sessions[0].duration,
+    sessions[0].price,
+    completedBy,
+    zone,
+  ]);
   const update = (index: number, patch: Partial<DraftSession>) => {
     setAutoScheduled(false);
     setError("");
@@ -328,6 +408,7 @@ export function BookingComposer({
       );
     }
     const chosen = services.find(s => s.name === name);
+    setAutoFindSingle(!!offer && (chosen?.sittings || 1) === 1);
     setStep((chosen?.sittings || 1) > 1 ? "frequency" : "details");
     setError("");
   }
@@ -349,6 +430,11 @@ export function BookingComposer({
               ? ` · Deposit due before ${new Date(offer.rules.expiresAt).toLocaleString()}`
               : ""}
           </span>
+        </p>
+      )}
+      {offer && findingDates && (
+        <p role="status">
+          Finding eligible dates using this offer and your availability…
         </p>
       )}
       <Status>
@@ -458,22 +544,24 @@ export function BookingComposer({
             {service} · {sessions.length} sitting
             {sessions.length === 1 ? "" : "s"}
           </p>
+          {offer && <p className="v3-muted">Select a verified schedule to find your dates.</p>}
+          {offer && checkingFrequencies && (
+            <p role="status">Checking which schedules fit this offer…</p>
+          )}
+          {offer && frequencyError && <p role="alert">{frequencyError}</p>}
           <div className="v3-choice-grid">
-            {(
-              [
-                ["consecutive", "Consecutive dates"],
-                ["weekly", "Weekly"],
-                ["biweekly", "Every two weeks"],
-                ["monthly", "Monthly"],
-              ] as const
+            {OFFER_FREQUENCIES.filter(
+              ([value]) =>
+                !offer || (!checkingFrequencies && feasible.includes(value))
             ).map(([value, label]) => (
               <button
                 key={value}
                 className="v3-choice"
-                aria-pressed={frequency === value}
+                aria-pressed={offer ? undefined : frequency === value}
                 onClick={() => {
                   setAutoScheduled(false);
                   setFrequency(value);
+                  if (offer) void findDates(value);
                 }}
                 disabled={findingDates}
               >
@@ -512,9 +600,13 @@ export function BookingComposer({
           </p>
           {error && <p role="alert">{error}</p>}
           <div className="v3-date-choice-actions">
-            <Action disabled={findingDates} onClick={findDates}>
-              {findingDates ? "Checking availability…" : "Find available dates"}
-            </Action>
+            {!offer && (
+              <Action disabled={findingDates} onClick={() => void findDates()}>
+                {findingDates
+                  ? "Checking availability…"
+                  : "Find available dates"}
+              </Action>
+            )}
             <Action
               tone="secondary"
               disabled={findingDates}
