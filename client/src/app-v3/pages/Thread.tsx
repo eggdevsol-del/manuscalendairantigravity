@@ -1,3 +1,4 @@
+import { RescheduleRequestCard } from "../components/RescheduleRequestCard";
 import {
   ConversationOfferCard,
   ConversationOfferStrip,
@@ -307,7 +308,14 @@ export function Thread({
                   ? message.content
                   : messageText(message.content);
               let body;
-              if (
+              if (metadata.type === "reschedule_request")
+                body = (
+                  <RescheduleRequestCard
+                    id={Number(metadata.requestId)}
+                    onChange={refresh}
+                  />
+                );
+              else if (
                 metadata.type === "session_plan" ||
                 message.messageType === "session_plan"
               )
@@ -884,6 +892,8 @@ function PlanMessage({
   );
   const plan = query.data;
   const scheduling = objectFromJson(plan?.message?.metadata).scheduling;
+  const offerSummary =
+    plan?.offerSummary || objectFromJson(plan?.message?.metadata);
   const gap = (previous: string, next: string) =>
     scheduling?.frequency === "consecutive"
       ? scheduleGapDays(previous, next, scheduling.timeZone || "UTC")
@@ -1011,29 +1021,17 @@ function PlanMessage({
               <p>Dates to be arranged</p>
             )}
             <dl className="v3-booking-message-totals">
-              {objectFromJson(plan.message?.metadata).offerId &&
-                typeof objectFromJson(plan.message?.metadata)
-                  .originalTotalEstimateCents === "number" && (
+              {offerSummary.offerId &&
+                typeof offerSummary.originalTotalEstimateCents === "number" && (
                   <>
                     <div>
                       <dt>Original estimate</dt>
-                      <dd>
-                        {money(
-                          objectFromJson(plan.message?.metadata)
-                            .originalTotalEstimateCents
-                        )}
-                      </dd>
+                      <dd>{money(offerSummary.originalTotalEstimateCents)}</dd>
                     </div>
-                    {objectFromJson(plan.message?.metadata).discountCents >
-                      0 && (
+                    {offerSummary.discountCents > 0 && (
                       <div>
                         <dt>Promotion discount</dt>
-                        <dd>
-                          −
-                          {money(
-                            objectFromJson(plan.message?.metadata).discountCents
-                          )}
-                        </dd>
+                        <dd>−{money(offerSummary.discountCents)}</dd>
                       </div>
                     )}
                   </>

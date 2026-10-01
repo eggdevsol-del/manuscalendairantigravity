@@ -1,3 +1,4 @@
+import { reschedulesRouter } from "./reschedules";
 import { offersRouter } from "./offers";
 import { masterDevRouter } from "./masterDev";
 import { waitlistRouter } from "./waitlist";
@@ -52,6 +53,7 @@ export const appRouter = router({
   projects: projectsRouter,
   reconciliation: reconciliationRouter,
   appointments: appointmentsRouter,
+  reschedules: reschedulesRouter,
   artistSettings: artistSettingsRouter,
   auth: authRouter,
   merchantAuth: merchantAuthRouter,

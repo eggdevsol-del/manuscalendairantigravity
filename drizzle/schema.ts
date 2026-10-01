@@ -2973,3 +2973,33 @@ export const offerSmsChallenges = mysqlTable('offer_sms_challenges',{
 export const offerPlanCheckoutVersions = mysqlTable("offer_plan_checkout_versions", {
  planId: int().primaryKey(), version: int().notNull().default(0),
 });
+
+export const rescheduleRequests = mysqlTable(
+  "reschedule_requests",
+  {
+    id: int().autoincrement().primaryKey(),
+    appointmentId: int().notNull(),
+    artistId: varchar({ length: 64 }).notNull(),
+    clientId: varchar({ length: 64 }).notNull(),
+    conversationId: int().notNull(),
+    startsAt: datetime({ mode: "string" }).notNull(),
+    endsAt: datetime({ mode: "string" }).notNull(),
+    expiresAt: datetime({ mode: "string" }).notNull(),
+    status: mysqlEnum([
+      "pending",
+      "accepted",
+      "declined",
+      "withdrawn",
+      "expired",
+    ])
+      .notNull()
+      .default("pending"),
+    termsJson: text().notNull(),
+    createdAt: datetime({ mode: "string" }).notNull(),
+    resolvedAt: datetime({ mode: "string" }),
+  },
+  t => [
+    index("reschedule_hold_artist").on(t.artistId, t.status, t.expiresAt),
+    index("reschedule_booking").on(t.appointmentId),
+  ]
+);

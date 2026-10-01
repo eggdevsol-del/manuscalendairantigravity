@@ -1,3 +1,4 @@
+import { proposeReschedule } from "../services/rescheduleApproval";
 import {
   parseWorkSchedule,
   validateAppointmentForWorkHours,
@@ -467,6 +468,7 @@ export const appointmentsRouter = router({
         newStartTime: z.string(), // ISO string
         newEndTime: z.string(), // ISO string
         allowOutsideOfferDates: z.boolean().default(false),
+        requestApproval: z.boolean().default(false),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -504,7 +506,7 @@ export const appointmentsRouter = router({
           message: "This time is already booked.",
         });
 
-      await priceTransaction(async tx => {
+      return priceTransaction(async tx => {
         // Serialize against other booking writers before validating and saving.
         await tx
           .select({ id: schema.users.id })
@@ -565,12 +567,15 @@ export const appointmentsRouter = router({
               timeZone
             );
             if (reason && !input.allowOutsideOfferDates)
-              throw new TRPCError({
-                code: "BAD_REQUEST",
-                message:
-                  reason +
-                  " Explicitly approve keeping the discount outside the offer dates to continue.",
-              });
+              return proposeReschedule(
+                tx,
+                current,
+                application,
+                rules,
+                start,
+                end,
+                input.requestApproval
+              );
             overridden = !!reason;
           }
         }
@@ -609,26 +614,27 @@ export const appointmentsRouter = router({
             content: body,
             messageType: "system" as any,
           });
-        await tx
-          .insert(notificationOutbox)
-          .values({
-            eventType: "push_message",
-            status: "pending",
-            payloadJson: JSON.stringify({
-              targetUserId: current.clientId,
-              title: "Sitting rescheduled",
-              body,
-              url: `/projects/${current.conversationId}?session=${current.id}`,
-              data: {
-                type: "appointment_rescheduled",
-                appointmentId: current.id,
-                conversationId: current.conversationId,
-              },
-            }),
-          });
+        await tx.insert(notificationOutbox).values({
+          eventType: "push_message",
+          status: "pending",
+          payloadJson: JSON.stringify({
+            targetUserId: current.clientId,
+            title: "Sitting rescheduled",
+            body,
+            url: `/projects/${current.conversationId}?session=${current.id}`,
+            data: {
+              type: "appointment_rescheduled",
+              appointmentId: current.id,
+              conversationId: current.conversationId,
+            },
+          }),
+        });
+        return {
+          success: true,
+          requiresApproval: false,
+          depositForfeited: false,
+        };
       });
-
-      return { success: true, depositForfeited: false };
     }),
   delete: protectedProcedure
     .input(z.number())

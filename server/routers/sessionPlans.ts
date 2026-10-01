@@ -1,3 +1,4 @@
+import { hasRescheduleHold } from "../services/rescheduleHolds";
 import { offersEnabled } from "../services/offerAvailability";
 import { fulfillSessionPlan } from "../services/sessionPlanFulfillment";
 import {
@@ -331,18 +332,16 @@ export const sessionPlansRouter = router({
                 .replace("T", " "),
             })
             .where(eq(schema.conversations.id, input.conversationId));
-          await dbRef
-            .insert(schema.notificationOutbox)
-            .values({
-              eventType: "push_message",
-              status: "pending",
-              payloadJson: JSON.stringify({
-                targetUserId: clientId,
-                title: "Review your booking proposal",
-                body: "Your artist has proposed dates and pricing with your offer. Review it before confirming your booking.",
-                url: `/chat/${input.conversationId}`,
-              }),
-            });
+          await dbRef.insert(schema.notificationOutbox).values({
+            eventType: "push_message",
+            status: "pending",
+            payloadJson: JSON.stringify({
+              targetUserId: clientId,
+              title: "Review your booking proposal",
+              body: "Your artist has proposed dates and pricing with your offer. Review it before confirming your booking.",
+              url: `/chat/${input.conversationId}`,
+            }),
+          });
         }
         return { sessionPlanId: planId, messageId: msgResult.insertId };
       });
@@ -400,6 +399,31 @@ export const sessionPlansRouter = router({
             message:
               "This deposit is already recorded or this proposal has been replaced. Refresh your bookings; do not pay again.",
           });
+        await dbRef
+          .select({ id: schema.users.id })
+          .from(schema.users)
+          .where(eq(schema.users.id, plan.artistId))
+          .for("update");
+        for (const item of plan.items) {
+          const start = new Date(
+            item.startsAt.includes("T")
+              ? item.startsAt
+              : item.startsAt.replace(" ", "T") + "Z"
+          );
+          if (
+            await hasRescheduleHold(
+              dbRef,
+              plan.artistId,
+              start,
+              new Date(+start + item.durationMinutes * 60000)
+            )
+          )
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "This sitting time is temporarily held for a reschedule. Ask your artist for another date.",
+            });
+        }
         if (!plan.stripeSessionId)
           await validateReservedPlanOffer(dbRef, plan.id);
 
@@ -752,6 +776,28 @@ export const sessionPlansRouter = router({
         with: { items: true, message: true },
       });
       const presented = await readPresentedPlans(dbRef, siblings);
-      return { ...plan, ...presented.find(p => p.id === plan.id) };
+      const application = offersEnabled()
+        ? await dbRef.query.offerApplications.findFirst({
+            where: and(
+              eq(schema.offerApplications.planId, plan.id),
+              inArray(schema.offerApplications.status, ["reserved", "redeemed"])
+            ),
+          })
+        : undefined;
+      const offerSummary = application
+        ? (() => {
+            const q = JSON.parse(application.quoteJson);
+            return {
+              offerId: application.offerId,
+              originalTotalEstimateCents: q.original,
+              discountCents: q.discountCents,
+            };
+          })()
+        : null;
+      return {
+        ...plan,
+        ...presented.find(p => p.id === plan.id),
+        offerSummary,
+      };
     }),
 });

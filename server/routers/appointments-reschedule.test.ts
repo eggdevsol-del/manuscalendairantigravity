@@ -27,7 +27,19 @@ vi.mock("../services/core", () => ({
         from: () => ({ where: () => ({ for: async () => [] }) }),
       }),
       query: {
-        offerApplications: { findFirst: async () => ({ offerId: 7 }) },
+        offerApplications: {
+          findFirst: async () => ({
+            id: 1,
+            offerId: 7,
+            originalJson: JSON.stringify({
+              items: [{ id: 2, estimateCents: 100000 }],
+            }),
+            quoteJson: JSON.stringify({
+              items: [{ id: 2, estimateCents: 75000 }],
+            }),
+          }),
+        },
+        sessionPlanItems: { findFirst: async () => ({ id: 2 }) },
         clientOffers: { findFirst: async () => m.offer },
       },
       insert: () => ({ values: m.insert }),
@@ -53,6 +65,8 @@ beforeEach(() => {
     sessionPlanId: 3,
     sessionIndex: 2,
     status: "confirmed",
+    totalExpectedAmountCents: 75000,
+    totalPaidAmountCents: 20000,
     timeZone: "Australia/Brisbane",
     startTime: "2027-01-04T23:00:00Z",
     endTime: "2027-01-05T00:00:00Z",
@@ -73,8 +87,12 @@ beforeEach(() => {
     }),
   };
 });
-it("blocks a move outside the issued offer dates without an override", async () => {
-  await expect(caller().reschedule(input)).rejects.toThrow("outside");
+it("previews revised terms without changing the appointment or sending messages", async () => {
+  expect(await caller().reschedule(input)).toMatchObject({
+    requiresApproval: true,
+    success: false,
+    terms: { removedDiscountCents: 25000 },
+  });
   expect(m.update).not.toHaveBeenCalled();
   expect(m.insert).not.toHaveBeenCalled();
 });
@@ -106,13 +124,18 @@ it("rejects disabled work hours even with a promotion override", async () => {
   expect(m.update).not.toHaveBeenCalled();
 });
 it("allows a confirmed sitting within eligible months after campaign expiry", async () => {
-  m.offer.rulesJson = JSON.stringify({...JSON.parse(m.offer.rulesJson), sittingMonths:["2027-02"]});
+  m.offer.rulesJson = JSON.stringify({
+    ...JSON.parse(m.offer.rulesJson),
+    sittingMonths: ["2027-02"],
+  });
   await caller().reschedule(input);
   expect(m.update).toHaveBeenCalledOnce();
   expect(m.insert).toHaveBeenCalledOnce();
 });
 it("does not queue notification when saving the conversation message fails", async () => {
   m.message.mockRejectedValueOnce(new Error("message failed"));
-  await expect(caller().reschedule({...input,allowOutsideOfferDates:true})).rejects.toThrow("message failed");
+  await expect(
+    caller().reschedule({ ...input, allowOutsideOfferDates: true })
+  ).rejects.toThrow("message failed");
   expect(m.insert).not.toHaveBeenCalled();
 });

@@ -2,7 +2,7 @@ import { requireConversationAccess } from "../services/access";
 import { offerRulesSchema } from "../../shared/offerRules";
 import { requireOffersEnabled } from "../services/offerAvailability";
 import * as schema from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, gt } from "drizzle-orm";
 import { fromZonedTime } from "date-fns-tz";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -149,6 +149,28 @@ export const bookingRouter = router({
             endTime: new Date(a.endTime),
           }));
 
+        const holdDb = await db.getDb();
+        if (!holdDb) throw new Error("Database unavailable");
+        const holds = await holdDb
+          .select({
+            startTime: schema.rescheduleRequests.startsAt,
+            endTime: schema.rescheduleRequests.endsAt,
+          })
+          .from(schema.rescheduleRequests)
+          .where(
+            and(
+              eq(schema.rescheduleRequests.artistId, resolvedArtistId),
+              eq(schema.rescheduleRequests.status, "pending"),
+              gt(
+                schema.rescheduleRequests.expiresAt,
+                new Date().toISOString().slice(0, 19).replace("T", " ")
+              )
+            )
+          );
+        const heldIntervals = holds.map(h => ({
+          startTime: new Date(h.startTime.replace(" ", "T") + "Z"),
+          endTime: new Date(h.endTime.replace(" ", "T") + "Z"),
+        }));
         // 4. Calculate Dates
         const dates = BookingService.calculateProjectDates({
           serviceDuration,
@@ -158,7 +180,7 @@ export const bookingRouter = router({
           completedBy,
           sittingMonths: rules?.sittingMonths,
           workSchedule,
-          existingAppointments,
+          existingAppointments: [...existingAppointments, ...heldIntervals],
           timeZone: input.timeZone,
         });
 

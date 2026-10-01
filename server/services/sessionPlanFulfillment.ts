@@ -1,3 +1,4 @@
+import { hasRescheduleHold } from "./rescheduleHolds";
 import { consumePlanOffer } from "./offerCheckout";
 import { eq, and, ne, lt, gt } from "drizzle-orm";
 import type Stripe from "stripe";
@@ -109,7 +110,10 @@ export async function fulfillSessionPlan(
           )
         )
         .limit(1);
-      if (conflicts.length)
+      if (
+        conflicts.length ||
+        (await hasRescheduleHold(tx, plan.artistId, start, end))
+      )
         throw new Error(
           "Paid plan needs reconciliation: a session time is no longer available."
         );

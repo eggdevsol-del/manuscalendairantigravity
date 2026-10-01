@@ -1,3 +1,4 @@
+import { withDatabaseTransaction } from "../services/core";
 import { requireConversationAccess } from "../services/access";
 import { messages } from "../../drizzle/schema";
 import { declineLegacyProposal } from "../services/declineLegacyProposal";
@@ -97,253 +98,261 @@ export const messagesRouter = router({
         consultationId: z.number().optional(),
       })
     )
-    .mutation(async ({ input, ctx }) => {
-      // Verify user is part of this conversation
-      const conversation = await db.getConversationById(input.conversationId);
+    .mutation(async ({ input, ctx }) =>
+      withDatabaseTransaction(async () => {
+        // Verify user is part of this conversation
+        const conversation = await db.getConversationById(input.conversationId);
 
-      if (!conversation) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Conversation not found",
-        });
-      }
-
-      if (
-        conversation.artistId !== ctx.user.id &&
-        conversation.clientId !== ctx.user.id
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Not authorized to send messages in this conversation",
-        });
-      }
-
-      // Handle project proposals: Inject pending appointments immediately
-      if (input.messageType === "appointment_request") {
-        let metaObj: any = null;
-        try {
-          if (input.metadata) metaObj = JSON.parse(input.metadata);
-        } catch (e) {}
+        if (!conversation) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Conversation not found",
+          });
+        }
 
         if (
-          metaObj &&
-          metaObj.status === "pending" &&
-          Array.isArray(metaObj.dates) &&
-          metaObj.dates.length > 0
+          conversation.artistId !== ctx.user.id &&
+          conversation.clientId !== ctx.user.id
         ) {
-          // --- BEGIN VALIDATION ---
-          const searchStart = new Date();
-          searchStart.setHours(0, 0, 0, 0);
-
-          const rawAppointments = await db.getArtistCalendar(
-            conversation.artistId,
-            searchStart
-          );
-
-          const existingAppointments = rawAppointments
-            .filter(a => a.status !== "cancelled" && a.status !== "rejected")
-            .map(a => ({
-              ...a,
-              startTime: new Date(a.startTime),
-              endTime: new Date(a.endTime),
-            }));
-
-          for (const dateStr of metaObj.dates) {
-            const startTime = new Date(dateStr);
-            const duration = metaObj.serviceDuration || 60;
-            const endTime = new Date(
-              startTime.getTime() + duration * 60 * 1000
-            );
-
-            const hasCollision = existingAppointments.some(appt => {
-              const apptStart = new Date(appt.startTime);
-              const apptEnd = new Date(appt.endTime);
-              return startTime < apptEnd && endTime > apptStart;
-            });
-
-            if (hasCollision) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message:
-                  "One or more selected dates conflict with existing appointments.",
-              });
-            }
-          }
-          // --- END VALIDATION ---
-
-          const appointmentIds: number[] = [];
-
-          // Even Spread Deposit Allocation
-          const projectDeposit =
-            typeof metaObj.depositAmount === "number"
-              ? metaObj.depositAmount
-              : 0;
-          const totalDepositCents = Math.round(projectDeposit * 100);
-          const numSittings = metaObj.dates.length;
-          const baseAllocCents = Math.floor(totalDepositCents / numSittings);
-          const remainderCents = totalDepositCents % numSittings;
-
-          for (let i = 0; i < metaObj.dates.length; i++) {
-            const dateStr = metaObj.dates[i];
-            const startTime = new Date(dateStr);
-            const duration = metaObj.serviceDuration || 60;
-            const endTime = new Date(
-              startTime.getTime() + duration * 60 * 1000
-            );
-
-            const safePrice =
-              typeof metaObj.price === "number" ? metaObj.price : 0;
-            const expectedCents = Math.round(safePrice * 100);
-
-            // Allocate cents (add 1 cent to early sittings if there's a remainder)
-            const allocatedDepositCents =
-              baseAllocCents + (i < remainderCents ? 1 : 0);
-            const allocatedDepositDollars = allocatedDepositCents / 100;
-            const balanceCents = expectedCents - allocatedDepositCents;
-
-            const inserted = await db.createAppointment({
-              conversationId: input.conversationId,
-              artistId: conversation.artistId,
-              clientId: conversation.clientId || "",
-              title: metaObj.serviceName || "Project Proposal",
-              description: "Pending Proposal Dates",
-              startTime: startTime.toISOString().slice(0, 19).replace("T", " "),
-              endTime: endTime.toISOString().slice(0, 19).replace("T", " "),
-              serviceName: metaObj.serviceName || "Project Proposal",
-              price: safePrice,
-              depositAmount: allocatedDepositDollars,
-              totalExpectedAmountCents: expectedCents,
-              remainingBalanceCents: balanceCents,
-              totalPaidAmountCents: 0,
-              status: "pending",
-            });
-
-            if (inserted && inserted.id) {
-              appointmentIds.push(inserted.id);
-            }
-          }
-
-          if (appointmentIds.length > 0) {
-            metaObj.appointmentIds = appointmentIds;
-            // Update the message metadata before it is created
-            input.metadata = JSON.stringify(metaObj);
-          }
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Not authorized to send messages in this conversation",
+          });
         }
-      }
 
-      const message = await db.createMessage({
-        conversationId: input.conversationId,
-        senderId: ctx.user.id,
-        content: input.content,
-        messageType: input.messageType,
-        metadata: input.metadata,
-      });
-
-      // Send push notification to the other user
-      const recipientId =
-        conversation.artistId === ctx.user.id
-          ? conversation.clientId
-          : conversation.artistId;
-
-      // Only send push for regular messages (not system messages)
-      if (input.messageType === "text" || input.messageType === "image") {
-        const messagePreview =
-          input.messageType === "image" ? "Sent an image" : input.content;
-
-        // Event creation handled below via DB Outbox
-
-        // Auto-update consultation status if artist replies
-        if (ctx.user.id === conversation.artistId) {
+        // Handle project proposals: Inject pending appointments immediately
+        if (input.messageType === "appointment_request") {
+          let metaObj: any = null;
           try {
-            // 1. If explicit ID provided, use it
-            if (input.consultationId) {
-              await db.updateConsultation(input.consultationId, {
-                status: "responded",
+            if (input.metadata) metaObj = JSON.parse(input.metadata);
+          } catch (e) {}
+
+          if (
+            metaObj &&
+            metaObj.status === "pending" &&
+            Array.isArray(metaObj.dates) &&
+            metaObj.dates.length > 0
+          ) {
+            // --- BEGIN VALIDATION ---
+            const searchStart = new Date();
+            searchStart.setHours(0, 0, 0, 0);
+
+            const rawAppointments = await db.getArtistCalendar(
+              conversation.artistId,
+              searchStart
+            );
+
+            const existingAppointments = rawAppointments
+              .filter(a => a.status !== "cancelled" && a.status !== "rejected")
+              .map(a => ({
+                ...a,
+                startTime: new Date(a.startTime),
+                endTime: new Date(a.endTime),
+              }));
+
+            for (const dateStr of metaObj.dates) {
+              const startTime = new Date(dateStr);
+              const duration = metaObj.serviceDuration || 60;
+              const endTime = new Date(
+                startTime.getTime() + duration * 60 * 1000
+              );
+
+              const hasCollision = existingAppointments.some(appt => {
+                const apptStart = new Date(appt.startTime);
+                const apptEnd = new Date(appt.endTime);
+                return startTime < apptEnd && endTime > apptStart;
               });
-            }
 
-            // 2. ALSO check for any pending consultations between these two users
-            // This ensures that even if the ID wasn't passed, we catch it.
-            // We can't rely on getConsultationsForUser because it might be cached or filtered
-
-            // Get all consultations for this artist to match against client
-            const allConsults = await db.getConsultationsForUser(
-              ctx.user.id,
-              "artist"
-            );
-            const pendingForClient = allConsults.filter(
-              (c: any) =>
-                c.clientId === conversation.clientId && c.status === "pending"
-            );
-
-            for (const consult of pendingForClient) {
-              // Avoid double update if we already did it above
-              if (consult.id !== input.consultationId) {
-                await db.updateConsultation(consult.id, {
-                  status: "responded",
+              if (hasCollision) {
+                throw new TRPCError({
+                  code: "CONFLICT",
+                  message:
+                    "One or more selected dates conflict with existing appointments.",
                 });
               }
             }
-          } catch (err) {
-            console.error("Failed to auto-update consultation status:", err);
+            // --- END VALIDATION ---
+
+            const appointmentIds: number[] = [];
+
+            // Even Spread Deposit Allocation
+            const projectDeposit =
+              typeof metaObj.depositAmount === "number"
+                ? metaObj.depositAmount
+                : 0;
+            const totalDepositCents = Math.round(projectDeposit * 100);
+            const numSittings = metaObj.dates.length;
+            const baseAllocCents = Math.floor(totalDepositCents / numSittings);
+            const remainderCents = totalDepositCents % numSittings;
+
+            for (let i = 0; i < metaObj.dates.length; i++) {
+              const dateStr = metaObj.dates[i];
+              const startTime = new Date(dateStr);
+              const duration = metaObj.serviceDuration || 60;
+              const endTime = new Date(
+                startTime.getTime() + duration * 60 * 1000
+              );
+
+              const safePrice =
+                typeof metaObj.price === "number" ? metaObj.price : 0;
+              const expectedCents = Math.round(safePrice * 100);
+
+              // Allocate cents (add 1 cent to early sittings if there's a remainder)
+              const allocatedDepositCents =
+                baseAllocCents + (i < remainderCents ? 1 : 0);
+              const allocatedDepositDollars = allocatedDepositCents / 100;
+              const balanceCents = expectedCents - allocatedDepositCents;
+
+              const inserted = await db.createAppointment({
+                conversationId: input.conversationId,
+                artistId: conversation.artistId,
+                clientId: conversation.clientId || "",
+                title: metaObj.serviceName || "Project Proposal",
+                description: "Pending Proposal Dates",
+                startTime: startTime
+                  .toISOString()
+                  .slice(0, 19)
+                  .replace("T", " "),
+                endTime: endTime.toISOString().slice(0, 19).replace("T", " "),
+                serviceName: metaObj.serviceName || "Project Proposal",
+                price: safePrice,
+                depositAmount: allocatedDepositDollars,
+                totalExpectedAmountCents: expectedCents,
+                remainingBalanceCents: balanceCents,
+                totalPaidAmountCents: 0,
+                status: "pending",
+              });
+
+              if (inserted && inserted.id) {
+                appointmentIds.push(inserted.id);
+              }
+            }
+
+            if (appointmentIds.length > 0) {
+              metaObj.appointmentIds = appointmentIds;
+              // Update the message metadata before it is created
+              input.metadata = JSON.stringify(metaObj);
+            }
           }
         }
 
-        // Use the database instance to insert the notification outbox event directly
-        const dbInst = await db.getDb();
-        if (dbInst) {
-          try {
-            await dbInst.insert(notificationOutbox).values({
-              eventType: "message.created",
-              payloadJson: JSON.stringify({
-                targetUserId: recipientId,
-                title: ctx.user.name || "Someone",
-                body: messagePreview,
-                data: { conversationId: input.conversationId },
-              }),
-              status: "pending",
-            });
-          } catch (err) {
-            console.error(
-              "[Outbox] Failed to insert message.created event:",
-              err
-            );
+        const message = await db.createMessage({
+          conversationId: input.conversationId,
+          senderId: ctx.user.id,
+          content: input.content,
+          messageType: input.messageType,
+          metadata: input.metadata,
+        });
+
+        // Send push notification to the other user
+        const recipientId =
+          conversation.artistId === ctx.user.id
+            ? conversation.clientId
+            : conversation.artistId;
+
+        let structured: any = null;
+        try {
+          structured = JSON.parse(input.content);
+        } catch {}
+        const hasMedia =
+          input.messageType === "image" ||
+          ["reference_grid", "placement_grid"].includes(structured?.type);
+        if (input.messageType === "text" || hasMedia) {
+          const messagePreview = hasMedia
+            ? "Sent reference photos or media"
+            : input.content.slice(0, 200);
+
+          // Event creation handled below via DB Outbox
+
+          // Auto-update consultation status if artist replies
+          if (ctx.user.id === conversation.artistId) {
+            try {
+              // 1. If explicit ID provided, use it
+              if (input.consultationId) {
+                await db.updateConsultation(input.consultationId, {
+                  status: "responded",
+                });
+              }
+
+              // 2. ALSO check for any pending consultations between these two users
+              // This ensures that even if the ID wasn't passed, we catch it.
+              // We can't rely on getConsultationsForUser because it might be cached or filtered
+
+              // Get all consultations for this artist to match against client
+              const allConsults = await db.getConsultationsForUser(
+                ctx.user.id,
+                "artist"
+              );
+              const pendingForClient = allConsults.filter(
+                (c: any) =>
+                  c.clientId === conversation.clientId && c.status === "pending"
+              );
+
+              for (const consult of pendingForClient) {
+                // Avoid double update if we already did it above
+                if (consult.id !== input.consultationId) {
+                  await db.updateConsultation(consult.id, {
+                    status: "responded",
+                  });
+                }
+              }
+            } catch (err) {
+              console.error("Failed to auto-update consultation status:", err);
+            }
+          }
+
+          const dbInst = await db.getDb();
+          if (!dbInst || !recipientId)
+            throw new Error("Cannot queue message notification.");
+          await dbInst.insert(notificationOutbox).values({
+            eventType: "message.created",
+            status: "pending",
+            payloadJson: JSON.stringify({
+              targetUserId: recipientId,
+              title: ctx.user.name || "New message",
+              body: messagePreview,
+              url: `/chat/${input.conversationId}`,
+              data: {
+                conversationId: input.conversationId,
+                messageId: message?.id,
+              },
+            }),
+          });
+        }
+
+        // Send appointment confirmation notification
+        if (input.messageType === "appointment_confirmed") {
+          const dates = input.content.match(
+            /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\w+ \d+, \d{4})/g
+          );
+          const firstDate = dates && dates.length > 0 ? dates[0] : "soon";
+
+          // Insert into outbox instead of eventBus.publish
+          const dbInst = await db.getDb();
+          if (dbInst) {
+            try {
+              await dbInst.insert(notificationOutbox).values({
+                eventType: "appointment.confirmed",
+                payloadJson: JSON.stringify({
+                  targetUserId: recipientId,
+                  title: ctx.user.name || "A client",
+                  body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
+                  data: { conversationId: input.conversationId },
+                }),
+                status: "pending",
+              });
+            } catch (err) {
+              console.error(
+                "[Outbox] Failed to insert appointment.confirmed event:",
+                err
+              );
+            }
           }
         }
-      }
 
-      // Send appointment confirmation notification
-      if (input.messageType === "appointment_confirmed") {
-        const dates = input.content.match(
-          /(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), (\w+ \d+, \d{4})/g
-        );
-        const firstDate = dates && dates.length > 0 ? dates[0] : "soon";
-
-        // Insert into outbox instead of eventBus.publish
-        const dbInst = await db.getDb();
-        if (dbInst) {
-          try {
-            await dbInst.insert(notificationOutbox).values({
-              eventType: "appointment.confirmed",
-              payloadJson: JSON.stringify({
-                targetUserId: recipientId,
-                title: ctx.user.name || "A client",
-                body: `Appointment confirmed for ${firstDate}`, // Assuming body logic needed here or generic?
-                data: { conversationId: input.conversationId },
-              }),
-              status: "pending",
-            });
-          } catch (err) {
-            console.error(
-              "[Outbox] Failed to insert appointment.confirmed event:",
-              err
-            );
-          }
-        }
-      }
-
-      return message;
-    }),
+        return message;
+      })
+    ),
   updateMetadata: protectedProcedure
     .input(
       z.object({

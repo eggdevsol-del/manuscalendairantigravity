@@ -208,6 +208,12 @@ export function useCalendarAgendaController() {
   const [rescheduleAppointment, setRescheduleAppointment] = useState<any>(null);
   const reschedule = trpc.appointments.reschedule.useMutation({
     onSuccess: result => {
+      if (result.requiresApproval) {
+        toast.info(
+          "This move requires client approval. Open the sitting in the project page to review and send the revised terms."
+        );
+        return;
+      }
       if (result.depositForfeited) {
         toast.info(
           "Appointment rescheduled. New deposit required from client."

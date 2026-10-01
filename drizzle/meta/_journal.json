@@ -218,6 +218,13 @@
       "when": 1790726400002,
       "tag": "0030_legacy_offers",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1790899200000,
+      "tag": "0031_reschedule_approval",
+      "breakpoints": true
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { hasRescheduleHold } from "./rescheduleHolds";
 import { offersEnabled } from "./offerAvailability";
 import { cancelOfferBalance } from "./offerBalance";
 import { restoreCancelledOfferCredit } from "./offerRestoration";
@@ -217,7 +218,20 @@ export async function updateAppointment(
       };
     }
 
-    if (updates.status === "cancelled" || ["price","totalExpectedAmountCents","totalPaidAmountCents","remainingBalanceCents","paymentStatus","depositPaid","clientPaid","depositAmount"].some(key => (updates as any)[key] !== undefined)) await cancelOfferBalance(db, id);
+    if (
+      updates.status === "cancelled" ||
+      [
+        "price",
+        "totalExpectedAmountCents",
+        "totalPaidAmountCents",
+        "remainingBalanceCents",
+        "paymentStatus",
+        "depositPaid",
+        "clientPaid",
+        "depositAmount",
+      ].some(key => (updates as any)[key] !== undefined)
+    )
+      await cancelOfferBalance(db, id);
 
     // Sanitize any incoming date fields for MySQL
     const sanitizedUpdates: any = { ...updates };
@@ -238,7 +252,8 @@ export async function updateAppointment(
       .set({ ...sanitizedUpdates, updatedAt: toMySQL(new Date()) })
       .where(eq(appointments.id, id));
 
-    if (updates.status === "cancelled") await restoreCancelledOfferCredit(db, id);
+    if (updates.status === "cancelled")
+      await restoreCancelledOfferCredit(db, id);
     const newAppt = await getAppointment(id);
 
     let action: any = "completed"; // default
@@ -315,10 +330,20 @@ export async function deleteAppointment(id: number, performedBy: string) {
 
   const oldAppt = await getAppointment(id);
   if (offersEnabled()) {
-    const {offerApplications,offerBalanceCheckouts}=await import("../../drizzle/schema");
-    const planCredit=oldAppt?.sessionPlanId?await db.query.offerApplications.findFirst({where:eq(offerApplications.planId,oldAppt.sessionPlanId)}):null;
-    const balanceCredit=await db.query.offerBalanceCheckouts.findFirst({where:eq(offerBalanceCheckouts.bookingId,id)});
-    if(planCredit||balanceCredit){await updateAppointment(id,{status:"cancelled"},performedBy);return true;}
+    const { offerApplications, offerBalanceCheckouts } =
+      await import("../../drizzle/schema");
+    const planCredit = oldAppt?.sessionPlanId
+      ? await db.query.offerApplications.findFirst({
+          where: eq(offerApplications.planId, oldAppt.sessionPlanId),
+        })
+      : null;
+    const balanceCredit = await db.query.offerBalanceCheckouts.findFirst({
+      where: eq(offerBalanceCheckouts.bookingId, id),
+    });
+    if (planCredit || balanceCredit) {
+      await updateAppointment(id, { status: "cancelled" }, performedBy);
+      return true;
+    }
   }
 
   await logAppointmentAction({
@@ -719,12 +744,27 @@ export async function deleteAppointmentsForClient(
   const db = await getDb();
   if (!db) return false;
 
-  if(offersEnabled()) {
-    const {clientOffers}=await import("../../drizzle/schema");
-    const credit=await db.query.clientOffers.findFirst({where:and(eq(clientOffers.artistId,artistId),eq(clientOffers.clientId,clientId))});
-    if(credit)throw new Error("This client has voucher or promotion history. Retain their financial records and deactivate the account instead of deleting it.");
+  if (offersEnabled()) {
+    const { clientOffers } = await import("../../drizzle/schema");
+    const credit = await db.query.clientOffers.findFirst({
+      where: and(
+        eq(clientOffers.artistId, artistId),
+        eq(clientOffers.clientId, clientId)
+      ),
+    });
+    if (credit)
+      throw new Error(
+        "This client has voucher or promotion history. Retain their financial records and deactivate the account instead of deleting it."
+      );
   }
-  await db.delete(appointments).where(and(eq(appointments.artistId,artistId),eq(appointments.clientId,clientId)));
+  await db
+    .delete(appointments)
+    .where(
+      and(
+        eq(appointments.artistId, artistId),
+        eq(appointments.clientId, clientId)
+      )
+    );
 
   if (deleteProfile) {
     // Drop the conversation binding this client and artist together
@@ -784,7 +824,14 @@ export async function checkAppointmentOverlap(
     .where(and(...conditions))
     .limit(1);
 
-  return conflicts.length > 0;
+  if (conflicts.length) return true;
+  return hasRescheduleHold(
+    db,
+    artistId,
+    startTime,
+    endTime,
+    excludeAppointmentId
+  );
 }
 
 /**

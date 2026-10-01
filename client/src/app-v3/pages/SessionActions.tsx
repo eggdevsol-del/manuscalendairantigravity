@@ -1,3 +1,4 @@
+import { RESCHEDULE_HOLD_HOURS } from "../../../../shared/reschedule";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useState, useEffect } from "react";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
@@ -63,6 +64,7 @@ export function SessionActions({
     [busy, setBusy] = useState(false);
   const update = trpc.appointments.update.useMutation();
   const [allowOutsideOfferDates, setAllowOutsideOfferDates] = useState(false);
+  const [rescheduleTerms, setRescheduleTerms] = useState<any>(null);
   const reschedule = trpc.appointments.reschedule.useMutation();
   const cancel = trpc.appointments.cancelSession.useMutation();
   const cancelAll = trpc.appointments.cancelProjectSessions.useMutation();
@@ -76,6 +78,7 @@ export function SessionActions({
     setDate(formatInTimeZone(instant(s.startsAt), s.timeZone, "yyyy-MM-dd"));
     setTime(formatInTimeZone(instant(s.startsAt), s.timeZone, "HH:mm"));
     setAllowOutsideOfferDates(false);
+    setRescheduleTerms(null);
     setMode(next);
   };
   useEffect(() => {
@@ -97,12 +100,17 @@ export function SessionActions({
         const end = new Date(
           +start + (+instant(s.endsAt) - +instant(s.startsAt))
         );
-        await reschedule.mutateAsync({
+        const result = await reschedule.mutateAsync({
           appointmentId: s.id,
           newStartTime: start.toISOString(),
           newEndTime: end.toISOString(),
           allowOutsideOfferDates,
+          requestApproval: !!rescheduleTerms,
         });
+        if (result.requiresApproval && "terms" in result) {
+          setRescheduleTerms(result.terms);
+          return;
+        }
       } else if (mode === "cancel") {
         if (all && s.sessionPlanId)
           await cancelAll.mutateAsync({ sessionPlanId: s.sessionPlanId });
@@ -222,7 +230,10 @@ export function SessionActions({
                 <input
                   type="date"
                   value={date}
-                  onChange={e => setDate(e.target.value)}
+                  onChange={e => {
+                    setDate(e.target.value);
+                    setRescheduleTerms(null);
+                  }}
                 />
               </label>
               <label>
@@ -230,18 +241,43 @@ export function SessionActions({
                 <input
                   type="time"
                   value={time}
-                  onChange={e => setTime(e.target.value)}
+                  onChange={e => {
+                    setTime(e.target.value);
+                    setRescheduleTerms(null);
+                  }}
                 />
               </label>
               <label>
                 <input
                   type="checkbox"
                   checked={allowOutsideOfferDates}
-                  onChange={e => setAllowOutsideOfferDates(e.target.checked)}
+                  onChange={e => {
+                    setAllowOutsideOfferDates(e.target.checked);
+                    setRescheduleTerms(null);
+                  }}
                 />
                 Keep the confirmed promotion if moving outside its eligible
                 dates
               </label>
+              {rescheduleTerms && (
+                <Panel>
+                  <h3>Client approval required</h3>
+                  <p>
+                    Removing this sitting’s promotion changes its price from{" "}
+                    {money(rescheduleTerms.oldEstimateCents)} to{" "}
+                    {money(rescheduleTerms.estimateCents)}.
+                  </p>
+                  <p>
+                    Already paid: {money(rescheduleTerms.paidCents)} · Revised
+                    balance: {money(rescheduleTerms.remainingCents)}
+                  </p>
+                  <p>
+                    The original sitting stays booked. The new time is held for
+                    up to {RESCHEDULE_HOLD_HOURS} hours while the client reviews
+                    the terms. No charge is made.
+                  </p>
+                </Panel>
+              )}
               <small>
                 {s.timeZone.replaceAll("_", " ")}. The session duration and
                 existing payments stay the same.
@@ -306,7 +342,9 @@ export function SessionActions({
               : mode === "finish" && s.remainingCents > 0
                 ? "Finish & request payment"
                 : mode === "reschedule"
-                  ? "Save new time"
+                  ? rescheduleTerms
+                    ? "Send for client approval"
+                    : "Review new time"
                   : mode === "cancel"
                     ? "Confirm cancellation"
                     : mode === "no-show"
