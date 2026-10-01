@@ -1,4 +1,11 @@
 import {
+  ConversationOfferCard,
+  ConversationOfferStrip,
+  activeThreadOffer,
+  useOfferClock,
+  type ThreadOffer,
+} from "../components/ConversationOffer";
+import {
   scheduleGapDays,
   scheduleGapNote,
 } from "../../../../shared/projectSchedule";
@@ -51,6 +58,73 @@ export function Thread({
   initialDraft?: string;
 }) {
   const c = useChatController(id);
+  const offerQuery = trpc.offers.conversation.useQuery(
+    { conversationId: id },
+    {
+      enabled: id > 0 && ["artist", "client"].includes(c.user?.role || ""),
+      refetchInterval: 3000,
+    }
+  );
+  const now = useOfferClock();
+  const activeOffer = activeThreadOffer(offerQuery.data?.offers || [], now);
+  const [offerSheet, setOfferSheet] = useState<ThreadOffer | null>(null);
+  const [bookingOffer, setBookingOffer] = useState<ThreadOffer | null>(null);
+  const [confirmOfferDecline, setConfirmOfferDecline] = useState(false);
+  const [offerCheckout, setOfferCheckout] = useState<number | null>(null);
+  const [offerScrolled, setOfferScrolled] = useState(false);
+  const offerTop = useRef<HTMLDivElement>(null);
+  const declineOffer = trpc.offers.declineConversation.useMutation({
+    onSuccess: () => {
+      setOfferSheet(null);
+      refresh();
+    },
+  });
+  useEffect(() => {
+    const root = c.viewportRef.current;
+    const target = offerTop.current;
+    if (!root || !target || !activeOffer) {
+      setOfferScrolled(false);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) =>
+        setOfferScrolled(
+          !entry.isIntersecting &&
+            entry.boundingClientRect.bottom <= (entry.rootBounds?.top || 0)
+        ),
+      { root }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [activeOffer?.id, c.messagesLoading]);
+  function bookWithOffer(offer: ThreadOffer) {
+    setBookingOffer(offer);
+    setOfferSheet(null);
+    setContextOpen(false);
+    c.setSelectedProposal(null);
+    setBooking(true);
+  }
+  function offerCard(offer: ThreadOffer) {
+    return (
+      <ConversationOfferCard
+        offer={offer}
+        now={now}
+        isArtist={c.isArtist}
+        busy={declineOffer.isPending}
+        onBook={() => bookWithOffer(offer)}
+        onReview={() => {
+          if (offer.planId) {
+            setOfferSheet(null);
+            setOfferCheckout(offer.planId);
+          }
+        }}
+        onDecline={() => {
+          setConfirmOfferDecline(true);
+          setOfferSheet(offer);
+        }}
+      />
+    );
+  }
   const project = trpc.projects.summary.useQuery(
     { conversationId: id },
     { enabled: id > 0 && c.user?.role !== "merchant" }
@@ -114,6 +188,10 @@ export function Thread({
   const file = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
   const refresh = () => {
+    void utils.offers.conversation.invalidate({ conversationId: id });
+    void utils.sessionPlans.getByConversation.invalidate({
+      conversationId: id,
+    });
     void utils.messages.list.invalidate({ conversationId: id });
     void utils.projects.summary.invalidate({ conversationId: id });
     void utils.appointments.getByConversation.invalidate(id);
@@ -148,7 +226,17 @@ export function Thread({
             <MoreHorizontal />
           </button>
         </header>
-        {next && (
+        {activeOffer && offerScrolled && (
+          <ConversationOfferStrip
+            offer={activeOffer}
+            now={now}
+            onOpen={() => {
+              setConfirmOfferDecline(false);
+              setOfferSheet(activeOffer);
+            }}
+          />
+        )}
+        {next && !activeOffer && (
           <Link
             className="simple-pin"
             href={`/projects/${id}?session=${next.id}`}
@@ -183,6 +271,17 @@ export function Thread({
             !c.messages?.length && (
               <Feedback empty="Start the conversation here. Your booking details stay together with your messages." />
             )}
+          {activeOffer && (
+            <div ref={offerTop} className="ivory-thread-offer-top">
+              {offerCard(activeOffer)}
+            </div>
+          )}
+          {offerQuery.error && (
+            <p role="alert">
+              Offer details couldn’t load.{" "}
+              <button onClick={() => offerQuery.refetch()}>Try again</button>
+            </p>
+          )}
           <div className="v3-message-stream">
             {c.hasOlderMessages && (
               <Action
@@ -219,7 +318,17 @@ export function Thread({
                     conversationId={id}
                   />
                 );
-              else if (message.messageType === "studio_invite")
+              else if (metadata.type === "promotion_interest") {
+                const offer = offerQuery.data?.offers.find(
+                  (o: ThreadOffer) => o.id === Number(metadata.offerId)
+                );
+                body =
+                  offer && offer.id !== activeOffer?.id ? (
+                    offerCard(offer)
+                  ) : (
+                    <p>{text}</p>
+                  );
+              } else if (message.messageType === "studio_invite")
                 body = (
                   <InviteMessage
                     metadata={metadata}
@@ -398,6 +507,7 @@ export function Thread({
             {!c.selectedProposal ? (
               <BookingComposer
                 conversationId={id}
+                offer={bookingOffer || undefined}
                 onSuccess={() => {
                   refresh();
                   setBooking(false);
@@ -476,22 +586,138 @@ export function Thread({
         onClose={() => setContextOpen(false)}
         title="Conversation tools"
       >
-        {c.isArtist && <div className="v3-stack">
-          <Action tone="secondary" onClick={() => {
-            setContextOpen(false);
-            c.setSelectedProposal(null);
-            setBooking(true);
-          }}><CalendarDays />Book in</Action>
-          <Action tone="secondary" disabled={!c.conversation?.clientId} onClick={() => {
-            setContextOpen(false);
-            setPromoOpen(true);
-          }}><Gift />Create promo</Action>
-        </div>}
+        {c.isArtist && (
+          <div className="v3-stack">
+            {activeOffer && (
+              <Action
+                tone="quiet"
+                onClick={() => {
+                  if (activeOffer.status === "discussing")
+                    bookWithOffer(activeOffer);
+                  else if (activeOffer.planId) {
+                    setContextOpen(false);
+                    setOfferCheckout(activeOffer.planId);
+                  }
+                }}
+              >
+                {activeOffer.status === "discussing" ? "Book with" : "Review"}{" "}
+                {activeOffer.rules.name}
+              </Action>
+            )}
+            <Action
+              tone="secondary"
+              onClick={() => {
+                setContextOpen(false);
+                c.setSelectedProposal(null);
+                setBookingOffer(null);
+                setBooking(true);
+              }}
+            >
+              <CalendarDays />
+              Book in
+            </Action>
+            <Action
+              tone="secondary"
+              disabled={!c.conversation?.clientId}
+              onClick={() => {
+                setContextOpen(false);
+                setPromoOpen(true);
+              }}
+            >
+              <Gift />
+              Create promo
+            </Action>
+          </div>
+        )}
       </SheetShell>
-      <SheetShell isOpen={promoOpen} onClose={() => setPromoOpen(false)} title="Create promo">
-        {promoOpen && c.isArtist && c.conversation?.clientId && <ClientPromotion
-          clientId={c.conversation.clientId} clientName={c.otherUserName}
-          onDone={() => { setPromoOpen(false); refresh(); }} />}
+      <SheetShell
+        isOpen={!!offerSheet}
+        onClose={() => setOfferSheet(null)}
+        title="Offer details"
+      >
+        {offerSheet && (
+          <>
+            {confirmOfferDecline ? (
+              <>
+                <h3>Decline {offerSheet.rules.name}?</h3>
+                <p>
+                  This removes the offer from the consultation. Any unpaid
+                  proposal made with it will be cancelled.
+                </p>
+                <div className="simple-actions">
+                  <Action
+                    tone="quiet"
+                    disabled={declineOffer.isPending}
+                    onClick={() => setConfirmOfferDecline(false)}
+                  >
+                    Keep offer
+                  </Action>
+                  <Action
+                    tone="danger"
+                    disabled={
+                      declineOffer.isPending ||
+                      !["discussing", "awaiting_deposit"].includes(
+                        offerSheet.status
+                      )
+                    }
+                    onClick={() =>
+                      declineOffer.mutate({
+                        conversationId: id,
+                        offerId: offerSheet.id,
+                      })
+                    }
+                  >
+                    {declineOffer.isPending ? "Declining…" : "Confirm decline"}
+                  </Action>
+                </div>
+              </>
+            ) : (
+              offerCard(
+                offerQuery.data?.offers.find(
+                  (o: ThreadOffer) => o.id === offerSheet.id
+                ) || offerSheet
+              )
+            )}
+            {declineOffer.error && (
+              <p role="alert">{declineOffer.error.message}</p>
+            )}
+          </>
+        )}
+      </SheetShell>
+      {offerCheckout &&
+        (c.isArtist ? (
+          <SheetShell
+            isOpen
+            onClose={() => setOfferCheckout(null)}
+            title="Booking proposal"
+          >
+            <PlanMessage id={offerCheckout} conversationId={id} />
+          </SheetShell>
+        ) : (
+          <SessionPlanCheckoutSheet
+            sessionPlanId={offerCheckout}
+            conversationId={id}
+            onClose={() => {
+              setOfferCheckout(null);
+              refresh();
+            }}
+          />
+        ))}
+      <SheetShell
+        isOpen={promoOpen}
+        onClose={() => setPromoOpen(false)}
+        title="Create promo"
+      >
+        {promoOpen && c.isArtist && c.conversation?.clientId && (
+          <ClientPromotion
+            clientId={c.conversation.clientId}
+            clientName={c.otherUserName}
+            onDone={() => {
+              setPromoOpen(false);
+              refresh();
+            }}
+          />
+        )}
       </SheetShell>
     </div>
   );
@@ -786,6 +1012,33 @@ function PlanMessage({
               <p>Dates to be arranged</p>
             )}
             <dl className="v3-booking-message-totals">
+              {objectFromJson(plan.message?.metadata).offerId &&
+                typeof objectFromJson(plan.message?.metadata)
+                  .originalTotalEstimateCents === "number" && (
+                  <>
+                    <div>
+                      <dt>Original estimate</dt>
+                      <dd>
+                        {money(
+                          objectFromJson(plan.message?.metadata)
+                            .originalTotalEstimateCents
+                        )}
+                      </dd>
+                    </div>
+                    {objectFromJson(plan.message?.metadata).discountCents >
+                      0 && (
+                      <div>
+                        <dt>Promotion discount</dt>
+                        <dd>
+                          −
+                          {money(
+                            objectFromJson(plan.message?.metadata).discountCents
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </>
+                )}
               <div>
                 <dt>
                   {sessions.length ? "Sittings estimate" : "Project estimate"}

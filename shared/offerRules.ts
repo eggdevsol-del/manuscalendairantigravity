@@ -14,7 +14,10 @@ export const offerRulesSchema = z
     currency: z.enum(["AUD", "NZD"]),
     eligibility: z.enum(["new", "unpaid"]).default("new"),
     expiresAt: z.string().datetime().nullable(),
-    sittingMonths: z.array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)).max(72).optional(),
+    sittingMonths: z
+      .array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/))
+      .max(72)
+      .optional(),
     sittingFrom: z.string().datetime().nullable(),
     sittingUntil: z.string().datetime().nullable(),
     backgroundImageUrl: z
@@ -57,7 +60,8 @@ export function offerEligibility(
   published: string,
   created: string,
   starts: string[],
-  now = Date.now()
+  now = Date.now(),
+  timeZone = "UTC"
 ) {
   if (
     ![published, created, ...starts].every(d => Number.isFinite(+new Date(d)))
@@ -67,7 +71,19 @@ export function offerEligibility(
     return "This offer has expired.";
   if (r.eligibility === "new" && +new Date(created) < +new Date(published))
     return "Available for new bookings made after this offer was issued.";
-  if (r.sittingMonths?.length && starts.some(s => !r.sittingMonths!.includes(s.slice(0, 7))))
+  if (
+    r.sittingMonths?.length &&
+    starts.some(s => {
+      const parts = new Intl.DateTimeFormat("en", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+      }).formatToParts(new Date(s));
+      return !r.sittingMonths!.includes(
+        `${parts.find(p => p.type === "year")!.value}-${parts.find(p => p.type === "month")!.value}`
+      );
+    })
+  )
     return "These sittings fall outside the offer’s selected months.";
   if (
     starts.some(

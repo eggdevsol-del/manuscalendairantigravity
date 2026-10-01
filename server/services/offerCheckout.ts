@@ -13,6 +13,17 @@ const iso = (v: string) => (v.includes("T") ? v : v.replace(" ", "T") + "Z");
 const fail = (message: string): never => {
   throw new TRPCError({ code: "BAD_REQUEST", message });
 };
+async function planTimeZone(db: any, plan: any) {
+  if (!plan.messageId) return "UTC";
+  const message = await db.query.messages.findFirst({
+    where: eq(s.messages.id, plan.messageId),
+  });
+  try {
+    return JSON.parse(message?.metadata || "{}").scheduling?.timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
 export async function planOfferOptions(
   db: any,
   planId: number,
@@ -69,7 +80,11 @@ export async function planOfferOptions(
                     rules,
                     iso(offer.issuedAt),
                     iso(plan.createdAt),
-                    plan.items.map((i: any) => iso(i.startsAt))
+                    plan.items.map((i: any) => iso(i.startsAt)),
+                    Date.now(),
+                    rules.sittingMonths?.length
+                      ? await planTimeZone(db, plan)
+                      : "UTC"
                   );
     choices.push({
       id: offer.id,
@@ -96,7 +111,8 @@ export async function setPlanOffer(
   db: any,
   planId: number,
   userId: string,
-  offerId: number | null
+  offerId: number | null,
+  timeZone?: string
 ) {
   requireOffersEnabled();
   const [plan] = await db
@@ -176,7 +192,10 @@ export async function setPlanOffer(
     rules,
     iso(offer.issuedAt),
     iso(original.createdAt),
-    original.items.map((i: any) => iso(i.startsAt))
+    original.items.map((i: any) => iso(i.startsAt)),
+    Date.now(),
+    timeZone ||
+      (rules.sittingMonths?.length ? await planTimeZone(db, original) : "UTC")
   );
   if (reason) fail(reason);
   const quote = quoteOffer(rules, offer.remainingValue, original.items);

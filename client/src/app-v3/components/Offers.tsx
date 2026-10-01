@@ -598,7 +598,7 @@ export function ClientOffers({ index }: { index?: number }) {
                   disabled={use.isPending}
                   onClick={() => use.mutate({ id: o.id })}
                 >
-                  Use offer
+                  Request booking with offer
                 </Action>
                 {o.rules.kind === "voucher" && (
                   <Action tone="quiet" onClick={() => setTransfer(o.id)}>

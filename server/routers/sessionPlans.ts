@@ -29,7 +29,13 @@ import * as schema from "../../drizzle/schema";
 import { createDepositPaymentIntent } from "../services/paymentIntents";
 
 export const sessionPlansRouter = router({
-  cancelOfferCheckout:protectedProcedure.input(z.object({sessionPlanId:z.number().int().positive()})).mutation(({ctx,input})=>withDatabaseTransaction(db=>cancelPlanOfferCheckout(db,input.sessionPlanId,ctx.user.id))),
+  cancelOfferCheckout: protectedProcedure
+    .input(z.object({ sessionPlanId: z.number().int().positive() }))
+    .mutation(({ ctx, input }) =>
+      withDatabaseTransaction(db =>
+        cancelPlanOfferCheckout(db, input.sessionPlanId, ctx.user.id)
+      )
+    ),
   offerOptions: protectedProcedure
     .input(z.object({ sessionPlanId: z.number().int().positive() }))
     .query(({ ctx, input }) =>
@@ -58,6 +64,7 @@ export const sessionPlansRouter = router({
       z.object({
         clientId: z.string().optional(), // Resolved from conversation if not provided
         conversationId: z.number(),
+        offerId: z.number().int().positive().optional(),
         serviceName: z.string().optional(), // For display context
         scheduling: z
           .object({
@@ -202,7 +209,34 @@ export const sessionPlansRouter = router({
             ["pending", "accepted"].includes(p.status) &&
             sessionPlanSignature(p) === signature
         );
-        if (same) return { sessionPlanId: same.id, messageId: same.messageId };
+        if (same && !input.offerId)
+          return { sessionPlanId: same.id, messageId: same.messageId };
+        if (input.offerId) {
+          const attached = await dbRef.query.offerApplications.findFirst({
+            where: and(
+              eq(schema.offerApplications.offerId, input.offerId),
+              eq(schema.offerApplications.status, "reserved")
+            ),
+          });
+          if (attached) {
+            const original = JSON.parse(attached.originalJson);
+            const existing = previous.find(p => p.id === attached.planId);
+            if (
+              existing &&
+              ["pending", "accepted"].includes(existing.status) &&
+              sessionPlanSignature(original) === signature
+            )
+              return {
+                sessionPlanId: existing.id,
+                messageId: existing.messageId,
+              };
+            throw new TRPCError({
+              code: "CONFLICT",
+              message:
+                "This offer already has a proposal. Review that proposal instead.",
+            });
+          }
+        }
         // Create the session plan
         const [planResult] = await dbRef.insert(schema.sessionPlans).values({
           artistId,
@@ -231,6 +265,21 @@ export const sessionPlansRouter = router({
           });
         }
 
+        if (input.offerId)
+          await setPlanOffer(
+            dbRef,
+            planId,
+            clientId,
+            input.offerId,
+            input.scheduling?.timeZone
+          );
+        const priced = input.offerId
+          ? await dbRef.query.sessionPlans.findFirst({
+              where: eq(schema.sessionPlans.id, planId),
+              with: { items: true },
+            })
+          : null;
+
         // Insert session_plan message in the conversation
         const sessionSummary = input.sessions
           .map(
@@ -242,7 +291,7 @@ export const sessionPlansRouter = router({
         const [msgResult] = await dbRef.insert(schema.messages).values({
           conversationId: input.conversationId,
           senderId: artistId,
-          content: `${input.sessions.length} sessions · $${(totalEstimateCents / 100).toFixed(2)}`,
+          content: `${input.sessions.length} sessions · $${((priced?.totalEstimateCents ?? totalEstimateCents) / 100).toFixed(2)}`,
           messageType: "session_plan",
           metadata: JSON.stringify({
             type: "session_plan",
@@ -250,9 +299,18 @@ export const sessionPlansRouter = router({
             sessionCount: input.sessions.length,
             projectName,
             serviceName: input.serviceName,
-            totalEstimateCents,
-            depositTotalCents,
-            sessions: input.sessions,
+            totalEstimateCents:
+              priced?.totalEstimateCents ?? totalEstimateCents,
+            depositTotalCents: priced?.depositTotalCents ?? depositTotalCents,
+            offerId: input.offerId,
+            originalTotalEstimateCents: input.offerId
+              ? totalEstimateCents
+              : undefined,
+            discountCents: input.offerId
+              ? totalEstimateCents -
+                (priced?.totalEstimateCents ?? totalEstimateCents)
+              : undefined,
+            sessions: priced?.items ?? input.sessions,
             scheduling: input.scheduling,
           }),
         });
@@ -263,6 +321,29 @@ export const sessionPlansRouter = router({
           .set({ messageId: msgResult.insertId })
           .where(eq(schema.sessionPlans.id, planId));
 
+        if (input.offerId) {
+          await dbRef
+            .update(schema.conversations)
+            .set({
+              lastMessageAt: new Date()
+                .toISOString()
+                .slice(0, 19)
+                .replace("T", " "),
+            })
+            .where(eq(schema.conversations.id, input.conversationId));
+          await dbRef
+            .insert(schema.notificationOutbox)
+            .values({
+              eventType: "push_message",
+              status: "pending",
+              payloadJson: JSON.stringify({
+                targetUserId: clientId,
+                title: "Review your booking proposal",
+                body: "Your artist has proposed dates and pricing with your offer. Review it before confirming your booking.",
+                url: `/chat/${input.conversationId}`,
+              }),
+            });
+        }
         return { sessionPlanId: planId, messageId: msgResult.insertId };
       });
     }),
@@ -399,7 +480,11 @@ export const sessionPlansRouter = router({
             message:
               "This checkout was cancelled. Ask your artist for a new plan.",
           });
-        const checkoutVersion=offersEnabled()?await dbRef.query.offerPlanCheckoutVersions.findFirst({where:eq(schema.offerPlanCheckoutVersions.planId,plan.id)}):null;
+        const checkoutVersion = offersEnabled()
+          ? await dbRef.query.offerPlanCheckoutVersions.findFirst({
+              where: eq(schema.offerPlanCheckoutVersions.planId, plan.id),
+            })
+          : null;
         const paymentResult = existingPayment?.client_secret
           ? {
               clientSecret: existingPayment.client_secret,
@@ -408,7 +493,7 @@ export const sessionPlansRouter = router({
           : await createDepositPaymentIntent({
               leadId: plan.id,
               sessionPlanId: plan.id,
-              idempotencyKey: `session-plan-${plan.id}-deposit${checkoutVersion?.version ? "-v"+checkoutVersion.version : ""}`,
+              idempotencyKey: `session-plan-${plan.id}-deposit${checkoutVersion?.version ? "-v" + checkoutVersion.version : ""}`,
               depositAmountCents: plan.depositTotalCents,
               platformFeeCents,
               artistFeeCents,
@@ -499,6 +584,19 @@ export const sessionPlansRouter = router({
           .set({ status: "declined" })
           .where(eq(schema.sessionPlans.id, plan.id));
 
+        if (offersEnabled()) {
+          const application = await dbRef.query.offerApplications.findFirst({
+            where: and(
+              eq(schema.offerApplications.planId, plan.id),
+              eq(schema.offerApplications.status, "reserved")
+            ),
+          });
+          if (application)
+            await dbRef
+              .update(schema.clientOffers)
+              .set({ interestAt: null })
+              .where(eq(schema.clientOffers.id, application.offerId));
+        }
         await releasePlanOffer(dbRef, plan.id);
 
         // Insert system message

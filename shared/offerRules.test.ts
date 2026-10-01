@@ -113,10 +113,30 @@ describe("offer amounts and eligibility", () => {
 });
 
 it("restricts offers to selected year-months including nonconsecutive months", () => {
-  const rules = { ...base, eligibility: "unpaid" as const, sittingMonths: ["2026-10", "2026-12"] };
-  const check = (dates: string[]) => offerEligibility(rules, "2026-01-01", "2026-01-01", dates, 0);
+  const rules = {
+    ...base,
+    eligibility: "unpaid" as const,
+    sittingMonths: ["2026-10", "2026-12"],
+  };
+  const check = (dates: string[]) =>
+    offerEligibility(rules, "2026-01-01", "2026-01-01", dates, 0);
   expect(check(["2026-10-10T10:00:00Z", "2026-12-10T10:00:00Z"])).toBeNull();
   expect(check(["2026-11-10T10:00:00Z"])).toContain("selected months");
   expect(check(["2027-10-10T10:00:00Z"])).toContain("selected months");
-  expect(offerRulesSchema.safeParse({ ...rules, sittingMonths: ["2026-13"] }).success).toBe(false);
+  expect(
+    offerRulesSchema.safeParse({ ...rules, sittingMonths: ["2026-13"] }).success
+  ).toBe(false);
+});
+it("checks selected sitting months using the booking timezone", () => {
+  const rules = { ...base, sittingMonths: ["2027-02"] };
+  expect(
+    offerEligibility(
+      rules,
+      "2027-01-01T00:00:00Z",
+      "2027-01-02T00:00:00Z",
+      ["2027-01-31T23:00:00Z"],
+      +new Date("2027-01-03T00:00Z"),
+      "Australia/Brisbane"
+    )
+  ).toBeNull();
 });

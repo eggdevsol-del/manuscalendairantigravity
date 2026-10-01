@@ -65,3 +65,35 @@ it("allows only deadline-bounded splits and never overruns the last sitting", ()
     })
   ).toThrow(/deadline/i);
 });
+it("finds only dates in the offer's selected months and respects its end", () => {
+  const value = input();
+  const dates = calculateProjectDates({
+    ...value,
+    frequency: "weekly",
+    sittingMonths: ["2027-02", "2027-04"],
+    completedBy: new Date("2027-04-30T23:59Z"),
+  });
+  expect(dates.map(d => d.toISOString().slice(0, 7))).toEqual([
+    "2027-02",
+    "2027-02",
+    "2027-02",
+  ]);
+  expect(() =>
+    calculateProjectDates({
+      ...value,
+      sittingMonths: ["2027-02"],
+      completedBy: new Date("2027-01-31T23:59Z"),
+    })
+  ).toThrow();
+});
+it("matches offer months in the artist timezone at a UTC month boundary", () => {
+  const value = input();
+  const dates = calculateProjectDates({
+    ...value,
+    sittings: 1,
+    sittingMonths: ["2027-02"],
+    timeZone: "Australia/Brisbane",
+    completedBy: new Date("2027-02-28T13:59Z"),
+  });
+  expect(dates[0].toISOString()).toBe("2027-01-31T23:00:00.000Z");
+});

@@ -1,4 +1,8 @@
 import {
+  conversationOffers,
+  declineConversationOffer,
+} from "../services/conversationOffers";
+import {
   deliveryAvailability,
   queueOfferDelivery,
   requestSmsCode,
@@ -56,14 +60,34 @@ async function audience(
     .select()
     .from(s.paymentLedger)
     .where(eq(s.paymentLedger.artistId, artistId));
-  const clients = [...new Set<string>(conversations.map((c: any) => c.id).filter(Boolean))];
-  const profiles = (filters.birthdayMonth || filters.city) && clients.length
-    ? await db.select({ id: s.users.id, birthday: s.users.birthday, city: s.users.city }).from(s.users).where(inArray(s.users.id, clients)) : [];
+  const clients = [
+    ...new Set<string>(conversations.map((c: any) => c.id).filter(Boolean)),
+  ];
+  const profiles =
+    (filters.birthdayMonth || filters.city) && clients.length
+      ? await db
+          .select({
+            id: s.users.id,
+            birthday: s.users.birthday,
+            city: s.users.city,
+          })
+          .from(s.users)
+          .where(inArray(s.users.id, clients))
+      : [];
   return clients.filter(id => {
     if (filters.clientIds && !filters.clientIds.includes(id)) return false;
     const profile = profiles.find((p: any) => p.id === id);
-    if (filters.birthdayMonth && Number(profile?.birthday?.slice(5, 7)) !== filters.birthdayMonth) return false;
-    if (filters.city && profile?.city?.trim().toLocaleLowerCase() !== filters.city.toLocaleLowerCase()) return false;
+    if (
+      filters.birthdayMonth &&
+      Number(profile?.birthday?.slice(5, 7)) !== filters.birthdayMonth
+    )
+      return false;
+    if (
+      filters.city &&
+      profile?.city?.trim().toLocaleLowerCase() !==
+        filters.city.toLocaleLowerCase()
+    )
+      return false;
     if (filters.clientId && id !== filters.clientId) return false;
     const rows = appointments.filter((a: any) => a.clientId === id);
     const completed = rows.filter((a: any) => a.status === "completed");
@@ -396,13 +420,23 @@ export const offersRouter = router({
         return { success: true };
       })
     ),
-  audienceClients: offerProcedure.query(({ ctx }) => withDatabaseTransaction(async db => {
-    requireArtist(ctx.user);
-    const rows = await db.select({ id: s.conversations.clientId }).from(s.conversations).where(eq(s.conversations.artistId, ctx.user.id));
-    const ids = [...new Set(rows.map(r => r.id).filter((id): id is string => !!id))];
-    if (!ids.length) return [];
-    return db.select({ id: s.users.id, name: s.users.name, city: s.users.city }).from(s.users).where(inArray(s.users.id, ids));
-  })),
+  audienceClients: offerProcedure.query(({ ctx }) =>
+    withDatabaseTransaction(async db => {
+      requireArtist(ctx.user);
+      const rows = await db
+        .select({ id: s.conversations.clientId })
+        .from(s.conversations)
+        .where(eq(s.conversations.artistId, ctx.user.id));
+      const ids = [
+        ...new Set(rows.map(r => r.id).filter((id): id is string => !!id)),
+      ];
+      if (!ids.length) return [];
+      return db
+        .select({ id: s.users.id, name: s.users.name, city: s.users.city })
+        .from(s.users)
+        .where(inArray(s.users.id, ids));
+    })
+  ),
   audience: offerProcedure.input(audienceSchema).query(({ ctx, input }) =>
     withDatabaseTransaction(async db => {
       requireArtist(ctx.user);
@@ -470,15 +504,26 @@ export const offersRouter = router({
           });
         if (input.filters.clientId && ids.includes(input.filters.clientId)) {
           const conversation = await db.query.conversations.findFirst({
-            where: and(eq(s.conversations.artistId, ctx.user.id), eq(s.conversations.clientId, input.filters.clientId)),
+            where: and(
+              eq(s.conversations.artistId, ctx.user.id),
+              eq(s.conversations.clientId, input.filters.clientId)
+            ),
           });
           if (!conversation) fail("This client conversation is unavailable.");
           await db.insert(s.messages).values({
-            conversationId: conversation.id, senderId: ctx.user.id, messageType: "system",
+            conversationId: conversation.id,
+            senderId: ctx.user.id,
+            messageType: "system",
             content: `I’ve sent you “${rules.name}”. ${rules.funding === "sale" ? "Purchase your gift card" : "View your offer"} in My Tattoos.`,
-            metadata: JSON.stringify({ type: "promotion_sent", campaignId: c.id }),
+            metadata: JSON.stringify({
+              type: "promotion_sent",
+              campaignId: c.id,
+            }),
           });
-          await db.update(s.conversations).set({ lastMessageAt: now() }).where(eq(s.conversations.id, conversation.id));
+          await db
+            .update(s.conversations)
+            .set({ lastMessageAt: now() })
+            .where(eq(s.conversations.id, conversation.id));
         }
         const issuedOffers = await db
           .select()
@@ -498,6 +543,30 @@ export const offersRouter = router({
         };
       })
     ),
+  conversation: protectedProcedure
+    .input(z.object({ conversationId: z.number().int().positive() }))
+    .query(({ ctx, input }) =>
+      withDatabaseTransaction(db =>
+        conversationOffers(db, input.conversationId, ctx.user.id)
+      )
+    ),
+  declineConversation: offerProcedure
+    .input(
+      z.object({
+        conversationId: z.number().int().positive(),
+        offerId: z.number().int().positive(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      withDatabaseTransaction(db =>
+        declineConversationOffer(
+          db,
+          input.conversationId,
+          input.offerId,
+          ctx.user.id
+        )
+      )
+    ),
   use: offerProcedure
     .input(z.object({ id: z.number().int().positive() }))
     .mutation(({ ctx, input }) =>
@@ -512,25 +581,43 @@ export const offersRouter = router({
             )
           )
           .for("update");
-        if (!offer || offer.transferTo || offer.remainingValue <= 0)
+        if (
+          !offer ||
+          offer.transferTo ||
+          offer.purchaseRequired ||
+          offer.remainingValue <= 0
+        )
           fail("This offer is unavailable.");
         const r = parse(offer.rulesJson);
         if (r.expiresAt && +new Date(r.expiresAt) <= Date.now())
           fail("This offer has expired.");
-        await db.select({id:s.users.id}).from(s.users).where(eq(s.users.id,ctx.user.id)).for("update");
+        await db
+          .select({ id: s.users.id })
+          .from(s.users)
+          .where(eq(s.users.id, ctx.user.id))
+          .for("update");
         const conversation = await db.query.conversations.findFirst({
           where: and(
             eq(s.conversations.artistId, offer.artistId),
             eq(s.conversations.clientId, ctx.user.id)
           ),
         });
-        let conversationId=conversation?.id;
-        if(!conversationId){
-          const [created]=await db.insert(s.conversations).values({artistId:offer.artistId,clientId:ctx.user.id,lastMessageAt:now()});
-          conversationId=created.insertId;
+        let conversationId = conversation?.id;
+        if (!conversationId) {
+          const [created] = await db
+            .insert(s.conversations)
+            .values({
+              artistId: offer.artistId,
+              clientId: ctx.user.id,
+              lastMessageAt: now(),
+            });
+          conversationId = created.insertId;
         }
         if (!offer.interestAt) {
-          await db.update(s.conversations).set({lastMessageAt:now()}).where(eq(s.conversations.id,conversationId));
+          await db
+            .update(s.conversations)
+            .set({ lastMessageAt: now() })
+            .where(eq(s.conversations.id, conversationId));
           await db.insert(s.messages).values({
             conversationId,
             senderId: ctx.user.id,

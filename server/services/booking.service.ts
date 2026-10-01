@@ -30,6 +30,7 @@ export interface ProjectAvailabilityInput {
   frequency: "single" | "consecutive" | "weekly" | "biweekly" | "monthly";
   startDate: Date;
   completedBy?: Date;
+  sittingMonths?: string[];
   workSchedule: any[];
   existingAppointments: AppointmentInterval[];
   timeZone: string;
@@ -280,7 +281,8 @@ export function findNextAvailableSlotOptimized(
   workSchedule: WorkDay[],
   existingAppointments: AppointmentInterval[],
   timeZone: string,
-  deadline?: Date
+  deadline?: Date,
+  sittingMonths?: string[]
 ): Date | null {
   const endSearchLimit = new Date(startDate);
   endSearchLimit.setFullYear(endSearchLimit.getFullYear() + 1);
@@ -302,6 +304,15 @@ export function findNextAvailableSlotOptimized(
   );
 
   while (searchPointer < endSearchLimit) {
+    if (
+      sittingMonths?.length &&
+      !sittingMonths.includes(
+        formatInTimeZone(searchPointer, timeZone, "yyyy-MM")
+      )
+    ) {
+      searchPointer.setTime(+searchPointer + 30 * 60000);
+      continue;
+    }
     // 1. Is this time within working hours?
     const dayName = searchPointer.toLocaleDateString("en-US", {
       weekday: "long",
@@ -474,7 +485,8 @@ export function calculateProjectDates(input: ProjectAvailabilityInput): Date[] {
         input.workSchedule,
         input.existingAppointments,
         input.timeZone,
-        limit
+        limit,
+        input.sittingMonths
       );
       if (!slot || +slot + input.serviceDuration * 60000 > +limit) break;
       candidates.push(slot);
@@ -527,13 +539,23 @@ export function calculateProjectDates(input: ProjectAvailabilityInput): Date[] {
   for (let i = 0; i < input.sittings; i++) {
     let slot: Date | null = null;
     try {
-      slot = findNextAvailableSlot(
-        currentDateSearch,
-        input.serviceDuration,
-        input.workSchedule,
-        tempAppointments,
-        input.timeZone
-      );
+      slot = input.sittingMonths?.length
+        ? findNextAvailableSlotOptimized(
+            currentDateSearch,
+            input.serviceDuration,
+            input.workSchedule,
+            tempAppointments,
+            input.timeZone,
+            input.completedBy,
+            input.sittingMonths
+          )
+        : findNextAvailableSlot(
+            currentDateSearch,
+            input.serviceDuration,
+            input.workSchedule,
+            tempAppointments,
+            input.timeZone
+          );
     } catch (e: any) {
       if (e.message && e.message.startsWith("SLOT_SEARCH_FAILED:::")) {
         const debugLog = e.message.split(":::")[1];

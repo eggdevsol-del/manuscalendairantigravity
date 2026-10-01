@@ -1,3 +1,9 @@
+import { requireConversationAccess } from "../services/access";
+import { offerRulesSchema } from "../../shared/offerRules";
+import { requireOffersEnabled } from "../services/offerAvailability";
+import * as schema from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
+import { fromZonedTime } from "date-fns-tz";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, router, publicProcedure } from "../_core/trpc";
@@ -24,10 +30,11 @@ export const bookingRouter = router({
         ]),
         startDate: z.date(),
         completedBy: z.date().optional(),
+        offerId: z.number().int().positive().optional(),
         timeZone: z.string(),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { conversationId, frequency, sittings, serviceDuration } = input;
 
       try {
@@ -46,6 +53,58 @@ export const bookingRouter = router({
           resolvedArtistId = conversation.artistId;
         }
 
+        if (resolvedArtistId !== ctx.user.id)
+          throw new TRPCError({ code: "FORBIDDEN" });
+        let rules: z.infer<typeof offerRulesSchema> | undefined;
+        if (input.offerId) {
+          requireOffersEnabled();
+          const database = await db.getDb();
+          const conversation = await requireConversationAccess(
+            database,
+            conversationId,
+            ctx.user.id,
+            true
+          );
+          const offer = await database!.query.clientOffers.findFirst({
+            where: eq(schema.clientOffers.id, input.offerId),
+          });
+          if (
+            !offer ||
+            offer.artistId !== ctx.user.id ||
+            offer.clientId !== conversation.clientId ||
+            offer.purchaseRequired ||
+            offer.transferTo ||
+            offer.remainingValue <= 0
+          )
+            throw new TRPCError({ code: "FORBIDDEN" });
+          rules = offerRulesSchema.parse(JSON.parse(offer.rulesJson));
+          if (rules.expiresAt && +new Date(rules.expiresAt) <= Date.now())
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "This offer has expired.",
+            });
+        }
+        let startDate = input.startDate;
+        if (rules?.sittingFrom && +new Date(rules.sittingFrom) > +startDate)
+          startDate = new Date(rules.sittingFrom);
+        let completedBy = input.completedBy;
+        const limits: Date[] = [];
+        if (rules?.sittingUntil) limits.push(new Date(rules.sittingUntil));
+        if (rules?.sittingMonths?.length) {
+          const month = [...rules.sittingMonths].sort().at(-1)!;
+          const next = new Date(month + "-01T12:00:00Z");
+          next.setUTCMonth(next.getUTCMonth() + 1);
+          limits.push(
+            new Date(
+              +fromZonedTime(
+                next.toISOString().slice(0, 10) + "T00:00:00",
+                input.timeZone
+              ) - 1
+            )
+          );
+        }
+        for (const limit of limits)
+          if (!completedBy || limit < completedBy) completedBy = limit;
         const artistSettings = await db.getArtistSettings(resolvedArtistId);
 
         if (!artistSettings) {
@@ -74,7 +133,7 @@ export const bookingRouter = router({
         // CAUTION: It evaluates based on startTime >= searchStart.
         // We MUST search from start of day to ensure we catch currently overlapping
         // "in progress" appointments that started before the exact current time!
-        const searchStart = new Date(input.startDate);
+        const searchStart = new Date(startDate);
         searchStart.setHours(0, 0, 0, 0);
 
         const rawAppointments = await db.getArtistCalendar(
@@ -95,8 +154,9 @@ export const bookingRouter = router({
           serviceDuration,
           sittings,
           frequency,
-          startDate: input.startDate,
-          completedBy: input.completedBy,
+          startDate,
+          completedBy,
+          sittingMonths: rules?.sittingMonths,
           workSchedule,
           existingAppointments,
           timeZone: input.timeZone,

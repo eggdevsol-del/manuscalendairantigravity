@@ -1,4 +1,7 @@
+import { quoteOffer, offerEligibility } from "@shared/offerRules";
+import type { ThreadOffer } from "../components/ConversationOffer";
 import { NumericInput } from "@/components/ui/numeric-input";
+import { PAYMENT_TIERS } from "@shared/fees";
 import {
   scheduleGapDays,
   scheduleGapNote,
@@ -35,10 +38,12 @@ type Service = {
 export function BookingComposer({
   initialDate = new Date(),
   conversationId,
+  offer,
   onSuccess,
 }: {
   initialDate?: Date;
   conversationId?: number;
+  offer?: ThreadOffer;
   onSuccess: (id: number) => void;
 }) {
   const { user } = useAuth();
@@ -55,6 +60,17 @@ export function BookingComposer({
   const [service, setService] = useState("");
   const [sessions, setSessions] = useState<DraftSession[]>(() => {
     const start = new Date(initialDate);
+    if (
+      offer?.rules.sittingMonths?.length &&
+      !offer.rules.sittingMonths.includes(format(start, "yyyy-MM"))
+    ) {
+      const month = [...offer.rules.sittingMonths]
+        .sort()
+        .find(m => m >= format(start, "yyyy-MM"));
+      if (month) start.setTime(+new Date(`${month}-01T09:00:00`));
+    }
+    if (offer?.rules.sittingFrom && +new Date(offer.rules.sittingFrom) > +start)
+      start.setTime(+new Date(offer.rules.sittingFrom));
     if (start.getHours() === 0) start.setHours(9, 0, 0, 0);
     if (isSameDay(start, new Date()) && start <= new Date())
       start.setTime(Math.ceil((Date.now() + 60000) / 1800000) * 1800000);
@@ -116,6 +132,7 @@ export function BookingComposer({
         frequency,
         startDate,
         completedBy: deadline(),
+        offerId: offer?.id,
         timeZone: zone,
       });
       if (result.dates.length !== sessions.length)
@@ -145,7 +162,11 @@ export function BookingComposer({
     setAutoScheduled(false);
     setError("");
     if (fixedDeposit && patch.price !== undefined) {
-      patch.deposit = String(Math.round(Number(patch.price) * 25) / 100);
+      patch.deposit = String(
+        Math.round(
+          Number(patch.price) * PAYMENT_TIERS.free.defaultDepositPercent
+        ) / 100
+      );
     }
     setSessions(s => s.map((v, i) => (i === index ? { ...v, ...patch } : v)));
   };
@@ -196,8 +217,37 @@ export function BookingComposer({
         +new Date(items[i - 1].startsAt) + items[i - 1].durationMinutes * 60000
       )
         return "These sessions overlap. Choose separate times.";
+    if (offer) {
+      const reason = offerEligibility(
+        offer.rules,
+        offer.issuedAt,
+        new Date().toISOString(),
+        asItems().map(i => i.startsAt),
+        Date.now(),
+        zone
+      );
+      if (reason) return reason;
+    }
     return "";
   };
+  function offerPreview() {
+    if (!offer) return null;
+    try {
+      return quoteOffer(
+        offer.rules,
+        offer.remainingValue,
+        asItems().map((item, index) => ({ ...item, id: index + 1 }))
+      );
+    } catch {
+      return null;
+    }
+  }
+  const preview = offerPreview();
+  const reviewItems = () =>
+    asItems().map((item, index) => ({
+      ...item,
+      ...(preview?.items[index] || {}),
+    }));
   async function send() {
     if (busy) return;
     const problem = validate();
@@ -220,6 +270,7 @@ export function BookingComposer({
       if (!target) throw new Error("Could not open the client conversation.");
       await create.mutateAsync({
         conversationId: target,
+        offerId: offer?.id,
         clientId: clientId!,
         serviceName: service,
         sessions: asItems(),
@@ -253,8 +304,11 @@ export function BookingComposer({
     const svc = services.find(s => s.name === name);
     if (svc) {
       const percentage = fixedDeposit
-        ? 25
-        : Number(settings.data?.depositPercentage ?? 25);
+        ? PAYMENT_TIERS.free.defaultDepositPercent
+        : Number(
+            settings.data?.depositPercentage ??
+              PAYMENT_TIERS.pro.defaultDepositPercent
+          );
       setSessions(s =>
         Array.from(
           {
@@ -279,6 +333,24 @@ export function BookingComposer({
   }
   return (
     <div className="v3-stack" data-tour-booking-step={step}>
+      {offer && (
+        <p className="ivory-booking-offer-context">
+          <strong>
+            {offer.rules.name} ·{" "}
+            {offer.rules.valueType === "percentage"
+              ? `${offer.rules.value}% off`
+              : money(offer.remainingValue, offer.rules.currency)}
+          </strong>
+          <span>
+            {offer.rules.sittingMonths?.length
+              ? `Eligible months: ${offer.rules.sittingMonths.map(m => format(new Date(`${m}-01T12:00:00`), "MMM yyyy")).join(", ")}`
+              : "Eligible dates apply"}
+            {offer.rules.expiresAt
+              ? ` · Deposit due before ${new Date(offer.rules.expiresAt).toLocaleString()}`
+              : ""}
+          </span>
+        </p>
+      )}
       <Status>
         {
           {
@@ -570,7 +642,8 @@ export function BookingComposer({
             </small>
             {fixedDeposit && (
               <small id="booking-deposit-policy">
-                Your Free plan uses a 25% deposit for each session.
+                Your Free plan uses a {PAYMENT_TIERS.free.defaultDepositPercent}
+                % deposit for each session.
               </small>
             )}
             <Action
@@ -605,7 +678,7 @@ export function BookingComposer({
             {completedBy && (
               <p className="v3-muted">Complete by {completedBy}</p>
             )}
-            {asItems().map((s, index, items) => (
+            {reviewItems().map((s, index, items) => (
               <Row
                 key={s.sessionIndex}
                 title={bookingDate(s.startsAt, zone)}
@@ -638,18 +711,36 @@ export function BookingComposer({
               />
             ))}
             <dl className="v3-facts">
+              {preview && (
+                <>
+                  <div>
+                    <dt>Original estimate</dt>
+                    <dd>{money(preview.original)}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      {offer?.rules.kind === "voucher"
+                        ? "Voucher credit"
+                        : "Promotion discount"}
+                    </dt>
+                    <dd>−{money(preview.amount)}</dd>
+                  </div>
+                </>
+              )}
               <div>
                 <dt>Total estimate</dt>
                 <dd>
                   {money(
-                    asItems().reduce((sum, s) => sum + s.estimateCents, 0)
+                    reviewItems().reduce((sum, s) => sum + s.estimateCents, 0)
                   )}
                 </dd>
               </div>
               <div>
                 <dt>Deposit</dt>
                 <dd>
-                  {money(asItems().reduce((sum, s) => sum + s.depositCents, 0))}
+                  {money(
+                    reviewItems().reduce((sum, s) => sum + s.depositCents, 0)
+                  )}
                 </dd>
               </div>
             </dl>
