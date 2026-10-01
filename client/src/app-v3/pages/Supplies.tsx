@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
 import { ChevronRight, ShoppingBag } from "lucide-react";
@@ -484,7 +485,7 @@ function CatalogueProduct({
             )}
             <div className="v3-inline supplier-quantity" role="group" aria-label="Quantity">
               <Action tone="secondary" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</Action>
-              <label>Quantity <input aria-label="Quantity" type="number" inputMode="numeric" min={1} max={Math.max(1, (variant?.inventoryCount || 0) - count)} value={quantity} style={{width:"4rem",textAlign:"center"}} onChange={e => setQuantity(Math.max(1, Math.min(Math.floor(Number(e.target.value)) || 1, Math.max(1, (variant?.inventoryCount || 0)-count))))} /></label>
+              <label>Quantity <NumericInput aria-label="Quantity" type="number" inputMode="numeric" min={1} max={Math.max(1, (variant?.inventoryCount || 0) - count)} value={quantity} style={{width:"4rem",textAlign:"center"}} onChange={e => setQuantity(Math.max(1, Math.min(Math.floor(Number(e.target.value)) || 1, Math.max(1, (variant?.inventoryCount || 0)-count))))} /></label>
               <Action tone="secondary" aria-label="Increase quantity" disabled={!variant || quantity >= variant.inventoryCount-count} onClick={() => setQuantity(q => Math.min(q+1, (variant?.inventoryCount || 0)-count))}>+</Action>
             </div>
             {count > 0 && <p className="v3-muted">{count} already in your cart</p>}

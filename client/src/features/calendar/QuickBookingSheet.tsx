@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 /**
  * QuickBookingSheet — Artist quick-book form (calendar "+" action)
  * ────────────────────────────────────────────────────────────────
@@ -520,7 +521,7 @@ export const QuickBookingSheet: React.FC<QuickBookingSheetProps> = ({
           </label>
           <div className="relative">
             <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
+            <NumericInput
               type="number"
               min={0}
               step={1}

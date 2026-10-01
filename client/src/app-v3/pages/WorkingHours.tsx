@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
@@ -430,7 +431,7 @@ export default function WorkingHours() {
             </label>
             <label>
               Duration per session · minutes
-              <input
+              <NumericInput
                 type="number"
                 required
                 min={1}
@@ -447,7 +448,7 @@ export default function WorkingHours() {
             </label>
             <label>
               Price per session · AUD
-              <input
+              <NumericInput
                 type="number"
                 required
                 min={0}
@@ -463,7 +464,7 @@ export default function WorkingHours() {
             </label>
             <label>
               Number of sessions
-              <input
+              <NumericInput
                 type="number"
                 required
                 min={1}

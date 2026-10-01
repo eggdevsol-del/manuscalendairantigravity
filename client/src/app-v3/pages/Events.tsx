@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
@@ -164,7 +165,7 @@ export default function Events() {
             </label>
             <label>
               Available places
-              <input
+              <NumericInput
                 required
                 type="number"
                 min={1}
@@ -176,7 +177,7 @@ export default function Events() {
             </label>
             <label>
               Price per person · AUD
-              <input
+              <NumericInput
                 required
                 type="number"
                 min={1}

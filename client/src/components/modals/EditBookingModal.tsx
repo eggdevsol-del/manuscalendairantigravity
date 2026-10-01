@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
@@ -273,7 +274,7 @@ function BookingEditor({
                   </label>
                   <label>
                     Duration in minutes
-                    <input
+                    <NumericInput
                       type="number"
                       min="1"
                       max="1440"
@@ -287,7 +288,7 @@ function BookingEditor({
               )}
               <label>
                 Price per session · AUD
-                <input
+                <NumericInput
                   type="number"
                   min="0"
                   step="0.01"

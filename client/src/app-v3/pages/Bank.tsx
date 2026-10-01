@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useEffect, useState } from "react";
 import {
   ConnectAccountOnboarding,
@@ -382,7 +383,7 @@ function PayoutSettings({ onDisconnect }: { onDisconnect: () => unknown }) {
                   {interval === "monthly" && (
                     <label>
                       Day of month
-                      <input
+                      <NumericInput
                         type="number"
                         min={1}
                         max={31}

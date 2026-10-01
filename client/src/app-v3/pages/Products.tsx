@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useState } from "react";
 import { Package } from "lucide-react";
@@ -283,7 +284,7 @@ export default function Products() {
                       ).map(([field, label]) => (
                         <label key={field}>
                           {label}
-                          <input
+                          <NumericInput
                             aria-label={`${variant.name} ${label}`}
                             type="number"
                             required

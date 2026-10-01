@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import {
   Store,
@@ -245,11 +246,11 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
-                <input type="number" step="0.01" value={semPrice} onChange={e => setSemPrice(e.target.value)} placeholder="150.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+                <NumericInput type="number" step="0.01" value={semPrice} onChange={e => setSemPrice(e.target.value)} placeholder="150.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Capacity</label>
-                <input type="number" value={semCapacity} onChange={e => setSemCapacity(e.target.value)} placeholder="20" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+                <NumericInput type="number" value={semCapacity} onChange={e => setSemCapacity(e.target.value)} placeholder="20" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
             </div>
             <button onClick={handleSeminarSubmit} disabled={isSubmitting || !semTitle || !semPrice || !semCapacity || !semDate} className="w-full mt-2 py-3.5 bg-primary hover:bg-primary/90 rounded-xl font-bold transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-40 text-primary-foreground text-sm shadow-lg shadow-primary/20">
@@ -293,15 +294,15 @@ export default function StorefrontSetupWizard({ onClose }: { onClose: () => void
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Price ($)</label>
-                <input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+                <NumericInput type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Shipping ($)</label>
-                <input type="number" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="0.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+                <NumericInput type="number" step="0.01" value={shippingCost} onChange={e => setShippingCost(e.target.value)} placeholder="0.00" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
               <div>
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">Stock</label>
-                <input type="number" value={inventory} onChange={e => setInventory(e.target.value)} placeholder="50" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
+                <NumericInput type="number" value={inventory} onChange={e => setInventory(e.target.value)} placeholder="50" className="w-full bg-secondary/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 text-sm" />
               </div>
             </div>
             <div>

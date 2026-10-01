@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -299,7 +300,7 @@ function BusinessForm({ initial }: { initial: any }) {
           </label>
           <label>
             Reschedule notice · hours
-            <input
+            <NumericInput
               type="number"
               min={0}
               required

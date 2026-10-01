@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -254,7 +255,7 @@ export default function Waitlist() {
               ).map(([key, label, min, max, step]) => (
                 <label key={key}>
                   {label}
-                  <input
+                  <NumericInput
                     type="number"
                     required
                     min={min}

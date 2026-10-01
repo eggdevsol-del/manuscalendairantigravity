@@ -1,3 +1,4 @@
+import { NumericInput } from "./numeric-input";
 import { useDialogComposition } from "./dialog";
 import { useComposition } from "@/hooks/useComposition";
 import { cn } from "@/lib/utils";
@@ -57,8 +58,9 @@ function Input({
     },
   });
 
+  const Element = type === "number" ? NumericInput : "input";
   return (
-    <input
+    <Element
       type={type}
       data-slot="input"
       className={cn(

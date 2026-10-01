@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { OfferAppearance } from "./OfferAppearance";
 import { useRef, useState } from "react";
 import { ArrowLeft, CalendarDays, Check, Gift, Heart } from "lucide-react";
@@ -55,7 +56,7 @@ export function ClientPromotion({ clientId, clientName, onDone }: {
       setError(""); setStep("review");
     }}>
       <h2>{rules.kind === "discount" ? "A reason to book." : rules.funding === "sale" ? "A gift worth giving." : "A little extra, from you."}</h2>
-      <label>{rules.valueType === "percentage" ? "Discount (%)" : "Value (AUD)"}<input className="ivory-promo-amount" type="number" inputMode="decimal" required min={rules.valueType === "percentage" ? 1 : rules.funding === "sale" ? 1 : 0.01} max={rules.valueType === "percentage" ? 100 : 100000} step={rules.valueType === "percentage" ? 1 : 0.01} value={rules.value / (rules.valueType === "fixed" ? 100 : 1)} onChange={e => change("value", Math.round(Number(e.target.value) * (rules.valueType === "fixed" ? 100 : 1)))} /></label>
+      <label>{rules.valueType === "percentage" ? "Discount (%)" : "Value (AUD)"}<NumericInput className="ivory-promo-amount" type="number" inputMode="decimal" required min={rules.valueType === "percentage" ? 1 : rules.funding === "sale" ? 1 : 0.01} max={rules.valueType === "percentage" ? 100 : 100000} step={rules.valueType === "percentage" ? 1 : 0.01} value={rules.value / (rules.valueType === "fixed" ? 100 : 1)} onChange={e => change("value", Math.round(Number(e.target.value) * (rules.valueType === "fixed" ? 100 : 1)))} /></label>
       {rules.kind === "discount" && <label>Discount type<select value={rules.valueType} onChange={e => setRules(r => ({ ...r, valueType: e.target.value as "fixed" | "percentage", value: e.target.value === "fixed" ? 10000 : 10 }))}><option value="percentage">Percentage off</option><option value="fixed">Amount off</option></select></label>}
       <label>Card title<input required minLength={2} maxLength={80} value={rules.name} onChange={e => change("name", e.target.value)} /></label>
       {rules.kind === "discount" ? dateField("expiresAt", "Book by (optional)") : rules.funding === "sale" ? <label>Valid after purchase<select value={rules.validityYears === null ? "none" : rules.validityYears ?? 3} onChange={e => change("validityYears", e.target.value === "none" ? null : Number(e.target.value))}><option value="3">3 years</option><option value="5">5 years</option><option value="none">No expiry</option></select></label> : dateField("expiresAt", "Expiry (optional, at least 3 years)")}

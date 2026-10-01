@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import {
   scheduleGapDays,
   scheduleGapNote,
@@ -521,7 +522,7 @@ export function BookingComposer({
                   </div>
                   <label>
                     Duration in minutes
-                    <input
+                    <NumericInput
                       type="number"
                       min={1}
                       max={1440}
@@ -535,7 +536,7 @@ export function BookingComposer({
                   <div className="v3-form-pair">
                     <label>
                       Session price · AUD
-                      <input
+                      <NumericInput
                         type="number"
                         min={0}
                         step="0.01"
@@ -546,7 +547,7 @@ export function BookingComposer({
                     </label>
                     <label>
                       Deposit · AUD
-                      <input
+                      <NumericInput
                         type="number"
                         min={0}
                         step="0.01"

@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 import { OfferAppearance } from "./OfferAppearance";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { useState, type ReactNode } from "react";
@@ -290,7 +291,7 @@ function OfferEditor({
         </label>
         <label>
           {r.valueType === "percentage" ? "Percent" : "Amount"}
-          <input
+          <NumericInput
             type="number"
             required
             min="0.01"

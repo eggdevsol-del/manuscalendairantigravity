@@ -1,3 +1,4 @@
+import { NumericInput } from "@/components/ui/numeric-input";
 /**
  * AppointmentCheckInModal — SSOT multi-step check-in/out flow.
  *
@@ -516,7 +517,7 @@ export function AppointmentCheckInModal({
               </div>
 
               {useCustomAmount ? (
-                <input
+                <NumericInput
                   type="number"
                   value={customAmount}
                   onChange={e => setCustomAmount(e.target.value)}
@@ -586,7 +587,7 @@ export function AppointmentCheckInModal({
                 <label className="block text-xs text-muted-foreground mb-1 text-left">
                   Amount paid ($)
                 </label>
-                <input
+                <NumericInput
                   type="number"
                   value={manualAmount}
                   onChange={e => setManualAmount(e.target.value)}
