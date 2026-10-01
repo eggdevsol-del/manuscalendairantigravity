@@ -45,14 +45,21 @@ export function useAuth(options?: UseAuthOptions) {
       }
       throw error;
     } finally {
-      utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
+      // Remove bearer credentials before any refetch can restore the old account.
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
       localStorage.removeItem("manus-runtime-user-info");
       // Also clear session storage just in case
       sessionStorage.removeItem("authToken");
       sessionStorage.removeItem("user");
+      await utils.auth.me.cancel();
+      utils.auth.me.setData(undefined, null);
+      await utils.auth.me.invalidate();
+      if ("serviceWorker" in navigator) {
+        void navigator.serviceWorker.ready.then(registration => {
+          registration.active?.postMessage({ type: "NOTIFICATION_OWNER", userId: "" });
+        });
+      }
 
       // Detach hardware session from the backend OneSignal identity
       try {

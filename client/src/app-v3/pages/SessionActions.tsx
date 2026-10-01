@@ -34,7 +34,7 @@ export function availableSessionActions(
     s.status === "completed" ||
     (s.status === "confirmed" && instant(s.startsAt) <= now);
   const actions: SessionActionMode[] = [];
-  if (canFinish && !s.pendingRequest) actions.push("finish");
+  if (canFinish && (s.status !== "completed" || !s.pendingRequest)) actions.push("finish");
   if (s.status !== "completed") {
     actions.push("reschedule");
     if (canFinish) actions.push("no-show");
@@ -110,6 +110,7 @@ export function SessionActions({
           await request.mutateAsync({
             appointmentId: s.id,
             amountCents: s.remainingCents,
+            completeSession: true,
           });
         else
           await update.mutateAsync({
@@ -150,7 +151,7 @@ export function SessionActions({
               </p>
             </Panel>
           )}
-          {canFinish && !s.pendingRequest && (
+          {canFinish && (s.status !== "completed" || !s.pendingRequest) && (
             <Action
               onClick={() => open("finish")}
               data-tour-description={
@@ -242,7 +243,7 @@ export function SessionActions({
               </h2>
               <p>
                 {s.remainingCents > 0
-                  ? "Send your client a payment request for this session. Completion follows the payment workflow."
+                  ? "Mark this sitting complete and request the remaining balance. Payment will update automatically when your client pays."
                   : "Mark the session complete and record its finish time."}
               </p>
             </Panel>
@@ -283,14 +284,14 @@ export function SessionActions({
                   : mode === "no-show"
                     ? "Record that the client did not attend this session. Confirm only when that is accurate."
                     : s.remainingCents > 0
-                      ? "Send the client a payment request for the displayed remaining balance. Session completion follows the payment workflow."
+                      ? "Mark the sitting complete and send the client a payment request for its remaining balance."
                       : "Mark this fully paid session complete and record the current finish time."
             }
           >
             {busy
               ? "Saving…"
               : mode === "finish" && s.remainingCents > 0
-                ? "Send payment request"
+                ? "Finish & request payment"
                 : mode === "reschedule"
                   ? "Save new time"
                   : mode === "cancel"

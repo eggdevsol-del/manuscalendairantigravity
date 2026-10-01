@@ -154,8 +154,17 @@ try {
   console.warn("[SW] Navigation route registration failed", e);
 }
 
+const ownerCache = "tattoi-notification-owner";
+const ownerKey = new URL("/__notification_owner", self.location.origin).href;
+async function notificationOwner() {
+  const response = await (await caches.open(ownerCache)).match(ownerKey);
+  return response ? response.text() : "";
+}
 // -- Message Handler for Manual Updates --
 self.addEventListener("message", event => {
+  if (event.data?.type === "NOTIFICATION_OWNER") {
+    event.waitUntil(caches.open(ownerCache).then(cache => cache.put(ownerKey, new Response(event.data.userId || ""))));
+  }
   if (event.data && event.data.type === "SKIP_WAITING") {
     console.log("[SW] Received SKIP_WAITING message, activating immediately");
     self.skipWaiting();
@@ -201,7 +210,7 @@ self.addEventListener("push", event => {
 
   try {
     const data = event.data.json();
-    console.log("[SW] Push data:", JSON.stringify(data, null, 2));
+
 
     // If this is a OneSignal notification, it has a 'custom' property
     // The OneSignal SDK (which we imported above) will handle this automatically.
@@ -216,7 +225,7 @@ self.addEventListener("push", event => {
       body: data.body || "You have a new notification",
       icon: data.icon || "/icon-192.png",
       badge: data.badge || "/icon-192.png",
-      data: { url: data.data?.url || data.url || "/" },
+      data: { url: data.data?.url || data.url || "/", recipientUserId: data.data?.recipientUserId },
       requireInteraction: true,
       vibrate: [200, 100, 200], // Triggers heads-up notification on Android
       tag: "calendair-notification", // Groups notifications by tag
@@ -227,9 +236,11 @@ self.addEventListener("push", event => {
     console.log("[SW] Showing notification:", title, options);
 
     event.waitUntil(
-      self.registration
-        .showNotification(title, options)
-        .catch(err => console.error("[SW] Show notification failed:", err))
+      (async () => {
+        const recipient = data.data?.recipientUserId;
+        if (recipient && await notificationOwner() !== recipient) return;
+        await self.registration.showNotification(title, options);
+      })().catch(err => console.error("[SW] Show notification failed:", err))
     );
   } catch (err) {
     console.error("[SW] Push processing failed or non-JSON payload:", err);
@@ -255,12 +266,13 @@ self.addEventListener("notificationclick", event => {
     self.location.origin
   ).href;
 
-  const promiseChain = clients
-    .matchAll({
-      type: "window",
-      includeUncontrolled: true,
+  const promiseChain = Promise.resolve().then(async () => {
+      const recipient = event.notification.data?.recipientUserId;
+      if (recipient && await notificationOwner() !== recipient) return null;
+      return clients.matchAll({ type: "window", includeUncontrolled: true });
     })
     .then(windowClients => {
+      if (!windowClients) return;
       let clientToUse = null;
 
       // 1. First, check if there is already a window/tab open at the exact target URL

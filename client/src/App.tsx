@@ -216,11 +216,13 @@ function Router() {
 
   // Initialize OneSignal user & request push permissions
   React.useEffect(() => {
+    let cancelled = false;
     if (user?.id && user.role !== "master_dev") {
       import("@/lib/onesignal").then(({ setExternalUserId }) => {
-        void setExternalUserId(user.id);
+        if (!cancelled) void setExternalUserId(user.id);
       });
     }
+    return () => { cancelled = true; };
   }, [user?.id]);
 
   const isPublicFunnel =

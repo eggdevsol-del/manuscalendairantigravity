@@ -17,6 +17,9 @@ describe("shared sitting action availability", () => {
       availableSessionActions(sitting, new Date("2026-09-10T01:00:00Z"))
     ).toEqual(["finish", "reschedule", "no-show", "cancel"]);
   });
+  it("allows finishing a started sitting even when its payment request is already pending", () => {
+    expect(availableSessionActions({ ...sitting, pendingRequest: { id: 2, amountCents: 45000, expiresAt: null } }, new Date("2026-09-10T01:00:00Z"))).toContain("finish");
+  });
   it("avoids duplicate payment requests and changes to settled or cancelled sittings", () => {
     expect(
       availableSessionActions({

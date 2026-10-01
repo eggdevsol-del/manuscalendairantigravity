@@ -1,3 +1,5 @@
+import { invalidateWorkspace } from "./lib/workspaceSync";
+import { WorkspaceSync } from "./components/WorkspaceSync";
 import { trpc } from "@/lib/trpc";
 import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
@@ -79,6 +81,11 @@ queryClient.getQueryCache().subscribe(event => {
 });
 
 queryClient.getMutationCache().subscribe(event => {
+  if (event.type === "updated" && event.action.type === "success") {
+    const key = event.mutation.options.mutationKey?.[0];
+    if (!Array.isArray(key) || !["auth", "system", "push"].includes(String(key[0])))
+      void invalidateWorkspace(queryClient);
+  }
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
@@ -148,6 +155,7 @@ createRoot(document.getElementById("root")!).render(
   <GoogleAuthWrapper>
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
+        <WorkspaceSync />
         <App />
       </QueryClientProvider>
     </trpc.Provider>

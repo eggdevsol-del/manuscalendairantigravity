@@ -19,6 +19,7 @@ import {
 } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
+import { sittingFinancials } from "../services/sittingFinancials";
 import { upcomingWeekWindow, upcomingSittings } from "../services/upcomingWeek";
 import { currencyForCountry } from "../services/exchangeRate";
 
@@ -343,9 +344,7 @@ export const dashboardRouter = router({
       const lead = leadByClient.get(appt.clientId);
 
       // Derive cents fields — self-heal from legacy dollar amounts if needed
-      const priceCents = appt.totalExpectedAmountCents || (appt.price ? appt.price * 100 : 0);
-      const paidCents = appt.totalPaidAmountCents || (appt.depositPaid && appt.depositAmount ? appt.depositAmount * 100 : 0);
-      const remainingCents = appt.remainingBalanceCents ?? Math.max(0, priceCents - paidCents);
+      const { estimateCents: priceCents, paidCents, remainingCents } = sittingFinancials(appt);
 
       return {
         id: appt.id,
@@ -461,7 +460,8 @@ export const dashboardRouter = router({
   requestPayment: protectedProcedure
     .input(z.object({
       appointmentId: z.number(),
-      amountCents: z.number().min(1),
+      amountCents: z.number().int().min(1),
+      completeSession: z.boolean().default(false),
     }))
     .mutation(async ({ input, ctx }) => {
       const { user } = ctx;
@@ -472,15 +472,22 @@ export const dashboardRouter = router({
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      return withDatabaseTransaction(async (db) => {
       // Validate appointment
-      const appointment = await db.query.appointments.findFirst({
-        where: eq(schema.appointments.id, input.appointmentId),
-        with: { client: true },
-      });
+      const [appointment] = await db.select().from(schema.appointments)
+        .where(eq(schema.appointments.id, input.appointmentId)).for("update");
       if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
       if (appointment.artistId !== user.id) throw new TRPCError({ code: "FORBIDDEN" });
       if (!appointment.clientId) throw new TRPCError({ code: "BAD_REQUEST", message: "No client linked" });
 
+      if (input.completeSession) {
+        const startsAt = new Date(appointment.startTime.includes("T") ? appointment.startTime : appointment.startTime.replace(" ", "T") + "Z").getTime();
+        if (!["confirmed", "completed"].includes(appointment.status) || !Number.isFinite(startsAt) || startsAt > Date.now())
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Only a started, confirmed sitting can be finished." });
+        const now = new Date().toISOString().slice(0,19).replace("T", " ");
+        const template = await db.query.aftercareTemplates.findFirst({ where: and(eq(schema.aftercareTemplates.artistId, user.id), eq(schema.aftercareTemplates.isDefault, 1)) });
+        await db.update(schema.appointments).set({ aftercareTemplateId: appointment.aftercareTemplateId || template?.id, status: "completed", completedAt: appointment.completedAt || now, actualEndTime: appointment.actualEndTime || now, updatedAt: now }).where(eq(schema.appointments.id, appointment.id));
+      }
       // Check there isn't already a pending request for this appointment
       const existingRequest = await db.query.paymentRequests.findFirst({
         where: and(
@@ -488,12 +495,23 @@ export const dashboardRouter = router({
           eq(schema.paymentRequests.status, "pending"),
         ),
       });
+      if (input.completeSession) {
+        const { createProcedureLog } = await import("../services/appointmentService");
+        await createProcedureLog(input.appointmentId);
+      }
+      if (existingRequest && input.completeSession) return { success: true, requestId: existingRequest.id, token: existingRequest.token, paymentUrl: `${process.env.APP_URL || "https://www.tattoi.app"}/pay/${existingRequest.token}` };
       if (existingRequest) {
         throw new TRPCError({
           code: "CONFLICT",
           message: "A payment request is already pending for this session",
         });
       }
+
+      const remaining = sittingFinancials(appointment).remainingCents;
+      if (input.completeSession && remaining === 0) return { success: true, requestId: null, token: null, paymentUrl: null };
+      const amountCents = input.completeSession ? remaining : input.amountCents;
+      if (amountCents <= 0 || amountCents > remaining)
+        throw new TRPCError({ code: "CONFLICT", message: "The sitting balance has changed. Refresh before requesting payment." });
 
       // Generate token and expiry
       const { createPaymentRequestToken } = await import("../services/paymentRequestToken");
@@ -505,7 +523,7 @@ export const dashboardRouter = router({
         appointmentId: input.appointmentId,
         artistId: user.id,
         clientId: appointment.clientId,
-        amountCents: input.amountCents,
+        amountCents,
         status: "pending",
         token: "placeholder", // will update after we have the ID
         expiresAt,
@@ -523,22 +541,7 @@ export const dashboardRouter = router({
       const appUrl = process.env.VITE_APP_URL || process.env.APP_URL || "https://www.tattoi.app";
       const paymentUrl = `${appUrl}/pay/${token}`;
 
-      // Send push notification to client
-      try {
-        const { sendPushNotification } = await import("../services/pushService");
-        const formatCents = (c: number) => `$${(c / 100).toLocaleString("en-AU", { minimumFractionDigits: 0 })}`;
-        const artistName = user.name || "Your artist";
-
-        await sendPushNotification(appointment.clientId, {
-          title: "Payment Request",
-          body: `${formatCents(input.amountCents)} due for your session with ${artistName}`,
-          url: paymentUrl,
-          data: { type: "payment_request", requestId, appointmentId: input.appointmentId },
-        });
-      } catch (e) {
-        // Push may fail if client has no subscription — that's OK
-        console.warn("[Dashboard] Push notification failed for payment request:", e);
-      }
+      await db.insert(schema.notificationOutbox).values({ eventType: "push_message", status: "pending", payloadJson: JSON.stringify({ targetUserId: appointment.clientId, title: "Payment Request", body: `$${(amountCents / 100).toFixed(2)} due for your session with ${user.name || "your artist"}`, url: paymentUrl }) });
 
       return {
         success: true,
@@ -546,6 +549,7 @@ export const dashboardRouter = router({
         token,
         paymentUrl,
       };
+      });
     }),
 });
 

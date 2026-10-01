@@ -99,6 +99,8 @@ function Password({
   );
 }
 export function Login() {
+  const session = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -112,6 +114,8 @@ export function Login() {
   const ready = useGoogleAuthReady();
   const busy = login.isPending || google.isPending;
   const error = login.error?.message || google.error?.message || googleError;
+  if (session.loading || !session.isSessionChecked) return <p role="status">Checking your session…</p>;
+  if (session.user) return <Redirect to={session.user.role === "master_dev" ? "/dev" : session.user.role === "client" ? "/bookings" : session.user.role === "merchant" ? "/merchant" : "/dashboard"} />;
   return (
     <IdentityLayout
       title="Welcome back"

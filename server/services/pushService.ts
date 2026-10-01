@@ -213,6 +213,7 @@ export async function sendPushNotification(
         data: {
           url: payload.url || "/",
           ...payload.data,
+          recipientUserId: userId,
         },
       });
 
