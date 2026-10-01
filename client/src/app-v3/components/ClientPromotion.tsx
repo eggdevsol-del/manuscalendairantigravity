@@ -1,3 +1,4 @@
+import { OfferAppearance } from "./OfferAppearance";
 import { useRef, useState } from "react";
 import { ArrowLeft, CalendarDays, Check, Gift, Heart } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -17,6 +18,7 @@ export function ClientPromotion({ clientId, clientName, onDone }: {
 }) {
   const [step, setStep] = useState<"choose" | "details" | "review" | "sent">("choose");
   const [rules, setRules] = useState<OfferRules>({ name: "", description: "", kind: "voucher", funding: "sale", valueType: "fixed", value: 10000, currency: "AUD", eligibility: "new", expiresAt: null, sittingFrom: null, sittingUntil: null, backgroundImageUrl: "", validityYears: 3 });
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const saved = useRef<number | null>(null);
   const sending = useRef(false);
@@ -60,12 +62,11 @@ export function ClientPromotion({ clientId, clientName, onDone }: {
       <label>Can be used for<select value={rules.eligibility} onChange={e => change("eligibility", e.target.value as "new" | "unpaid")}><option value="new">New bookings only</option><option value="unpaid">New bookings & unpaid balances</option></select></label>
       <details><summary>Personalise & set conditions</summary><div className="ivory-promo-fields">
         <label>Personal message (optional)<textarea maxLength={500} value={rules.description} onChange={e => change("description", e.target.value)} /></label>
-        {dateField("sittingFrom", "Sittings from (optional)")}{dateField("sittingUntil", "Sittings until (optional)")}
-        <label>Background image URL (optional)<input type="url" value={rules.backgroundImageUrl} onChange={e => change("backgroundImageUrl", e.target.value)} /></label>
+        <OfferAppearance rules={rules} onChange={setRules} onUploading={setUploading} />
         <label className="ivory-offer-check"><input type="checkbox" checked={!!rules.allowStacking} onChange={e => change("allowStacking", e.target.checked)} />Allow prior voucher credit or discount. Two discounts cannot be combined.</label>
       </div></details>
       {error && <p role="alert">{error}</p>}
-      <footer className="ivory-promo-footer"><Action type="button" tone="quiet" onClick={() => setStep("choose")}><ArrowLeft size={18} />Back</Action><Action type="submit">Preview</Action></footer>
+      <footer className="ivory-promo-footer"><Action type="button" tone="quiet" onClick={() => setStep("choose")}><ArrowLeft size={18} />Back</Action><Action type="submit" disabled={uploading}>Preview</Action></footer>
     </form>}
     {step === "review" && <>
       <div><h2>Ready for {clientName}.</h2><p className="v3-muted">This is the card they’ll receive.</p></div>

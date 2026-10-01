@@ -125,3 +125,7 @@
 .ivory-promo-footer button { min-width: 0; white-space: normal; }
 .ivory-promo-success { display: grid; justify-items: center; text-align: center; gap: 24px; padding-block: 48px; }
 .ivory-promo-success > svg { color: var(--foreground); background: var(--secondary); border-radius: 50%; box-sizing: content-box; padding: 20px; }
+.ivory-audience-list { max-height: 260px; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+.ivory-audience-list > * { padding-block: 12px; margin: 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.ivory-months { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-block:12px; }
+.ivory-promo-fields fieldset { min-width:0; border:0; padding:0; }

@@ -77,3 +77,21 @@ describe("conversation promotion recipient", () => {
     });
   }
 });
+
+describe("preset and manual audiences", () => {
+  beforeEach(() => {
+    state.db = { select: () => ({ from: (table: any) => ({ where: async () => {
+      if (table === schema.conversations) return [{ id: "a" }, { id: "b" }];
+      if (table === schema.users) return [{ id: "a", city: "Brisbane", birthday: "1990-10-10 00:00:00" }, { id: "b", city: "Sydney", birthday: null }];
+      return [];
+    } }) }) };
+  });
+  it("intersects manual selection with the artist's clients", async () => {
+    expect((await caller("artist").audience({ clientIds: ["a", "outsider"] })).clientIds).toEqual(["a"]);
+    expect((await caller("artist").audience({ clientIds: [] })).count).toBe(0);
+  });
+  it("combines birthday month and city without matching missing data", async () => {
+    expect((await caller("artist").audience({ birthdayMonth: 10, city: " brisbane " })).clientIds).toEqual(["a"]);
+    expect((await caller("artist").audience({ birthdayMonth: 10, city: "Sydney" })).count).toBe(0);
+  });
+});

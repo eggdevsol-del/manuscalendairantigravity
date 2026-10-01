@@ -56,8 +56,14 @@ async function audience(
     .select()
     .from(s.paymentLedger)
     .where(eq(s.paymentLedger.artistId, artistId));
-  const clients = [...new Set<string>(conversations.map((c: any) => c.id))];
+  const clients = [...new Set<string>(conversations.map((c: any) => c.id).filter(Boolean))];
+  const profiles = (filters.birthdayMonth || filters.city) && clients.length
+    ? await db.select({ id: s.users.id, birthday: s.users.birthday, city: s.users.city }).from(s.users).where(inArray(s.users.id, clients)) : [];
   return clients.filter(id => {
+    if (filters.clientIds && !filters.clientIds.includes(id)) return false;
+    const profile = profiles.find((p: any) => p.id === id);
+    if (filters.birthdayMonth && Number(profile?.birthday?.slice(5, 7)) !== filters.birthdayMonth) return false;
+    if (filters.city && profile?.city?.trim().toLocaleLowerCase() !== filters.city.toLocaleLowerCase()) return false;
     if (filters.clientId && id !== filters.clientId) return false;
     const rows = appointments.filter((a: any) => a.clientId === id);
     const completed = rows.filter((a: any) => a.status === "completed");
@@ -390,6 +396,13 @@ export const offersRouter = router({
         return { success: true };
       })
     ),
+  audienceClients: offerProcedure.query(({ ctx }) => withDatabaseTransaction(async db => {
+    requireArtist(ctx.user);
+    const rows = await db.select({ id: s.conversations.clientId }).from(s.conversations).where(eq(s.conversations.artistId, ctx.user.id));
+    const ids = [...new Set(rows.map(r => r.id).filter((id): id is string => !!id))];
+    if (!ids.length) return [];
+    return db.select({ id: s.users.id, name: s.users.name, city: s.users.city }).from(s.users).where(inArray(s.users.id, ids));
+  })),
   audience: offerProcedure.input(audienceSchema).query(({ ctx, input }) =>
     withDatabaseTransaction(async db => {
       requireArtist(ctx.user);
@@ -402,6 +415,7 @@ export const offersRouter = router({
         : [];
       return {
         count: recipients.length,
+        clientIds: recipients,
         ...deliveryAvailability(),
         smsCount: preferences.filter(p => p.sms && p.verifiedPhone).length,
         pushCount: preferences.filter(p => p.push).length,

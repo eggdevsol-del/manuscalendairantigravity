@@ -14,6 +14,7 @@ export const offerRulesSchema = z
     currency: z.enum(["AUD", "NZD"]),
     eligibility: z.enum(["new", "unpaid"]).default("new"),
     expiresAt: z.string().datetime().nullable(),
+    sittingMonths: z.array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)).max(72).optional(),
     sittingFrom: z.string().datetime().nullable(),
     sittingUntil: z.string().datetime().nullable(),
     backgroundImageUrl: z
@@ -42,6 +43,9 @@ export const offerRulesSchema = z
   });
 export type OfferRules = z.infer<typeof offerRulesSchema>;
 export const audienceSchema = z.object({
+  clientIds: z.array(z.string().min(1).max(64)).max(1000).optional(),
+  birthdayMonth: z.number().int().min(1).max(12).optional(),
+  city: z.string().trim().min(1).max(255).optional(),
   clientId: z.string().min(1).max(64).optional(),
   minSpendCents: z.number().int().nonnegative().default(0),
   minBookings: z.number().int().nonnegative().default(0),
@@ -63,6 +67,8 @@ export function offerEligibility(
     return "This offer has expired.";
   if (r.eligibility === "new" && +new Date(created) < +new Date(published))
     return "Available for new bookings made after this offer was issued.";
+  if (r.sittingMonths?.length && starts.some(s => !r.sittingMonths!.includes(s.slice(0, 7))))
+    return "These sittings fall outside the offer’s selected months.";
   if (
     starts.some(
       s =>

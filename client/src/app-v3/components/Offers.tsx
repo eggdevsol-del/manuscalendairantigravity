@@ -1,3 +1,4 @@
+import { OfferAppearance } from "./OfferAppearance";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
@@ -6,7 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { Action, Feedback, Panel, Section } from "../design/primitives";
 import { money } from "@/features/workspace/bookingPresentation";
-import { OFFER_TERMS, type OfferRules } from "../../../../shared/offerRules";
+import { OFFER_TERMS, type OfferRules, type OfferAudience as AudienceFilters } from "../../../../shared/offerRules";
 import "./offers.css";
 const dateLabel = (value: string | null) =>
   value
@@ -67,6 +68,7 @@ export function OfferCard({
               ? `Valid ${rules.validityYears ?? 3} years after purchase`
               : "No expiry"}
         </small>
+        {!!rules.sittingMonths?.length && <small>Offer for: {rules.sittingMonths.map(m => new Intl.DateTimeFormat(undefined, {month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(`${m}-01T00:00:00Z`))).join(", ")}</small>}
         {(rules.sittingFrom || rules.sittingUntil) && (
           <small>
             Sittings:{" "}
@@ -201,6 +203,7 @@ function OfferEditor({
   onDone: () => void;
 }) {
   const [r, set] = useState(initial.rules);
+  const [uploading, setUploading] = useState(false);
   const change = <K extends keyof OfferRules>(key: K, value: OfferRules[K]) =>
     set({ ...r, [key]: value });
   const save = trpc.offers.save.useMutation({ onSuccess: onDone });
@@ -278,13 +281,11 @@ function OfferEditor({
           <select
             value={r.valueType}
             onChange={e =>
-              change("valueType", e.target.value as OfferRules["valueType"])
+              set({ ...r, valueType: e.target.value as OfferRules["valueType"], ...(e.target.value === "percentage" ? {kind: "discount", funding: "gift", value: 10} : {value: 10000}) })
             }
           >
             <option value="fixed">Amount</option>
-            {r.kind === "discount" && (
-              <option value="percentage">Percentage</option>
-            )}
+            <option value="percentage">Discount %</option>
           </select>
         </label>
         <label>
@@ -384,19 +385,7 @@ function OfferEditor({
         Allow this offer with prior voucher credit or a prior discount (never
         two discounts)
       </label>
-      <div className="ivory-offer-fields">
-        {dateField("sittingFrom", "Sittings from")}
-        {dateField("sittingUntil", "Sittings until")}
-      </div>
-      <label>
-        Background image URL (optional)
-        <input
-          type="url"
-          placeholder="https://…"
-          value={r.backgroundImageUrl}
-          onChange={e => change("backgroundImageUrl", e.target.value)}
-        />
-      </label>
+      <OfferAppearance rules={r} onChange={set} onUploading={setUploading} />
       {r.kind === "voucher" && (
         <p className="v3-muted">
           {r.funding === "sale"
@@ -415,7 +404,7 @@ function OfferEditor({
       <p className="v3-muted">{OFFER_TERMS}</p>
       {save.error && <p role="alert">{save.error.message}</p>}
       <div className="ivory-offer-actions">
-        <Action type="submit" disabled={save.isPending}>
+        <Action type="submit" disabled={save.isPending || uploading}>
           {save.isPending ? "Saving…" : "Save promotion"}
         </Action>
         <Action type="button" tone="quiet" onClick={onDone}>
@@ -432,16 +421,20 @@ function OfferAudience({
   id: number;
   onDone: (message: string) => void;
 }) {
-  const [filtered, setFiltered] = useState(false);
+  const [mode, setMode] = useState("all");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("name");
+  const clients = trpc.offers.audienceClients.useQuery();
   const [channels, setChannels] = useState({ sms: false, push: false });
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<AudienceFilters>({
     minSpendCents: 0,
     minBookings: 0,
     inactiveDays: 0,
   });
-  const active = filtered
-    ? filters
-    : { minSpendCents: 0, minBookings: 0, inactiveDays: 0 };
+  const active = mode === "filtered" ? filters : { minSpendCents: 0, minBookings: 0, inactiveDays: 0, ...(mode === "manual" ? { clientIds: selected } : {}) };
+  const cities = [...new Set((clients.data || []).map(c => c.city?.trim()).filter((c): c is string => !!c))].sort();
+  const visible = (clients.data || []).filter(c => `${c.name || ""} ${c.city || ""}`.toLowerCase().includes(search.toLowerCase())).sort((a,b) => sort === "city" ? (a.city || "").localeCompare(b.city || "") || (a.name || "").localeCompare(b.name || "") : (a.name || "").localeCompare(b.name || ""));
   const query = trpc.offers.audience.useQuery(active);
   const issue = trpc.offers.issue.useMutation({
     onSuccess: r =>
@@ -455,56 +448,41 @@ function OfferAudience({
       <label>
         Audience
         <select
-          value={filtered ? "filtered" : "all"}
-          onChange={e => setFiltered(e.target.value === "filtered")}
+          value={mode}
+          onChange={e => setMode(e.target.value)}
         >
           <option value="all">All my clients</option>
-          <option value="filtered">Choose filters</option>
+          <option value="filtered">Match filters</option>
+          <option value="manual">Select clients</option>
         </select>
       </label>
-      {filtered && (
-        <>
-          <label>
-            Minimum lifetime paid
-            <input
-              type="number"
-              min="0"
-              value={filters.minSpendCents / 100}
-              onChange={e =>
-                setFilters({
-                  ...filters,
-                  minSpendCents: Math.round(Number(e.target.value) * 100),
-                })
-              }
-            />
-          </label>
-          <label>
-            Minimum completed bookings
-            <input
-              type="number"
-              min="0"
-              value={filters.minBookings}
-              onChange={e =>
-                setFilters({ ...filters, minBookings: Number(e.target.value) })
-              }
-            />
-          </label>
-          <label>
-            No sitting in the last (days)
-            <input
-              type="number"
-              min="0"
-              value={filters.inactiveDays}
-              onChange={e =>
-                setFilters({ ...filters, inactiveDays: Number(e.target.value) })
-              }
-            />
-          </label>
-        </>
-      )}
+      {mode === "filtered" && <>
+        <label>Lifetime paid<select value={filters.minSpendCents} onChange={e => setFilters({ ...filters, minSpendCents: Number(e.target.value) })}>
+          <option value={0}>Any amount</option>{[500,1000,2500,5000].map(n => <option key={n} value={n*100}>${n.toLocaleString()} or more</option>)}
+        </select></label>
+        <label>Completed bookings<select value={filters.minBookings} onChange={e => setFilters({ ...filters, minBookings: Number(e.target.value) })}>
+          <option value={0}>Any number</option>{[1,3,5,10].map(n => <option key={n} value={n}>{n} or more</option>)}
+        </select></label>
+        <label>Time since last sitting<select value={filters.inactiveDays} onChange={e => setFilters({ ...filters, inactiveDays: Number(e.target.value) })}>
+          <option value={0}>Any time</option>{[30,90,180,365].map(n => <option key={n} value={n}>At least {n} days</option>)}
+        </select></label>
+        <label>Birthday month<select value={filters.birthdayMonth || ""} onChange={e => setFilters({ ...filters, birthdayMonth: e.target.value ? Number(e.target.value) : undefined })}>
+          <option value="">Any month</option>{Array.from({length:12},(_,i) => <option key={i} value={i+1}>{new Intl.DateTimeFormat("en",{month:"long"}).format(new Date(2020,i,1))}</option>)}
+        </select></label>
+        <label>City<select value={filters.city || ""} onChange={e => setFilters({ ...filters, city: e.target.value || undefined })}>
+          <option value="">Any city</option>{cities.map(city => <option key={city}>{city}</option>)}
+        </select></label>
+        <p className="v3-muted">Clients must match every selected filter. Birthday and city use saved profile information; missing details won’t match those filters.</p>
+      </>}
+      <label>Search clients<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Name or city" /></label>
+      <label>Sort clients<select value={sort} onChange={e => setSort(e.target.value)}><option value="name">Name A–Z</option><option value="city">City A–Z</option></select></label>
+      {mode === "manual" && <p>{selected.length} selected · Search keeps your selections.</p>}
+      <div className="ivory-audience-list" aria-label="Client recipients">
+        {visible.filter(c => mode === "manual" || query.data?.clientIds.includes(c.id)).map(c => mode === "manual" ? <label className="ivory-offer-check" key={c.id}><input type="checkbox" checked={selected.includes(c.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids,c.id] : ids.filter(id => id !== c.id))} /><span>{c.name || "Unnamed client"}{c.city && <small className="v3-muted"> · {c.city}</small>}</span></label> : <p key={c.id}>{c.name || "Unnamed client"}{c.city && <small className="v3-muted"> · {c.city}</small>}</p>)}
+      </div>
       <Feedback
         loading={query.isFetching}
-        error={query.error || issue.error}
+        error={query.error || clients.error || issue.error}
         onRetry={() => query.refetch()}
       />
       <Panel>
@@ -540,7 +518,7 @@ function OfferAudience({
       </label>
       <div className="ivory-offer-actions">
         <Action
-          disabled={!query.data?.count || query.isFetching || issue.isPending}
+          disabled={!query.data?.count || !!query.error || !!clients.error || query.isFetching || issue.isPending}
           onClick={() =>
             issue.mutate({
               id,
