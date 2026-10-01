@@ -1,0 +1,111 @@
+.ivory-offer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 24px);
+  background: var(--card);
+  color: var(--foreground);
+}
+.ivory-offer-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.18;
+  z-index: -1;
+  mask-image: linear-gradient(100deg, transparent, #000);
+}
+.ivory-offer-body {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+.ivory-offer-body h2,
+.ivory-offer-body p {
+  margin: 0;
+}
+.ivory-offer-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+.ivory-offer-value {
+  font-size: 1.7rem;
+  font-family: inherit;
+}
+.ivory-offer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.ivory-offer-actions > * {
+  min-height: 44px;
+}
+.ivory-offer-form label {
+  display: grid;
+  gap: 8px;
+}
+.ivory-offer-form input,
+.ivory-offer-form select,
+.ivory-offer-form textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+.ivory-offer-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.ivory-client-offers {
+  padding-block: 12px;
+}
+.ivory-offer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at top right, var(--secondary), transparent 72%),
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 24px,
+      color-mix(in srgb, var(--border) 25%, transparent) 24px 25px
+    );
+}
+.ivory-offer-actions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+.ivory-offer-actions button {
+  min-width: 0;
+  padding-inline: 10px;
+  white-space: normal;
+  height: 100%;
+}
+.ivory-offer-form .ivory-offer-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+.ivory-offer-form .ivory-offer-check input {
+  flex: 0 0 22px;
+  width: 22px;
+  min-height: 22px;
+  height: 22px;
+}

@@ -1,3 +1,5 @@
+import { fulfillVoucherPurchase } from "./offerPurchase";
+import { settleOfferBalance } from "./offerBalance";
 import { PAYMENT_TIERS } from "../../shared/fees";
 import {
   changeOrderInventory,
@@ -1205,6 +1207,11 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         case "payment_intent.succeeded": {
           const pi = event.data.object as Stripe.PaymentIntent;
           const piMeta = pi.metadata || {};
+          if (piMeta.type === "gift_voucher") { await fulfillVoucherPurchase(db, pi); break; }
+          if (piMeta.type === "offer_balance") {
+            await settleOfferBalance(db, Number(piMeta.offerBalanceId), pi);
+            break;
+          }
           // Prefer the stored provider ID, including plans issued before explicit metadata existed.
           const paidPlan = await db.query.sessionPlans.findFirst({
             where: eq(sessionPlans.stripeSessionId, pi.id),

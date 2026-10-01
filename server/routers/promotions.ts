@@ -1,3 +1,4 @@
+import { offersEnabled } from "../services/offerAvailability";
 /**
  * Promotions Router - SSOT Compliant
  *
@@ -30,11 +31,15 @@ const statusEnum = z.enum([
   "revoked",
 ]);
 
+const legacyPromotionProcedure=protectedProcedure.use(({type,next})=>{
+ if(type==="mutation"&&offersEnabled())throw new TRPCError({code:"PRECONDITION_FAILED",message:"Manage promotions from Today → Promotions. Your existing offers have moved there."});
+ return next();
+});
 export const promotionsRouter = router({
   /**
    * Create a new promotion template
    */
-  createTemplate: protectedProcedure
+  createTemplate: legacyPromotionProcedure
     .input(
       z.object({
         type: promotionTypeEnum,
@@ -120,7 +125,7 @@ export const promotionsRouter = router({
   /**
    * Update an existing promotion template
    */
-  updateTemplate: protectedProcedure
+  updateTemplate: legacyPromotionProcedure
     .input(
       z.object({
         id: z.number(),
@@ -215,7 +220,7 @@ export const promotionsRouter = router({
    * - Artists: Get their templates
    * - Clients: Get promotions issued to them
    */
-  getPromotions: protectedProcedure
+  getPromotions: legacyPromotionProcedure
     .input(
       z
         .object({
@@ -330,7 +335,7 @@ export const promotionsRouter = router({
   /**
    * Issue a promotion to a specific client
    */
-  issuePromotion: protectedProcedure
+  issuePromotion: legacyPromotionProcedure
     .input(
       z.object({
         templateId: z.number(),
@@ -436,7 +441,7 @@ export const promotionsRouter = router({
   /**
    * Create auto-apply rule for new clients
    */
-  createAutoApply: protectedProcedure
+  createAutoApply: legacyPromotionProcedure
     .input(
       z.object({
         templateId: z.number(),
@@ -507,7 +512,7 @@ export const promotionsRouter = router({
   /**
    * Get available promotions for a client to use on a booking
    */
-  getAvailableForBooking: protectedProcedure
+  getAvailableForBooking: legacyPromotionProcedure
     .input(
       z.object({
         artistId: z.string(),
@@ -571,7 +576,7 @@ export const promotionsRouter = router({
   /**
    * Redeem a promotion on a booking
    */
-  redeemPromotion: protectedProcedure
+  redeemPromotion: legacyPromotionProcedure
     .input(
       z.object({
         promotionId: z.number(),
@@ -579,115 +584,17 @@ export const promotionsRouter = router({
         originalAmount: z.number(), // in cents
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const db = await getDb();
-        if (!db) {
-          console.error(
-            "[promotions.redeemPromotion] Database connection failed"
-          );
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Database connection failed",
-          });
-        }
-
-        // Get promotion
-        const promotion = await db.query.issuedPromotions.findFirst({
-          where: and(
-            eq(schema.issuedPromotions.id, input.promotionId),
-            eq(schema.issuedPromotions.clientId, ctx.user.id),
-            or(
-              eq(schema.issuedPromotions.status, "active"),
-              eq(schema.issuedPromotions.status, "partially_used")
-            )
-          ),
-        });
-
-        if (!promotion) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Promotion not found or not available",
-          });
-        }
-
-        // Calculate redemption amount
-        let amountRedeemed: number;
-        let finalAmount: number;
-
-        if (promotion.valueType === "percentage") {
-          // Percentage discount
-          amountRedeemed = Math.round(
-            input.originalAmount * (promotion.remainingValue / 100)
-          );
-          finalAmount = input.originalAmount - amountRedeemed;
-        } else {
-          // Fixed amount
-          amountRedeemed = Math.min(
-            promotion.remainingValue,
-            input.originalAmount
-          );
-          finalAmount = input.originalAmount - amountRedeemed;
-        }
-
-        // Ensure final amount is not negative
-        finalAmount = Math.max(0, finalAmount);
-
-        // Calculate new remaining value
-        const newRemainingValue =
-          promotion.valueType === "percentage"
-            ? 0 // Percentage discounts are fully used in one transaction
-            : promotion.remainingValue - amountRedeemed;
-
-        // Determine new status
-        const newStatus =
-          newRemainingValue <= 0 ? "fully_used" : "partially_used";
-
-        // Create redemption record
-        await db.insert(schema.promotionRedemptions).values({
-          promotionId: input.promotionId,
-          appointmentId: input.appointmentId,
-          amountRedeemed,
-          originalAmount: input.originalAmount,
-          finalAmount,
-        });
-
-        // Update promotion status
-        await db
-          .update(schema.issuedPromotions)
-          .set({
-            remainingValue: newRemainingValue,
-            status: newStatus,
-            redeemedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
-            redeemedOnAppointmentId: input.appointmentId,
-          })
-          .where(eq(schema.issuedPromotions.id, input.promotionId));
-
-        // Update appointment price
-        await db
-          .update(schema.appointments)
-          .set({
-            price: finalAmount,
-          })
-          .where(eq(schema.appointments.id, input.appointmentId));
-
-        return {
-          success: true,
-          amountRedeemed,
-          finalAmount,
-          newRemainingValue,
-          newStatus,
-        };
-      } catch (error) {
-        console.error("[promotions.redeemPromotion] Error:", error);
-        throw error;
-      }
+    .mutation(async () => {
+      throw new TRPCError({
+        code: "PRECONDITION_FAILED",
+        message: "Apply an offer from the booking checkout so ownership, eligibility and payment totals can be verified.",
+      });
     }),
 
   /**
    * Update auto-apply settings for a template
    */
-  updateAutoApply: protectedProcedure
+  updateAutoApply: legacyPromotionProcedure
     .input(
       z.object({
         templateId: z.number(),
@@ -792,7 +699,7 @@ export const promotionsRouter = router({
   /**
    * Delete a promotion template
    */
-  deleteTemplate: protectedProcedure
+  deleteTemplate: legacyPromotionProcedure
     .input(
       z.object({
         templateId: z.number(),
@@ -839,7 +746,7 @@ export const promotionsRouter = router({
   /**
    * Get all promotions issued to a specific client (Artist view)
    */
-  getClientPromotions: protectedProcedure
+  getClientPromotions: legacyPromotionProcedure
     .input(
       z.object({
         clientId: z.string(),
@@ -896,7 +803,7 @@ export const promotionsRouter = router({
   /**
    * Update an issued promotion (e.g. change expiry)
    */
-  updateIssuedPromotion: protectedProcedure
+  updateIssuedPromotion: legacyPromotionProcedure
     .input(
       z.object({
         id: z.number(),

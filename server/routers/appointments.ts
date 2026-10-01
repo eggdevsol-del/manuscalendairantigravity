@@ -1,3 +1,5 @@
+import { offersEnabled } from "../services/offerAvailability";
+import { startOfferBalance, cancelOfferBalance } from "../services/offerBalance";
 import { designProjectName } from "../../shared/projectNames";
 import { rescheduledSittingIds } from "../services/rescheduledSittings";
 import { sittingFinancials } from "../services/sittingFinancials";
@@ -1161,11 +1163,13 @@ export const appointmentsRouter = router({
             ...(input.serviceName ? { serviceName: input.serviceName } : {}),
           },
         }));
-        for (const change of changes)
+        for (const change of changes) {
+          await cancelOfferBalance(database,change.id);
           await database
             .update(schema.appointments)
             .set(change.values)
             .where(eq(schema.appointments.id, change.id));
+        }
         return { success: true };
       });
     }),
@@ -1191,6 +1195,10 @@ export const appointmentsRouter = router({
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
+      if(offersEnabled()) {
+        const result=await priceTransaction(tx=>startOfferBalance(tx,appointment.id,ctx.user.id,null));
+        return {clientSecret:result.clientSecret as string,balanceAmountCents:result.cashCents,platformFeeCents:result.platformFeeCents,totalCents:result.totalCents,artistName:"Your artist",projectName:appointment.projectName||appointment.title||"Session",depositPaidCents:appointment.totalPaidAmountCents||0};
+      }
       // Must have a balance remaining
       const remaining = appointment.remainingBalanceCents || 0;
       if (remaining <= 0) {
@@ -1549,14 +1557,9 @@ export const appointmentsRouter = router({
 
       const apptIds = planAppointments.map(a => a.id);
 
-      // Batch cancel all
-      await dbRef
-        .update(schema.appointments)
-        .set({
-          status: "cancelled",
-          updatedAt: new Date().toISOString().slice(0, 19).replace("T", " "),
-        })
-        .where(inArray(schema.appointments.id, apptIds));
+      // Use the same cancellation transaction and credit restoration as individual sittings.
+      await priceTransaction(async()=>{for (const appointment of planAppointments)
+        await db.updateAppointment(appointment.id, {status:"cancelled"}, ctx.user.id);});
 
       // Log each
       for (const appt of planAppointments) {

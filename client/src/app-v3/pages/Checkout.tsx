@@ -1,3 +1,4 @@
+import { CheckoutOffers, OfferBalancePayment } from "../components/Offers";
 import { ProposedSittingCard } from "../components/ProposedSittingCard";
 import { useEffect, useState } from "react";
 import { CheckCircle2, LockKeyhole } from "lucide-react";
@@ -27,6 +28,7 @@ function usePaymentRefresh(confirming: boolean) {
       void utils.messages.invalidate();
       void utils.dashboard.invalidate();
       void utils.conversations.invalidate();
+      void utils.offers.invalidate();
     };
     refresh();
     const timers = [600, 1500].map(delay => setTimeout(refresh, delay));
@@ -77,8 +79,12 @@ export function SessionPlanCheckoutSheet({
     }
   );
   const accept = trpc.sessionPlans.accept.useMutation({
-    onSuccess: () => setStep("payment"),
+    onSuccess: data => {
+      setStep(data.clientSecret ? "payment" : "confirming");
+      void query.refetch();
+    },
   });
+  const offerQuote = trpc.sessionPlans.offerOptions.useQuery({ sessionPlanId });
   const plan = query.data;
   const paid = plan?.depositRecorded || plan?.status === "accepted";
   usePaymentRefresh(step === "confirming" || paid);
@@ -104,7 +110,9 @@ export function SessionPlanCheckoutSheet({
             <LockKeyhole />
             {accept.isPending
               ? "Preparing checkout…"
-              : "Continue to secure checkout"}
+              : plan?.depositTotalCents === 0
+                ? "Confirm booking"
+                : "Continue to secure checkout"}
           </Action>
         ) : undefined
       }
@@ -129,7 +137,7 @@ export function SessionPlanCheckoutSheet({
           <>
             <Status tone="success">
               <CheckCircle2 />
-              Deposit paid
+              Booking secured
             </Status>
             <h2>Your dates are confirmed</h2>
             <p>
@@ -142,7 +150,7 @@ export function SessionPlanCheckoutSheet({
             unverified={plan?.paymentState === "unverified"}
             onCheck={() => query.refetch()}
           />
-        ) : step === "payment" && accept.data ? (
+        ) : step === "payment" && accept.data?.clientSecret ? (
           <DotsCheckout
             clientSecret={accept.data.clientSecret}
             amountCents={accept.data.totalCents}
@@ -172,6 +180,13 @@ export function SessionPlanCheckoutSheet({
                   <ProposedSittingCard key={item.id} item={item} />
                 ))}
               </Section>
+              <CheckoutOffers
+                sessionPlanId={sessionPlanId}
+                onChanged={() => {
+                  void query.refetch();
+                  void offerQuote.refetch();
+                }}
+              />
               <Panel>
                 <dl className="v3-facts">
                   <div>
@@ -202,7 +217,12 @@ export function SessionPlanCheckoutSheet({
                 Deposits are non-refundable under the booking terms. The
                 estimated session balance after this deposit is{" "}
                 {money(
-                  Math.max(0, plan.totalEstimateCents - plan.depositTotalCents)
+                  Math.max(
+                    0,
+                    plan.totalEstimateCents -
+                      plan.depositTotalCents -
+                      (offerQuote.data?.applied?.creditCents || 0)
+                  )
                 )}
                 . Each session’s balance is requested separately.
               </p>
@@ -235,6 +255,7 @@ export function BalanceCheckoutSheet({
 }) {
   const [step, setStep] = useState<Step>("review");
   const [timedOut, setTimedOut] = useState(false);
+  const offers = trpc.offers.list.useQuery(undefined, { enabled: open });
   const query = trpc.funnel.getBalanceInfo.useQuery(
     { bookingId: appointmentId },
     {
@@ -285,6 +306,15 @@ export function BalanceCheckoutSheet({
           </>
         ) : step === "confirming" ? (
           <Confirming onCheck={() => query.refetch()} />
+        ) : offers.data?.enabled ? (
+          <OfferBalancePayment
+            bookingId={appointmentId}
+            artistName={artistName}
+            onSubmitted={() => {
+              setStep("confirming");
+              void query.refetch();
+            }}
+          />
         ) : step === "payment" && create.data ? (
           <DotsCheckout
             clientSecret={create.data.clientSecret}

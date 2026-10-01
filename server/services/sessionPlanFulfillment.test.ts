@@ -13,7 +13,7 @@ const payment = {
   transfer_data: { destination: "acct_artist" },
   metadata: { artistFeeCents: "0", tier: "free" },
 } as unknown as Stripe.PaymentIntent;
-function database(status = "pending", conflict = false) {
+function database(status = "pending", conflict = false, credit = false) {
   const state = {
     plan: {
       id: 8,
@@ -21,24 +21,64 @@ function database(status = "pending", conflict = false) {
       clientId: "client",
       conversationId: 10,
       messageId: null,
-      stripeSessionId: "pi_plan",
+      stripeSessionId: credit ? null : "pi_plan",
       status,
-      depositTotalCents: 20000,
-      platformFeeCents: 400,
+      depositTotalCents: credit ? 0 : 20000,
+      platformFeeCents: credit ? 0 : 400,
     },
     writes: [] as string[],
+    appointments: [] as any[],
   };
   const tx = {
     select: () => ({
       from: (table: unknown) => ({
         where: () => ({
           for: async () =>
-            table === schema.sessionPlans ? [state.plan] : [{ id: "artist" }],
+            table === schema.sessionPlans
+              ? [state.plan]
+              : table === schema.clientOffers
+                ? [
+                    {
+                      id: 1,
+                      remainingValue: 80000,
+                      reservedPlanId: 8,
+                      transferTo: null,
+                      rulesJson: JSON.stringify({
+                        name: "Gift",
+                        kind: "voucher",
+                        valueType: "fixed",
+                        value: 80000,
+                        currency: "AUD",
+                        eligibility: "unpaid",
+                        expiresAt: null,
+                        sittingFrom: null,
+                        sittingUntil: null,
+                      }),
+                    },
+                  ]
+                : [{ id: "artist" }],
           limit: async () => (conflict ? [{ id: 91 }] : []),
         }),
       }),
     }),
     query: {
+      offerApplications: {
+        findFirst: async () =>
+          credit
+            ? {
+                id: 1,
+                offerId: 1,
+                quoteJson: JSON.stringify({
+                  amount: 80000,
+                  creditCents: 80000,
+                  items: [
+                    { id: 1, creditCents: 40000 },
+                    { id: 2, creditCents: 40000 },
+                  ],
+                }),
+              }
+            : null,
+      },
       studioMembers: { findFirst: async () => null },
       sessionPlanItems: {
         findMany: async () =>
@@ -47,7 +87,7 @@ function database(status = "pending", conflict = false) {
             sessionIndex: i,
             startsAt: `2026-10-0${i} 01:00:00`,
             durationMinutes: 90,
-            depositCents: 10000,
+            depositCents: credit ? 0 : 10000,
             estimateCents: 40000,
           })),
       },
@@ -56,7 +96,8 @@ function database(status = "pending", conflict = false) {
       },
     },
     insert: (table: unknown) => ({
-      values: async () => {
+      values: async (values: any) => {
+        if (table === schema.appointments) state.appointments.push(values);
         state.writes.push(
           table === schema.appointments ? "appointment" : "ledger"
         );
@@ -81,6 +122,7 @@ function database(status = "pending", conflict = false) {
       } catch (e) {
         state.plan = snapshot.plan;
         state.writes = snapshot.writes;
+        state.appointments = snapshot.appointments;
         throw e;
       }
     }),
@@ -129,4 +171,28 @@ describe("session plan fulfilment", () => {
       expect(db.state.writes).toEqual([]);
     }
   });
+});
+
+it("rejects zero-payment confirmation without an authenticated matching client", async () => {
+  const db = database();
+  await expect(
+    fulfillSessionPlan(db, 8, null, "another-client")
+  ).rejects.toThrow("does not match");
+  expect(db.state.writes).toHaveLength(0);
+});
+
+it("confirms a fully covered voucher booking without a fictitious Stripe payment or cash ledger entry", async () => {
+  const db = database("pending", false, true);
+  await fulfillSessionPlan(db, 8, null, "client");
+  expect(db.state.plan.status).toBe("accepted");
+  expect(db.state.writes.filter(x => x === "ledger")).toHaveLength(0);
+  expect(db.state.appointments).toHaveLength(2);
+  for (const appointment of db.state.appointments) {
+    expect(appointment.remainingBalanceCents).toBe(0);
+    expect(appointment.paymentStatus).toBe("fully_paid");
+    expect(appointment.depositPaymentId).toBeNull();
+  }
+  const writes = db.state.writes.length;
+  await fulfillSessionPlan(db, 8, null, "client");
+  expect(db.state.writes).toHaveLength(writes);
 });

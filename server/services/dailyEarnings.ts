@@ -7,7 +7,7 @@ type LedgerRow = {
   platformFeeCents?: number;
 };
 export function ledgerContribution(row: LedgerRow) {
-  const sale = ["deposit", "balance", "store_order"].includes(
+  const sale = ["deposit", "balance", "store_order", "voucher_sale"].includes(
       row.transactionType
     ),
     refund = row.transactionType === "refund";

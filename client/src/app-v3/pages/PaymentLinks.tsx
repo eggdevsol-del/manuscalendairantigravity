@@ -1,3 +1,5 @@
+import { useAuth } from "@/_core/hooks/useAuth";
+import { OfferBalancePayment } from "../components/Offers";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useState, useEffect } from "react";
 import { useRoute, useSearch } from "wouter";
@@ -17,6 +19,10 @@ import {
 } from "@/features/workspace/bookingPresentation";
 
 export function PaymentRequestPage() {
+  const { user } = useAuth();
+  const offers = trpc.offers.list.useQuery(undefined, {
+    enabled: user?.role === "client",
+  });
   const [, params] = useRoute("/pay/:token");
   const token = params?.token || "";
   const search = new URLSearchParams(useSearch());
@@ -128,7 +134,17 @@ export function PaymentRequestPage() {
         </Panel>
       ) : (
         info &&
-        (checkout ? (
+        (offers.data?.enabled && info.appointmentId ? (
+          <OfferBalancePayment
+            bookingId={info.appointmentId}
+            requestId={info.requestId!}
+            artistName={info.artistName}
+            onSubmitted={() => {
+              setSubmitted(true);
+              void query.refetch();
+            }}
+          />
+        ) : checkout ? (
           <DotsCheckout
             clientSecret={checkout.secret}
             amountCents={checkout.total}
@@ -185,6 +201,11 @@ export function PaymentLinkPage({
   token: string;
   bookingId?: number;
 }) {
+  const { user } = useAuth();
+  const offers = trpc.offers.list.useQuery(undefined, {
+    enabled: user?.role === "client",
+  });
+  const [manualMode, setManualMode] = useState(false);
   const isDeposit = kind === "deposit";
   const search = useSearch();
   const returned =
@@ -330,6 +351,22 @@ export function PaymentLinkPage({
             )}
             <ActionLink href="/bookings">Open my bookings</ActionLink>
           </Panel>
+        ) : !isDeposit && offers.data?.enabled && !manualMode ? (
+          <>
+            <OfferBalancePayment
+              bookingId={bookingId}
+              artistName={data.artistName}
+              onSubmitted={() => {
+                setSubmitted(true);
+                void query.refetch();
+              }}
+            />
+            {(data.paymentMethods.bank || data.paymentMethods.cash) && (
+              <Action tone="quiet" onClick={() => setManualMode(true)}>
+                Bank or cash without an offer
+              </Action>
+            )}
+          </>
         ) : checkout ? (
           <DotsCheckout
             clientSecret={checkout.secret}
@@ -361,6 +398,11 @@ export function PaymentLinkPage({
               </dl>
             </Panel>
             {error && <p role="alert">{error.message}</p>}
+            {manualMode && (
+              <Action tone="quiet" onClick={() => setManualMode(false)}>
+                Return to offers & card checkout
+              </Action>
+            )}
             {data.paymentMethods.stripe && (
               <Action
                 disabled={busy}

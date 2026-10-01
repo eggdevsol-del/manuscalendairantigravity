@@ -1,3 +1,5 @@
+import { withDatabaseTransaction } from "../services/core";
+import { cancelOfferBalance } from "../services/offerBalance";
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
@@ -391,27 +393,25 @@ export const dashboardRouter = router({
   recordManualPayment: protectedProcedure
     .input(z.object({
       appointmentId: z.number(),
-      amountCents: z.number().min(1),
+      amountCents: z.number().int().min(1),
       paymentMethod: z.enum(["cash", "bank"]),
     }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => withDatabaseTransaction(async db => {
       const { user } = ctx;
       if (user.role !== "artist" && user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      const db = await getDb();
-      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-      const appointment = await db.query.appointments.findFirst({
-        where: eq(schema.appointments.id, input.appointmentId),
-      });
+      const [appointment] = await db.select().from(schema.appointments).where(eq(schema.appointments.id,input.appointmentId)).for("update");
       if (!appointment) throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
       if (appointment.artistId !== user.id) throw new TRPCError({ code: "FORBIDDEN" });
 
+      await cancelOfferBalance(db,appointment.id);
+      if(appointment.status==="cancelled")throw new TRPCError({code:"CONFLICT",message:"This sitting is cancelled."});
       // Derive current balance
       const expected = appointment.totalExpectedAmountCents || (appointment.price ? appointment.price * 100 : 0);
       const currentPaid = appointment.totalPaidAmountCents || 0;
+      if(input.amountCents>expected-currentPaid)throw new TRPCError({code:"CONFLICT",message:"The payment exceeds the remaining balance. Refresh the sitting."});
       const newPaid = currentPaid + input.amountCents;
       const remaining = Math.max(0, expected - newPaid);
       const isFullyPaid = remaining <= 0;
@@ -451,7 +451,7 @@ export const dashboardRouter = router({
         remainingCents: remaining,
         isFullyPaid,
       };
-    }),
+    })),
 
   /**
    * requestPayment — Artist sends a Stripe payment request to the client.

@@ -1,6 +1,8 @@
 import type Stripe from "stripe";
 import { and, eq, inArray, or } from "drizzle-orm";
 import {
+  clientOffers,
+  notificationOutbox,
   paymentLedger,
   appointments,
   sessionPlans,
@@ -29,6 +31,7 @@ export async function reconcileChargeRefund(
         "deposit",
         "balance",
         "store_order",
+        "voucher_sale",
       ])
     ),
   });
@@ -81,6 +84,14 @@ export async function reconcileChargeRefund(
   );
   const artistFeeDelta = Math.max(0, artistFeeReversed - previousArtistFees);
   if (delta > 0 || feeDelta > 0 || artistFeeDelta > 0) {
+    if(original.transactionType==="voucher_sale"&&delta>0) {
+      const [gift]=await db.select().from(clientOffers).where(eq(clientOffers.purchasePaymentId,paymentId)).for("update");
+      if(!gift)throw new Error("Refunded gift voucher is missing.");
+      if(gift.reservedPlanId||gift.reservedBalanceId)throw new Error("Release the voucher checkout before reconciling this refund.");
+      const unspent=Math.min(delta,gift.remainingValue);
+      await db.update(clientOffers).set({remainingValue:gift.remainingValue-unspent}).where(eq(clientOffers.id,gift.id));
+      if(delta>unspent)await db.insert(notificationOutbox).values({eventType:"push_message",status:"pending",payloadJson:JSON.stringify({targetUserId:gift.artistId,title:"Voucher refund needs review",body:"The refunded voucher has spent credit. Review its redeemed bookings before settling any further refund.",url:"/business"})});
+    }
     const plan = await db.query.sessionPlans.findFirst({
       where: eq(sessionPlans.stripeSessionId, paymentId),
     });

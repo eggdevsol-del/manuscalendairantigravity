@@ -7,6 +7,8 @@ const paymentTypes = new Set([
   "deposit",
   "session_plan_deposit",
   "balance",
+  "offer_balance",
+  "gift_voucher",
   "payment_request",
   "store_order",
   "supplier_order",

@@ -1,3 +1,4 @@
+import { processOfferDeliveries } from "../services/offerDelivery";
 import { startProjectNamingWorker } from "../services/projectNaming";
 import {
   withDatabaseTransaction,
@@ -14,7 +15,7 @@ const mysql = (date: Date) => date.toISOString().slice(0, 19).replace("T", " ");
 export function startOutboxWorker() {
   startProjectNamingWorker();
   if (timer) return;
-  timer = setInterval(() => void processOutbox(), 5000);
+  timer = setInterval(() => { void processOutbox(); void processOfferDeliveries().catch(error=>console.error("[OfferDelivery] Worker failed", error instanceof Error?error.message:"unknown")); }, 5000);
   timer.unref();
 }
 export async function deliverOutboxItem(

@@ -3,7 +3,7 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { WeekAgenda } from "../design/WeekAgenda";
 import { HomeTabs } from "../design/HomeTabs";
-import { PromotionWizardContent } from "@/features/promotions/PromotionWizardContent";
+import { PromotionsManager } from "../components/Offers";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { CheckCircle2, Circle } from "lucide-react";
@@ -48,7 +48,7 @@ export default function Today() {
                 data-tour-description="Build a voucher or offer to attract bookings. Review its value and rules before saving; creating it does not send it to clients."
                 onClick={() => setPromo(true)}
               >
-                Create promo
+                Promotions
               </Action>
             }
           >
@@ -117,9 +117,9 @@ export default function Today() {
       <SheetShell
         isOpen={promo}
         onClose={() => setPromo(false)}
-        title="Create promo"
+        title="Promotions"
       >
-        {promo && <PromotionWizardContent onClose={() => setPromo(false)} />}
+        {promo && <PromotionsManager />}
       </SheetShell>
     </Screen>
   );

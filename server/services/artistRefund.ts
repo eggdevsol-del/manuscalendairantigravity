@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import {
+  clientOffers,
   paymentLedger,
   sessionPlans,
   sessionPlanItems,
@@ -25,7 +26,7 @@ export async function previewArtistRefund(artistId: string, ledgerId: number) {
     });
   if (
     !entry.stripePaymentId ||
-    !["deposit", "balance", "store_order"].includes(entry.transactionType)
+    !["deposit", "balance", "store_order", "voucher_sale"].includes(entry.transactionType)
   )
     throw new TRPCError({
       code: "BAD_REQUEST",
@@ -63,6 +64,7 @@ export async function previewArtistRefund(artistId: string, ledgerId: number) {
         "deposit",
         "balance",
         "store_order",
+        "voucher_sale",
       ])
     ),
   });
@@ -78,6 +80,11 @@ export async function previewArtistRefund(artistId: string, ledgerId: number) {
       message:
         "The payment and ledger need reconciliation before a refund. Contact support with this transaction ID.",
     });
+  if(entry.transactionType==="voucher_sale") {
+    const gift=await db.query.clientOffers.findFirst({where:eq(clientOffers.purchasePaymentId,paymentId)});
+    if(!gift||gift.reservedPlanId||gift.reservedBalanceId||gift.remainingValue<entry.amountCents-charge.amount_refunded)
+      throw new TRPCError({code:"CONFLICT",message:"This voucher has reserved or spent credit. Review the redeemed bookings in Stripe before issuing a statutory refund."});
+  }
   const plan = await db.query.sessionPlans.findFirst({
     where: eq(sessionPlans.stripeSessionId, paymentId),
   });

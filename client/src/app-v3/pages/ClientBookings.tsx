@@ -1,3 +1,4 @@
+import { ClientOffers } from "../components/Offers";
 import { Link } from "wouter";
 import { ChevronRight, ClipboardCheck } from "lucide-react";
 import { DetailsSheet } from "../components/DetailsSheet";
@@ -243,6 +244,7 @@ export default function ClientBookings() {
           ))}
         </div>
       )}
+      <ClientOffers />
       {groups.length > 0 && (
         <Section title="Your projects">{projectCards(groups)}</Section>
       )}

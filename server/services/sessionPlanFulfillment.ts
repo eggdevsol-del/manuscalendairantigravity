@@ -1,3 +1,4 @@
+import { consumePlanOffer } from "./offerCheckout";
 import { eq, and, ne, lt, gt } from "drizzle-orm";
 import type Stripe from "stripe";
 import * as schema from "../../drizzle/schema";
@@ -12,7 +13,8 @@ const utcDate = (date: string) =>
 export async function fulfillSessionPlan(
   database: any,
   planId: number,
-  payment: Stripe.PaymentIntent
+  payment: Stripe.PaymentIntent | null,
+  zeroPaymentClientId?: string
 ) {
   return database.transaction(async (tx: any) => {
     const [plan] = await tx
@@ -20,13 +22,22 @@ export async function fulfillSessionPlan(
       .from(schema.sessionPlans)
       .where(eq(schema.sessionPlans.id, planId))
       .for("update");
-    if (!plan || plan.stripeSessionId !== payment.id)
+    if (
+      !plan ||
+      (payment
+        ? plan.stripeSessionId !== payment.id
+        : plan.clientId !== zeroPaymentClientId ||
+          !!plan.stripeSessionId ||
+          plan.depositTotalCents !== 0 ||
+          !!plan.platformFeeCents)
+    )
       throw new Error("Payment does not match the stored session plan.");
     if (
-      payment.status !== "succeeded" ||
-      payment.currency !== "aud" ||
-      payment.amount_received !==
-        plan.depositTotalCents + (plan.platformFeeCents || 0)
+      payment &&
+      (payment.status !== "succeeded" ||
+        payment.currency !== "aud" ||
+        payment.amount_received !==
+          plan.depositTotalCents + (plan.platformFeeCents || 0))
     )
       throw new Error("Payment amount or currency does not match the plan.");
     if (plan.status === "accepted") return { alreadyProcessed: true };
@@ -47,12 +58,13 @@ export async function fulfillSessionPlan(
       where: eq(schema.artistSettings.userId, plan.artistId),
     });
     const destination =
-      typeof payment.transfer_data?.destination === "string"
+      typeof payment?.transfer_data?.destination === "string"
         ? payment.transfer_data.destination
-        : payment.transfer_data?.destination?.id;
+        : payment?.transfer_data?.destination?.id;
     if (
-      !settings?.stripeConnectAccountId ||
-      destination !== settings.stripeConnectAccountId
+      payment &&
+      (!settings?.stripeConnectAccountId ||
+        destination !== settings.stripeConnectAccountId)
     )
       throw new Error("Payment recipient does not match the artist.");
     const membership = await tx.query.studioMembers.findFirst({
@@ -72,8 +84,17 @@ export async function fulfillSessionPlan(
           projectName = metadata.projectName.slice(0, 60);
       } catch {}
     }
+    const offerQuote = await consumePlanOffer(
+      tx,
+      plan.id,
+      !payment || payment.metadata?.ivoryOffers === "1"
+    );
+    if (!payment && !offerQuote)
+      throw new Error("A zero-payment booking requires an authorised offer.");
     const now = mysqlDate(new Date());
     for (const item of items) {
+      const creditCents =
+        offerQuote?.items.find(i => i.id === item.id)?.creditCents || 0;
       const start = utcDate(item.startsAt);
       const end = new Date(+start + item.durationMinutes * 60000);
       const conflicts = await tx
@@ -106,12 +127,18 @@ export async function fulfillSessionPlan(
         price: Math.round(item.estimateCents / 100),
         depositAmount: Math.round(item.depositCents / 100),
         depositPaid: 1,
-        depositPaymentId: payment.id,
-        paymentMethod: "stripe",
-        paymentStatus: "deposit_paid",
+        depositPaymentId: payment?.id || null,
+        paymentMethod: payment ? "stripe" : null,
+        paymentStatus:
+          item.depositCents + creditCents >= item.estimateCents
+            ? "fully_paid"
+            : "deposit_paid",
         totalExpectedAmountCents: item.estimateCents,
-        totalPaidAmountCents: item.depositCents,
-        remainingBalanceCents: item.estimateCents - item.depositCents,
+        totalPaidAmountCents: item.depositCents + creditCents,
+        remainingBalanceCents: Math.max(
+          0,
+          item.estimateCents - item.depositCents - creditCents
+        ),
         sessionIndex: item.sessionIndex,
         sessionTotal: items.length,
         sessionPlanId: plan.id,
@@ -124,18 +151,19 @@ export async function fulfillSessionPlan(
         .where(eq(schema.sessionPlanItems.id, item.id));
       await generateRequiredForms(created.insertId, tx);
     }
-    await tx.insert(schema.paymentLedger).values({
-      artistId: plan.artistId,
-      clientId: plan.clientId,
-      transactionType: "deposit",
-      amountCents: plan.depositTotalCents,
-      platformFeeCents: plan.platformFeeCents || 0,
-      artistFeeCents: Number(payment.metadata.artistFeeCents || 0),
-      stripePaymentId: payment.id,
-      stripeConnectAccountId: settings.stripeConnectAccountId,
-      tier: payment.metadata.tier || "free",
-      paymentMethod: "card",
-    });
+    if (payment)
+      await tx.insert(schema.paymentLedger).values({
+        artistId: plan.artistId,
+        clientId: plan.clientId,
+        transactionType: "deposit",
+        amountCents: plan.depositTotalCents,
+        platformFeeCents: plan.platformFeeCents || 0,
+        artistFeeCents: Number(payment.metadata.artistFeeCents || 0),
+        stripePaymentId: payment.id,
+        stripeConnectAccountId: settings.stripeConnectAccountId,
+        tier: payment.metadata.tier || "free",
+        paymentMethod: "card",
+      });
     if (plan.messageId) {
       const message = await tx.query.messages.findFirst({
         where: eq(schema.messages.id, plan.messageId),

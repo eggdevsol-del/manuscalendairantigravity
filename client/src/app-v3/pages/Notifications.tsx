@@ -1,3 +1,4 @@
+import { OfferNotificationPreferences } from "../components/Offers";
 import { useState } from "react";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../../server/routers";
@@ -35,6 +36,7 @@ export default function Notifications() {
       back={user?.role === "merchant" ? "/account-settings" : "/settings"}
     >
       <DeviceNotifications />
+      {user?.role === "client" && <OfferNotificationPreferences />}
       {artist && <Templates />}
     </Screen>
   );

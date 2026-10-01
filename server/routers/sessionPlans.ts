@@ -1,3 +1,12 @@
+import { offersEnabled } from "../services/offerAvailability";
+import { fulfillSessionPlan } from "../services/sessionPlanFulfillment";
+import {
+  cancelPlanOfferCheckout,
+  planOfferOptions,
+  setPlanOffer,
+  releasePlanOffer,
+  validateReservedPlanOffer,
+} from "../services/offerCheckout";
 import {
   readPresentedPlans,
   sessionPlanSignature,
@@ -20,6 +29,26 @@ import * as schema from "../../drizzle/schema";
 import { createDepositPaymentIntent } from "../services/paymentIntents";
 
 export const sessionPlansRouter = router({
+  cancelOfferCheckout:protectedProcedure.input(z.object({sessionPlanId:z.number().int().positive()})).mutation(({ctx,input})=>withDatabaseTransaction(db=>cancelPlanOfferCheckout(db,input.sessionPlanId,ctx.user.id))),
+  offerOptions: protectedProcedure
+    .input(z.object({ sessionPlanId: z.number().int().positive() }))
+    .query(({ ctx, input }) =>
+      withDatabaseTransaction(db =>
+        planOfferOptions(db, input.sessionPlanId, ctx.user.id)
+      )
+    ),
+  setOffer: protectedProcedure
+    .input(
+      z.object({
+        sessionPlanId: z.number().int().positive(),
+        offerId: z.number().int().positive().nullable(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      withDatabaseTransaction(db =>
+        setPlanOffer(db, input.sessionPlanId, ctx.user.id, input.offerId)
+      )
+    ),
   /**
    * Artist creates a session plan and sends it to the client in their conversation.
    * Creates sessionPlan + sessionPlanItems rows, inserts a session_plan message.
@@ -290,6 +319,21 @@ export const sessionPlansRouter = router({
             message:
               "This deposit is already recorded or this proposal has been replaced. Refresh your bookings; do not pay again.",
           });
+        if (!plan.stripeSessionId)
+          await validateReservedPlanOffer(dbRef, plan.id);
+
+        if (plan.depositTotalCents === 0 && offersEnabled()) {
+          await fulfillSessionPlan(dbRef, plan.id, null, ctx.user.id);
+          return {
+            clientSecret: null,
+            totalCents: 0,
+            depositTotalCents: 0,
+            platformFeeCents: 0,
+            items: plan.items,
+            confirmed: true,
+          };
+        }
+
         const artistSettings = await dbRef.query.artistSettings.findFirst({
           where: eq(schema.artistSettings.userId, plan.artistId),
         });
@@ -355,6 +399,7 @@ export const sessionPlansRouter = router({
             message:
               "This checkout was cancelled. Ask your artist for a new plan.",
           });
+        const checkoutVersion=offersEnabled()?await dbRef.query.offerPlanCheckoutVersions.findFirst({where:eq(schema.offerPlanCheckoutVersions.planId,plan.id)}):null;
         const paymentResult = existingPayment?.client_secret
           ? {
               clientSecret: existingPayment.client_secret,
@@ -363,7 +408,7 @@ export const sessionPlansRouter = router({
           : await createDepositPaymentIntent({
               leadId: plan.id,
               sessionPlanId: plan.id,
-              idempotencyKey: `session-plan-${plan.id}-deposit`,
+              idempotencyKey: `session-plan-${plan.id}-deposit${checkoutVersion?.version ? "-v"+checkoutVersion.version : ""}`,
               depositAmountCents: plan.depositTotalCents,
               platformFeeCents,
               artistFeeCents,
@@ -374,6 +419,19 @@ export const sessionPlansRouter = router({
               stripeConnectAccountId: artistSettings?.stripeConnectAccountId,
               tier,
             });
+
+        if (offersEnabled()) {
+          const application = await dbRef.query.offerApplications.findFirst({
+            where: and(
+              eq(schema.offerApplications.planId, plan.id),
+              eq(schema.offerApplications.status, "reserved")
+            ),
+          });
+          if (application)
+            await stripe.paymentIntents.update(paymentResult.paymentIntentId, {
+              metadata: { ivoryOffers: "1" },
+            });
+        }
 
         // Store the Stripe PaymentIntent ID on the plan
         await dbRef
@@ -441,6 +499,8 @@ export const sessionPlansRouter = router({
           .set({ status: "declined" })
           .where(eq(schema.sessionPlans.id, plan.id));
 
+        await releasePlanOffer(dbRef, plan.id);
+
         // Insert system message
         if (plan.conversationId) {
           await dbRef.insert(schema.messages).values({
@@ -502,6 +562,8 @@ export const sessionPlansRouter = router({
           .update(schema.sessionPlans)
           .set({ status: "withdrawn" })
           .where(eq(schema.sessionPlans.id, plan.id));
+
+        await releasePlanOffer(dbRef, plan.id);
 
         // Insert system message
         if (plan.conversationId) {

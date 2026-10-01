@@ -1,3 +1,4 @@
+import { registerOfferUnsubscribe } from "../services/offerDelivery";
 import { appUpdatePage } from "../services/appUpdatePage";
 import { databaseReady } from "../services/readiness";
 import "dotenv/config";
@@ -194,6 +195,7 @@ async function startServer() {
   // Apply strict rate limit to funnel submit endpoint
   app.use("/api/public/funnel/submit", funnelSubmitLimiter);
   registerPublicFunnelRoutes(app);
+  registerOfferUnsubscribe(app);
 
   // Version endpoint for cache-busting (returns current server version)
   // This is used by the client to detect version mismatches and force updates.

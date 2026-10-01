@@ -32,8 +32,16 @@ export function SessionPlanCheckoutSheet({
   const plan = query.data;
   const accept = trpc.sessionPlans.accept.useMutation({
     onSuccess: data => {
-      setCheckout(data);
-      setStep("payment");
+      if (data.clientSecret) {
+        setCheckout({
+          clientSecret: data.clientSecret,
+          totalCents: data.totalCents,
+        });
+        setStep("payment");
+      } else {
+        setStep("confirming");
+        void query.refetch();
+      }
     },
   });
   useEffect(() => {

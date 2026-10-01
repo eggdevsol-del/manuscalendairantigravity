@@ -621,7 +621,13 @@ export const studioMembers = mysqlTable(
     role: mysqlEnum(["owner", "manager", "artist", "apprentice"])
       .default("artist")
       .notNull(),
-    status: mysqlEnum(["active", "inactive", "pending_invite", "declined", "removed"])
+    status: mysqlEnum([
+      "active",
+      "inactive",
+      "pending_invite",
+      "declined",
+      "removed",
+    ])
       .default("active")
       .notNull(),
     createdAt: timestamp({ mode: "string" }).default(sql`(now())`),
@@ -1925,6 +1931,7 @@ export const paymentLedger = mysqlTable(
       "dispute",
       "payout",
       "store_order",
+      "voucher_sale",
     ]).notNull(),
     amountCents: int().notNull(),
     platformFeeCents: int().notNull().default(0),
@@ -2890,3 +2897,79 @@ export const waitlistEntries = mysqlTable(
     index("waitlist_client_idx").on(table.clientId),
   ]
 );
+
+// Immutable issued terms and checkout reservations keep campaigns separate from payment state.
+export const offerCampaigns = mysqlTable("offer_campaigns", {
+  legacyTemplateId: int().unique(),
+  id: int().autoincrement().primaryKey(),
+  artistId: varchar({ length: 64 }).notNull(),
+  rulesJson: text().notNull(),
+  archived: tinyint().notNull().default(0),
+  createdAt: datetime({ mode: "string" }).notNull(),
+});
+export const clientOffers = mysqlTable(
+  "client_offers",
+  {
+    id: int().autoincrement().primaryKey(),
+    campaignId: int().notNull(),
+    artistId: varchar({ length: 64 }).notNull(),
+    clientId: varchar({ length: 64 }).notNull(),
+    originalClientId: varchar({ length: 64 }).notNull(),
+    rulesJson: text().notNull(),
+    remainingValue: int().notNull(),
+    issuedAt: datetime({ mode: "string" }).notNull(),
+    reservedPlanId: int(),
+    reservedBalanceId: int(),
+    purchaseRequired: tinyint().notNull().default(0),
+    purchasePaymentId: varchar({length:255}),
+    purchasedAt: datetime({mode:"string"}),
+    issuanceKey: varchar({length:140}),
+    interestAt: datetime({ mode: "string" }),
+    transferTo: varchar({ length: 64 }),
+  },
+  t => [unique("offer_issuance_key").on(t.issuanceKey)]
+);
+export const offerApplications = mysqlTable(
+  "offer_applications",
+  {
+    id: int().autoincrement().primaryKey(),
+    offerId: int().notNull(),
+    planId: int().notNull(),
+    originalJson: text().notNull(),
+    quoteJson: text().notNull(),
+    status: mysqlEnum(["reserved", "redeemed", "released"]).notNull(),
+    createdAt: datetime({ mode: "string" }).notNull(),
+  },
+  t => [
+    index("offer_application_plan").on(t.planId),
+    index("offer_application_offer").on(t.offerId),
+  ]
+);
+
+export const offerBalanceCheckouts = mysqlTable("offer_balance_checkouts", {
+ id:int().primaryKey().autoincrement(), bookingId:int().notNull(), requestId:int(), offerId:int(),
+ activeKey:varchar({length:64}), clientId:varchar({length:64}).notNull(), artistId:varchar({length:64}).notNull(),
+ quoteJson:text().notNull(), originalJson:text().notNull(), paymentId:varchar({length:255}),
+ status:mysqlEnum(['reserved','paid','cancelled']).notNull().default('reserved'), createdAt:datetime({mode:'string'}).notNull(),
+},t=>[unique('offer_balance_active').on(t.activeKey),unique('offer_balance_payment').on(t.paymentId)]);
+export const offerCreditRestorations = mysqlTable('offer_credit_restorations',{
+ id:int().primaryKey().autoincrement(), sourceKey:varchar({length:100}).notNull(), bookingId:int().notNull(),
+ offerId:int().notNull(), restoredOfferId:int().notNull(), clientId:varchar({length:64}).notNull(), amountCents:int().notNull(),createdAt:datetime({mode:'string'}).notNull(),
+},t=>[unique('offer_restore_source').on(t.sourceKey)]);
+export const offerPreferences = mysqlTable('offer_preferences',{
+ userId:varchar({length:64}).primaryKey(), push:tinyint().notNull().default(0),sms:tinyint().notNull().default(0),
+ verifiedPhone:varchar({length:20}),updatedAt:datetime({mode:'string'}).notNull(),
+});
+export const offerDeliveries = mysqlTable('offer_deliveries',{
+ id:int().primaryKey().autoincrement(),offerId:int().notNull(),clientId:varchar({length:64}).notNull(),
+ channel:mysqlEnum(['sms','push']).notNull(),status:mysqlEnum(['pending','sending','accepted','delivered','failed','unknown','skipped']).notNull().default('pending'),
+ providerId:varchar({length:255}), error:text(),attempts:int().notNull().default(0),updatedAt:datetime({mode:'string'}).notNull(),
+},t=>[unique('offer_delivery_once').on(t.offerId,t.channel)]);
+export const offerSmsChallenges = mysqlTable('offer_sms_challenges',{
+ userId:varchar({length:64}).primaryKey(),phone:varchar({length:20}).notNull(),codeHash:varchar({length:64}).notNull(),
+ attempts:int().notNull().default(0),sendCount:int().notNull().default(0),windowStart:datetime({mode:'string'}).notNull(),createdAt:datetime({mode:'string'}).notNull(),expiresAt:datetime({mode:'string'}).notNull(),
+});
+
+export const offerPlanCheckoutVersions = mysqlTable("offer_plan_checkout_versions", {
+ planId: int().primaryKey(), version: int().notNull().default(0),
+});

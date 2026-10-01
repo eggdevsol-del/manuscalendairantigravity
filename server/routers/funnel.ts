@@ -1,3 +1,5 @@
+import { offersEnabled } from "../services/offerAvailability";
+import { startOfferBalance, cancelOfferBalance } from "../services/offerBalance";
 import { withDatabaseTransaction } from "../services/core";
 import { getAuthSecret } from "../_core/auth-secret";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
@@ -394,6 +396,11 @@ export const funnelRouter = router({
         }
       }
 
+      if (offersEnabled()) {
+        const result = await withDatabaseTransaction(tx => startOfferBalance(tx, booking.id, booking.clientId, null));
+        return {url:null as string|null,clientSecret:result.clientSecret as string,fees:{...result,clientTotalCents:result.totalCents},remainingBalanceCents:result.cashCents,paymentMethods:{stripe:true,bank:false,cash:false}};
+      }
+
       // Validate booking is in correct state
       if (booking.paymentStatus === "fully_paid") {
         throw new Error("This booking has already been fully paid");
@@ -541,6 +548,7 @@ export const funnelRouter = router({
           .from(schema.appointments)
           .where(eq(schema.appointments.id, booking.id))
           .for("update");
+        await cancelOfferBalance(tx,booking.id);
         const claim = JSON.stringify({
           type: "balance_claim",
           method: input.paymentMethod,
@@ -1840,6 +1848,7 @@ export const funnelRouter = router({
       return {
         fees,
         requestId: request.id,
+        appointmentId: appointment.id,
         amountCents: request.amountCents,
         status: request.status,
         artistName:
@@ -1884,6 +1893,11 @@ export const funnelRouter = router({
           error:
             request?.status === "paid" ? "already_paid" : "invalid_request",
         };
+      }
+
+      if (offersEnabled()) {
+        const result = await withDatabaseTransaction(tx => startOfferBalance(tx, request.appointmentId, request.clientId, null, request.id));
+        return {clientSecret:result.clientSecret as string,url:null as string|null,fees:{...result,clientTotalCents:result.totalCents}};
       }
 
       // Fetch appointment + artist settings for fee calculation

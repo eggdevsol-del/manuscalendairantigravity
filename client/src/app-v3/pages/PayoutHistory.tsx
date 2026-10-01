@@ -82,7 +82,7 @@ export default function PayoutHistory() {
                   </div>
                 </dl>
                 {entry.stripePaymentId &&
-                  ["deposit", "balance", "store_order"].includes(
+                  ["deposit", "balance", "store_order", "voucher_sale"].includes(
                     entry.type
                   ) && (
                     <Action tone="quiet" onClick={() => setRefund(entry.id)}>

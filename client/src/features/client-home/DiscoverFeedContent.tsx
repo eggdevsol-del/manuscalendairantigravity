@@ -1,3 +1,5 @@
+import { ClientOffers } from "@/app-v3/components/Offers";
+import { Fragment } from "react";
 /**
  * DiscoverFeedContent — Feed cards without header/container
  * ─────────────────────────────────────────────────────────
@@ -153,6 +155,11 @@ export default function DiscoverFeedContent({
     );
   }
 
+  const offerAfter = new Map<number, number>();
+  allCards.forEach((card, index) => {
+    if (allCards[index + 1] && card.artistId !== allCards[index + 1].artistId)
+      offerAfter.set(index, offerAfter.size);
+  });
   return (
     <>
       {/* Active filter pill */}
@@ -199,19 +206,24 @@ export default function DiscoverFeedContent({
       {/* Feed cards */}
       <div className="discover-feed-cards">
         {allCards.map((card, index) => (
-          <FeedCard
-            key={`${card.id}-${index}`}
-            card={card}
-            index={index}
-            onLike={handleLike}
-            onShare={handleShare}
-            onArtistTap={handleArtistTap}
-            onImageTap={onImageTap}
-            onTagTap={handleTagTap}
-            focusMode
-            discoveryMode
-            compact
-          />
+          <Fragment key={`${card.id}-${index}`}>
+            <FeedCard
+              key={`${card.id}-${index}`}
+              card={card}
+              index={index}
+              onLike={handleLike}
+              onShare={handleShare}
+              onArtistTap={handleArtistTap}
+              onImageTap={onImageTap}
+              onTagTap={handleTagTap}
+              focusMode
+              discoveryMode
+              compact
+            />
+            {offerAfter.has(index) && (
+              <ClientOffers index={offerAfter.get(index)} />
+            )}
+          </Fragment>
         ))}
       </div>
 

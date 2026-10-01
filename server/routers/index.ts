@@ -1,3 +1,4 @@
+import { offersRouter } from "./offers";
 import { masterDevRouter } from "./masterDev";
 import { waitlistRouter } from "./waitlist";
 import { projectsRouter } from "./projects";
@@ -71,6 +72,7 @@ export const appRouter = router({
   upload: uploadRouter,
   wallet: walletRouter,
   promotions: promotionsRouter,
+  offers: offersRouter,
   push: pushRouter,
   paymentMethodSettings: paymentMethodSettingsRouter,
   forms: formsRouter,
