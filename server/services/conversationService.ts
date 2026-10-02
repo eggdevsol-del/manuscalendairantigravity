@@ -1,4 +1,4 @@
-import { and, desc, eq, not, sql, lt, or, isNull } from "drizzle-orm";
+import { and, desc, eq, not, sql, lt, or, isNull, inArray } from "drizzle-orm";
 import {
   conversations,
   InsertConversation,
@@ -238,39 +238,27 @@ export async function getUnreadMessageCount(
 
 export async function markMessagesAsRead(
   conversationId: number,
-  userId: string
+  userId: string,
+  messageIds?: number[]
 ) {
   const db = await getDb();
-  if (!db) return;
-
-  const allMessages = await db
-    .select()
-    .from(messages)
+  if (!db) throw new Error("Database unavailable");
+  if (messageIds && !messageIds.length) return;
+  // Append atomically: simultaneous devices cannot overwrite another receipt.
+  const readers = sql`IF(JSON_VALID(${messages.readBy}), ${messages.readBy}, JSON_ARRAY())`;
+  await db
+    .update(messages)
+    .set({
+      readBy: sql`JSON_ARRAY_APPEND(${readers}, '$', ${userId})`,
+    })
     .where(
       and(
         eq(messages.conversationId, conversationId),
-        not(eq(messages.senderId, userId))
+        not(eq(messages.senderId, userId)),
+        messageIds ? inArray(messages.id, messageIds) : undefined,
+        sql`NOT JSON_CONTAINS(${readers}, JSON_QUOTE(${userId}))`
       )
     );
-
-  for (const msg of allMessages) {
-    let readByList: string[] = [];
-    if (msg.readBy) {
-      try {
-        readByList = JSON.parse(msg.readBy);
-      } catch {
-        readByList = [];
-      }
-    }
-
-    if (!readByList.includes(userId)) {
-      readByList.push(userId);
-      await db
-        .update(messages)
-        .set({ readBy: JSON.stringify(readByList) })
-        .where(eq(messages.id, msg.id));
-    }
-  }
 }
 
 // ============================================================================

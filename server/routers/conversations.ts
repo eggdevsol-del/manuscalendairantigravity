@@ -108,13 +108,14 @@ export const conversationsRouter = router({
       };
     }),
   markAsRead: protectedProcedure
-    .input(z.number())
+    .input(z.union([z.number(), z.object({ conversationId: z.number().int().positive(), messageIds: z.array(z.number().int().positive()).min(1).max(100) })]))
     .mutation(async ({ input, ctx }) => {
+      const conversationId = typeof input === "number" ? input : input.conversationId;
       const database=await getDb();if(!database)throw new TRPCError({code:"INTERNAL_SERVER_ERROR"});
-      await requireConversationAccess(database,input,ctx.user.id);
-      await db.markMessagesAsRead(input, ctx.user.id);
+      await requireConversationAccess(database,conversationId,ctx.user.id);
+      await db.markMessagesAsRead(conversationId, ctx.user.id, typeof input === "number" ? undefined : input.messageIds);
       if (ctx.user.role === "artist" || ctx.user.role === "admin") {
-        await db.markConsultationAsViewed(input);
+        await db.markConsultationAsViewed(conversationId);
       }
       return { success: true };
     }),

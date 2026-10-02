@@ -1,3 +1,5 @@
+import { useReadReceipts } from "@/features/chat/hooks/useReadReceipts";
+import { hasReadMessage } from "@/features/chat/readReceipt";
 import { RescheduleRequestCard } from "../components/RescheduleRequestCard";
 import {
   ConversationOfferCard,
@@ -60,6 +62,7 @@ export function Thread({
   initialDraft?: string;
 }) {
   const c = useChatController(id);
+  useReadReceipts(id, c.user?.id, c.messages);
   const offerQuery = trpc.offers.conversation.useQuery(
     { conversationId: id },
     {
@@ -428,6 +431,20 @@ export function Thread({
                   <div>{body}</div>
                   <time>
                     {message.createdAt && bookingDate(message.createdAt)}
+                    {own && message.id > 0 && (
+                      <span
+                        aria-label={
+                          hasReadMessage(message.readBy, c.otherUserId)
+                            ? "Read by recipient"
+                            : "Sent"
+                        }
+                      >
+                        {" · "}
+                        {hasReadMessage(message.readBy, c.otherUserId)
+                          ? "Read"
+                          : "Sent"}
+                      </span>
+                    )}
                   </time>
                 </article>
               );

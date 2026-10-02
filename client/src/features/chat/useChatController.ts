@@ -389,22 +389,6 @@ export function useChatController(conversationId: number) {
 
   useMessageScroll(viewportRef, messages, scrollIntent === "AUTO_FOLLOW");
 
-  // Mark as read
-  useEffect(() => {
-    if (conversationId && user) {
-      markAsReadMutation.mutate(conversationId, {
-        onSuccess: () => {
-          utils.consultations.list.invalidate();
-        },
-      });
-    }
-  }, [
-    conversationId,
-    user,
-    markAsReadMutation.mutate,
-    utils.consultations.list,
-  ]);
-
   const value = useMemo(
     () => ({
       ...data,
