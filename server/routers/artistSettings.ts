@@ -259,111 +259,56 @@ export const artistSettingsRouter = router({
 
   /**
    * Create a Stripe Connect account and return onboarding info.
-   * Feature-flagged: Express (embedded) or Standard (redirect).
+   * Feature-flagged account creation; onboarding is embedded for each account type.
    * Idempotent: if account already exists, returns existing state.
    */
   getStripeOnboardingConfig: artistProcedure.query(async () => {
-    const { isCustomEnabled } = await import("../services/stripeConnect");
-    const key = process.env.VITE_STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY || "";
+    const key =
+      process.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+      process.env.STRIPE_PUBLISHABLE_KEY ||
+      "";
     return {
-      publishableKey: /^pk_(test|live)_/.test(key) ? key : null,
-      embeddedEnabled: isCustomEnabled(),
+      publishableKey: /^pk_(test|live)_/.test(key.trim()) ? key.trim() : null,
+      embeddedEnabled: true,
     };
   }),
 
-  connectStripe: artistProcedure.mutation(async ({ ctx }) => {
-    const existing = await db.getArtistSettings(ctx.user.id);
-    const {
-      isCustomEnabled,
-      createConnectAccount,
-      createCustomConnectAccount,
-      createAccountLink,
-      getAccountStatus,
-    } = await import("../services/stripeConnect");
+  connectStripe: artistProcedure
+    .input(z.object({ embedded: z.boolean().optional() }).optional())
+    .mutation(async ({ ctx, input }) => {
+      const existing = await db.getArtistSettings(ctx.user.id);
+      const {
+        isCustomEnabled,
+        createConnectAccount,
+        createCustomConnectAccount,
+        createAccountLink,
+        getAccountStatus,
+      } = await import("../services/stripeConnect");
 
-    // ── Idempotent: account already exists ──
-    if (existing?.stripeConnectAccountId) {
-      const status = await getAccountStatus(existing.stripeConnectAccountId);
-      const accountType = existing.stripeConnectAccountType || "standard";
-
-      if (status.onboardingComplete) {
+      // Reuse existing accounts. Embedded onboarding does not require replacing
+      // Standard/Express accounts or changing their liability/controller settings.
+      if (existing?.stripeConnectAccountId) {
+        const status = await getAccountStatus(existing.stripeConnectAccountId);
         return {
-          alreadyConnected: true,
-          url: null,
+          alreadyConnected: status.onboardingComplete,
+          url:
+            input?.embedded ||
+            status.onboardingComplete ||
+            existing.stripeConnectAccountType === "custom"
+              ? null
+              : await createAccountLink(
+                  existing.stripeConnectAccountId,
+                  ctx.user.id
+                ),
           accountId: existing.stripeConnectAccountId,
-          accountType,
+          accountType: existing.stripeConnectAccountType || "standard",
           status,
         };
       }
 
-      // Custom incomplete → verify it's actually a Custom account on Stripe's side
-      if (accountType === "custom") {
-        // Self-heal: verify the account has proper controller settings
-        const stripeAccount = await (
-          await import("../services/stripe")
-        ).stripe.accounts.retrieve(existing.stripeConnectAccountId);
-        const isRealCustom =
-          stripeAccount.type === "custom" ||
-          (stripeAccount as any).controller?.requirement_collection ===
-            "application";
-
-        if (!isRealCustom) {
-          // Account was created without proper controller (from a failed deploy) — recreate
-          console.log(
-            `[Stripe Connect] Account ${existing.stripeConnectAccountId} is marked as custom but Stripe says type=${stripeAccount.type}. Recreating...`
-          );
-          const { disconnectAccount } =
-            await import("../services/stripeConnect");
-          await disconnectAccount(ctx.user.id);
-          const accountId = await createCustomConnectAccount(
-            ctx.user.id,
-            ctx.user.email || "",
-            existing?.businessCountry || "AU",
-            existing?.businessName || undefined
-          );
-          return {
-            alreadyConnected: false,
-            url: null,
-            accountId,
-            accountType: "custom" as const,
-            status: null,
-          };
-        }
-
-        return {
-          alreadyConnected: false,
-          url: null,
-          accountId: existing.stripeConnectAccountId,
-          accountType: "custom" as const,
-          status,
-        };
-      }
-
-      // Express account incomplete → auto-migrate to Custom
-      // (Express accounts don't support disable_stripe_user_authentication)
-      if (accountType === "express" && isCustomEnabled()) {
-        const { disconnectAccount } = await import("../services/stripeConnect");
-        await disconnectAccount(ctx.user.id);
-        console.log(
-          `[Stripe Connect] Auto-migrating Express → Custom for artist ${ctx.user.id}`
-        );
-        const accountId = await createCustomConnectAccount(
-          ctx.user.id,
-          ctx.user.email || "",
-          existing?.businessCountry || "AU",
-          existing?.businessName || undefined
-        );
-        return {
-          alreadyConnected: false,
-          url: null,
-          accountId,
-          accountType: "custom" as const,
-          status: null,
-        };
-      }
-
-      // Standard incomplete → migrate to Custom or generate new link
+      // ── Create new account ──
       if (isCustomEnabled()) {
+        // Custom: embedded in-app onboarding (no popup)
         const accountId = await createCustomConnectAccount(
           ctx.user.id,
           ctx.user.email || "",
@@ -379,71 +324,36 @@ export const artistSettingsRouter = router({
         };
       }
 
-      const url = await createAccountLink(
-        existing.stripeConnectAccountId,
-        ctx.user.id
+      // Standard: redirect to Stripe
+      const accountId = await createConnectAccount(
+        ctx.user.id,
+        ctx.user.email || "",
+        existing?.businessName || undefined
       );
+      const url = input?.embedded
+        ? null
+        : await createAccountLink(accountId, ctx.user.id);
       return {
         alreadyConnected: false,
         url,
-        accountId: existing.stripeConnectAccountId,
-        accountType: "standard" as const,
-        status,
-      };
-    }
-
-    // ── Create new account ──
-    if (isCustomEnabled()) {
-      // Custom: embedded in-app onboarding (no popup)
-      const accountId = await createCustomConnectAccount(
-        ctx.user.id,
-        ctx.user.email || "",
-        existing?.businessCountry || "AU",
-        existing?.businessName || undefined
-      );
-      return {
-        alreadyConnected: false,
-        url: null,
         accountId,
-        accountType: "custom" as const,
+        accountType: "standard" as const,
         status: null,
       };
-    }
-
-    // Standard: redirect to Stripe
-    const accountId = await createConnectAccount(
-      ctx.user.id,
-      ctx.user.email || "",
-      existing?.businessName || undefined
-    );
-    const url = await createAccountLink(accountId, ctx.user.id);
-    return {
-      alreadyConnected: false,
-      url,
-      accountId,
-      accountType: "standard" as const,
-      status: null,
-    };
-  }),
+    }),
 
   /**
    * Create a Stripe AccountSession for embedded Connect onboarding.
    * Returns { clientSecret } — used by @stripe/connect-js on the frontend.
    *
    * This is a MUTATION (not a query) to prevent TanStack Query caching.
-   * Guard: only valid for Custom accounts.
+   * Uses the authenticated artist’s existing connected account.
    */
   createStripeAccountSession: artistProcedure.mutation(async ({ ctx }) => {
     const settings = await db.getArtistSettings(ctx.user.id);
 
     if (!settings?.stripeConnectAccountId) {
       throw new Error("No Stripe Connect account found. Create one first.");
-    }
-
-    if (settings.stripeConnectAccountType !== "custom") {
-      throw new Error(
-        "Account sessions are only available for Custom accounts."
-      );
     }
 
     const { createAccountSession } = await import("../services/stripeConnect");

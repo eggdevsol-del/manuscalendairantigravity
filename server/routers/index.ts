@@ -1,3 +1,4 @@
+import { practiceRouter } from "./practice";
 import { reschedulesRouter } from "./reschedules";
 import { offersRouter } from "./offers";
 import { masterDevRouter } from "./masterDev";
@@ -48,6 +49,7 @@ import { sessionPlansRouter } from "./sessionPlans";
 import { aftercareRouter } from "./aftercare";
 
 export const appRouter = router({
+  practice: practiceRouter,
   masterDev: masterDevRouter,
   waitlist: waitlistRouter,
   projects: projectsRouter,

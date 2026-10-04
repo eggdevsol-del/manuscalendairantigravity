@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
@@ -41,6 +42,7 @@ export default function Supplies() {
   return <Directory />;
 }
 function Directory() {
+  const practice = usePractice();
   const { user } = useAuth();
   const query = trpc.suppliers.getSuppliers.useQuery();
   const [search, setSearch] = useState("");
@@ -65,11 +67,13 @@ function Directory() {
         let count = 0;
         try {
           count = Object.values(
-            JSON.parse(
-              sessionStorage.getItem(
-                `tattoi-supply-basket:${user?.id}:${supplier.id}`
-              ) || "{}"
-            )
+            practice
+              ? (practice.cart ?? {})
+              : JSON.parse(
+                  sessionStorage.getItem(
+                    `tattoi-supply-basket:${user?.id}:${supplier.id}`
+                  ) || "{}"
+                )
           ).reduce<number>(
             (sum, value) =>
               sum +
@@ -106,9 +110,30 @@ function Directory() {
         </Panel>
       )}
       {items?.map(item => (
-        <Link key={item.id} className="supplier-directory-card" href={item.merchantId ? `/shop/supplier-${item.merchantId}` : `/supplies?supplier=${item.id}`}>
-          {item.logoUrl && <img className="supplier-directory-image" src={item.logoUrl} alt="" loading="lazy" onError={e => { e.currentTarget.hidden = true; }} />}
-          <span className="supplier-directory-copy"><strong>{item.name}</strong><span>{item.currency || "AUD"}</span></span>
+        <Link
+          key={item.id}
+          className="supplier-directory-card"
+          href={
+            item.merchantId
+              ? `/shop/supplier-${item.merchantId}`
+              : `/supplies?supplier=${item.id}`
+          }
+        >
+          {item.logoUrl && (
+            <img
+              className="supplier-directory-image"
+              src={item.logoUrl}
+              alt=""
+              loading="lazy"
+              onError={e => {
+                e.currentTarget.hidden = true;
+              }}
+            />
+          )}
+          <span className="supplier-directory-copy">
+            <strong>{item.name}</strong>
+            <span>{item.currency || "AUD"}</span>
+          </span>
           <ChevronRight size={18} aria-hidden="true" />
         </Link>
       ))}
@@ -143,6 +168,7 @@ function Directory() {
   );
 }
 function Catalogue({ id }: { id: number }) {
+  const practice = usePractice();
   const supplier = trpc.suppliers.getSupplier.useQuery({ id });
   const query = trpc.suppliers.getSupplierProducts.useQuery({ supplierId: id });
   const [search, setSearch] = useState("");
@@ -155,6 +181,11 @@ function Catalogue({ id }: { id: number }) {
   const [stockAdjusted, setStockAdjusted] = useState(false);
   useEffect(() => {
     if (!user) return;
+    if (practice) {
+      setQuantities(practice.cart ?? {});
+      setRestoredKey(basketKey);
+      return;
+    }
     try {
       const saved = JSON.parse(sessionStorage.getItem(basketKey) || "{}");
       setQuantities(
@@ -176,6 +207,11 @@ function Catalogue({ id }: { id: number }) {
   }, [basketKey, user?.id]);
   useEffect(() => {
     if (restoredKey !== basketKey) return;
+    if (practice) {
+      if (JSON.stringify(quantities) !== JSON.stringify(practice.cart ?? {}))
+        practice.saveCart?.(quantities);
+      return;
+    }
     try {
       sessionStorage.setItem(basketKey, JSON.stringify(quantities));
     } catch {
@@ -183,7 +219,9 @@ function Catalogue({ id }: { id: number }) {
     }
   }, [basketKey, restoredKey, quantities]);
   // Only identifiers and quantities are retained. Current catalogue data supplies prices and stock.
-  const cart: Item[] = (restoredKey === basketKey ? query.data || [] : []).flatMap(product =>
+  const cart: Item[] = (
+    restoredKey === basketKey ? query.data || [] : []
+  ).flatMap(product =>
     product.variants.flatMap(v =>
       quantities[v.id] > 0 && v.inventoryCount > 0
         ? [
@@ -202,8 +240,13 @@ function Catalogue({ id }: { id: number }) {
   );
   useEffect(() => {
     if (!query.data || restoredKey !== basketKey) return;
-    const next = Object.fromEntries(cart.map(item => [item.variantId, item.quantity]));
-    if (Object.keys(next).length !== Object.keys(quantities).length || Object.entries(next).some(([id, qty]) => quantities[Number(id)] !== qty)) {
+    const next = Object.fromEntries(
+      cart.map(item => [item.variantId, item.quantity])
+    );
+    if (
+      Object.keys(next).length !== Object.keys(quantities).length ||
+      Object.entries(next).some(([id, qty]) => quantities[Number(id)] !== qty)
+    ) {
       setStockAdjusted(true);
       setQuantities(next);
     }
@@ -321,21 +364,28 @@ function Catalogue({ id }: { id: number }) {
           </label>
         </div>
       </div>
-      {stockAdjusted && <p role="status">Some saved items are unavailable or quantities have been reduced to current stock. Review your cart before payment.</p>}
-      {reorderNote && <p role="status">{reorderNote}</p>}
-      {!!cart.length && createPortal(
-        <div className="supplier-cart-dock">
-          <Action onClick={() => setCheckout(true)}>
-            <ShoppingBag size={20} /> Cart ·{" "}
-            {cart.reduce((n, item) => n + item.quantity, 0)} items ·{" "}
-            {money(
-              cart.reduce((n, item) => n + item.price * item.quantity, 0),
-              currency
-            )}
-          </Action>
-          <small>Before shipping and checkout fees</small>
-        </div>, document.body
+      {stockAdjusted && (
+        <p role="status">
+          Some saved items are unavailable or quantities have been reduced to
+          current stock. Review your cart before payment.
+        </p>
       )}
+      {reorderNote && <p role="status">{reorderNote}</p>}
+      {!!cart.length &&
+        createPortal(
+          <div className="supplier-cart-dock">
+            <Action onClick={() => setCheckout(true)}>
+              <ShoppingBag size={20} /> Cart ·{" "}
+              {cart.reduce((n, item) => n + item.quantity, 0)} items ·{" "}
+              {money(
+                cart.reduce((n, item) => n + item.price * item.quantity, 0),
+                currency
+              )}
+            </Action>
+            <small>Before shipping and checkout fees</small>
+          </div>,
+          document.body
+        )}
       {!query.isLoading && !query.error && !products?.length && (
         <Panel>
           <p>No products match these filters.</p>
@@ -358,7 +408,10 @@ function Catalogue({ id }: { id: number }) {
                       i.variantId === item.variantId
                         ? {
                             ...i,
-                            quantity: Math.min(i.quantity + item.quantity, item.stock),
+                            quantity: Math.min(
+                              i.quantity + item.quantity,
+                              item.stock
+                            ),
                           }
                         : i
                     )
@@ -466,7 +519,10 @@ function CatalogueProduct({
                 <select
                   aria-label={`${product.title} variant`}
                   value={variantId || ""}
-                  onChange={e => { setVariantId(Number(e.target.value)); setQuantity(1); }}
+                  onChange={e => {
+                    setVariantId(Number(e.target.value));
+                    setQuantity(1);
+                  }}
                 >
                   {product.variants.map(v => (
                     <option key={v.id} value={v.id}>
@@ -483,14 +539,66 @@ function CatalogueProduct({
                 {variant.inventoryCount > 0 ? "In stock" : "Out of stock"}
               </p>
             )}
-            <div className="v3-inline supplier-quantity" role="group" aria-label="Quantity">
-              <Action tone="secondary" aria-label="Decrease quantity" disabled={quantity <= 1} onClick={() => setQuantity(q => Math.max(1, q - 1))}>−</Action>
-              <label>Quantity <NumericInput aria-label="Quantity" type="number" inputMode="numeric" min={1} max={Math.max(1, (variant?.inventoryCount || 0) - count)} value={quantity} style={{width:"4rem",textAlign:"center"}} onChange={e => setQuantity(Math.max(1, Math.min(Math.floor(Number(e.target.value)) || 1, Math.max(1, (variant?.inventoryCount || 0)-count))))} /></label>
-              <Action tone="secondary" aria-label="Increase quantity" disabled={!variant || quantity >= variant.inventoryCount-count} onClick={() => setQuantity(q => Math.min(q+1, (variant?.inventoryCount || 0)-count))}>+</Action>
+            <div
+              className="v3-inline supplier-quantity"
+              role="group"
+              aria-label="Quantity"
+            >
+              <Action
+                tone="secondary"
+                aria-label="Decrease quantity"
+                disabled={quantity <= 1}
+                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+              >
+                −
+              </Action>
+              <label>
+                Quantity{" "}
+                <NumericInput
+                  aria-label="Quantity"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={Math.max(1, (variant?.inventoryCount || 0) - count)}
+                  value={quantity}
+                  style={{ width: "4rem", textAlign: "center" }}
+                  onChange={e =>
+                    setQuantity(
+                      Math.max(
+                        1,
+                        Math.min(
+                          Math.floor(Number(e.target.value)) || 1,
+                          Math.max(1, (variant?.inventoryCount || 0) - count)
+                        )
+                      )
+                    )
+                  }
+                />
+              </label>
+              <Action
+                tone="secondary"
+                aria-label="Increase quantity"
+                disabled={
+                  !variant || quantity >= variant.inventoryCount - count
+                }
+                onClick={() =>
+                  setQuantity(q =>
+                    Math.min(q + 1, (variant?.inventoryCount || 0) - count)
+                  )
+                }
+              >
+                +
+              </Action>
             </div>
-            {count > 0 && <p className="v3-muted">{count} already in your cart</p>}
+            {count > 0 && (
+              <p className="v3-muted">{count} already in your cart</p>
+            )}
             <Action
-              disabled={!variant || count >= variant.inventoryCount || quantity > variant.inventoryCount-count}
+              disabled={
+                !variant ||
+                count >= variant.inventoryCount ||
+                quantity > variant.inventoryCount - count
+              }
               onClick={() => {
                 if (!variant) return;
                 onAdd({
@@ -501,7 +609,6 @@ function CatalogueProduct({
                   price: variant.priceCents,
                   stock: variant.inventoryCount,
                   quantity,
-
                 });
                 setQuantity(1);
                 setOpen(false);

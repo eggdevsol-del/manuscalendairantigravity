@@ -1,6 +1,11 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { beforeEach, describe, it, expect, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
+  status: {
+    connected: false,
+    statusAvailable: true,
+    accountType: "standard",
+  } as any,
   create: vi.fn(),
   initialize: vi.fn((options: any) => ({ logout: vi.fn() })),
   session: vi.fn(),
@@ -9,9 +14,12 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     artistSettings: {
+      getPayoutSchedule: {useQuery:()=>({data:null})},
+      updatePayoutSchedule: {useMutation:()=>({})},
+      disconnectStripe: {useMutation:()=>({})},
       getStripeConnectStatus: {
         useQuery: () => ({
-          data: { connected: false, statusAvailable: true },
+          data: mocks.status,
           refetch: mocks.refetch,
         }),
       },
@@ -54,7 +62,13 @@ vi.mock("../design/primitives", () => ({
 import Bank from "./Bank";
 beforeEach(() => {
   mocks.create.mockReset();
-  mocks.initialize.mockClear();
+  mocks.status = {
+    connected: false,
+    statusAvailable: true,
+    accountType: "standard",
+  };
+  mocks.refetch.mockResolvedValue({});
+  mocks.initialize.mockReset().mockImplementation(() => ({ logout: vi.fn() }));
   mocks.session.mockResolvedValue({ clientSecret: "session_secret" });
 });
 describe("new artist payment setup", () => {
@@ -80,5 +94,36 @@ describe("new artist payment setup", () => {
       )
     );
     expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it.each(["standard", "express", "custom"])(
+    "opens existing %s accounts in-app without replacing their account",
+    async accountType => {
+      mocks.status = { connected: true, statusAvailable: true, accountType };
+      render(<Bank />);
+      fireEvent.click(
+        screen.getByRole("button", { name: "Review account details" })
+      );
+      await screen.findByText("Embedded Stripe onboarding");
+      expect(mocks.create).not.toHaveBeenCalled();
+    }
+  );
+  it("opens a newly created Standard account without waiting for the status refresh", async () => {
+    mocks.create.mockResolvedValue({ accountType: "standard", url: null });
+    mocks.refetch.mockReturnValue(new Promise(() => {}));
+    render(<Bank />);
+    fireEvent.click(screen.getByRole("button", { name: "Set up payments" }));
+    await screen.findByText("Embedded Stripe onboarding");
+    expect(mocks.create).toHaveBeenCalledWith({ embedded: true });
+  });
+  it("shows SDK initialisation errors and lets the artist retry in-app", async () => {
+    mocks.create.mockResolvedValue({ accountType: "custom", url: null });
+    mocks.initialize.mockImplementationOnce(() => {
+      throw new Error("Stripe setup failed to initialise");
+    });
+    render(<Bank />);
+    fireEvent.click(screen.getByRole("button", { name: "Set up payments" }));
+    await screen.findByText("Stripe setup failed to initialise");
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await screen.findByText("Embedded Stripe onboarding");
   });
 });

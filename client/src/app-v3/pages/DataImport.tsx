@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { ImportProgressSheet } from "../components/ImportProgressSheet";
 import { useState } from "react";
 import Papa from "papaparse";
@@ -33,6 +34,7 @@ const labels = {
   price: "Price (AUD)",
 };
 export default function DataImport() {
+  const practice = usePractice();
   const [progressOpen, setProgressOpen] = useState(false);
   const [mode, setMode] = useState<"clients" | "appointments">("clients");
   const [rows, setRows] = useState<Record<string, string>[]>([]),
@@ -230,6 +232,7 @@ export default function DataImport() {
           Australia/Brisbane time.
         </p>
       </Section>
+      {practice && <Action tone="secondary" onClick={()=>{setRows([{Name:"Casey Morgan",Email:"casey@example.test"},{Name:"Casey Morgan",Email:"casey@example.test"}]);setHeaders(["Name","Email"]);setMapping({name:"Name",email:"Email"});setFileName("fictional-clients.csv");setResults([]);}}>Use fictional import file</Action>}
       {headers.length > 0 && (
         <Section title="Match your columns">
           <div className="v3-form">

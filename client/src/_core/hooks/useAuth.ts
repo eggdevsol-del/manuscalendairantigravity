@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
@@ -13,6 +14,7 @@ type UseAuthOptions = {
 };
 
 export function useAuth(options?: UseAuthOptions) {
+  const practice = usePractice();
   const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
     options ?? {};
   const utils = trpc.useUtils();
@@ -32,6 +34,7 @@ export function useAuth(options?: UseAuthOptions) {
   const refreshTokenMutation = trpc.auth.refreshToken.useMutation();
 
   const logout = useCallback(async () => {
+    if (practice) { practice.exit(); return; }
     sessionGeneration++;
     refreshedUsers.clear();
     try {
@@ -69,10 +72,11 @@ export function useAuth(options?: UseAuthOptions) {
         console.error("[Auth] Failed to detach OneSignal ID on logout:", err);
       }
     }
-  }, [logoutMutation, utils]);
+  }, [logoutMutation, utils, practice]);
 
   /* useEffect to sync user info to local storage - prevent side effects in useMemo */
   useEffect(() => {
+    if (practice) return;
     if (meQuery.data) {
       localStorage.setItem(
         "manus-runtime-user-info",
@@ -82,7 +86,7 @@ export function useAuth(options?: UseAuthOptions) {
     } else {
       setErrorUser(null);
     }
-  }, [meQuery.data]);
+  }, [meQuery.data, practice]);
 
   const state = useMemo(() => {
     return {
@@ -106,7 +110,7 @@ export function useAuth(options?: UseAuthOptions) {
 
   // One refresh per signed-in user per app load, shared by all hook consumers.
   useEffect(() => {
-    if (!meQuery.data || meQuery.data.role === "master_dev" || refreshedUsers.has(meQuery.data.id)) return;
+    if (practice || !meQuery.data || meQuery.data.role === "master_dev" || refreshedUsers.has(meQuery.data.id)) return;
     refreshedUsers.add(meQuery.data.id);
     const generation = sessionGeneration;
     const token =
@@ -130,10 +134,10 @@ export function useAuth(options?: UseAuthOptions) {
       },
       onError: () => {}, // Silent failure — old token still works until expiry
     });
-  }, [meQuery.data]);
+  }, [meQuery.data, practice]);
 
   useEffect(() => {
-    if (!redirectOnUnauthenticated) return;
+    if (practice || !redirectOnUnauthenticated) return;
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;

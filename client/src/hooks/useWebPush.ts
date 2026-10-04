@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ export type WebPushStatus =
   | "loading";
 
 export function useWebPush() {
+  const practice = usePractice();
   const [status, setStatus] = useState<WebPushStatus>("loading");
   const [subscription, setSubscription] = useState<PushSubscription | null>(
     null
@@ -58,6 +60,10 @@ export function useWebPush() {
 
   // Check support and current status
   useEffect(() => {
+    if (practice) {
+      setStatus("default");
+      return;
+    }
     const checkStatus = async () => {
       const platform = Capacitor.getPlatform();
       // Force native mode if platform is android/ios OR if Capacitor says it is native
@@ -114,9 +120,14 @@ export function useWebPush() {
     };
 
     checkStatus();
-  }, []);
+  }, [practice]);
 
   const subscribe = useCallback(async () => {
+    if (practice) {
+      setStatus("granted");
+      practice.simulate("Notification permission approved");
+      return;
+    }
     if (status === "unsupported" || status === "denied") {
       toast.error("Notifications are blocked or unsupported.");
       return;
@@ -184,7 +195,7 @@ export function useWebPush() {
     } finally {
       setIsSubscribing(false);
     }
-  }, [status, publicKeyQuery, subscribeMutation]);
+  }, [practice, status, publicKeyQuery, subscribeMutation]);
 
   const sendTestPush = useCallback(
     async (options?: {
@@ -192,6 +203,10 @@ export function useWebPush() {
       body?: string;
       targetUserId?: string;
     }) => {
+      if (practice) {
+        practice.simulate("Test push notification");
+        return { success: true };
+      }
       try {
         const result = await testPushMutation.mutateAsync({
           title: options?.title,
@@ -230,7 +245,7 @@ export function useWebPush() {
         toast.error("Test push error: " + error.message);
       }
     },
-    [testPushMutation]
+    [practice, testPushMutation]
   );
 
   return {

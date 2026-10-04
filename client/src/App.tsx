@@ -117,6 +117,7 @@ function GuardedShell() {
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
+  "practice",
   "business",
   "products",
   "artist-events",
@@ -276,7 +277,8 @@ function Router() {
 /** Account-specific banners only; updates must also work before sign-in. */
 function AuthOnlyBanners() {
   const { user } = useAuth();
-  if (!user || user.role === "master_dev") return null;
+  const [path] = useLocation();
+  if (!user || user.role === "master_dev" || path === "/practice") return null;
   return (
     <>
       <InstallAppBanner />

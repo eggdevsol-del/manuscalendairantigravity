@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { useEffect, useState } from "react";
 import {
@@ -28,27 +29,18 @@ export default function Bank() {
   );
   const config = trpc.artistSettings.getStripeOnboardingConfig.useQuery();
   const create = trpc.artistSettings.connectStripe.useMutation();
-  const link = trpc.artistSettings.getStripeAccountLink.useMutation();
   const [setup, setSetup] = useState(false);
   const [error, setError] = useState("");
   const data = status.data;
-  const busy = create.isPending || link.isPending;
+  const busy = create.isPending;
   async function start() {
     setError("");
     try {
-      if (data?.connected) {
-        if (data.accountType === "custom") setSetup(true);
-        else window.location.assign((await link.mutateAsync()).url);
-      } else {
-        const result = await create.mutateAsync();
-        await status.refetch();
-        if (result.accountType === "custom") setSetup(true);
-        else if (result.url) window.location.assign(result.url);
-        else
-          throw new Error(
-            "Payment setup did not return a supported account. Refresh and try again."
-          );
-      }
+      if (!data?.connected) await create.mutateAsync({ embedded: true });
+      // The AccountSession supports existing Standard/Express as well as Custom accounts.
+      // Open immediately; a status refresh must not delay the onboarding sheet.
+      setSetup(true);
+      void status.refetch();
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Couldn’t open bank setup. Try again."
@@ -167,6 +159,7 @@ export default function Bank() {
         <SheetShell
           isOpen
           title="Set up your payment account"
+          description="Review business, identity and bank verification."
           onClose={() => {
             setSetup(false);
             void status.refetch();
@@ -198,6 +191,7 @@ export function EmbeddedSetup({
   publishableKey?: string | null;
   configLoading?: boolean;
 }) {
+  const practice = usePractice();
   const { theme } = useTheme();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -206,7 +200,7 @@ export function EmbeddedSetup({
   > | null>(null);
   const fallback = trpc.artistSettings.getStripeAccountLink.useMutation();
   useEffect(() => {
-    if (configLoading) return;
+    if (practice || configLoading) return;
     const key = publishableKey;
     if (!key) {
       setError(
@@ -218,38 +212,69 @@ export function EmbeddedSetup({
     let active = true;
     const styles = getComputedStyle(document.documentElement);
     const value = (name: string) => styles.getPropertyValue(name).trim();
-    const next = loadConnectAndInitialize({
-      publishableKey: key,
-      fetchClientSecret: async () => {
-        try {
-          return (
-            await trpcVanilla.artistSettings.createStripeAccountSession.mutate()
-          ).clientSecret;
-        } catch (e) {
-          if (active)
-            setError(
-              e instanceof Error ? e.message : "Couldn’t load verification."
-            );
-          throw e;
-        }
-      },
-      appearance: {
-        overlays: "dialog",
-        variables: {
-          colorPrimary: value("--v3-ink"),
-          colorBackground: value("--v3-paper"),
-          colorText: value("--v3-ink"),
-          borderRadius: "12px",
-          fontFamily: getComputedStyle(document.body).fontFamily,
+    let next: ReturnType<typeof loadConnectAndInitialize>;
+    try {
+      next = loadConnectAndInitialize({
+        publishableKey: key,
+        fetchClientSecret: async () => {
+          try {
+            return (
+              await trpcVanilla.artistSettings.createStripeAccountSession.mutate()
+            ).clientSecret;
+          } catch (e) {
+            if (active)
+              setError(
+                e instanceof Error ? e.message : "Couldn’t load verification."
+              );
+            throw e;
+          }
         },
-      },
-    });
+        appearance: {
+          overlays: "dialog",
+          variables: {
+            colorPrimary: value("--v3-ink"),
+            colorBackground: value("--v3-paper"),
+            colorText: value("--v3-ink"),
+            borderRadius: "12px",
+            fontFamily: getComputedStyle(document.body).fontFamily,
+          },
+        },
+      });
+    } catch (e) {
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Couldn’t initialise payment setup. Try again."
+      );
+      return;
+    }
     setInstance(next);
     return () => {
       active = false;
       void next.logout();
     };
-  }, [attempt, theme, publishableKey, configLoading]);
+  }, [attempt, theme, publishableKey, configLoading, practice]);
+  if (practice)
+    return (
+      <div className="v3-stack">
+        <h3>Practice verification</h3>
+        <p>
+          Fictional studio · Alex Artist · Mock bank ending 0000. No identity
+          documents, bank details or Stripe connection are collected.
+        </p>
+        <Action
+          onClick={() => {
+            practice.simulate("Verify practice payment account");
+            onExit();
+          }}
+        >
+          Simulate verification approved
+        </Action>
+        <Action tone="quiet" onClick={onExit}>
+          Return without completing
+        </Action>
+      </div>
+    );
   return (
     <div className="v3-stack">
       <p
@@ -274,7 +299,15 @@ export function EmbeddedSetup({
         </>
       ) : instance ? (
         <ConnectComponentsProvider connectInstance={instance}>
-          <ConnectAccountOnboarding onExit={onExit} />
+          <ConnectAccountOnboarding
+            onExit={onExit}
+            onLoadError={({ error }) =>
+              setError(
+                error.message ||
+                  "Stripe verification could not load. Try again."
+              )
+            }
+          />
         </ConnectComponentsProvider>
       ) : (
         <Feedback loading />

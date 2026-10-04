@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 /**
  * useBusinessTasks Hook
  *
@@ -38,6 +39,7 @@ interface TaskStartInfo {
 }
 
 export function useBusinessTasks() {
+  const practice = usePractice();
   // Track started tasks (for time-to-completion calculation)
   const startedTasksRef = useRef<Map<string, TaskStartInfo>>(new Map());
   const [completingTask, setCompletingTask] = useState<string | null>(null);
@@ -115,6 +117,10 @@ export function useBusinessTasks() {
   // Open native SMS app with pre-populated content
   const openSms = useCallback(
     (task: BusinessTask) => {
+      if (practice) {
+        practice.simulate("SMS follow-up preview");
+        return;
+      }
       if (!task.smsNumber) return;
 
       // Start tracking
@@ -260,6 +266,10 @@ export function useBusinessTasks() {
 
   const openEmail = useCallback(
     (task: BusinessTask) => {
+      if (practice) {
+        practice.simulate("Email follow-up preview");
+        return;
+      }
       if (!task.emailRecipient) return;
 
       // Start tracking
@@ -275,7 +285,7 @@ export function useBusinessTasks() {
       a.click();
       document.body.removeChild(a);
     },
-    [startTask, getTaskEmailUrl]
+    [practice, startTask, getTaskEmailUrl]
   );
 
   // Navigate to in-app location

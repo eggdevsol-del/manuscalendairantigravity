@@ -1,0 +1,193 @@
+.practice-banner {
+  padding: 12px 16px;
+  border: 1px solid var(--v3-line);
+  background: var(--v3-green);
+  color: var(--v3-paper);
+  border-radius: 16px;
+  font-size: 13px;
+  text-align: center;
+}
+.practice-toolbar,
+.practice-heading,
+.practice-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.practice-toolbar {
+  margin: 16px 0;
+}
+.practice-heading h2 {
+  font-size: 22px;
+}
+.practice-guide {
+  padding: 24px;
+  border: 1px solid var(--v3-line);
+  border-radius: 24px;
+  background: var(--v3-surface);
+  margin: 20px 0;
+}
+.practice-guide h2 {
+  font-size: 26px;
+  margin: 12px 0;
+}
+.practice-guide p {
+  line-height: 1.6;
+}
+.practice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0;
+}
+.practice-field input:not([type="checkbox"]),
+.practice-field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid var(--v3-line);
+  border-radius: 12px;
+  background: var(--v3-paper);
+  color: var(--v3-ink);
+  font: inherit;
+}
+.practice-field:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+}
+.practice-field input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+}
+.practice-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.practice-metrics dt {
+  color: var(--v3-muted);
+  font-size: 13px;
+}
+.practice-metrics dd {
+  margin: 4px 0;
+  font-weight: 600;
+}
+.practice-message {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--v3-line);
+}
+.practice-reference {
+  padding: 20px;
+  background: var(--v3-soft);
+  border-radius: 16px;
+}
+.practice-reference span {
+  font-size: 40px;
+}
+.practice-error {
+  border: 1px solid var(--v3-line);
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--v3-soft);
+}
+.practice-actions {
+  justify-content: flex-start;
+}
+progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--v3-green);
+}
+.practice-real-controls {
+  border: 2px solid var(--v3-green);
+  border-radius: 20px;
+  padding: 16px;
+  margin: 16px 0;
+}
+.practice-control-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.practice-control-tabs button {
+  font-size: 13px;
+  min-height: 38px;
+  padding: 8px 12px;
+}
+.practice-screen-frame {
+  min-height: 300px;
+  max-height: 70dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.practice-screen-frame .v3-screen {
+  height: auto;
+  min-height: 0;
+}
+.practice-screen-frame .v3-scroll {
+  height: auto;
+  overflow: visible;
+}
+.practice-screen-frame .v3-thread {
+  height: 65dvh;
+}
+.practice-help-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-bottom-sheet, 60);
+  background: color-mix(in srgb, var(--v3-ink) 25%, transparent);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.practice-help-menu {
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+  background: var(--v3-paper);
+  color: var(--v3-ink);
+  border-radius: 24px 24px 0 0;
+  max-width: 600px;
+  width: 100%;
+  display: grid;
+  gap: 12px;
+}
+.practice-help-menu button {
+  padding: 14px;
+  border: 1px solid var(--v3-line);
+  border-radius: 12px;
+  background: var(--v3-surface);
+  color: var(--v3-ink);
+  font: inherit;
+}
+
+.practice-help-menu {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal, 1000);
+}
+
+.practice-highlight {
+  outline: 3px solid var(--v3-green, #52745b) !important;
+  outline-offset: 5px;
+}
+.practice-action-guide {
+  padding: 1rem;
+  border: 1px solid var(--v3-line);
+  border-radius: 1rem;
+  margin-block: 1rem;
+}
+.practice-action-guide button {
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem;
+}
+.practice-action-guide select {
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.practice-controls-banner { position: sticky; top: 0; z-index: 1; }
+[data-practice-surface] > .practice-action-guide { flex-shrink: 0; font-size: 13px; max-height: 30dvh; overflow-y: auto; background: var(--v3-surface); }

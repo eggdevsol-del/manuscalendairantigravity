@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 /**
  * DotsCheckout — SSOT Custom Checkout Component
  *
@@ -27,7 +28,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { Loader2, Lock } from "lucide-react";
 
-import { stripePromise } from "@/lib/stripe";
+import { getStripePromise } from "@/lib/stripe";
 import {
   CheckoutElementsProvider,
   useCheckoutElements,
@@ -196,7 +197,10 @@ export function DotsCheckout({
   onError,
   onBack,
 }: DotsCheckoutProps) {
+  const practice = usePractice();
   const appearance = usePaymentAppearance();
+  if (practice) return <div className="v3-stack"><p>Practice payment · No card details or charges.</p><button type="button" className="v3-action" onClick={async () => { await practice.simulate("Complete practice payment"); onComplete?.(); }}>Simulate successful payment</button>{onBack && <button type="button" onClick={onBack}>Go back</button>}</div>;
+  const stripePromise = getStripePromise();
   if (!clientSecret) return null;
   if (!stripePromise)
     return (

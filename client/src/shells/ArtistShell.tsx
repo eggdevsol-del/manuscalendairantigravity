@@ -1,3 +1,4 @@
+import PracticeWorkspace from "@/features/practice/PracticeWorkspace";
 import Products from "@/app-v3/pages/Products";
 import Events from "@/app-v3/pages/Events";
 import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
@@ -7,9 +8,12 @@ import { SupplyOrders as SupplierOrderHistory } from "@/app-v3/pages/Purchases";
 import WaitlistPage from "@/app-v3/pages/Waitlist";
 import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
-import BusinessPage, { Money as MoneyPage, Shopfront } from "@/app-v3/pages/Business";
+import BusinessPage, {
+  Money as MoneyPage,
+  Shopfront,
+} from "@/app-v3/pages/Business";
 import SuppliesPage from "@/app-v3/pages/Supplies";
-import { Redirect, Route, Switch } from "wouter";
+import { Redirect, Route, Switch, useLocation } from "wouter";
 import BottomNav from "@/app-v3/design/Navigation";
 
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -36,10 +40,12 @@ import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentChe
 import { ArrivalToast } from "@/components/ArrivalToast";
 
 export default function ArtistShell() {
+  const [path] = useLocation();
   return (
     <div className="artist-workspace min-h-screen">
       <AnimatedSwitch>
         <Switch>
+          <Route path="/practice" component={PracticeWorkspace} />
           <Route path="/studio" component={Studio} />
           <Route path="/purchases" component={Purchases} />
           <Route path="/">
@@ -81,7 +87,7 @@ export default function ArtistShell() {
         <BottomNav />
       </ErrorBoundary>
 
-      <ArrivalOverlay />
+      {path !== "/practice" && <ArrivalOverlay />}
     </div>
   );
 }

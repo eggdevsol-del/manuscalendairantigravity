@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import { useLocation, useSearch, Redirect } from "wouter";
 import {
@@ -41,6 +42,7 @@ import { AccountEditor, BusinessEditor } from "./SettingsEditors";
 
 /** Route-backed settings preserve deep links and browser navigation. */
 export default function Settings() {
+  const practice = usePractice();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [, go] = useLocation();
@@ -219,7 +221,13 @@ export default function Settings() {
               role="switch"
               aria-checked={theme === "dark"}
               aria-label="Dark appearance"
-              onClick={toggleTheme}
+              onClick={() =>
+                practice
+                  ? practice.simulate(
+                      "Theme preview: use the practice Light/Dark switch"
+                    )
+                  : toggleTheme()
+              }
             >
               {theme === "dark" ? "On" : "Off"}
             </button>
@@ -229,7 +237,9 @@ export default function Settings() {
           title="Reload latest version"
           detail={`Version ${APP_VERSION}`}
           icon={<RefreshCw />}
-          onClick={() => forceUpdate()}
+          onClick={() =>
+            practice ? practice.simulate("App update preview") : forceUpdate()
+          }
         />
       </Section>
       <Action

@@ -3003,3 +3003,11 @@ export const rescheduleRequests = mysqlTable(
     index("reschedule_booking").on(t.appointmentId),
   ]
 );
+
+/** Practice records are deliberately separate from clients, appointments and money. */
+export const artistPracticeSessions = mysqlTable("artist_practice_sessions", {
+  artistId: varchar("artist_id", { length: 64 }).primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  revision: int("revision").notNull().default(0),
+  state: longtext("state").notNull(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});

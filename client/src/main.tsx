@@ -83,7 +83,7 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "success") {
     const key = event.mutation.options.mutationKey?.[0];
-    if (!Array.isArray(key) || !["auth", "system", "push"].includes(String(key[0])))
+    if (!Array.isArray(key) || !["auth", "system", "push", "practice"].includes(String(key[0])))
       void invalidateWorkspace(queryClient);
   }
   if (event.type === "updated" && event.action.type === "error") {

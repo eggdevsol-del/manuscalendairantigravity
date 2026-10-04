@@ -273,6 +273,15 @@ export default function Guides() {
       subtitle="A little guidance, right where you work."
       back={user?.role === "merchant" ? "/account-settings" : "/settings"}
     >
+      {(user?.role === "artist" || user?.role === "admin") && (
+        <Section title="Practise with a mock client">
+          <Row
+            title="Artist practice workspace"
+            detail="Private mock bookings, payments, promotions and client responses"
+            onClick={() => go("/practice")}
+          />
+        </Section>
+      )}
       <SearchField
         value={search}
         onChange={setSearch}

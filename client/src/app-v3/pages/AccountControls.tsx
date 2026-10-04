@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -13,10 +14,15 @@ import {
 } from "../design/primitives";
 
 export function AccountRemoval() {
+  const practice = usePractice();
   const { user } = useAuth();
   const [confirm, setConfirm] = useState("");
   const remove = trpc.auth.deleteAccount.useMutation({
     onSuccess: () => {
+      if (practice) {
+        practice.simulate("Account removal preview");
+        return;
+      }
       localStorage.removeItem("authToken");
       localStorage.removeItem("user");
       sessionStorage.removeItem("authToken");

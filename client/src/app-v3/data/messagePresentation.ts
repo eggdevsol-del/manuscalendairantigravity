@@ -1,3 +1,4 @@
+import { PRACTICE_REFERENCE } from "@shared/practiceMedia";
 /** Message data is untrusted and older messages may not contain valid metadata. */
 export function objectFromJson(
   value: string | null | undefined
@@ -23,7 +24,7 @@ export function mediaUrls(data: Record<string, any>): string[] {
   return Array.isArray(data.images)
     ? data.images.filter(
         (s: unknown): s is string =>
-          typeof s === "string" && /^https?:\/\//i.test(s)
+          typeof s === "string" && (/^https?:\/\//i.test(s) || s === PRACTICE_REFERENCE)
       )
     : [];
 }
@@ -44,7 +45,7 @@ export function conversationMedia(
     ...new Set(
       messages.flatMap(message =>
         message.messageType === "image" &&
-        /^https?:\/\//i.test(message.content || "")
+        (/^https?:\/\//i.test(message.content || "") || message.content === PRACTICE_REFERENCE)
           ? [message.content!]
           : mediaUrls(objectFromJson(message.content))
       )

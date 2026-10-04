@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { SittingCard } from "../components/SittingCard";
 import { useMemo, useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -30,6 +31,7 @@ export default function Studio() {
   return <StudioWorkspace />;
 }
 function StudioWorkspace() {
+  const practice = usePractice();
   const { user } = useAuth();
   const search = useSearch();
   const [, go] = useLocation();
@@ -92,7 +94,10 @@ function StudioWorkspace() {
     onSuccess: data => setSecret(data.clientSecret),
   });
   const portal = trpc.billing.createPortalSession.useMutation({
-    onSuccess: data => window.location.assign(data.url),
+    onSuccess: data =>
+      practice
+        ? practice.simulate("Billing portal preview")
+        : window.location.assign(data.url),
   });
   const owner = current?.role === "owner";
   const manager = owner || current?.role === "manager";

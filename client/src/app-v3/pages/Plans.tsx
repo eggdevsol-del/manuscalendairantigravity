@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { PAYMENT_TIERS, MIN_PLATFORM_FEE_CENTS } from "@shared/fees";
@@ -14,6 +15,7 @@ import {
 } from "../design/primitives";
 
 export default function Plans() {
+  const practice = usePractice();
   const status = trpc.billing.subscriptionStatus.useQuery(undefined, {
     refetchInterval: 15000,
   });
@@ -23,7 +25,10 @@ export default function Plans() {
     onSuccess: data => setSecret(data.clientSecret),
   });
   const portal = trpc.billing.createArtistPortalSession.useMutation({
-    onSuccess: data => window.location.assign(data.url),
+    onSuccess: data =>
+      practice
+        ? practice.simulate("Billing portal preview")
+        : window.location.assign(data.url),
   });
   const busy = checkout.isPending || portal.isPending;
   const plans = [

@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import React from "react";
 import { Badge } from "../badge";
@@ -41,6 +42,7 @@ export function SheetShell({
   overlayId,
 }: SheetShellProps) {
   const { showDebugLabels } = useUIDebug();
+  const practice = usePractice();
   return (
     <Sheet open={isOpen} onOpenChange={v => !v && onClose()}>
       <SheetContent
@@ -54,6 +56,7 @@ export function SheetShell({
             : "",
           className
         )}
+        data-practice-surface={practice ? title : undefined}
         data-overlay-id={overlayId}
         data-tour-surface={title}
       >

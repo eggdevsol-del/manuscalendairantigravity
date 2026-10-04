@@ -183,14 +183,15 @@ export const createExpressConnectAccount = createCustomConnectAccount;
  * Key: disable_stripe_user_authentication removes the popup that breaks
  * in PWA and Capacitor webview environments.
  *
- * Guard: must be called only for Custom accounts.
+ * Supports existing account types; Stripe login remains enabled when Stripe collects requirements.
  */
 export async function createAccountSession(accountId: string): Promise<string> {
   // Verify the account has proper controller settings before creating session
   const account = await stripe.accounts.retrieve(accountId);
-  console.log(
-    `[Stripe Connect] Creating session for account ${accountId}: type=${account.type}, controller=${JSON.stringify((account as any).controller)}`
-  );
+  // Only application-collected requirements permit suppressing Stripe login.
+  const applicationCollected =
+    account.controller?.requirement_collection === "application" ||
+    (!account.controller && account.type === "custom");
 
   const session = await stripe.accountSessions.create({
     account: accountId,
@@ -198,7 +199,8 @@ export async function createAccountSession(accountId: string): Promise<string> {
       account_onboarding: {
         enabled: true,
         features: {
-          disable_stripe_user_authentication: true,
+          external_account_collection: true,
+          disable_stripe_user_authentication: applicationCollected,
         },
       },
     },

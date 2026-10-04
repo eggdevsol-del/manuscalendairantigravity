@@ -21,7 +21,7 @@ const state = {
     confirm,
   },
 };
-vi.mock("@/lib/stripe", () => ({ stripePromise: Promise.resolve({}) }));
+vi.mock("@/lib/stripe", () => ({ getStripePromise: () => Promise.resolve({}) }));
 vi.mock("@stripe/react-stripe-js/checkout", () => ({
   CheckoutElementsProvider: ({ children }: any) => children,
   useCheckoutElements: () => state,

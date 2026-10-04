@@ -1,3 +1,4 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../../server/routers";
@@ -449,6 +450,7 @@ function Portfolio() {
 }
 
 export function BookingLink() {
+  const practice = usePractice();
   const query = trpc.funnel.getFunnelSettings.useQuery();
   return (
     <Screen
@@ -468,6 +470,7 @@ export function BookingLink() {
   );
 }
 function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
+  const practice = usePractice();
   const [slug, setSlug] = useState(initialSlug);
   const [saved, setSaved] = useState(initialSlug);
   const [message, setMessage] = useState("");
@@ -490,6 +493,10 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
   const url = saved ? `${window.location.origin}/book/${saved}` : "";
   async function copy() {
     try {
+      if (practice) {
+        await practice.simulate("Copy fictional booking link");
+        return;
+      }
       await navigator.clipboard.writeText(url);
       setMessage("Booking link copied.");
     } catch {
@@ -497,6 +504,10 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
     }
   }
   async function share() {
+    if (practice) {
+      await practice.simulate("Share fictional booking link");
+      return;
+    }
     if (!navigator.share) return copy();
     try {
       await navigator.share({ title: "Book with me", url });

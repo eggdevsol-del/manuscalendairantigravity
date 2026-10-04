@@ -1,8 +1,10 @@
+import { usePractice } from "@/features/practice/PracticeContext";
 import { preparePromotionImage } from "@/lib/promotionImage";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { trpc } from "@/lib/trpc";
 import type { OfferRules } from "../../../../shared/offerRules";
 export function OfferAppearance({ rules, onChange, onUploading }: { rules: OfferRules; onChange: Dispatch<SetStateAction<OfferRules>>; onUploading: (busy: boolean) => void }) {
+  const practice = usePractice();
   const upload = trpc.upload.uploadImage.useMutation();
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState("");
@@ -39,7 +41,7 @@ export function OfferAppearance({ rules, onChange, onUploading }: { rules: Offer
       {(rules.sittingFrom || rules.sittingUntil) && <p>Existing date restriction: {rules.sittingFrom?.slice(0,10) || 'Any start'} – {rules.sittingUntil?.slice(0,10) || 'Any end'}. Selecting months replaces it.</p>}
       <button type="button" onClick={()=>onChange({...rules,sittingMonths:[],sittingFrom:null,sittingUntil:null})}>Allow any month</button>
     </fieldset>
-    <label>Background image (optional)<input type="file" accept="image/*" disabled={processing} onChange={e => { void image(e.target.files?.[0]); e.target.value=''; }} /></label>
+    {practice ? <button type="button" onClick={() => practice.simulate("Use fixture artwork")}>Use mock background artwork</button> : <label>Background image (optional)<input type="file" accept="image/*" disabled={processing} onChange={e => { void image(e.target.files?.[0]); e.target.value=''; }} /></label>}
     {processing && <p role="status">{status}</p>}
     <p className="v3-muted">Images are automatically resized and converted to WebP before upload.</p>
     {error && <p role="alert">{error}</p>}

@@ -21,6 +21,7 @@ export function ContextualTourArrival() {
   active.current = activeTour;
   const shown = useRef(new Set<string>());
   useEffect(() => {
+    if (path === "/practice") return;
     const params = new URLSearchParams(search);
     const replay = params.get("walkthrough") === "1";
     if (
