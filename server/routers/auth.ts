@@ -1,3 +1,4 @@
+import { getArtistSetupProgress } from "../services/artistSetup";
 import { COOKIE_NAME } from "@shared/const";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -56,7 +57,18 @@ export const authRouter = router({
         role: input,
       });
     }),
+  artistSetup: protectedProcedure.query(({ ctx }) =>
+    getArtistSetupProgress(ctx.user.id)
+  ),
   completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
+    if (ctx.user.role === "artist") {
+      const progress = await getArtistSetupProgress(ctx.user.id);
+      if (!progress.complete)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Complete ${progress.steps.find(s => !s.done)?.title.toLowerCase()} before finishing setup.`,
+        });
+    }
     await db.updateUserProfile(ctx.user.id, {
       hasCompletedOnboarding: 1,
     });

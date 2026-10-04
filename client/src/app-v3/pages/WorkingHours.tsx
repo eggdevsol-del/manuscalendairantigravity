@@ -1,3 +1,4 @@
+import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { useEffect, useRef, useState } from "react";
@@ -24,15 +25,24 @@ type Service = {
   [key: string]: unknown;
 };
 export default function WorkingHours() {
+  const setup = useArtistSetup();
+  const setupTab = setup
+    ? setup.step === "services"
+      ? "Services"
+      : "Availability"
+    : undefined;
   const query = trpc.artistSettings.get.useQuery();
   const utils = trpc.useUtils();
   const save = trpc.artistSettings.upsert.useMutation({
     onSuccess: () => {
       void utils.artistSettings.invalidate();
       void utils.feed.invalidate();
+      void setup?.onSaved();
     },
   });
-  const [tab, setTab] = useState<"Availability" | "Services">("Availability");
+  const [tab, setTab] = useState<"Availability" | "Services">(
+    setupTab || "Availability"
+  );
   const [days, setDays] = useState<WorkDay[]>(readSchedule(null));
   const [services, setServices] = useState<Service[]>([]);
   const [edit, setEdit] = useState<number | null>(null);
@@ -93,6 +103,10 @@ export default function WorkingHours() {
   };
   function saveHours() {
     if (scheduleUnreadable) return;
+    if (setup && !days.some(d => d.enabled)) {
+      setError("Choose at least one working day to continue.");
+      return;
+    }
     for (const day of days) {
       if (day.enabled && (!day.start || !day.end || day.end <= day.start)) {
         setError(`Choose an end time after the start on ${day.day}.`);
@@ -162,10 +176,12 @@ export default function WorkingHours() {
     <Screen
       title="Working hours & services"
       subtitle="Make your availability work for you"
-      back="/business"
+      back={setup ? undefined : "/business"}
       subheader={
         <Tabs
-          items={["Availability", "Services"] as const}
+          items={
+            setupTab ? [setupTab] : (["Availability", "Services"] as const)
+          }
           value={tab}
           onChange={setTab}
           label="Schedule settings"

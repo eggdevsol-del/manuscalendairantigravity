@@ -1,3 +1,4 @@
+import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
 import { usePractice } from "@/features/practice/PracticeContext";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { useEffect, useState } from "react";
@@ -23,6 +24,7 @@ import {
 } from "../design/primitives";
 
 export default function Bank() {
+  const artistSetup = useArtistSetup();
   const status = trpc.artistSettings.getStripeConnectStatus.useQuery(
     undefined,
     { refetchInterval: 10000 }
@@ -51,7 +53,7 @@ export default function Bank() {
     <Screen
       title="Bank & payouts"
       subtitle="Your payment account, in one place."
-      back="/money"
+      back={artistSetup ? undefined : "/money"}
     >
       <Feedback
         loading={status.isLoading}
@@ -163,6 +165,7 @@ export default function Bank() {
           onClose={() => {
             setSetup(false);
             void status.refetch();
+            void artistSetup?.onSaved();
           }}
         >
           <EmbeddedSetup
@@ -174,6 +177,7 @@ export default function Bank() {
             onExit={() => {
               setSetup(false);
               void status.refetch();
+              void artistSetup?.onSaved();
             }}
           />
         </SheetShell>

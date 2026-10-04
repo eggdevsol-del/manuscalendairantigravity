@@ -1,3 +1,4 @@
+import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
@@ -25,6 +26,8 @@ function AccountForm({
   refresh: () => unknown;
   back?: string;
 }) {
+  const setup = useArtistSetup();
+  const [setupError, setSetupError] = useState("");
   const [form, setForm] = useState({
     name: user.name || "",
     phone: user.phone || "",
@@ -37,8 +40,9 @@ function AccountForm({
     gender: (user.gender || "") as NonNullable<typeof user.gender> | "",
   });
   const update = trpc.auth.updateProfile.useMutation({
-    onSuccess: () => {
-      refresh();
+    onSuccess: async () => {
+      await refresh();
+      await setup?.onSaved();
     },
   });
   const upload = trpc.upload.uploadImage.useMutation();
@@ -71,7 +75,10 @@ function AccountForm({
     <Screen
       title="Your profile"
       back={
-        back || (user.role === "merchant" ? "/account-settings" : "/settings")
+        setup
+          ? undefined
+          : back ||
+            (user.role === "merchant" ? "/account-settings" : "/settings")
       }
     >
       <form
@@ -79,6 +86,18 @@ function AccountForm({
         onChange={() => update.reset()}
         onSubmit={e => {
           e.preventDefault();
+          if (
+            setup &&
+            [form.name, form.phone, form.avatar, form.city, form.country].some(
+              v => !v.trim()
+            )
+          ) {
+            setSetupError(
+              "Add your name, profile photo, phone, city and country to continue."
+            );
+            return;
+          }
+          setSetupError("");
           update.mutate({
             ...form,
             birthday: form.birthday || undefined,
@@ -99,6 +118,7 @@ function AccountForm({
           </label>
         </div>
         {uploadError && <p role="alert">{uploadError}</p>}
+        {setupError && <p role="alert">{setupError}</p>}
         <label>
           Full name
           <input
@@ -115,6 +135,7 @@ function AccountForm({
         <label>
           Phone
           <input
+            required={!!setup}
             type="tel"
             maxLength={30}
             autoComplete="tel"
@@ -129,6 +150,7 @@ function AccountForm({
           City
           <input
             maxLength={100}
+            required={!!setup}
             autoComplete="address-level2"
             value={form.city}
             onChange={e => setForm({ ...form, city: e.target.value })}
@@ -137,6 +159,7 @@ function AccountForm({
         <label>
           Country
           <input
+            required={!!setup}
             autoComplete="country-name"
             maxLength={100}
             value={form.country}
@@ -196,9 +219,10 @@ function AccountForm({
   );
 }
 export function BusinessEditor() {
+  const setup = useArtistSetup();
   const query = trpc.artistSettings.get.useQuery();
   return (
-    <Screen title="Business details" back="/settings">
+    <Screen title="Business details" back={setup ? undefined : "/settings"}>
       <Feedback
         loading={query.isLoading}
         error={query.error}
@@ -209,6 +233,7 @@ export function BusinessEditor() {
   );
 }
 function BusinessForm({ initial }: { initial: any }) {
+  const setup = useArtistSetup();
   const [form, setForm] = useState({
     businessName: initial.businessName || "",
     displayName: initial.displayName || "",
@@ -222,6 +247,7 @@ function BusinessForm({ initial }: { initial: any }) {
   const save = trpc.artistSettings.upsert.useMutation({
     onSuccess: () => {
       void utils.artistSettings.invalidate();
+      void setup?.onSaved();
     },
   });
   return (
@@ -261,6 +287,7 @@ function BusinessForm({ initial }: { initial: any }) {
           <label>
             Studio address
             <textarea
+              required={!!setup}
               autoComplete="street-address"
               value={form.businessAddress}
               onChange={e =>

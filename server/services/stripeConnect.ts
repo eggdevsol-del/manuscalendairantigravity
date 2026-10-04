@@ -237,6 +237,7 @@ export async function createAccountLink(
 // ─── Account Status ───────────────────────────────────────────
 
 export interface ConnectAccountStatus {
+  hasBankAccount?: boolean;
   statusAvailable: boolean;
   currentlyDue: string[];
   pendingVerification: boolean;
@@ -266,6 +267,10 @@ export async function getAccountStatus(
       onboardingComplete:
         (account.charges_enabled && account.details_submitted) ?? false,
       detailsSubmitted: account.details_submitted ?? false,
+      hasBankAccount:
+        account.external_accounts?.data?.some(
+          a => a.object === "bank_account"
+        ) ?? false,
     };
   } catch (err: any) {
     console.error(
@@ -281,6 +286,7 @@ export async function getAccountStatus(
       payoutsEnabled: false,
       onboardingComplete: false,
       detailsSubmitted: false,
+      hasBankAccount: false,
     };
   }
 }

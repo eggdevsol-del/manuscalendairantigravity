@@ -1,3 +1,4 @@
+import { ArtistSetupGate } from "@/features/onboarding/ArtistSetupGate";
 import PracticeWorkspace from "@/features/practice/PracticeWorkspace";
 import Products from "@/app-v3/pages/Products";
 import Events from "@/app-v3/pages/Events";
@@ -40,9 +41,18 @@ import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentChe
 import { ArrivalToast } from "@/components/ArrivalToast";
 
 export default function ArtistShell() {
-  const [path] = useLocation();
   return (
     <div className="artist-workspace min-h-screen">
+      <ArtistSetupGate>
+        <ArtistWorkspace />
+      </ArtistSetupGate>
+    </div>
+  );
+}
+function ArtistWorkspace() {
+  const [path] = useLocation();
+  return (
+    <div>
       <AnimatedSwitch>
         <Switch>
           <Route path="/practice" component={PracticeWorkspace} />
