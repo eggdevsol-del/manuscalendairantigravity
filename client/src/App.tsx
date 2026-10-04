@@ -117,6 +117,7 @@ function GuardedShell() {
 // Known first-segment app routes used by the shells.
 // Any path starting with one of these is an authenticated app route, not an artist slug.
 const KNOWN_APP_ROUTES = new Set([
+  "artist-setup",
   "practice",
   "business",
   "products",
