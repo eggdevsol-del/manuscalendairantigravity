@@ -232,7 +232,7 @@ export default function DataImport() {
           Australia/Brisbane time.
         </p>
       </Section>
-      {practice && <Action tone="secondary" onClick={()=>{setRows([{Name:"Casey Morgan",Email:"casey@example.test"},{Name:"Casey Morgan",Email:"casey@example.test"}]);setHeaders(["Name","Email"]);setMapping({name:"Name",email:"Email"});setFileName("fictional-clients.csv");setResults([]);}}>Use fictional import file</Action>}
+      {practice && <Action tone="secondary" onClick={()=>{setRows([{Name:"Casey Morgan",Email:"casey@example.test"},{Name:"Casey Morgan",Email:"casey@example.test"}]);setHeaders(["Name","Email"]);setMapping({name:"Name",email:"Email"});setFileName("clients.csv");setResults([]);}}>Choose client list</Action>}
       {headers.length > 0 && (
         <Section title="Match your columns">
           <div className="v3-form">

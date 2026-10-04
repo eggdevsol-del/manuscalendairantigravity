@@ -35,7 +35,7 @@ const simulate = (
 const openTools = action(
   "Open the conversation tools",
   "^Conversation tools$",
-  "The same conversation tools you use with real clients open the booking and promotion flows."
+  "Open the tools to book Alex in or create a promotion."
 );
 const wizard = (project = false): PracticeTourStep[] => [
   openTools,
@@ -47,19 +47,19 @@ const wizard = (project = false): PracticeTourStep[] => [
   action(
     "Choose your saved service",
     project ? "^Sleeve project" : "^Full-day tattoo",
-    "Tap the actual service. Its duration, sitting count and price populate the wizard."
+    "Tap the service. Its duration, sitting count and price populate the wizard."
   ),
   ...(project
     ? [
         action(
           "Choose the sitting frequency",
           "^Weekly$",
-          "Choose weekly sittings for this mock sleeve."
+          "Choose weekly sittings for this sleeve."
         ),
         action(
           "Find available dates",
           "^Find available dates$",
-          "The real availability engine checks your practice working hours and booked sittings."
+          "Available dates respect your working hours and existing bookings."
         ),
       ]
     : []),
@@ -68,19 +68,19 @@ const wizard = (project = false): PracticeTourStep[] => [
         action(
           "Choose a future sitting date",
           "^Date$",
-          "Choose a future weekday using the actual date field. Today’s full-day fixture is already booked."
+          "Choose a future weekday. Today already has a full-day sitting booked."
         ),
         action(
           "Set the full-day start time",
           "^Time$",
-          "Set 09:00 in the actual time field so the eight-hour sitting fits your mock working day."
+          "Set 09:00 in the time field so the eight-hour sitting fits your working day."
         ),
       ]
     : []),
   review(
     "Review the sitting details",
     "Session price",
-    "Inspect the dates, duration, price and deposit. You can edit the real fields before continuing."
+    "Inspect the dates, duration, price and deposit. You can edit the fields before continuing."
   ),
   action(
     "Review the complete proposal",
@@ -90,18 +90,18 @@ const wizard = (project = false): PracticeTourStep[] => [
   action(
     "Send the proposal",
     "^Send proposal$",
-    "The actual submit action saves the proposal to your practice conversation.",
+    "Send the proposal so Alex can review the details and pay the deposit.",
     "sessionPlans.create"
   ),
   simulate(
     "Alex accepts and pays the deposit",
     "deposit",
-    "Simulate the client’s part. No card is charged, SMS sent or live booking created."
+    "Alex accepts the proposal and pays the deposit to confirm the booking."
   ),
   review(
     "See the confirmed booking",
     "Booking|Full-day|Sleeve|Alex",
-    "Open Calendar or the project to see the same confirmed mock sitting and payment values.",
+    "Open Calendar or the project to see the same confirmed sitting and payment values.",
     "/calendar"
   ),
 ];
@@ -109,43 +109,43 @@ const offerBooking: PracticeTourStep[] = [
   simulate(
     "Alex asks to use the offer",
     "offer",
-    "Simulate Alex choosing this offer. A purchased mock gift voucher is funded without collecting real money."
+    "Alex chooses to use the offer. Gift cards become available to use after purchase."
   ),
   action(
     "Book using the offer",
     "^Book with this offer$",
-    "Use the real pinned offer card. Its pricing and eligibility carry into the actual wizard."
+    "Use the pinned offer card. Its pricing and eligibility carry into the wizard."
   ),
   action(
     "Choose an eligible service",
     "^Full-day tattoo",
-    "Use your saved service and the real promotion-aware date search."
+    "Use your saved service and the promotion-aware date search."
   ),
   review(
     "Check the discounted proposal",
     "Session price",
-    "Inspect the actual dates, offer adjustment and deposit before submitting."
+    "Inspect the dates, offer adjustment and deposit before submitting."
   ),
   action(
     "Review the offer booking",
     "^Review proposal$",
-    "Use the wizard’s real review button."
+    "Review the dates, pricing and deposit before sending."
   ),
   action(
     "Send the offer booking",
     "^Send proposal$",
-    "The offer remains unconfirmed until the simulated client deposit succeeds.",
+    "The offer remains unconfirmed until the client deposit succeeds.",
     "sessionPlans.create"
   ),
   simulate(
     "Alex pays the deposit",
     "deposit",
-    "The same mock booking, offer and payment records update across the app."
+    "The same booking, offer and payment records update across the app."
   ),
   review(
     "Review the confirmed offer booking",
     "Alex|Full-day|Booking",
-    "Check the actual calendar and project.",
+    "Check the calendar and project.",
     "/calendar"
   ),
 ];
@@ -155,7 +155,7 @@ const promo = (fill = false, voucher = false): PracticeTourStep[] =>
         action(
           "Open promotions",
           "Create a promotion|^Promotions$",
-          "Open the real Promotions manager from Today."
+          "Open the Promotions manager from Today."
         ),
         action(
           "Create a promotion",
@@ -165,34 +165,34 @@ const promo = (fill = false, voucher = false): PracticeTourStep[] =>
         review(
           "Set the calendar offer terms",
           "^Name$",
-          "Enter a mock name, value, eligible months and short book-by expiry in the real form."
+          "Enter a name, value, eligible months and short book-by expiry in the form."
         ),
         action(
           "Save the promotion",
           "^Save promotion$",
-          "Only the real successful save completes this step.",
+          "Only the successful save completes this step.",
           "offers.save"
         ),
         action(
           "Choose the audience",
           "^Choose audience$",
-          "Open the actual recipient picker."
+          "Open the recipient picker."
         ),
         review(
           "Set filters and recipients",
           "^Audience$",
-          "Select Match filters, then choose presets, birthday months or cities. Or manually select several fictional clients."
+          "Select Match filters, then choose presets, birthday months or cities. Or manually select several clients."
         ),
         action(
           "Issue the offers",
           "^Add offers",
-          "Check recipients and simulated notification choices before using the actual send action.",
+          "Check recipients and notification choices before using the send action.",
           "offers.issue"
         ),
         review(
           "Open Alex’s consultation",
           "Conversation tools|Alex",
-          "Return to the real message thread to continue the offer booking.",
+          "Return to the message thread to continue the offer booking.",
           "/chat/1"
         ),
         ...offerBooking,
@@ -202,33 +202,33 @@ const promo = (fill = false, voucher = false): PracticeTourStep[] =>
         action(
           "Create an offer for Alex",
           "^Create promo$",
-          "Open the actual client-specific promotion flow."
+          "Open the client-specific promotion flow."
         ),
         action(
           voucher ? "Choose a gift card" : "Choose a discount",
           voucher ? "^Sell a gift card" : "^Offer a discount",
-          "Choose the actual offer type, using the same flow as a live client."
+          "Choose the offer type, using the same flow as a live client."
         ),
         review(
           "Edit the offer details",
           "Card title",
-          "Use the real value, title, expiry and eligibility fields. Keep all values fictional."
+          "Set the value, card title, expiry and eligibility for Alex’s offer."
         ),
         action(
           "Preview the card",
           "^Preview$",
-          "The actual form validates your terms before opening the review screen."
+          "The form validates your terms before opening the review screen."
         ),
         action(
           "Send to Alex",
           "^Send to client$",
-          "Both campaign save and issue must succeed. A failure keeps the actual form available for correction.",
+          "Both campaign save and issue must succeed. A failure keeps the form available for correction.",
           "offers.issue"
         ),
         action(
           "Return to the conversation",
           "^Done$",
-          "Review the real message thread and offer card."
+          "Review the message thread and offer card."
         ),
         ...offerBooking,
       ];
@@ -242,23 +242,23 @@ export const PRACTICE_TOURS: Record<
       action(
         "Open Alex’s conversation",
         "^Alex Taylor",
-        "You have signed into the real artist workspace with fictional clients and a full-day sitting already populated."
+        "Alex has sent a booking enquiry. Open the conversation to discuss the design."
       ),
       action(
         "Write your reply",
         "^Message$|^Write a message",
-        "Type a fictional reply using the real message composer."
+        "Type a reply using the message composer."
       ),
       action(
         "Reply to the booking enquiry",
         "^Send message$",
-        "Type a reply in the real message composer asking about placement, size and style, then send it.",
+        "Type a reply in the message composer asking about placement, size and style, then send it.",
         "messages.send"
       ),
       simulate(
         "Alex shares a reference",
         "reference",
-        "A simulated client response adds a reference to Messages and Design & references."
+        "Alex’s reference appears in Messages and Design & references."
       ),
       ...wizard(),
     ],
@@ -270,18 +270,18 @@ export const PRACTICE_TOURS: Record<
       action(
         "Write your reply",
         "^Message$|^Write a message",
-        "Type a fictional reply in the actual message composer."
+        "Type a reply in the message composer."
       ),
       action(
         "Send Alex a message",
         "^Send message$",
-        "Use the real composer. Try text and a fixture reference image.",
+        "Use the composer. Try text and a reference image.",
         "messages.send"
       ),
       review(
         "Review the conversation context",
         "Design brief|Client information|Conversation tools",
-        "Review the brief, references and client history using the actual thread controls."
+        "Review the brief, references and client history using the thread controls."
       ),
       openTools,
     ],
@@ -297,28 +297,28 @@ export const PRACTICE_TOURS: Record<
       simulate(
         "Alex completes the forms",
         "forms",
-        "Simulated signed forms become available in the same practice record."
+        "Alex’s signed forms are available in the client record."
       ),
       action(
         "Finish the sitting",
         "^Finish session$|^Request remaining balance$",
-        "Open the real finish-session form."
+        "Open the finish-session form."
       ),
       action(
         "Request the remaining balance",
         "Finish & request payment|Request payment",
-        "Check the amount, then submit the actual form.",
+        "Check the amount, then submit the form.",
         "appointments.update|dashboard.requestPayment|messages.requestBalance"
       ),
       simulate(
         "Alex pays the final balance",
         "balance",
-        "The simulated payment updates the sitting, project and earnings together."
+        "The payment updates the sitting, project and earnings together."
       ),
       review(
         "Check the completed sitting",
         "completed|Payments|balance",
-        "Review the actual project and payment records."
+        "Review the project and payment records."
       ),
     ],
   },
@@ -328,23 +328,23 @@ export const PRACTICE_TOURS: Record<
       action(
         "Reschedule this sitting",
         "^Reschedule$",
-        "Open the actual reschedule form."
+        "Open the reschedule form."
       ),
       review(
         "Choose a new available time",
         "New date",
-        "Edit the real date and time inputs. Existing practice payments stay linked to the sitting."
+        "Edit the date and time inputs. Existing payments stay linked to the sitting."
       ),
       action(
         "Save the new time",
         "Save new time|Review new time|Send.*approval",
-        "The real validation must succeed before the tutorial advances.",
+        "The validation must succeed before the tutorial advances.",
         "appointments.reschedule"
       ),
       review(
         "Review the changed sitting",
         "Rescheduled|sitting|Alex",
-        "See the updated date in the real calendar and project.",
+        "See the updated date in the calendar and project.",
         "/calendar"
       ),
     ],
@@ -355,7 +355,7 @@ export const PRACTICE_TOURS: Record<
       action(
         "Move a promotional sitting",
         "^Reschedule$",
-        "Open the actual date-change form."
+        "Open the date-change form."
       ),
       review(
         "Review the promotion terms",
@@ -365,18 +365,18 @@ export const PRACTICE_TOURS: Record<
       action(
         "Send the change for approval",
         "Send.*approval|Save new time|Review new time",
-        "Submit the real form and inspect any validation errors.",
+        "Submit the form and inspect any validation errors.",
         "appointments.reschedule"
       ),
       simulate(
         "Alex approves revised terms",
         "approve",
-        "The old sitting stays booked until simulated acceptance succeeds."
+        "The original sitting stays booked until Alex accepts the revised terms."
       ),
       review(
         "Review updated records",
         "sitting|Payments|balance",
-        "Check the real project’s date and payment totals."
+        "Check the project’s date and payment totals."
       ),
     ],
   },
@@ -389,23 +389,23 @@ export const PRACTICE_TOURS: Record<
       review(
         "Your populated artist day",
         "Needs attention",
-        "Review real attention tasks, booked work and upcoming sittings."
+        "Review attention tasks, booked work and upcoming sittings."
       ),
       action(
         "Act on a follow-up",
         "Follow up",
-        "Open the task in the real message thread."
+        "Open the task in the message thread."
       ),
       action(
         "Send the follow-up",
         "^Send message$",
-        "Edit and send the actual practice message.",
+        "Edit and send the message.",
         "messages.send"
       ),
       review(
         "Review your week",
         "Next 7 days|Next seven|Booked work",
-        "Check mock upcoming work and remaining balances.",
+        "Check upcoming work and remaining balances.",
         "/dashboard"
       ),
     ],
@@ -416,22 +416,18 @@ export const PRACTICE_TOURS: Record<
       action(
         "Open Alex’s record",
         "^Alex Taylor",
-        "Open the real client record with history, contacts and references."
+        "Open the client record with history, contacts and references."
       ),
       review(
         "Review client history",
         "Session history|Client information|Notes",
-        "Explore the real record tabs and previous mock bookings."
+        "Explore the record tabs and previous bookings."
       ),
-      action(
-        "Open private notes",
-        "^Notes$",
-        "Open the actual client Notes tab."
-      ),
+      action("Open private notes", "^Notes$", "Open the client Notes tab."),
       action(
         "Save a private note",
         "^Add note$|^Save note$",
-        "Write a fictional note and submit the real form.",
+        "Write a note and submit the form.",
         "clientProfile.addClientNote"
       ),
     ],
@@ -442,24 +438,24 @@ export const PRACTICE_TOURS: Record<
       review(
         "Review working availability",
         "Monday|Mon|Availability",
-        "Edit actual working-day, time and break controls."
+        "Edit working-day, time and break controls."
       ),
       action(
         "Save working hours",
         "^Save hours$|^Save availability$|^Save schedule$",
-        "Persist the mock schedule using the real save action.",
+        "Persist the schedule using the save action.",
         "artistSettings.upsert"
       ),
-      action("Open services", "^Services$", "Use the actual services tab."),
+      action("Open services", "^Services$", "Use the services tab."),
       action(
         "Add a service",
         "^Add service$",
-        "Open the normal editor and fill its real fields."
+        "Open the normal editor and enter the service details."
       ),
       action(
         "Save the service",
         "^Save service$",
-        "The service becomes available in the actual practice booking wizard.",
+        "The service becomes available in the booking wizard.",
         "artistSettings.upsert"
       ),
     ],
@@ -470,22 +466,18 @@ export const PRACTICE_TOURS: Record<
       review(
         "Review the waitlist",
         "Alex|Sam|Waitlist",
-        "Inspect the actual interested mock clients."
+        "Inspect the interested clients."
       ),
-      action(
-        "Offer a time",
-        "^Offer a time$",
-        "Open the actual time-offer form."
-      ),
+      action("Offer a time", "^Offer a time$", "Open the time-offer form."),
       review(
         "Set the sitting and offer expiry",
         "Offer date and time",
-        "Edit the real appointment time, estimate, deposit and expiry fields."
+        "Edit the appointment time, estimate, deposit and expiry fields."
       ),
       action(
         "Send the offer",
         "^Send offer$",
-        "The actual successful offer action saves the mock waitlist proposal.",
+        "The successful offer action saves the waitlist proposal.",
         "waitlist.offer"
       ),
     ],
@@ -496,28 +488,28 @@ export const PRACTICE_TOURS: Record<
       action(
         "Open your medical template",
         "^Medical$",
-        "Use the actual form-management tabs."
+        "Use the form-management tabs."
       ),
       review(
         "Review the template wording",
         "Medical template",
-        "Edit fictional medical wording using the real form."
+        "Edit medical wording using the form."
       ),
       action(
         "Save the template",
         "^Save template$",
-        "The actual save updates future mock forms only.",
+        "The save updates future forms only.",
         "forms.updateTemplates"
       ),
       simulate(
         "Alex signs the issued forms",
         "forms",
-        "The simulated client signature becomes visible in the real project record."
+        "The client signature becomes visible in the project record."
       ),
       review(
         "Review signed forms",
         "Consent & medical forms|Client information",
-        "Open Alex’s actual client record and Forms tab.",
+        "Open Alex’s client record and Forms tab.",
         "/clients"
       ),
     ],
@@ -526,19 +518,19 @@ export const PRACTICE_TOURS: Record<
     route: "/money",
     steps: [
       review(
-        "Review mock earnings",
+        "Review earnings",
         "Net|Income|earnings|Payments",
-        "These are the real financial components, calculated from practice payments."
+        "Track earnings and payments together, with links to each sitting."
       ),
       action(
         "Open payments",
         "Payments|Transactions|Income",
-        "Inspect the actual transactions and project links."
+        "Inspect the transactions and project links."
       ),
       review(
         "Review a transaction",
         "Alex|Full-day|Deposit",
-        "Check sitting, amount, fees and remaining balance in the actual financial view."
+        "Check sitting, amount, fees and remaining balance in the financial view."
       ),
     ],
   },
@@ -548,18 +540,18 @@ export const PRACTICE_TOURS: Record<
       action(
         "Set up payments",
         "^Set up payments$|^Review account details$",
-        "Open the actual setup sheet. Provider verification is simulated here."
+        "Open payment setup to review your business, identity and bank details."
       ),
       action(
-        "Approve mock verification",
-        "^Simulate verification approved$",
-        "This explicit simulation replaces Stripe’s external identity and bank confirmation.",
+        "Complete verification",
+        "^Complete verification$",
+        "Complete verification to enable payments and payouts.",
         "artistSettings.submitStripeOnboarding"
       ),
       review(
         "Review payout readiness",
         "Payouts enabled|Payment account",
-        "Check the actual connected-account status and payout controls."
+        "Check the connected-account status and payout controls."
       ),
     ],
   },
@@ -569,23 +561,23 @@ export const PRACTICE_TOURS: Record<
       review(
         "Edit your public profile",
         "Artist display name",
-        "Use the real display-name, website and visibility fields."
+        "Use the display-name, website and visibility fields."
       ),
       action(
         "Save your public profile",
         "^Save public profile$",
-        "The actual save updates your isolated mock profile.",
+        "The save updates your isolated profile.",
         "artistSettings.upsert"
       ),
       action(
         "Open your portfolio",
         "^Portfolio$",
-        "Use the actual portfolio tab and its fixture artwork."
+        "Use the portfolio tab and its artwork."
       ),
       review(
         "Manage your portfolio",
         "Add to your portfolio|Add|Artwork",
-        "Use the real media, ordering and removal controls. Practice substitutes fixture assets for R2 uploads."
+        "Add artwork, arrange its order and remove images you no longer want to display."
       ),
     ],
   },
@@ -593,31 +585,31 @@ export const PRACTICE_TOURS: Record<
     route: "/settings?section=data-import",
     steps: [
       action(
-        "Choose a fixture file",
-        "^Use fictional import file$",
-        "Load fictional rows into the actual import mapper."
+        "Choose your client list",
+        "^Choose client list$",
+        "Open a client list to match its columns to your client records."
       ),
       review(
         "Review column mapping",
         "Name|Email",
-        "Use the real mapping controls and check each source column."
+        "Use the mapping controls and check each source column."
       ),
       action(
         "Review duplicates",
         "^Review matches & duplicates$",
-        "The actual preview checks mock records.",
+        "The preview checks records.",
         "dataImport.preview"
       ),
       action(
         "Import ready rows",
         "^Import / retry",
-        "Only ready mock rows are added; no live client records change.",
+        "Import the ready rows and review any records that need attention.",
         "dataImport.commit"
       ),
       review(
         "Check imported clients",
         "Casey|Clients|Search clients",
-        "See the newly imported fixture in the actual client list.",
+        "See the newly imported client in the client list.",
         "/clients"
       ),
     ],
@@ -628,49 +620,41 @@ export const PRACTICE_TOURS: Record<
       action(
         "Choose a supplier",
         "Practice|Demo|Supply|Supplier",
-        "Open a real supplier catalogue populated with mock products."
+        "Browse a supplier’s products."
       ),
       action(
         "Choose a product",
         "Cartridge|Ink|Product",
-        "Open the real product detail and choose a variant and quantity."
+        "Open the product detail and choose a variant and quantity."
       ),
-      action("Add to cart", "Add to cart", "Use the actual cart action."),
-      action(
-        "Open the cart",
-        "Cart",
-        "Review and adjust the actual cart quantities."
-      ),
+      action("Add to cart", "Add to cart", "Use the cart action."),
+      action("Open the cart", "Cart", "Review and adjust the cart quantities."),
       review(
         "Review checkout",
         "Checkout|Delivery",
-        "Use the real checkout form; payment is simulated and no supplier order is placed."
+        "Review delivery details, quantities and the total before checkout."
       ),
     ],
   },
   shopfront: {
     route: "/shopfront",
     steps: [
-      action(
-        "Open products",
-        "Products",
-        "Use the real artist shopfront controls."
-      ),
+      action("Open products", "Products", "Use the artist shopfront controls."),
       action(
         "Create a product",
         "Add product|New product",
-        "Open the real product editor and use fixture artwork."
+        "Open the product editor and use artwork."
       ),
       action(
         "Save the product",
         "Save|Create",
-        "The actual mutation updates only the mock shopfront.",
+        "The mutation updates only the shopfront.",
         "storefront.createProduct"
       ),
       review(
         "Review shopfront visibility",
         "Publish|Unpublish|Product",
-        "Use the real publishing, event and order controls.",
+        "Use the publishing, event and order controls.",
         "/shopfront"
       ),
     ],
@@ -679,20 +663,20 @@ export const PRACTICE_TOURS: Record<
     route: "/studio",
     steps: [
       review(
-        "Name your mock studio",
+        "Name your studio",
         "Studio name",
-        "Enter fictional details in the actual studio-creation form."
+        "Enter details in the studio-creation form."
       ),
       action(
         "Create the studio",
         "^Create studio$",
-        "The real submit creates a studio only inside practice records.",
+        "Create your studio to organise your team and shared workspace.",
         "studios.create"
       ),
       review(
         "Review team actions",
         "Invite|Team|Members|Studio",
-        "Explore the actual studio controls, permissions and simulated billing."
+        "Explore the studio controls, permissions and billing."
       ),
     ],
   },
@@ -702,23 +686,23 @@ export const PRACTICE_TOURS: Record<
       action(
         "Open your account settings",
         "Account|Profile",
-        "Use the real settings navigation."
+        "Use the settings navigation."
       ),
       review(
-        "Edit fictional account details",
+        "Edit account details",
         "Name|Phone|City",
-        "Change the actual form fields. Your live account remains untouched."
+        "Update your name, contact details and location."
       ),
       action(
         "Save your changes",
         "Save",
-        "Persist the mock account using the real submit action.",
+        "Persist the account using the submit action.",
         "auth.updateProfile|artistSettings.upsert"
       ),
       review(
         "Explore the other settings",
         "Notifications|Travel|Plans|Subscription",
-        "Use the real preference, travel, notification and plan pages.",
+        "Use the preference, travel, notification and plan pages.",
         "/settings"
       ),
     ],

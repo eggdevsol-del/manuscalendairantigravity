@@ -151,8 +151,8 @@ const fixtureProducts = () => [
   {
     id: 1,
     supplierId: 1,
-    title: "Practice cartridge needles",
-    description: "Fictional practice stock",
+    title: "Cartridge needles",
+    description: "Cartridge needles for daily studio use",
     category: "Cartridges",
     imageUrl: PRACTICE_REFERENCE,
     priceCents: 3000,
@@ -180,8 +180,8 @@ const fixtureProducts = () => [
 ];
 const supplier = {
   id: 1,
-  name: "Practice Tattoo Supply",
-  description: "Fictional supplier for tutorials",
+  name: "Studio Tattoo Supply",
+  description: "Tattoo equipment and studio supplies",
   currency: "AUD",
   logoUrl: PRACTICE_REFERENCE,
   bannerUrl: PRACTICE_REFERENCE,
@@ -203,7 +203,7 @@ const offer = {
     { tier: "pro", priceCents: 9900 },
     { tier: "top", priceCents: 19900 },
   ],
-  label: "Practice subscription",
+  label: "Subscription",
 };
 const entity = (rows: any[], raw: any) => ({
   ...raw,
@@ -237,7 +237,7 @@ export function queryBusinessControl(
       stripePaymentId: "practice_payment",
       platformFeeCents: 0,
       artistFeeCents: 0,
-      paymentMethod: "Simulated card",
+      paymentMethod: "Card",
       createdAt: new Date().toISOString(),
       refundedCents: 0,
       refundable: true,
@@ -253,14 +253,14 @@ export function queryBusinessControl(
     case "policies.getByType":
       return (
         (b.policies ?? []).find((p: any) => p.type === input.type) ?? {
-          content: "Fictional practice policy",
+          content: "Studio policy",
           depositPercentage: 25,
         }
       );
     case "booking.getCalendarIndicators":
       return [];
     case "aftercare.getForBooking":
-      return { content: b.aftercare ?? "Fictional aftercare overview" };
+      return { content: b.aftercare ?? "Aftercare overview" };
     case "sessionPlans.offerOptions":
       return {
         choices: (b.issued ?? []).map((o: any) => ({
@@ -320,7 +320,7 @@ export function queryBusinessControl(
             taskType: "lead_follow_up",
             taskTier: "tier1",
             title: "Follow up with Alex Taylor",
-            context: "Fictional botanical forearm enquiry",
+            context: "Botanical forearm enquiry",
             priorityScore: 90,
             priorityLevel: "high",
             relatedEntityId: "1",
@@ -333,11 +333,11 @@ export function queryBusinessControl(
         ],
         summary: { total: 1 },
         stats: {},
-        businessName: "Practice studio",
+        businessName: "Taylor Studio",
       };
     case "dashboardTasks.getSettings":
       return {
-        businessName: "Practice studio",
+        businessName: "Taylor Studio",
         businessEmail: "artist@example.test",
         ...b.taskSettings,
       };
@@ -403,7 +403,7 @@ export function queryBusinessControl(
         referenceImages: [PRACTICE_REFERENCE],
         bodyPlacementImages: [],
         projectType: "full-day",
-        projectDescription: "Fictional botanical forearm enquiry",
+        projectDescription: "Botanical forearm enquiry",
         status: b.leadStatus ?? "new",
         references: [PRACTICE_REFERENCE],
         createdAt: new Date().toISOString(),
@@ -420,7 +420,7 @@ export function queryBusinessControl(
         b.portfolio ?? [
           {
             id: 1,
-            description: "Fictional botanical artwork",
+            description: "Botanical artwork",
             imageUrl: PRACTICE_REFERENCE,
             displayUrl: PRACTICE_REFERENCE,
             mediaType: "image",
@@ -512,7 +512,7 @@ export function queryBusinessControl(
         rates: [
           {
             id: 1,
-            name: "Practice standard delivery",
+            name: "Standard delivery",
             amountCents: 1000,
             priceCents: 1000,
             minOrderSubtotalCents: null,
@@ -560,12 +560,12 @@ export function queryBusinessControl(
             currency: "AUD",
             totalCents: 9000,
             fulfillmentMethod: "delivery",
-            shippingAddress: "Fictional practice address",
+            shippingAddress: "12 Example Street, Brisbane",
             createdAt: new Date().toISOString(),
             items: [
               {
                 id: 1,
-                name: "Practice cartridge needles",
+                name: "Cartridge needles",
                 quantity: 3,
                 priceCents: 3000,
               },
@@ -592,12 +592,12 @@ export function queryBusinessControl(
             id: 1,
             studio: {
               id: "practice-invited-studio",
-              name: "Fictional guest studio",
+              name: "Harbour Studio",
             },
             studioId: "practice-invited-studio",
-            studioName: "Fictional guest studio",
+            studioName: "Harbour Studio",
             role: "artist",
-            invitedBy: "Practice owner",
+            invitedBy: "Studio owner",
             createdAt: new Date().toISOString(),
           },
         ]
@@ -605,8 +605,7 @@ export function queryBusinessControl(
     case "billing.subscriptionStatus":
       return {
         tier: b.subscription ?? "free",
-        tierLabel:
-          b.subscription === "pro" ? "Pro (practice)" : "Free (practice)",
+        tierLabel: b.subscription === "pro" ? "Pro" : "Free",
         status: b.subscription ? "active" : null,
         hasSubscription: !!b.subscription,
         renewalDate: null,
@@ -626,7 +625,7 @@ export function queryBusinessControl(
         exists: true,
         valid: true,
         username: input?.username ?? "practice_artist",
-        fullName: "Practice Artist",
+        fullName: "Alex Artist",
         profilePicUrl: PRACTICE_REFERENCE,
         isPrivate: false,
         postCount: 3,
@@ -644,7 +643,7 @@ export function queryBusinessControl(
             client: c.clients[0],
             status: "waiting",
             preferredDays: JSON.stringify(["monday", "tuesday"]),
-            notes: "Fictional client available for full day",
+            notes: "Client available for a full day",
             createdAt: new Date().toISOString(),
           },
         ]

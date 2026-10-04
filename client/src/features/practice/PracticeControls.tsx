@@ -15,7 +15,7 @@ class PracticeBoundary extends Component<
   render() {
     return this.state.error ? (
       <p role="alert">
-        Practice screen could not load. Choose another screen or retry.
+        This page could not load. Choose another guide or retry.
       </p>
     ) : (
       this.props.children
@@ -166,9 +166,7 @@ export function PracticeControls({
       ) {
         event.preventDefault();
         event.stopPropagation();
-        setNotice(
-          "External action preview only. Practice did not open a provider or send a message."
-        );
+        setNotice("Continue in the guide to review the next step.");
       }
     };
     document.addEventListener("click", intercept, true);
@@ -185,7 +183,7 @@ export function PracticeControls({
           .catch(error => setNotice(error.message));
       },
       simulate: async (action: string) => {
-        setNotice(`${action} · Simulated only. No external request was made.`);
+        setNotice("Step completed.");
         if (action === "Complete practice payment") {
           await current.current("practice.completeExternal", {}, "mutation");
           await cache.invalidateQueries();
@@ -223,10 +221,8 @@ export function PracticeControls({
                 ref={frame}
               >
                 <div className="practice-app-banner" data-practice-guide>
-                  <span>
-                    Practice · Fictional data · No real charges or notifications
-                  </span>
-                  <button onClick={onExit}>Exit practice</button>
+                  <span>Guided walkthrough</span>
+                  <button onClick={onExit}>Exit guide</button>
                 </div>
                 <PracticeBoundary key={route}>
                   <ArtistRoutes />

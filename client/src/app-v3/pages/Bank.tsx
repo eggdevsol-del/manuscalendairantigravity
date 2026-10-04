@@ -272,10 +272,10 @@ export function EmbeddedSetup({
   if (practice)
     return (
       <div className="v3-stack">
-        <h3>Practice verification</h3>
+        <h3>Payment account verification</h3>
         <p>
-          Fictional studio · Alex Artist · Mock bank ending 0000. No identity
-          documents, bank details or Stripe connection are collected.
+          Alex Artist · Bank account ending 0000. Review the account details and
+          complete verification to continue.
         </p>
         <Action
           onClick={() => {
@@ -283,7 +283,7 @@ export function EmbeddedSetup({
             onExit();
           }}
         >
-          Simulate verification approved
+          Complete verification
         </Action>
         <Action tone="quiet" onClick={onExit}>
           Return without completing

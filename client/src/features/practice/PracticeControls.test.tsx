@@ -123,9 +123,7 @@ describe("isolated artist screen controls", () => {
     await waitFor(() =>
       expect(screen.getByText("Alex shares a reference")).toBeTruthy()
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Simulate client response" })
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() =>
       expect(screen.getByText("Open the conversation tools")).toBeTruthy()
     );
@@ -178,13 +176,11 @@ describe("isolated artist screen controls", () => {
     await waitFor(() =>
       expect(
         screen
-          .getByRole("button", { name: "Simulate client response" })
+          .getByRole("button", { name: "Continue" })
           .hasAttribute("disabled")
       ).toBe(false)
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Simulate client response" })
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() =>
       expect(screen.getByText("See the confirmed booking")).toBeTruthy()
     );
@@ -249,13 +245,11 @@ describe("isolated artist screen controls", () => {
       await waitFor(() =>
         expect(
           screen
-            .getByRole("button", { name: "Simulate client response" })
+            .getByRole("button", { name: "Continue" })
             .hasAttribute("disabled")
         ).toBe(false)
       );
-      fireEvent.click(
-        screen.getByRole("button", { name: "Simulate client response" })
-      );
+      fireEvent.click(screen.getByRole("button", { name: "Continue" }));
       await act(async () => {
         await new Promise(r => setTimeout(r, 100));
       });
@@ -277,10 +271,10 @@ describe("isolated artist screen controls", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Set up payments" }));
     await waitFor(() =>
-      expect(screen.getByText("Approve mock verification")).toBeTruthy()
+      expect(screen.getByText("Complete verification")).toBeTruthy()
     );
     fireEvent.click(
-      screen.getByRole("button", { name: "Simulate verification approved" })
+      screen.getByRole("button", { name: "Complete verification" })
     );
     await waitFor(() =>
       expect(screen.getByText("Review payout readiness")).toBeTruthy()

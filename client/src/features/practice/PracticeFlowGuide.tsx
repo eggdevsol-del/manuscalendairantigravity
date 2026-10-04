@@ -178,7 +178,7 @@ export function PracticeFlowGuide({
       await advance();
     } catch (e) {
       setError(
-        e instanceof Error ? e.message : "Simulation failed; nothing advanced."
+        e instanceof Error ? e.message : "Could not continue. Please try again."
       );
     } finally {
       setBusy(false);
@@ -190,16 +190,14 @@ export function PracticeFlowGuide({
       className="practice-flow-guide"
       style={above && !hidden ? { top: 64, bottom: "auto" } : undefined}
       data-practice-guide
-      aria-label="Guided practice"
+      aria-label="Guided tutorial"
       aria-live="polite"
     >
       <div className="practice-flow-heading">
-        <span>Practice · {title}</span>
+        <span>Guide · {title}</span>
         <button
           onClick={() => setHidden(!hidden)}
-          aria-label={
-            hidden ? "Show practice guide" : "Minimise practice guide"
-          }
+          aria-label={hidden ? "Show guide" : "Minimise guide"}
         >
           {hidden ? "?" : "−"}
         </button>
@@ -212,8 +210,8 @@ export function PracticeFlowGuide({
               <p>{step.body}</p>
               {!target && !step.simulation && (
                 <p className="v3-muted">
-                  Use the real page to open the relevant form or details. The
-                  next control will highlight when it appears.
+                  Use the page to open the relevant form or details. The next
+                  control will highlight when it appears.
                 </p>
               )}
               {error && <p role="alert">{error}</p>}
@@ -223,7 +221,7 @@ export function PracticeFlowGuide({
                 </small>
                 {step.simulation ? (
                   <button disabled={busy} onClick={() => void simulate()}>
-                    Simulate client response
+                    Continue
                   </button>
                 ) : step.review ? (
                   <button
@@ -241,8 +239,8 @@ export function PracticeFlowGuide({
             <>
               <strong>Workflow complete</strong>
               <p>
-                Your practice changes are visible throughout the real app.
-                Explore its controls or choose another guide.
+                The updated records are visible throughout the app. Explore its
+                controls or choose another guide.
               </p>
             </>
           )}

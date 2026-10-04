@@ -277,7 +277,7 @@ export function queryPracticeControl(
         pendingBalance: 0,
         currency: "aud",
         bankLast4: "0000",
-        bankName: "Mock bank",
+        bankName: "Bank",
         ...box.payoutSchedule,
       };
     case "auth.me":
@@ -331,7 +331,7 @@ export function queryPracticeControl(
         conversationId: 1,
         artist,
         client: { ...PRACTICE_CLIENTS[0], name: s.client.name },
-        location: "Practice studio",
+        location: "Taylor Studio",
         sessions: ["proposal sent", "declined", "draft"].includes(
           s.booking.status
         )
@@ -358,7 +358,7 @@ export function queryPracticeControl(
                   appointmentId: 1,
                   status: "signed",
                   formType: "medical",
-                  content: "Fictional signed medical form",
+                  content: "Signed medical form",
                 },
               ]
             : [],
@@ -389,8 +389,8 @@ export function queryPracticeControl(
     case "forms.getTemplates":
       return (
         box.templates ?? {
-          medicalTemplate: "Practice medical form. All details are fictional.",
-          consentTemplate: "Practice consent form. This has no legal effect.",
+          medicalTemplate: "Medical information and consent",
+          consentTemplate: "Consent to the agreed tattoo procedure",
         }
       );
     case "forms.getProcedureLogs":
@@ -402,9 +402,9 @@ export function queryPracticeControl(
           artistLicenceNumber: "DEMO",
           date: s.booking.dates[0],
           amountPaid: s.booking.paid,
-          paymentMethod: "Simulated card",
+          paymentMethod: "Card",
           procedureDetails:
-            s.booking.procedure || "Fictional botanical forearm procedure",
+            s.booking.procedure || "Botanical forearm procedure",
         },
       ];
     case "forms.getPendingForms":
@@ -417,10 +417,9 @@ export function queryPracticeControl(
               appointmentId: 1,
               clientId: PRACTICE_CLIENT,
               formType: "medical_release",
-              content:
-                box.templates?.medicalTemplate ?? "Fictional medical release",
+              content: box.templates?.medicalTemplate ?? "Medical release",
               status: s.booking.forms,
-              signature: s.booking.forms === "signed" ? "Mock signature" : null,
+              signature: s.booking.forms === "signed" ? "Alex Taylor" : null,
             },
           ];
     case "sessionPlans.getByConversation":
@@ -452,9 +451,7 @@ export function queryPracticeControl(
     case "designBrief.get":
     case "designBrief.generate":
       return {
-        brief:
-          s.client.brief ||
-          "Fictional black-and-grey botanical forearm design.",
+        brief: s.client.brief || "Black-and-grey botanical forearm design.",
         references: [],
       };
     case "reschedules.get":
@@ -884,7 +881,7 @@ export function mutatePracticeControl(
     case "designBrief.generate":
     case "designBrief.regenerate":
       s.client.brief =
-        "Practice brief: black-and-grey botanical forearm design, reference discussed in Messages.";
+        "Design brief: black-and-grey botanical forearm design, reference discussed in Messages.";
       data = { brief: s.client.brief };
       break;
   }

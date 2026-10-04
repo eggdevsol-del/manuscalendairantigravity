@@ -555,7 +555,7 @@ export const PRACTICE_CHAPTERS: PracticeChapter[] = [
   {
     id: "voucher",
     title: "Sell a gift voucher",
-    detail: "Specific client, expiry, purchase and simulated transfer.",
+    detail: "Specific client, expiry, purchase and transfer.",
     steps: [
       step(
         "create",

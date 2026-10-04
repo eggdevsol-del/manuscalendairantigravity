@@ -18,7 +18,7 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
         type="button"
         className="tour-help"
         data-tour-ui
-        aria-label="Guide these practice controls"
+        aria-label="Guide this page"
         onClick={() => {
           if (practice.startGuide)
             practice.startGuide(practiceChapterForRoute(path, search));
@@ -61,7 +61,7 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
                 );
               }}
             >
-              Guide this page with practice data
+              Guide this page
             </button>
             <button
               type="button"
@@ -79,7 +79,7 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
                 go("/practice");
               }}
             >
-              Resume practice
+              Resume walkthrough
             </button>
             <Dialog.Close>Close</Dialog.Close>
           </Dialog.Content>

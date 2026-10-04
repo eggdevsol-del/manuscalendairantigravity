@@ -120,7 +120,7 @@ export function PracticeView({
       setError(
         e instanceof Error
           ? e.message
-          : "Could not start practice. Please retry."
+          : "Could not start the guide. Please retry."
       );
     }
   }
@@ -137,7 +137,7 @@ export function PracticeView({
         {error && (
           <div className="practice-notice" role="alert">
             {error}
-            <button onClick={reload}>Reload practice</button>
+            <button onClick={reload}>Reload guide</button>
           </div>
         )}
         <PracticeControls
@@ -152,21 +152,19 @@ export function PracticeView({
     );
   return (
     <Screen
-      title="Practice guides"
-      subtitle="Use the actual artist app with fictional clients, bookings and payments."
+      title="Guided tutorials"
+      subtitle="Explore each flow, one step at a time."
       back="/settings?section=how-tos"
     >
-      <p className="practice-banner">
-        Practice mode · No real payments or messages
-      </p>
+      <p className="practice-banner">Choose a guide to get started.</p>
       {preview && <p>Progress is stored in this browser only.</p>}
       {error && <p role="alert">{error}</p>}
       {!state ? (
-        <Section title="Loading practice">
+        <Section title="Loading guide">
           <p>
             {sessionError
-              ? "Practice storage is unavailable. Retry to load your mock records."
-              : "Loading your practice workspace…"}
+              ? "This guide is unavailable. Please try again."
+              : "Loading your walkthrough…"}
           </p>
           <Action onClick={reload}>Retry</Action>
         </Section>
