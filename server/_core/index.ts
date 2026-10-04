@@ -141,7 +141,7 @@ async function startServer() {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com https://apis.google.com https://js.stripe.com https://connect.stripe.com https://b.stripecdn.com",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.onesignal.com https://accounts.google.com https://apis.google.com https://js.stripe.com https://connect.stripe.com https://connect-js.stripe.com https://b.stripecdn.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com https://b.stripecdn.com",
         "font-src 'self' https://fonts.gstatic.com https://b.stripecdn.com",
         "img-src 'self' data: blob: https: http:",

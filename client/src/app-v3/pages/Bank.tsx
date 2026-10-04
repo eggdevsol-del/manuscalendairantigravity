@@ -5,7 +5,7 @@ import {
   ConnectAccountOnboarding,
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
-import { loadConnectAndInitialize } from "@stripe/connect-js";
+import { loadConnectAndInitialize } from "@stripe/connect-js/pure";
 import { trpc } from "@/lib/trpc";
 import { trpcVanilla } from "@/lib/trpcVanilla";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -195,6 +195,7 @@ export function EmbeddedSetup({
   const { theme } = useTheme();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [instance, setInstance] = useState<ReturnType<
     typeof loadConnectAndInitialize
   > | null>(null);
@@ -209,6 +210,7 @@ export function EmbeddedSetup({
       return;
     }
     setError("");
+    setLoading(true);
     let active = true;
     const styles = getComputedStyle(document.documentElement);
     const value = (name: string) => styles.getPropertyValue(name).trim();
@@ -251,9 +253,18 @@ export function EmbeddedSetup({
     setInstance(next);
     return () => {
       active = false;
-      void next.logout();
+      void next.logout().catch(() => {});
     };
   }, [attempt, theme, publishableKey, configLoading, practice]);
+  useEffect(() => {
+    if (practice || configLoading || error || !loading) return;
+    const timer = window.setTimeout(() => {
+      setError(
+        "Stripe verification is taking too long to load. Try again or continue securely with Stripe below."
+      );
+    }, 30000);
+    return () => window.clearTimeout(timer);
+  }, [attempt, configLoading, error, loading, practice]);
   if (practice)
     return (
       <div className="v3-stack">
@@ -298,17 +309,21 @@ export function EmbeddedSetup({
           </Action>
         </>
       ) : instance ? (
-        <ConnectComponentsProvider connectInstance={instance}>
-          <ConnectAccountOnboarding
-            onExit={onExit}
-            onLoadError={({ error }) =>
-              setError(
-                error.message ||
-                  "Stripe verification could not load. Try again."
-              )
-            }
-          />
-        </ConnectComponentsProvider>
+        <div style={{ minHeight: 320 }} aria-busy={loading}>
+          {loading && <p role="status">Loading secure Stripe verification…</p>}
+          <ConnectComponentsProvider connectInstance={instance}>
+            <ConnectAccountOnboarding
+              onExit={onExit}
+              onLoaderStart={() => setLoading(false)}
+              onLoadError={({ error }) =>
+                setError(
+                  error.message ||
+                    "Stripe verification could not load. Try again."
+                )
+              }
+            />
+          </ConnectComponentsProvider>
+        </div>
       ) : (
         <Feedback loading />
       )}

@@ -18,7 +18,7 @@ import {
 } from "@shared/practiceControls";
 const providers = vi.hoisted(() => ({ stripe: vi.fn(), connect: vi.fn() }));
 vi.mock("@stripe/stripe-js/pure", () => ({ loadStripe: providers.stripe }));
-vi.mock("@stripe/connect-js", () => ({
+vi.mock("@stripe/connect-js/pure", () => ({
   loadConnectAndInitialize: providers.connect,
 }));
 import { PracticeControls } from "./PracticeControls";

@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 import { beforeEach, describe, it, expect, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   status: {
@@ -7,16 +13,17 @@ const mocks = vi.hoisted(() => ({
     accountType: "standard",
   } as any,
   create: vi.fn(),
-  initialize: vi.fn((options: any) => ({ logout: vi.fn() })),
+  initialize: vi.fn((options: any) => ({ logout: vi.fn().mockResolvedValue(undefined) })),
   session: vi.fn(),
   refetch: vi.fn(),
+  onboarding: null as any,
 }));
 vi.mock("@/lib/trpc", () => ({
   trpc: {
     artistSettings: {
-      getPayoutSchedule: {useQuery:()=>({data:null})},
-      updatePayoutSchedule: {useMutation:()=>({})},
-      disconnectStripe: {useMutation:()=>({})},
+      getPayoutSchedule: { useQuery: () => ({ data: null }) },
+      updatePayoutSchedule: { useMutation: () => ({}) },
+      disconnectStripe: { useMutation: () => ({}) },
       getStripeConnectStatus: {
         useQuery: () => ({
           data: mocks.status,
@@ -36,12 +43,15 @@ vi.mock("@/lib/trpcVanilla", () => ({
     artistSettings: { createStripeAccountSession: { mutate: mocks.session } },
   },
 }));
-vi.mock("@stripe/connect-js", () => ({
+vi.mock("@stripe/connect-js/pure", () => ({
   loadConnectAndInitialize: mocks.initialize,
 }));
 vi.mock("@stripe/react-connect-js", () => ({
   ConnectComponentsProvider: ({ children }: any) => <>{children}</>,
-  ConnectAccountOnboarding: () => <div>Embedded Stripe onboarding</div>,
+  ConnectAccountOnboarding: (props: any) => {
+    mocks.onboarding = props;
+    return <div>Embedded Stripe onboarding</div>;
+  },
 }));
 vi.mock("@/contexts/ThemeContext", () => ({
   useTheme: () => ({ theme: "light" }),
@@ -68,7 +78,7 @@ beforeEach(() => {
     accountType: "standard",
   };
   mocks.refetch.mockResolvedValue({});
-  mocks.initialize.mockReset().mockImplementation(() => ({ logout: vi.fn() }));
+  mocks.initialize.mockReset().mockImplementation(() => ({ logout: vi.fn().mockResolvedValue(undefined) }));
   mocks.session.mockResolvedValue({ clientSecret: "session_secret" });
 });
 describe("new artist payment setup", () => {
@@ -125,5 +135,63 @@ describe("new artist payment setup", () => {
     await screen.findByText("Stripe setup failed to initialise");
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     await screen.findByText("Embedded Stripe onboarding");
+  });
+});
+
+describe("embedded verification loading", () => {
+  it("shows recovery when the SDK never renders its loader", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.status = {
+        connected: true,
+        statusAvailable: true,
+        accountType: "custom",
+      };
+      render(<Bank />);
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "Review account details" })
+        );
+      });
+      expect(screen.getByRole("status").textContent).toContain(
+        "Loading secure Stripe verification"
+      );
+      await act(async () => {
+        vi.advanceTimersByTime(30000);
+      });
+      expect(screen.getByRole("alert").textContent).toContain(
+        "taking too long"
+      );
+      expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("keeps the form open after Stripe begins rendering", async () => {
+    vi.useFakeTimers();
+    try {
+      mocks.status = {
+        connected: true,
+        statusAvailable: true,
+        accountType: "express",
+      };
+      render(<Bank />);
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "Review account details" })
+        );
+      });
+      act(() =>
+        mocks.onboarding.onLoaderStart({ elementTagName: "account-onboarding" })
+      );
+      await act(async () => {
+        vi.advanceTimersByTime(30000);
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(screen.queryByRole("status")).toBeNull();
+      expect(screen.getByText("Embedded Stripe onboarding")).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
