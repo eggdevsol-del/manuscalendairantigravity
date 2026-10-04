@@ -1,3 +1,4 @@
+import { PAGE_GUIDES, pageGuideTitle } from "./pageGuides";
 import { businessGuidance } from "./businessGuidance";
 /** Live UI inventory. No sample records, business mutations or positional selectors. */
 import type { TourStep } from "./TooltipTourProvider";
@@ -114,6 +115,62 @@ export function collectTourSteps(
   surface: HTMLElement
 ): (TourStep & { element: HTMLElement })[] {
   const title = surfaceTitle(surface);
+  const guide = PAGE_GUIDES.find(guide =>
+    guide.pages.test(
+      pageGuideTitle(
+        title,
+        window.location.pathname,
+        surface.matches("[role=dialog],[role=alertdialog]")
+      )
+    )
+  );
+  if (guide) {
+    const anchors = [
+      ...surface.querySelectorAll<HTMLElement>(
+        "[data-tour-title],.v3-section-heading h2,h2,h3,button,a[href],input,select,textarea,[aria-label],.v3-attention,.v3-facts"
+      ),
+    ].filter(
+      el =>
+        isTourVisible(el) &&
+        !el.closest("[data-tour-ui]") &&
+        !(el.matches("h1,h2,h3") && el.closest("header")) &&
+        !el.closest("[data-tour-skip]")
+    );
+    const used = new Set<HTMLElement>();
+    const steps = guide.steps.flatMap(([match, stepTitle, body]) => {
+      const anchor = anchors.find(
+        el => match.test(controlLabel(el)) && !used.has(el)
+      );
+      if (!anchor) return [];
+      const element = anchor.matches("h2,h3,.simple-eyebrow")
+        ? anchor.closest<HTMLElement>(".v3-section,.v3-panel") ||
+          anchor.parentElement ||
+          anchor
+        : anchor;
+      if (used.has(element)) return [];
+      used.add(anchor);
+      used.add(element);
+      return [
+        { element, targetId: liveTargetId(element), title: stepTitle, body },
+      ];
+    });
+    if (steps.length) return steps;
+    // An empty/new account still gets an honest overview; never invent records.
+    const empty = surface.querySelector<HTMLElement>(
+      ".v3-content,.v3-section,.v3-panel,[role=status]"
+    );
+    if (isTourVisible(empty) && !empty.querySelector("[role=alert]")) {
+      return [
+        {
+          element: empty,
+          targetId: liveTargetId(empty),
+          title: guide.steps[0][1],
+          body: guide.steps[0][2],
+        },
+      ];
+    }
+  }
+
   const heading =
     [
       ...surface.querySelectorAll<HTMLElement>(
@@ -164,6 +221,7 @@ export function collectTourSteps(
         seenGuidance.add(copy);
         return true;
       })
+      .slice(0, 4)
       .map(element => ({
         element,
         targetId: element.dataset.tourRepeat

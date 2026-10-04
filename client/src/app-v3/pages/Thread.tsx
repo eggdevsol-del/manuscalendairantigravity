@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import { useReadReceipts } from "@/features/chat/hooks/useReadReceipts";
 import { hasReadMessage } from "@/features/chat/readReceipt";
 import { RescheduleRequestCard } from "../components/RescheduleRequestCard";
@@ -201,6 +202,7 @@ export function Thread({
   };
   return (
     <div
+      data-tour-surface="Message thread"
       className={`v3-thread-layout ${c.isArtist && c.conversation?.clientId ? "with-context" : ""}`}
     >
       <div className="v3-thread">
@@ -228,6 +230,7 @@ export function Thread({
           >
             <MoreHorizontal />
           </button>
+          <TourHelp />
         </header>
         {activeOffer && offerScrolled && (
           <ConversationOfferStrip

@@ -40,7 +40,7 @@ export default function Business() {
       />
       {earnings.data && (
         <Panel tone="next">
-          <span className="simple-eyebrow">Last 30 days</span>
+          <span className="simple-eyebrow" data-tour-title="Last 30 days">Last 30 days</span>
           <h2>{money(earnings.data.netCents)}</h2>
           <p>Net earnings</p>
           <EarningsChart

@@ -18,18 +18,21 @@ describe("live tour coverage", () => {
     document.body.innerHTML =
       '<main data-tour-surface="Checkout"><h1>Checkout</h1><div class="v3-facts">Total $100</div><label>Email<input value="private@example.com"></label><label>Country<select><option>Australia</option><option>Canada</option></select></label><button disabled>Pay now</button><button data-tour-ui>Tour</button><div hidden><button>Hidden</button></div></main>';
     const steps = collectTourSteps(activeTourSurface()!);
-    expect(steps.map(s => s.title)).toEqual(["Pay now"]);
+    expect(steps.map(s => s.title)).toEqual([
+      "Review what you are paying",
+      "Wait for confirmed payment",
+    ]);
     expect(
       JSON.stringify(steps.map(({ title, body }) => ({ title, body })))
     ).not.toContain("private@example.com");
-    expect(steps.at(-1)?.body).toContain("recorded payments");
-    expect(steps.at(-1)?.body).toContain("duplicate collection");
+    expect(steps.at(-1)?.body).toContain("confirmed payment");
+    expect(steps.at(-1)?.body).toContain("unfinished checkout");
   });
   it("follows the top dialog and excludes the guide itself and inert background", () => {
     document.body.innerHTML =
       '<main data-tour-surface="Calendar" inert><h1>Calendar</h1></main><section role="dialog"><h2>New booking</h2><button>Choose service</button><div role="dialog" data-tour-ui><button>Next</button></div></section>';
     expect(collectTourSteps(activeTourSurface()!).map(s => s.title)).toEqual([
-      "Choose service",
+      "Start with your saved service",
     ]);
   });
   it("keeps stable targets while new wizard controls appear", () => {
@@ -74,4 +77,17 @@ describe("live tour coverage", () => {
       []
     );
   });
+});
+
+it("curates the Today guide without touring headings or every repeated task", () => {
+  document.body.innerHTML =
+    '<main data-tour-surface="Today"><header><h1>Today</h1></header><section class="v3-section"><h2>Needs attention</h2><button>Follow up Jane</button><button>Follow up Joe</button></section><section class="v3-section"><h2>Next 7 days</h2></section><button>Create promo</button></main>';
+  const steps = collectTourSteps(activeTourSurface()!);
+  expect(steps).toHaveLength(3);
+  expect(steps.map(s => s.title)).toEqual([
+    "Know what needs you next",
+    "Plan your week",
+    "Make room for new work",
+  ]);
+  expect(steps[0].element.tagName).toBe("SECTION");
 });

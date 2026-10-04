@@ -322,3 +322,26 @@
   flex: 1;
   min-width: 0;
 }
+
+/* Ivory tour surfaces share the application's light and dark tokens. */
+.v3-shell .tour-help, .tour-help {
+  background: var(--v3-paper, var(--secondary));
+  color: var(--v3-ink, var(--foreground));
+  border-color: var(--v3-line, var(--border));
+}
+.tooltip-tour-bubble-inner {
+  background: var(--v3-paper, var(--popover));
+  color: var(--v3-ink, var(--foreground));
+  border-color: var(--v3-line, var(--border));
+}
+@media (prefers-reduced-motion: reduce) {
+  .tooltip-tour-pulse-ring { animation: none; }
+}
+.ivory-bank-setup-steps {
+  display: grid;
+  gap: 1rem;
+  padding-inline-start: 1.5rem;
+  margin-block: 1.5rem;
+}
+.ivory-bank-setup-steps strong, .ivory-bank-setup-steps span { display: block; }
+.ivory-bank-setup-steps span { color: var(--v3-muted); }

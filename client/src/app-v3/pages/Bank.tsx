@@ -22,7 +22,11 @@ import {
 } from "../design/primitives";
 
 export default function Bank() {
-  const status = trpc.artistSettings.getStripeConnectStatus.useQuery();
+  const status = trpc.artistSettings.getStripeConnectStatus.useQuery(
+    undefined,
+    { refetchInterval: 10000 }
+  );
+  const config = trpc.artistSettings.getStripeOnboardingConfig.useQuery();
   const create = trpc.artistSettings.connectStripe.useMutation();
   const link = trpc.artistSettings.getStripeAccountLink.useMutation();
   const [setup, setSetup] = useState(false);
@@ -38,8 +42,12 @@ export default function Bank() {
       } else {
         const result = await create.mutateAsync();
         await status.refetch();
-        if (result.url) window.location.assign(result.url);
-        else if (result.accountType === "custom") setSetup(true);
+        if (result.accountType === "custom") setSetup(true);
+        else if (result.url) window.location.assign(result.url);
+        else
+          throw new Error(
+            "Payment setup did not return a supported account. Refresh and try again."
+          );
       }
     } catch (e) {
       setError(
@@ -107,13 +115,39 @@ export default function Bank() {
                 </div>
               </dl>
             )}
+            {!data.connected && (
+              <ol
+                className="ivory-bank-setup-steps"
+                aria-label="Payment setup steps"
+              >
+                <li>
+                  <strong>Your business</strong>
+                  <span>Confirm your business and contact details.</span>
+                </li>
+                <li>
+                  <strong>Your identity</strong>
+                  <span>Complete the checks Stripe requests securely.</span>
+                </li>
+                <li>
+                  <strong>Your bank</strong>
+                  <span>Add the account where payouts should arrive.</span>
+                </li>
+              </ol>
+            )}
             <div className="v3-inline">
-              <Action disabled={busy || !data.statusAvailable} onClick={start}>
+              <Action
+                disabled={
+                  busy ||
+                  status.isLoading ||
+                  (data.connected && !data.statusAvailable)
+                }
+                onClick={start}
+              >
                 {busy
                   ? "Opening…"
                   : data.connected
                     ? "Review account details"
-                    : "Connect your bank"}
+                    : "Set up payments"}
               </Action>
               <Action
                 tone="secondary"
@@ -139,6 +173,11 @@ export default function Bank() {
           }}
         >
           <EmbeddedSetup
+            publishableKey={
+              config.data?.publishableKey ||
+              import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+            }
+            configLoading={config.isLoading}
             onExit={() => {
               setSetup(false);
               void status.refetch();
@@ -150,7 +189,15 @@ export default function Bank() {
   );
 }
 
-function EmbeddedSetup({ onExit }: { onExit: () => void }) {
+export function EmbeddedSetup({
+  onExit,
+  publishableKey,
+  configLoading = false,
+}: {
+  onExit: () => void;
+  publishableKey?: string | null;
+  configLoading?: boolean;
+}) {
   const { theme } = useTheme();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -159,13 +206,15 @@ function EmbeddedSetup({ onExit }: { onExit: () => void }) {
   > | null>(null);
   const fallback = trpc.artistSettings.getStripeAccountLink.useMutation();
   useEffect(() => {
-    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+    if (configLoading) return;
+    const key = publishableKey;
     if (!key) {
       setError(
         "Payment configuration is unavailable. You can continue securely with Stripe below."
       );
       return;
     }
+    setError("");
     let active = true;
     const styles = getComputedStyle(document.documentElement);
     const value = (name: string) => styles.getPropertyValue(name).trim();
@@ -187,10 +236,11 @@ function EmbeddedSetup({ onExit }: { onExit: () => void }) {
       appearance: {
         overlays: "dialog",
         variables: {
-          colorPrimary: value("--v3-gold"),
+          colorPrimary: value("--v3-ink"),
           colorBackground: value("--v3-paper"),
           colorText: value("--v3-ink"),
           borderRadius: "12px",
+          fontFamily: getComputedStyle(document.body).fontFamily,
         },
       },
     });
@@ -199,7 +249,7 @@ function EmbeddedSetup({ onExit }: { onExit: () => void }) {
       active = false;
       void next.logout();
     };
-  }, [attempt, theme]);
+  }, [attempt, theme, publishableKey, configLoading]);
   return (
     <div className="v3-stack">
       <p

@@ -51,11 +51,11 @@ it("follows newly opened feature sheets and returns to the page after closing", 
   );
   await waitFor(() =>
     expect(hook.result.current.activeTour?.steps[0].title).toBe(
-      "Project completed by"
+      "Find dates that fit the project"
     )
   );
   expect(hook.result.current.activeTour?.steps.map(s => s.title)).toContain(
-    "Project completed by"
+    "Find dates that fit the project"
   );
   document.querySelector("[role=dialog]")!.remove();
   await waitFor(() =>

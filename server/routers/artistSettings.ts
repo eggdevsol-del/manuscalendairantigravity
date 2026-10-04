@@ -262,6 +262,15 @@ export const artistSettingsRouter = router({
    * Feature-flagged: Express (embedded) or Standard (redirect).
    * Idempotent: if account already exists, returns existing state.
    */
+  getStripeOnboardingConfig: artistProcedure.query(async () => {
+    const { isCustomEnabled } = await import("../services/stripeConnect");
+    const key = process.env.VITE_STRIPE_PUBLISHABLE_KEY || process.env.STRIPE_PUBLISHABLE_KEY || "";
+    return {
+      publishableKey: /^pk_(test|live)_/.test(key) ? key : null,
+      embeddedEnabled: isCustomEnabled(),
+    };
+  }),
+
   connectStripe: artistProcedure.mutation(async ({ ctx }) => {
     const existing = await db.getArtistSettings(ctx.user.id);
     const {

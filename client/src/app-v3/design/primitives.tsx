@@ -1,3 +1,4 @@
+import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import {
   createContext,
   useContext,
@@ -77,6 +78,7 @@ export function Screen({
             <h1 className="v3-inline-title">{title}</h1>
           </div>
           <div className="tour-header-actions">
+            <TourHelp />
             {action || (
               <Link
                 className="v3-icon-button"
