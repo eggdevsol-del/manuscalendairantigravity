@@ -1,5 +1,11 @@
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useOptionalTooltipTour } from "@/components/tooltip-tour/TooltipTourProvider";
+import {
+  CALENDAR_BOOKING_GUIDE,
+  firstCalendarBookingVisit,
+} from "@/components/tooltip-tour/calendarBookingGuide";
 import { CalendarTimeline } from "../design/CalendarTimeline";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { addDays, format, startOfWeek } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 import {
@@ -39,6 +45,20 @@ import { SessionActions } from "./SessionActions";
 
 export default function Calendar() {
   const c = useCalendarAgendaController();
+  const { user } = useAuth();
+  const tour = useOptionalTooltipTour();
+  const bookingGuideShown = useRef(new Set<string>());
+  function openBooking(date: Date) {
+    if (user?.id && tour && !bookingGuideShown.current.has(user.id)) {
+      bookingGuideShown.current.add(user.id);
+      if (firstCalendarBookingVisit(user.id)) {
+        tour.startTour(CALENDAR_BOOKING_GUIDE);
+        return;
+      }
+    }
+    setBookingDateValue(date);
+  }
+
   const wide = useMediaQuery("(min-width: 768px)");
   const search = useSearch();
   const [, go] = useLocation();
@@ -78,7 +98,8 @@ export default function Calendar() {
         <Action
           className="v3-calendar-new"
           aria-label="New booking"
-          onClick={() => setBookingDateValue(c.activeDate)}
+          data-calendar-booking-entry
+          onClick={() => openBooking(c.activeDate)}
         >
           <Plus />
           <span>New booking</span>
@@ -146,7 +167,7 @@ export default function Calendar() {
           )}
           zone={zone}
           loading={c.isFetching}
-          onBook={setBookingDateValue}
+          onBook={openBooking}
           services={c.artistServices}
         />
       </div>
