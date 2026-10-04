@@ -345,3 +345,23 @@
 }
 .ivory-bank-setup-steps strong, .ivory-bank-setup-steps span { display: block; }
 .ivory-bank-setup-steps span { color: var(--v3-muted); }
+
+/* Keep every guide control on the same ivory colour scheme as its surface. */
+.tooltip-tour-body,
+.tooltip-tour-skip {
+  color: var(--v3-muted, var(--muted-foreground));
+}
+.tooltip-tour-skip:active,
+.tooltip-tour-title,
+.tooltip-tour-footer,
+.tooltip-tour-collapse {
+  color: var(--v3-ink, var(--foreground));
+}
+.tooltip-tour-next {
+  background: var(--v3-ink, var(--foreground));
+  color: var(--v3-paper, var(--background));
+}
+.tooltip-tour-bubble-inner {
+  min-height: 0;
+  gap: 12px;
+}
