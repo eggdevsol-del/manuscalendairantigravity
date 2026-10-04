@@ -97,7 +97,7 @@ describe("artist practice isolation and lifecycle", () => {
     s = advancePractice(s, "send", {});
     s = advancePractice(s, "approve", {});
     expect(s.booking.price).toBe(100000);
-    expect(s.booking.paid).toBe(25000);
+    expect(s.booking.paid).toBe(20000);
     expect(s.booking.dates).toEqual(["2026-11-02"]);
   });
   it("keeps the discount when explicitly retained", () => {
@@ -141,8 +141,8 @@ describe("artist practice isolation and lifecycle", () => {
     const a = startPractice(seedPractice(), "enquiry");
     const b = startPractice(seedPractice(), "enquiry");
     const next = advancePractice(a, "request", {});
-    expect(next.messages).toHaveLength(1);
-    expect(b.messages).toHaveLength(0);
+    expect(next.messages).toHaveLength(a.messages.length + 1);
+    expect(b.messages).toEqual(seedPractice().messages);
   });
   it.each(PRACTICE_CHAPTERS.map(c => c.id))(
     "can finish %s with mock inputs",

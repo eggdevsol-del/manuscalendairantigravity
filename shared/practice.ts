@@ -1342,7 +1342,16 @@ export function seedPractice(
       forms: "not issued",
       procedure: "",
     },
-    messages: [],
+    messages: [
+      {
+        from: "Client",
+        text: "Hi! Can we plan a full-day sitting for a black-and-grey botanical forearm tattoo?",
+      },
+      {
+        from: "Artist",
+        text: "Thanks Alex. We can discuss the design here and prepare your booking proposal together.",
+      },
+    ],
     notifications: [],
     records: {},
     voucher: null,
@@ -1367,14 +1376,44 @@ export function startPractice(
 ): PracticeState {
   if (!PRACTICE_CHAPTERS.some(c => c.id === chapterId))
     throw new Error("Unknown practice chapter");
-  return {
+  const next: PracticeState = {
     ...seedPractice(),
     revision: state.revision + 1,
     completed: state.completed,
-    sandbox: { actionProgress: state.sandbox?.actionProgress ?? {} },
+    sandbox: {
+      actionProgress: state.sandbox?.actionProgress ?? {},
+      guideRun: state.revision + 1,
+    },
     chapterId,
     cursor: 0,
   };
+  if (chapterId === "promo-reschedule") {
+    next.booking.price = 80000;
+    next.booking.deposit = 20000;
+    next.booking.paid = 20000;
+    next.sandbox!.originalPrices = [100000];
+    next.sandbox!.issued = [
+      {
+        id: 1,
+        clientId: "practice-client",
+        status: "confirmed",
+        planId: 1,
+        remainingValue: 20,
+        issuedAt: new Date().toISOString(),
+        rules: {
+          name: "Practice calendar offer",
+          kind: "discount",
+          valueType: "percentage",
+          value: 20,
+          currency: "AUD",
+          eligibility: "new",
+          expiresAt: null,
+          sittingMonths: [next.booking.dates[0].slice(0, 7)],
+        },
+      },
+    ];
+  }
+  return next;
 }
 export function advancePractice(
   state: PracticeState,

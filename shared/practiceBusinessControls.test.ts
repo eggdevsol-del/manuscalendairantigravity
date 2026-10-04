@@ -161,9 +161,7 @@ describe("connected artist practice outcomes", () => {
       appointmentId: 2,
       newStartTime: "2026-10-07T03:00:00Z",
     }).state;
-    state = mutate(state, "practice.clientOutcome", {
-      outcome: "approve",
-    }).state;
+    expect(state.booking.status).toBe("confirmed");
     expect(query(state, "projects.summary", {}).sessions[1].startsAt).toBe(
       "2026-10-07T03:00:00.000Z"
     );

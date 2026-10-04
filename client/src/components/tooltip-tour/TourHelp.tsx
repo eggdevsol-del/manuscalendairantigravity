@@ -19,9 +19,11 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
         className="tour-help"
         data-tour-ui
         aria-label="Guide these practice controls"
-        onClick={() =>
-          document.dispatchEvent(new Event("practice-open-control-guide"))
-        }
+        onClick={() => {
+          if (practice.startGuide)
+            practice.startGuide(practiceChapterForRoute(path, search));
+          else document.dispatchEvent(new Event("practice-open-control-guide"));
+        }}
       >
         <CircleHelp size={21} />
       </button>
@@ -54,21 +56,21 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
               type="button"
               onClick={() => {
                 setOpen(false);
-                tour.startContextualTour();
-              }}
-            >
-              Show this page’s guide
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
                 go(
                   `/practice?chapter=${practiceChapterForRoute(path, search)}`
                 );
               }}
             >
-              Practise this workflow
+              Guide this page with practice data
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                go("/practice?chapter=enquiry");
+              }}
+            >
+              Start the full artist walkthrough
             </button>
             <button
               type="button"

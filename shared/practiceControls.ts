@@ -130,7 +130,7 @@ export function practiceSessions(s: PracticeState) {
       s.sandbox?.plans?.[0]?.items?.[i]?.startsAt ?? `${date}T09:00:00+10:00`,
     endTime:
       s.sandbox?.plans?.[0]?.items?.[i]?.endsAt ?? `${date}T17:00:00+10:00`,
-    timeZone: "Australia/Brisbane",
+    timeZone: s.sandbox?.timeZone ?? "Australia/Brisbane",
     status: [
       "arrived",
       "in progress",
@@ -362,7 +362,13 @@ export function queryPracticeControl(
                 },
               ]
             : [],
-        briefs: [{ id: 1, content: s.client.brief }],
+        briefs: [
+          {
+            id: 1,
+            content: s.client.brief,
+            images: s.client.reference ? [PRACTICE_REFERENCE] : [],
+          },
+        ],
         media: s.client.reference
           ? [{ id: 1, url: PRACTICE_REFERENCE, messageId: 1, type: "image" }]
           : [],
@@ -617,6 +623,18 @@ export function mutatePracticeControl(
             .max(52),
         })
         .parse(raw);
+      const timeZone = z
+        .string()
+        .refine(zone => {
+          try {
+            new Intl.DateTimeFormat("en", { timeZone: zone });
+            return true;
+          } catch {
+            return false;
+          }
+        }, "Invalid practice time zone")
+        .parse(raw.scheduling?.timeZone ?? "Australia/Brisbane");
+      b.timeZone = timeZone;
       for (let i = 0; i < v.sessions.length; i++) {
         const a = v.sessions[i];
         const hours = validateAppointmentForWorkHours(
@@ -625,7 +643,7 @@ export function mutatePracticeControl(
           parseWorkSchedule(
             b.settings?.workSchedule ?? defaultSettings.workSchedule
           ),
-          "Australia/Brisbane"
+          timeZone
         );
         if (!hours.valid) throw new Error(hours.reason);
         if (a.depositCents > a.estimateCents)
@@ -646,7 +664,7 @@ export function mutatePracticeControl(
       }
       s.booking.dates = v.sessions.map(a =>
         new Intl.DateTimeFormat("en-CA", {
-          timeZone: "Australia/Brisbane",
+          timeZone: timeZone,
         }).format(new Date(a.startsAt))
       );
       s.booking.price = v.sessions.reduce((sum, a) => sum + a.estimateCents, 0);
@@ -666,7 +684,7 @@ export function mutatePracticeControl(
           new Date().toISOString(),
           v.sessions.map(a => a.startsAt),
           Date.now(),
-          "Australia/Brisbane"
+          timeZone
         );
         if (reason) throw new Error(reason);
         const q = quoteOffer(
@@ -697,6 +715,10 @@ export function mutatePracticeControl(
         })),
         requiresDeposit: true,
       };
+      if (offer) {
+        offer.status = "awaiting_deposit";
+        offer.planId = 1;
+      }
       b.projectName = v.serviceName;
       b.plans = [plan];
       b.messageDetails ??= {};
@@ -792,7 +814,7 @@ export function mutatePracticeControl(
         parseWorkSchedule(
           b.settings?.workSchedule ?? defaultSettings.workSchedule
         ),
-        "Australia/Brisbane"
+        selected.timeZone
       );
       if (!hours.valid) throw new Error(hours.reason);
       const end = +start + selected.durationMinutes * 60000;
@@ -813,7 +835,7 @@ export function mutatePracticeControl(
         (b.originalPrices?.[selected.sessionIndex - 1] ??
           Math.round(selected.estimateCents / 0.8));
       s.booking.proposedDate = new Intl.DateTimeFormat("en-CA", {
-        timeZone: "Australia/Brisbane",
+        timeZone: selected.timeZone,
       }).format(start);
       const promo = b.issued?.[0];
       if (
@@ -824,7 +846,7 @@ export function mutatePracticeControl(
           new Date().toISOString(),
           [start.toISOString()],
           Date.now(),
-          "Australia/Brisbane"
+          selected.timeZone
         ) &&
         !raw.allowOutsideOfferDates
       ) {
@@ -842,8 +864,21 @@ export function mutatePracticeControl(
         }
         s.booking.proposedPrice = repriced;
       }
-      s.booking.status = "change awaiting client approval";
-      data = { requiresApproval: false, requestId: 1 };
+      if (s.booking.proposedPrice !== undefined) {
+        s.booking.status = "change awaiting client approval";
+        data = { requiresApproval: false, requestId: 1 };
+      } else {
+        s.booking.dates[selected.sessionIndex - 1] = s.booking.proposedDate!;
+        if (b.plans?.[0]?.items?.[selected.sessionIndex - 1]) {
+          const item = b.plans[0].items[selected.sessionIndex - 1];
+          item.startsAt = start.toISOString();
+          item.endsAt = new Date(end).toISOString();
+        }
+        delete s.booking.proposedDate;
+        s.booking.status = "confirmed";
+        s.notifications.push("Reschedule confirmation · Push/SMS preview only");
+        data = { requiresApproval: false, success: true };
+      }
       break;
     }
     case "designBrief.generate":

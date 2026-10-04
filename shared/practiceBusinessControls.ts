@@ -1,3 +1,4 @@
+import { PRACTICE_CLIENT } from "./practiceFixtures";
 import { calculateTransactionFees, resolvePaymentTier } from "./fees";
 import { importInputSchema } from "./importData";
 import { quoteOffer, offerEligibility } from "./offerRules";
@@ -66,6 +67,7 @@ export const BUSINESS_QUERIES = [
 ] as const;
 export const BUSINESS_MUTATIONS = [
   "practice.clientOutcome",
+  "practice.guideProgress",
   "forms.signForm",
   "projects.setProjectName",
   "offers.retryDelivery",
@@ -681,16 +683,67 @@ export function mutateBusinessControl(
     case "forms.signForm":
       s.booking.forms = "signed";
       return { success: true };
+    case "practice.guideProgress": {
+      const value = z
+        .object({
+          chapterId: z.string().max(80),
+          cursor: z.number().int().min(0).max(500),
+        })
+        .parse(raw);
+      if (value.chapterId !== s.chapterId)
+        throw new Error(
+          "The active practice guide changed. Reload before continuing."
+        );
+      b.guide = value;
+      return { success: true };
+    }
     case "practice.clientOutcome": {
       const outcome = z
-        .enum(["deposit", "forms", "balance", "approve", "decline"])
+        .enum([
+          "deposit",
+          "forms",
+          "balance",
+          "approve",
+          "decline",
+          "reference",
+          "offer",
+        ])
         .parse(raw.outcome);
       if (outcome === "deposit") {
         if (s.booking.status !== "proposal sent")
           throw new Error("Send a proposal first.");
         s.booking.paid = s.booking.deposit;
         s.booking.status = "confirmed";
-        if (b.plans?.[0]) b.plans[0].status = "confirmed";
+        if (b.plans?.[0]) {
+          b.plans[0].status = "confirmed";
+          b.plans[0].requiresDeposit = false;
+        }
+        for (const offer of b.issued ?? [])
+          if (offer.planId === 1) offer.status = "confirmed";
+      }
+      if (outcome === "offer") {
+        const offer = b.issued?.find(
+          (item: any) => item.clientId === PRACTICE_CLIENT
+        );
+        const available = offer || b.issued?.[0];
+        if (!available) throw new Error("Issue a practice offer first.");
+        available.status = "discussing";
+        available.purchaseRequired = false;
+        if (available.rules.funding === "sale")
+          s.voucher = { balance: available.rules.value, owner: s.client.name };
+        s.messages.push({
+          from: "Client",
+          text: `I’d like to use ${available.rules.name} for a new booking.`,
+        });
+      }
+      if (outcome === "reference") {
+        s.client.reference = true;
+        s.client.brief =
+          "Black-and-grey botanical forearm tattoo, full-day sitting, with Alex’s shared reference.";
+        s.messages.push({
+          from: "Client",
+          text: "Here is my reference image.",
+        });
       }
       if (outcome === "forms") s.booking.forms = "signed";
       if (outcome === "balance") {

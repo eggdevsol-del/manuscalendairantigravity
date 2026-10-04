@@ -22,6 +22,25 @@ export function ContextualTourArrival() {
   const shown = useRef(new Set<string>());
   useEffect(() => {
     if (path === "/practice") return;
+    // Artist onboarding opens the real app with isolated mock data, once per account.
+    // Compulsory live setup must finish before practice can automatically start.
+    if (user?.role === "artist") {
+      if (loading || user.hasCompletedOnboarding !== 1 || active.current)
+        return;
+      const key = `tattoi:practice:intro:v2:${encodeURIComponent(user.id)}`;
+      let played = shown.current.has(key);
+      try {
+        played ||= localStorage.getItem(key) === "shown";
+      } catch {}
+      if (!played) {
+        shown.current.add(key);
+        try {
+          localStorage.setItem(key, "shown");
+        } catch {}
+        go("/practice?chapter=enquiry");
+      }
+      return;
+    }
     const params = new URLSearchParams(search);
     const replay = params.get("walkthrough") === "1";
     if (
@@ -73,6 +92,15 @@ export function ContextualTourArrival() {
       startContextualTour();
     }, 350);
     return () => clearInterval(timer);
-  }, [path, search, go, startContextualTour, user?.id, loading]);
+  }, [
+    path,
+    search,
+    go,
+    startContextualTour,
+    user?.id,
+    user?.role,
+    user?.hasCompletedOnboarding,
+    loading,
+  ]);
   return null;
 }

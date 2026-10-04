@@ -191,3 +191,15 @@ progress {
 
 .practice-controls-banner { position: sticky; top: 0; z-index: 1; }
 [data-practice-surface] > .practice-action-guide { flex-shrink: 0; font-size: 13px; max-height: 30dvh; overflow-y: auto; background: var(--v3-surface); }
+
+/* Practice uses the app's ordinary viewport, sheets and navigation. */
+.practice-app { min-height: 100dvh; padding-top: 32px; }
+.practice-app-banner { position: fixed; inset: 0 0 auto; min-height: 32px; padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--v3-green); color: var(--v3-paper); z-index: 40; font-size: 11px; }
+.practice-app-banner button { background: none; border: 0; color: inherit; text-decoration: underline; white-space: nowrap; }
+.practice-flow-guide { position: fixed; z-index: 9999; bottom: calc(100px + env(safe-area-inset-bottom, 0px)); right: 16px; width: min(340px, calc(100vw - 32px)); max-height: 35dvh; overflow-y: auto; padding: 16px; border: 1px solid var(--v3-line); border-radius: 20px; background: var(--v3-paper); color: var(--v3-ink); box-shadow: 0 8px 30px color-mix(in srgb,var(--v3-ink) 15%,transparent); font-size: 13px; }
+.practice-flow-heading,.practice-flow-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.practice-flow-heading { margin-bottom: 10px; font-size: 11px; color: var(--v3-muted); }
+.practice-flow-guide p { margin: 8px 0; line-height: 1.5; }
+.practice-flow-guide button { border: 1px solid var(--v3-line); border-radius: 12px; background: var(--v3-soft); color: var(--v3-ink); padding: 8px 10px; font: inherit; }
+.practice-flow-catalogue { margin-top: 10px; }
+.practice-notice { position: fixed; top: 36px; left: 12px; right: 12px; background: var(--v3-paper); padding: 12px; z-index: 9999; }

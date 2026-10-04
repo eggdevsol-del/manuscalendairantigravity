@@ -4,7 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const starts = [
   "client/src/features/practice/PracticeControls.tsx",
-  "client/src/features/practice/PracticeScreens.tsx",
+  "client/src/shells/ArtistRoutes.tsx",
 ];
 const visited = new Set(),
   calls = new Map(),
@@ -102,6 +102,8 @@ const other = new Set([
   "adminAnalytics",
   "operations",
   "errors",
+  "reconciliation",
+  "errorLog",
   "clientAuth",
   "publicFunnel",
   "publicPortal",
