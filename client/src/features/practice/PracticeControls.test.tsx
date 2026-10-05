@@ -77,6 +77,7 @@ beforeEach(() => {
   }));
 });
 afterEach(() => {
+  cleanup();
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   localStorage.clear();
@@ -90,6 +91,10 @@ describe("isolated artist screen controls", () => {
       await waitFor(() =>
         expect(document.querySelector(".practice-highlight")).toBeTruthy()
       );
+      expect(document.querySelector(".practice-spotlight-ring")).toBeTruthy();
+      expect(
+        screen.queryByRole("button", { name: "Choose another guide" })
+      ).toBeNull();
       expect(document.body.textContent).not.toMatch(
         /Practice screen could not load|Unregistered practice query|not connected to practice/
       );

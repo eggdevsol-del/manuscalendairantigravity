@@ -14,9 +14,7 @@ class PracticeBoundary extends Component<
   }
   render() {
     return this.state.error ? (
-      <p role="alert">
-        This page could not load. Choose another guide or retry.
-      </p>
+      <p role="alert">This page could not load. Please exit and try again.</p>
     ) : (
       this.props.children
     );
@@ -54,14 +52,12 @@ export function PracticeControls({
   state,
   resolve,
   onExit,
-  onCatalogue = onExit,
   onStartGuide,
   initialRoute,
 }: {
   state: PracticeState;
   resolve: PracticeResolver;
   onExit: () => void;
-  onCatalogue?: () => void;
   onStartGuide?: (chapterId: string) => void;
   initialRoute?: string;
 }) {
@@ -228,11 +224,7 @@ export function PracticeControls({
                   <ArtistRoutes />
                 </PracticeBoundary>
                 <Navigation />
-                <PracticeFlowGuide
-                  state={state}
-                  resolve={resolve}
-                  onCatalogue={onCatalogue}
-                />
+                <PracticeFlowGuide state={state} resolve={resolve} />
                 {notice && (
                   <div role="status" className="practice-notice">
                     {notice}

@@ -1,3 +1,7 @@
+import {
+  practiceChapterForRoute,
+  PRACTICE_ROUTES,
+} from "@shared/practiceRoutes";
 import { useEffect, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -22,12 +26,15 @@ export function ContextualTourArrival() {
   const shown = useRef(new Set<string>());
   useEffect(() => {
     if (path === "/practice") return;
-    // Artist onboarding opens the real app with isolated mock data, once per account.
+    // Each artist page opens its guide on the first visit for this account.
     // Compulsory live setup must finish before practice can automatically start.
     if (user?.role === "artist") {
       if (loading || user.hasCompletedOnboarding !== 1 || active.current)
         return;
-      const key = `tattoi:practice:intro:v2:${encodeURIComponent(user.id)}`;
+      if (!PRACTICE_ROUTES["/" + path.split("/").filter(Boolean)[0]]) return;
+      const page = path.replace(/\/\d+(?=\/|$)/g, "/record");
+      const section = new URLSearchParams(search).get("section") || "";
+      const key = `tattoi:guide:artist-page:v3:${encodeURIComponent(user.id)}:${page}:${section}`;
       let played = shown.current.has(key);
       try {
         played ||= localStorage.getItem(key) === "shown";
@@ -37,7 +44,9 @@ export function ContextualTourArrival() {
         try {
           localStorage.setItem(key, "shown");
         } catch {}
-        go("/practice?chapter=enquiry");
+        go(
+          `/practice?chapter=${practiceChapterForRoute(path, search)}&return=${encodeURIComponent(path + (search ? "?" + search.replace(/^\?/, "") : ""))}`
+        );
       }
       return;
     }

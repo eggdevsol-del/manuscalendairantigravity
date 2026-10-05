@@ -64,7 +64,8 @@ export default function Settings() {
   if (section === "travel" && artist) return <Travel />;
   if (section === "data-import" && artist) return <DataImport />;
   if (section === "instagram" && artist) return <InstagramImport />;
-  if (section === "how-tos") return <Guides />;
+  if (section === "how-tos")
+    return artist ? <Redirect to="/settings" /> : <Guides />;
   if (section === "consultations" && artist) return <Consultations />;
   if (section === "danger-zone") return <AccountRemoval />;
   if (section === "portfolio") return <Redirect to="/artist-profile" />;
@@ -165,12 +166,16 @@ export default function Settings() {
     {
       title: "Help & account controls",
       items: [
-        {
-          title: "Guided walkthroughs",
-          detail: "Learn each workflow",
-          icon: HelpCircle,
-          href: settingsPath + "?section=how-tos",
-        },
+        ...(user?.role === "artist"
+          ? []
+          : [
+              {
+                title: "Guided walkthroughs",
+                detail: "Learn each workflow",
+                icon: HelpCircle,
+                href: settingsPath + "?section=how-tos",
+              },
+            ]),
         {
           title: "Delete account",
           detail: "Account and data removal",

@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { useEffect, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { Action, Screen, Section, Row } from "@/app-v3/design/primitives";
+import { Action, Screen, Section } from "@/app-v3/design/primitives";
 import { PRACTICE_CHAPTERS, type PracticeState } from "@shared/practice";
 import "./practice.css";
 type PracticeCommand = {
@@ -63,11 +63,17 @@ export function PracticeView({
   ) => Promise<{ state: PracticeState; data: unknown }>;
 }) {
   const [, go] = useLocation();
-  const requested = new URLSearchParams(useSearch()).get("chapter");
+  const params = new URLSearchParams(useSearch());
+  const requested = params.get("chapter");
+  const returnPath = params.get("return");
+  const exitPath =
+    returnPath?.startsWith("/") &&
+    !returnPath.startsWith("//") &&
+    !returnPath.startsWith("/practice")
+      ? returnPath
+      : "/dashboard";
   const [state, setState] = useState<PracticeState>();
   const [error, setError] = useState("");
-  const [catalogue, setCatalogue] = useState(false);
-  const [filter, setFilter] = useState("");
   const current = useRef(state);
   current.current = state;
   const queue = useRef(Promise.resolve());
@@ -112,7 +118,6 @@ export function PracticeView({
         });
         current.current = next;
         setState(next);
-        setCatalogue(false);
       });
       queue.current = work.catch(() => {});
       await work;
@@ -131,7 +136,7 @@ export function PracticeView({
       void start(requested);
     else if (!state.chapterId) void start("enquiry");
   }, [state, requested]);
-  if (state?.chapterId && !catalogue)
+  if (state?.chapterId)
     return (
       <>
         {error && (
@@ -145,8 +150,7 @@ export function PracticeView({
           onStartGuide={chapterId => void start(chapterId)}
           state={state}
           resolve={resolve}
-          onExit={() => go("/settings?section=how-tos")}
-          onCatalogue={() => setCatalogue(true)}
+          onExit={() => go(exitPath)}
         />
       </>
     );
@@ -156,47 +160,15 @@ export function PracticeView({
       subtitle="Explore each flow, one step at a time."
       back="/settings?section=how-tos"
     >
-      <p className="practice-banner">Choose a guide to get started.</p>
-      {preview && <p>Progress is stored in this browser only.</p>}
       {error && <p role="alert">{error}</p>}
-      {!state ? (
-        <Section title="Loading guide">
-          <p>
-            {sessionError
-              ? "This guide is unavailable. Please try again."
-              : "Loading your walkthrough…"}
-          </p>
-          <Action onClick={reload}>Retry</Action>
-        </Section>
-      ) : (
-        <>
-          {state.chapterId && (
-            <Action tone="quiet" onClick={() => setCatalogue(false)}>
-              Resume current guide
-            </Action>
-          )}
-          <label className="v3-form">
-            Find a workflow
-            <input
-              aria-label="Find a workflow"
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-            />
-          </label>
-          {PRACTICE_CHAPTERS.filter(c =>
-            `${c.title} ${c.detail}`
-              .toLowerCase()
-              .includes(filter.toLowerCase())
-          ).map(c => (
-            <Row
-              key={c.id}
-              title={c.title}
-              detail={c.detail}
-              onClick={() => void start(c.id)}
-            />
-          ))}
-        </>
-      )}
+      <Section title="Loading guide">
+        <p>
+          {sessionError
+            ? "This guide is unavailable. Please try again."
+            : "Loading your walkthrough…"}
+        </p>
+        {sessionError && <Action onClick={reload}>Retry</Action>}
+      </Section>
     </Screen>
   );
 }

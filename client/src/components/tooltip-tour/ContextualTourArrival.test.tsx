@@ -9,10 +9,11 @@ const mocks = vi.hoisted(() => ({
   start: vi.fn(),
   go: vi.fn(),
   search: "",
+  path: "/dashboard",
   active: null as unknown,
 }));
 vi.mock("wouter", () => ({
-  useLocation: () => ["/dashboard", mocks.go],
+  useLocation: () => [mocks.path, mocks.go],
   useSearch: () => mocks.search,
 }));
 vi.mock("@/_core/hooks/useAuth", () => ({
@@ -37,6 +38,7 @@ beforeEach(() => {
   mocks.go.mockClear();
   mocks.user = { id: "artist-a" };
   mocks.search = "";
+  mocks.path = "/dashboard";
   mocks.active = null;
   Object.defineProperty(document, "visibilityState", {
     configurable: true,
@@ -53,7 +55,7 @@ const tick = () =>
     vi.advanceTimersByTime(400);
   });
 describe("automatic account guides", () => {
-  it("opens the actual mock-data artist workspace only after required setup and once per account", () => {
+  it("opens the actual mock-data artist workspace only after required setup and once per page and account", () => {
     mocks.user = {
       id: "new-artist",
       role: "artist",
@@ -65,11 +67,20 @@ describe("automatic account guides", () => {
     incomplete.unmount();
     mocks.user.hasCompletedOnboarding = 1;
     const ready = render(<ContextualTourArrival />);
-    expect(mocks.go).toHaveBeenCalledWith("/practice?chapter=enquiry");
+    expect(mocks.go).toHaveBeenCalledWith(
+      "/practice?chapter=today&return=%2Fdashboard"
+    );
     ready.unmount();
     render(<ContextualTourArrival />);
     expect(mocks.go).toHaveBeenCalledTimes(1);
     expect(mocks.start).not.toHaveBeenCalled();
+    cleanup();
+    mocks.path = "/calendar";
+    render(<ContextualTourArrival />);
+    expect(mocks.go).toHaveBeenCalledTimes(2);
+    expect(mocks.go).toHaveBeenLastCalledWith(
+      "/practice?chapter=enquiry&return=%2Fcalendar"
+    );
   });
 
   it("starts after sign-in, once per account, and keeps other accounts independent", () => {

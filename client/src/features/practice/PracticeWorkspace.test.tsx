@@ -4,11 +4,10 @@ vi.mock("@/_core/hooks/useAuth", () => ({
 vi.mock("@/lib/version", () => ({ APP_VERSION: "practice-test" }));
 vi.mock("@/lib/pwa", () => ({ forceUpdate: vi.fn() }));
 vi.mock("./PracticeControls", () => ({
-  PracticeControls: ({ state, onCatalogue }: any) => (
+  PracticeControls: ({ state }: any) => (
     <div>
       <p>Actual app workspace</p>
       <p>{state.chapterId}</p>
-      <button onClick={onCatalogue}>Choose another guide</button>
     </div>
   ),
 }));
@@ -40,20 +39,14 @@ describe("actual app practice entry", () => {
     );
     expect(screen.queryByText("Test failure & retry")).toBeNull();
   });
-  it("lets the artist choose and replay another real workflow", async () => {
+  it("does not expose a guide chooser", async () => {
     mount();
     await waitFor(() =>
       expect(screen.getByText("Actual app workspace")).toBeTruthy()
     );
-    fireEvent.click(
-      screen.getByRole("button", { name: "Choose another guide" })
-    );
-    fireEvent.change(screen.getByLabelText("Find a workflow"), {
-      target: { value: "voucher" },
-    });
-    expect(screen.queryByText("Run a full-day sitting")).toBeNull();
-    fireEvent.click(screen.getByText("Sell a gift voucher"));
-    await waitFor(() => expect(screen.getByText("voucher")).toBeTruthy());
-    expect(screen.getByText("Actual app workspace")).toBeTruthy();
+    expect(
+      screen.queryByRole("button", { name: "Choose another guide" })
+    ).toBeNull();
+    expect(screen.queryByLabelText("Find a workflow")).toBeNull();
   });
 });

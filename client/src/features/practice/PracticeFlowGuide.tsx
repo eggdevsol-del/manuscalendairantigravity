@@ -10,11 +10,9 @@ import type { PracticeResolver } from "./PracticeControls";
 export function PracticeFlowGuide({
   state,
   resolve,
-  onCatalogue,
 }: {
   state: PracticeState;
   resolve: PracticeResolver;
-  onCatalogue: () => void;
 }) {
   const [, go] = useLocation();
   const chapterId = state.chapterId || "enquiry";
@@ -38,6 +36,12 @@ export function PracticeFlowGuide({
   const [busy, setBusy] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [above, setAbove] = useState(false);
+  const [spotlight, setSpotlight] = useState<{
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+  } | null>(null);
   const latest = useRef({ resolve, cursor, chapterId });
   latest.current = { resolve, cursor, chapterId };
   const advance = async () => {
@@ -146,15 +150,30 @@ export function PracticeFlowGuide({
     };
   }, [chapterId, cursor, step, target]);
   useEffect(() => {
-    if (!target || hidden) return;
-    const place = () =>
-      setAbove(target.getBoundingClientRect().top > window.innerHeight * 0.5);
+    if (!target || hidden) {
+      setSpotlight(null);
+      return;
+    }
+    const place = () => {
+      const r = target.getBoundingClientRect();
+      setAbove(r.top > window.innerHeight * 0.5);
+      setSpotlight({
+        top: Math.max(0, r.top - 8),
+        left: Math.max(0, r.left - 8),
+        right: Math.min(window.innerWidth, r.right + 8),
+        bottom: Math.min(window.innerHeight, r.bottom + 8),
+      });
+    };
     target.classList.add("practice-highlight");
     target.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     place();
+    const resize =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
+    resize?.observe(target);
     window.addEventListener("resize", place);
     document.addEventListener("scroll", place, true);
     return () => {
+      resize?.disconnect();
       target.classList.remove("practice-highlight");
       window.removeEventListener("resize", place);
       document.removeEventListener("scroll", place, true);
@@ -186,70 +205,114 @@ export function PracticeFlowGuide({
   };
   const title = PRACTICE_CHAPTERS.find(c => c.id === chapterId)?.title;
   return createPortal(
-    <aside
-      className="practice-flow-guide"
-      style={above && !hidden ? { top: 64, bottom: "auto" } : undefined}
-      data-practice-guide
-      aria-label="Guided tutorial"
-      aria-live="polite"
-    >
-      <div className="practice-flow-heading">
-        <span>Guide · {title}</span>
-        <button
-          onClick={() => setHidden(!hidden)}
-          aria-label={hidden ? "Show guide" : "Minimise guide"}
+    <>
+      {step && !hidden && (
+        <div
+          className="practice-spotlight"
+          aria-hidden="true"
+          data-practice-guide
         >
-          {hidden ? "?" : "−"}
-        </button>
-      </div>
-      {!hidden && (
-        <>
-          {step ? (
+          {spotlight ? (
             <>
-              <strong>{step.title}</strong>
-              <p>{step.body}</p>
-              {!target && !step.simulation && (
-                <p className="v3-muted">
-                  Use the page to open the relevant form or details. The next
-                  control will highlight when it appears.
-                </p>
-              )}
-              {error && <p role="alert">{error}</p>}
-              <div className="practice-flow-actions">
-                <small>
-                  {cursor + 1} / {tour.steps.length}
-                </small>
-                {step.simulation ? (
-                  <button disabled={busy} onClick={() => void simulate()}>
-                    Continue
-                  </button>
-                ) : step.review ? (
-                  <button
-                    disabled={busy || !target}
-                    onClick={() => void advance()}
-                  >
-                    I’ve reviewed this
-                  </button>
-                ) : (
-                  <small>Use the highlighted app control</small>
-                )}
-              </div>
+              <div
+                style={{ top: 0, left: 0, right: 0, height: spotlight.top }}
+              />
+              <div
+                style={{
+                  top: spotlight.top,
+                  left: 0,
+                  width: spotlight.left,
+                  height: Math.max(0, spotlight.bottom - spotlight.top),
+                }}
+              />
+              <div
+                style={{
+                  top: spotlight.top,
+                  left: spotlight.right,
+                  right: 0,
+                  height: Math.max(0, spotlight.bottom - spotlight.top),
+                }}
+              />
+              <div
+                style={{ top: spotlight.bottom, left: 0, right: 0, bottom: 0 }}
+              />
+              <span
+                className="practice-spotlight-ring"
+                style={{
+                  top: spotlight.top,
+                  left: spotlight.left,
+                  width: Math.max(0, spotlight.right - spotlight.left),
+                  height: Math.max(0, spotlight.bottom - spotlight.top),
+                }}
+              />
             </>
           ) : (
-            <>
-              <strong>Workflow complete</strong>
-              <p>
-                The updated records are visible throughout the app. Explore its
-                controls or choose another guide.
-              </p>
-            </>
+            <div style={{ inset: 0 }} />
           )}
-          <button className="practice-flow-catalogue" onClick={onCatalogue}>
-            Choose another guide
-          </button>
-        </>
+        </div>
       )}
-    </aside>,
+      <aside
+        className="practice-flow-guide"
+        style={above && !hidden ? { top: 64, bottom: "auto" } : undefined}
+        data-practice-guide
+        aria-label="Guided tutorial"
+        aria-live="polite"
+      >
+        <div className="practice-flow-heading">
+          <span>Guide · {title}</span>
+          <button
+            onClick={() => setHidden(!hidden)}
+            aria-label={hidden ? "Show guide" : "Minimise guide"}
+          >
+            {hidden ? "?" : "−"}
+          </button>
+        </div>
+        {!hidden && (
+          <>
+            {step ? (
+              <>
+                <strong>{step.title}</strong>
+                <p>{step.body}</p>
+                {!target && !step.simulation && (
+                  <p className="v3-muted">
+                    Use the page to open the relevant form or details. The next
+                    control will highlight when it appears.
+                  </p>
+                )}
+                {error && <p role="alert">{error}</p>}
+                <div className="practice-flow-actions">
+                  <small>
+                    {cursor + 1} / {tour.steps.length}
+                  </small>
+                  {step.simulation ? (
+                    <button disabled={busy} onClick={() => void simulate()}>
+                      Continue
+                    </button>
+                  ) : step.review ? (
+                    <button
+                      disabled={busy || !target}
+                      onClick={() => void advance()}
+                    >
+                      I’ve reviewed this
+                    </button>
+                  ) : (
+                    <small>Use the highlighted app control</small>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <strong>Workflow complete</strong>
+                <p>
+                  The updated records are visible throughout the app. Use the ?
+                  button on any page to see its guide.
+                </p>
+              </>
+            )}
+          </>
+        )}
+      </aside>
+    </>,
     document.body
   );
 }
