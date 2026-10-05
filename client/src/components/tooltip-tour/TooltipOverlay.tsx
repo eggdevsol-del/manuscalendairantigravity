@@ -1,3 +1,4 @@
+import { guideViewportBounds, placeGuide } from "./guidePlacement";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTooltipTour } from "./TooltipTourProvider";
@@ -30,49 +31,49 @@ export function TooltipOverlay() {
     if (!step) return;
     let target: HTMLElement | null = null;
     const measure = () => {
+      if (bubble.current) setHeight(bubble.current.scrollHeight);
       const el = getTarget(step.targetId);
       if (el && el !== target) {
-        target?.removeAttribute('data-tour-current-target');
+        target?.removeAttribute("data-tour-current-target");
         target = el;
-        el.setAttribute('data-tour-current-target',step.targetId);
-        const box=el.getBoundingClientRect();
-        const outside = box.top < 12 || box.bottom > innerHeight - 90 || box.left < 0 || box.right > innerWidth;
-        if (outside && !el.dataset.tourRepeat) el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+        el.setAttribute("data-tour-current-target", step.targetId);
+        const box = el.getBoundingClientRect();
+        const outside =
+          box.top < 12 ||
+          box.bottom > innerHeight - 90 ||
+          box.left < 0 ||
+          box.right > innerWidth;
+        if (outside && !el.dataset.tourRepeat)
+          el.scrollIntoView({
+            block: "center",
+            inline: "nearest",
+            behavior: "auto",
+          });
       }
       const dialog =
         el?.closest<HTMLElement>('[role="dialog"],[role="alertdialog"]') ||
         null;
       setOwner(dialog);
       const box = el?.getBoundingClientRect();
-      setRect(
-        box
-          ? {
-              top: box.top - 6,
-              left: box.left - 6,
-              width: box.width + 12,
-              height: box.height + 12,
-            }
-          : null
+      const nextRect = box
+        ? {
+            top: box.top - 6,
+            left: box.left - 6,
+            width: box.width + 12,
+            height: box.height + 12,
+          }
+        : null;
+      setRect(previous =>
+        JSON.stringify(previous) === JSON.stringify(nextRect)
+          ? previous
+          : nextRect
       );
-      const view = window.visualViewport;
-      const style = getComputedStyle(document.documentElement);
-      const safe = (name: string) =>
-        parseFloat(style.getPropertyValue(name)) || 0;
-      const top = (view?.offsetTop || 0) + Math.max(12, safe("--app-safe-top"));
-      const left = (view?.offsetLeft || 0) + Math.max(12, safe("--app-safe-left"));
-      const right = (view?.offsetLeft || 0) + (view?.width || innerWidth) - Math.max(12, safe("--app-safe-right"));
-      const nav = document
-        .getElementById("bottom-nav")
-        ?.getBoundingClientRect();
-      const bottom = Math.min(
-        (view?.offsetTop || 0) +
-          (view?.height || innerHeight) -
-          Math.max(12, safe("--app-safe-bottom")),
-        !dialog && nav?.top && nav.top > top
-            ? nav.top - 12
-            : Infinity
+      const nextBounds = guideViewportBounds(dialog);
+      setBounds(previous =>
+        JSON.stringify(previous) === JSON.stringify(nextBounds)
+          ? previous
+          : nextBounds
       );
-      setBounds({ top, left, right, bottom });
     };
     const escape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -82,24 +83,31 @@ export function TooltipOverlay() {
       }
     };
     measure();
-    const timer = setInterval(measure, 200);
+    let frame = 0;
+    const follow = () => {
+      measure();
+      frame = requestAnimationFrame(follow);
+    };
+    frame = requestAnimationFrame(follow);
     window.addEventListener("scroll", measure, true);
     window.addEventListener("resize", measure);
     window.addEventListener("keydown", escape, true);
     window.visualViewport?.addEventListener("resize", measure);
+    window.visualViewport?.addEventListener("scroll", measure);
     return () => {
       target?.removeAttribute("data-tour-current-target");
-      clearInterval(timer);
+      cancelAnimationFrame(frame);
       window.removeEventListener("scroll", measure, true);
       window.removeEventListener("resize", measure);
       window.removeEventListener("keydown", escape, true);
       window.visualViewport?.removeEventListener("resize", measure);
+      window.visualViewport?.removeEventListener("scroll", measure);
     };
   }, [step, getTarget, skipTour]);
   useEffect(() => {
     if (!bubble.current) return;
     const observer = new ResizeObserver(([entry]) =>
-      setHeight(entry.target.getBoundingClientRect().height)
+      setHeight((entry.target as HTMLElement).scrollHeight)
     );
     observer.observe(bubble.current);
     return () => observer.disconnect();
@@ -107,30 +115,25 @@ export function TooltipOverlay() {
   useEffect(() => {
     if (!activeTour) return;
     const previous = document.activeElement as HTMLElement | null;
-    const frame = requestAnimationFrame(() => bubble.current?.focus({preventScroll:true}));
+    const frame = requestAnimationFrame(() =>
+      bubble.current?.focus({ preventScroll: true })
+    );
     return () => {
       cancelAnimationFrame(frame);
-      if(previous?.isConnected && !previous.closest('[inert],[aria-hidden="true"]')) previous.focus({preventScroll:true});
+      if (
+        previous?.isConnected &&
+        !previous.closest('[inert],[aria-hidden="true"]')
+      )
+        previous.focus({ preventScroll: true });
     };
   }, [!!activeTour]);
   if (!activeTour || !step) return null;
-  const width = Math.min(320, bounds.right - bounds.left);
-  const maxHeight = Math.max(80, bounds.bottom - bounds.top);
-  const actualHeight = Math.min(height, maxHeight);
-  let left = rect ? rect.left + rect.width / 2 - width / 2 : bounds.left;
-  let top = rect ? rect.top + rect.height + 14 : bounds.top;
-  if (rect && (step.position === "top" || top + actualHeight > bounds.bottom))
-    top = rect.top - actualHeight - 14;
-  if (
-    rect &&
-    (step.position === "right" || rect.width > width) &&
-    rect.left + rect.width + 14 + width <= bounds.right
-  ) {
-    left = rect.left + rect.width + 14;
-    top = rect.top;
-  }
-  left = Math.max(bounds.left, Math.min(left, bounds.right - width));
-  top = Math.max(bounds.top, Math.min(top, bounds.bottom - actualHeight));
+  const { width, maxHeight, left, top } = placeGuide(
+    rect,
+    bounds,
+    { width: 320, height },
+    step.position
+  );
   const offset = owner?.getBoundingClientRect();
   const localTop = top - (offset?.top || 0) + (owner?.scrollTop || 0);
   const localLeft = left - (offset?.left || 0) + (owner?.scrollLeft || 0);
@@ -138,7 +141,7 @@ export function TooltipOverlay() {
     <div
       className="tooltip-tour-backdrop"
       data-tour-ui
-      onClick={event=>event.stopPropagation()}
+      onClick={event => event.stopPropagation()}
       data-tour-id={activeTour.id}
       style={owner ? { position: "absolute", zIndex: 9990 } : undefined}
     >

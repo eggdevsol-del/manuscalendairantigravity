@@ -7,3 +7,5 @@ Twenty-two guide recipes highlight actual mounted controls and advance on user a
 No schema migration is needed. The existing practice session stores guide progress and sandbox data. Replaying a guide resets its fictional fixture. Guide progress persists, but an interrupted modal or unfinished form must be reopened; form drafts are not restored.
 
 Validation includes every guide's starting control, enquiry through deposit and calendar, client discounts and gift vouchers, simulated bank verification, isolated routing and control mutations. Production provider delivery and payments remain outside practice.
+
+All guide text boxes use shared placement rules, measured content heights and visible viewport bounds. They track the highlighted control during scrolling and sheet animation, flip sides when necessary, and scroll internally when text exceeds available space. Mobile keyboard and safe-area bounds are included.

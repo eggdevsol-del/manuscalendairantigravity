@@ -1,3 +1,4 @@
+import { useGuidePlacement } from "@/components/tooltip-tour/useGuidePlacement";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -35,7 +36,8 @@ export function PracticeFlowGuide({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [above, setAbove] = useState(false);
+  const bubble = useRef<HTMLElement>(null);
+  const placement = useGuidePlacement(hidden ? null : target, bubble);
   const [spotlight, setSpotlight] = useState<{
     top: number;
     left: number;
@@ -156,23 +158,32 @@ export function PracticeFlowGuide({
     }
     const place = () => {
       const r = target.getBoundingClientRect();
-      setAbove(r.top > window.innerHeight * 0.5);
-      setSpotlight({
+      const next = {
         top: Math.max(0, r.top - 8),
         left: Math.max(0, r.left - 8),
         right: Math.min(window.innerWidth, r.right + 8),
         bottom: Math.min(window.innerHeight, r.bottom + 8),
-      });
+      };
+      setSpotlight(previous =>
+        JSON.stringify(previous) === JSON.stringify(next) ? previous : next
+      );
     };
     target.classList.add("practice-highlight");
     target.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     place();
+    let frame = 0;
+    const follow = () => {
+      place();
+      frame = requestAnimationFrame(follow);
+    };
+    frame = requestAnimationFrame(follow);
     const resize =
       typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
     resize?.observe(target);
     window.addEventListener("resize", place);
     document.addEventListener("scroll", place, true);
     return () => {
+      cancelAnimationFrame(frame);
       resize?.disconnect();
       target.classList.remove("practice-highlight");
       window.removeEventListener("resize", place);
@@ -253,7 +264,8 @@ export function PracticeFlowGuide({
       )}
       <aside
         className="practice-flow-guide"
-        style={above && !hidden ? { top: 64, bottom: "auto" } : undefined}
+        ref={bubble}
+        style={{ ...placement, right: "auto", bottom: "auto" }}
         data-practice-guide
         aria-label="Guided tutorial"
         aria-live="polite"
