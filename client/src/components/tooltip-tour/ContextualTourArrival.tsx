@@ -1,7 +1,3 @@
-import {
-  practiceChapterForRoute,
-  PRACTICE_ROUTES,
-} from "@shared/practiceRoutes";
 import { useEffect, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -13,7 +9,7 @@ import {
 } from "./contextualTargets";
 
 export function automaticGuideKey(userId: string, path: string, title: string) {
-  return `tattoi:guide:v1:${encodeURIComponent(userId)}:${path.replace(/\/\d+(?=\/|$)/g, "/record")}:${title}`;
+  return `tattoi:guide:inline:v4:${encodeURIComponent(userId)}:${path.replace(/\/\d+(?=\/|$)/g, "/record")}:${title}`;
 }
 /** First visits guide a signed-in account; help and guide links always replay. */
 export function ContextualTourArrival() {
@@ -26,30 +22,7 @@ export function ContextualTourArrival() {
   const shown = useRef(new Set<string>());
   useEffect(() => {
     if (path === "/practice") return;
-    // Each artist page opens its guide on the first visit for this account.
-    // Compulsory live setup must finish before practice can automatically start.
-    if (user?.role === "artist") {
-      if (loading || user.hasCompletedOnboarding !== 1 || active.current)
-        return;
-      if (!PRACTICE_ROUTES["/" + path.split("/").filter(Boolean)[0]]) return;
-      const page = path.replace(/\/\d+(?=\/|$)/g, "/record");
-      const section = new URLSearchParams(search).get("section") || "";
-      const key = `tattoi:guide:artist-page:v3:${encodeURIComponent(user.id)}:${page}:${section}`;
-      let played = shown.current.has(key);
-      try {
-        played ||= localStorage.getItem(key) === "shown";
-      } catch {}
-      if (!played) {
-        shown.current.add(key);
-        try {
-          localStorage.setItem(key, "shown");
-        } catch {}
-        go(
-          `/practice?chapter=${practiceChapterForRoute(path, search)}&return=${encodeURIComponent(path + (search ? "?" + search.replace(/^\?/, "") : ""))}`
-        );
-      }
-      return;
-    }
+    if (user?.role === "artist" && user.hasCompletedOnboarding !== 1) return;
     const params = new URLSearchParams(search);
     const replay = params.get("walkthrough") === "1";
     if (

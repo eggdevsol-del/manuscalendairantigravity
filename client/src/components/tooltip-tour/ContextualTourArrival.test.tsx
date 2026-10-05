@@ -55,7 +55,7 @@ const tick = () =>
     vi.advanceTimersByTime(400);
   });
 describe("automatic account guides", () => {
-  it("opens the actual mock-data artist workspace only after required setup and once per page and account", () => {
+  it("opens an inline guide without navigation after setup, once per page and account", () => {
     mocks.user = {
       id: "new-artist",
       role: "artist",
@@ -67,20 +67,19 @@ describe("automatic account guides", () => {
     incomplete.unmount();
     mocks.user.hasCompletedOnboarding = 1;
     const ready = render(<ContextualTourArrival />);
-    expect(mocks.go).toHaveBeenCalledWith(
-      "/practice?chapter=today&return=%2Fdashboard"
-    );
+    tick();
+    expect(mocks.go).not.toHaveBeenCalled();
+    expect(mocks.start).toHaveBeenCalledTimes(1);
     ready.unmount();
     render(<ContextualTourArrival />);
-    expect(mocks.go).toHaveBeenCalledTimes(1);
-    expect(mocks.start).not.toHaveBeenCalled();
+    expect(mocks.start).toHaveBeenCalledTimes(1);
+    expect(mocks.go).not.toHaveBeenCalled();
     cleanup();
     mocks.path = "/calendar";
     render(<ContextualTourArrival />);
-    expect(mocks.go).toHaveBeenCalledTimes(2);
-    expect(mocks.go).toHaveBeenLastCalledWith(
-      "/practice?chapter=enquiry&return=%2Fcalendar"
-    );
+    tick();
+    expect(mocks.start).toHaveBeenCalledTimes(2);
+    expect(mocks.go).not.toHaveBeenCalled();
   });
 
   it("starts after sign-in, once per account, and keeps other accounts independent", () => {

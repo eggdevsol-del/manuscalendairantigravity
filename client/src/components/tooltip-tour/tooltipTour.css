@@ -365,3 +365,7 @@
   min-height: 0;
   gap: 12px;
 }
+
+/* Guides are non-blocking layers over the current app page. */
+.tooltip-tour-backdrop, .tooltip-tour-backdrop svg { pointer-events: none; }
+.tooltip-tour-bubble { pointer-events: auto; }

@@ -114,6 +114,15 @@ export function TooltipOverlay() {
   }, [activeTour?.id, owner, collapsed]);
   useEffect(() => {
     if (!activeTour) return;
+    const dismissOutside = (event: PointerEvent) => {
+      if (!bubble.current?.contains(event.target as Node)) skipTour();
+    };
+    document.addEventListener("pointerdown", dismissOutside, true);
+    return () =>
+      document.removeEventListener("pointerdown", dismissOutside, true);
+  }, [!!activeTour, skipTour]);
+  useEffect(() => {
+    if (!activeTour) return;
     const previous = document.activeElement as HTMLElement | null;
     const frame = requestAnimationFrame(() =>
       bubble.current?.focus({ preventScroll: true })
@@ -243,7 +252,7 @@ export function TooltipOverlay() {
                 </button>
               )}
               <button className="tooltip-tour-skip" onClick={skipTour}>
-                Skip
+                Close guide
               </button>
               <button
                 className="tooltip-tour-next"

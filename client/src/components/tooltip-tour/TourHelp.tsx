@@ -26,9 +26,6 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
       </button>
     );
   if (!tour) return null;
-  const artist =
-    typeof document !== "undefined" &&
-    !!document.querySelector(".artist-workspace");
   return (
     <button
       type="button"
@@ -36,13 +33,7 @@ export function TourHelp({ feature = false }: { feature?: boolean }) {
       data-tour-ui
       aria-label={feature ? "Tour this feature" : "Tour this page"}
       title="Show me around"
-      onClick={() =>
-        artist
-          ? go(
-              `/practice?chapter=${practiceChapterForRoute(path, search)}&return=${encodeURIComponent(path + (search ? "?" + search.replace(/^\?/, "") : ""))}`
-            )
-          : tour.startContextualTour()
-      }
+      onClick={() => tour.startContextualTour()}
     >
       <CircleHelp size={21} />
     </button>

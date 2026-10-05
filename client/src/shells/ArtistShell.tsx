@@ -1,8 +1,7 @@
 import { ArtistRoutes } from "./ArtistRoutes";
 import { ArtistSetupGate } from "@/features/onboarding/ArtistSetupGate";
-import PracticeWorkspace from "@/features/practice/PracticeWorkspace";
 import React from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Redirect, Route, Switch, useLocation, useSearch } from "wouter";
 import BottomNav from "@/app-v3/design/Navigation";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
@@ -23,7 +22,7 @@ function ArtistWorkspace() {
     <div>
       <AnimatedSwitch>
         <Switch>
-          <Route path="/practice" component={PracticeWorkspace} />
+          <Route path="/practice" component={GuideRecovery} />
           <Route>
             <ArtistRoutes />
           </Route>
@@ -104,4 +103,14 @@ function ArrivalOverlay() {
       }}
     />
   );
+}
+
+/** Recover old walkthrough URLs without holding the artist in a separate workspace. */
+function GuideRecovery() {
+  const path = new URLSearchParams(useSearch()).get("return");
+  const safe =
+    path?.startsWith("/") &&
+    !path.startsWith("//") &&
+    !path.startsWith("/practice");
+  return <Redirect to={safe ? path! : "/dashboard"} />;
 }
