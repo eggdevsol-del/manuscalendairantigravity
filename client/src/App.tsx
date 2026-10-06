@@ -1,5 +1,4 @@
 import { MasterDev, MasterDevLogin } from "@/app-v3/pages/MasterDev";
-import { ContextualTourArrival } from "@/components/tooltip-tour/ContextualTourArrival";
 import React, { Suspense } from "react";
 import { Feedback, Screen } from "@/app-v3/design/primitives";
 import { ActionPanel } from "@/components/ActionPanel";
@@ -17,7 +16,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
 import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { PaymentRequestBanner } from "@/components/PaymentRequestBanner";
-import { TooltipTourProvider, TooltipOverlay } from "@/components/tooltip-tour";
+import { TooltipTourProvider } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
 import PublicArtistProfile from "@/app-v3/pages/PublicArtist";
 
@@ -224,7 +223,9 @@ function Router() {
         if (!cancelled) void setExternalUserId(user.id);
       });
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const isPublicFunnel =
@@ -312,8 +313,6 @@ function App() {
                 <Toaster />
                 <UpdateBanner />
                 <AuthOnlyBanners />
-                <TooltipOverlay />
-                <ContextualTourArrival />
                 <ActionPanel />
                 <ErrorBoundary boundary="app-root">
                   <Router />

@@ -1,41 +1,4 @@
-import { usePractice } from "@/features/practice/PracticeContext";
-import { CircleHelp } from "lucide-react";
-import { useLocation, useSearch } from "wouter";
-import { useOptionalTooltipTour } from "./TooltipTourProvider";
-import { practiceChapterForRoute } from "@shared/practiceRoutes";
-/** Help keeps the overview and safe, account-scoped practice as distinct choices. */
-export function TourHelp({ feature = false }: { feature?: boolean }) {
-  const tour = useOptionalTooltipTour();
-  const practice = usePractice();
-  const [path, go] = useLocation(),
-    search = useSearch();
-  if (practice)
-    return (
-      <button
-        type="button"
-        className="tour-help"
-        data-tour-ui
-        aria-label="Guide this page"
-        onClick={() => {
-          if (practice.startGuide)
-            practice.startGuide(practiceChapterForRoute(path, search));
-          else document.dispatchEvent(new Event("practice-open-control-guide"));
-        }}
-      >
-        <CircleHelp size={21} />
-      </button>
-    );
-  if (!tour) return null;
-  return (
-    <button
-      type="button"
-      className="tour-help"
-      data-tour-ui
-      aria-label={feature ? "Tour this feature" : "Tour this page"}
-      title="Show me around"
-      onClick={() => tour.startContextualTour()}
-    >
-      <CircleHelp size={21} />
-    </button>
-  );
+/** Guides are removed; shared page and sheet callers render no help control. */
+export function TourHelp(_props: { feature?: boolean } = {}) {
+  return null;
 }
