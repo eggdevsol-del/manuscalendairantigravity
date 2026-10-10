@@ -1105,3 +1105,29 @@ body:has(.v3-calendar-page) .tattoi-notice {
   flex-shrink: 0;
   padding: 0;
 }
+
+/* Setup progress belongs inside the fixed Screen, above its scrolling form. */
+.v3-setup-progress {
+  flex: none;
+  max-height: 32dvh;
+  overflow-y: auto;
+  padding: 12px var(--v3-gutter);
+  border-block: 1px solid var(--v3-line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+.v3-setup-progress ol {
+  list-style: none;
+  padding: 0;
+}
+.v3-setup-progress li[aria-current="step"] {
+  font-weight: 700;
+  color: var(--v3-ink);
+}
+.v3-setup-progress .v3-action {
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 4px 8px;
+}

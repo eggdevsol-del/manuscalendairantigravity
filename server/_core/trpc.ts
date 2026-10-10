@@ -8,6 +8,17 @@ import { sysLogger, createLog } from "../services/systemLogService";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    const { stack, ...safeData } = shape.data;
+    return {
+      ...shape,
+      message:
+        error.code === "INTERNAL_SERVER_ERROR"
+          ? "Something couldn’t be saved or loaded. Please try again."
+          : shape.message,
+      data: safeData,
+    };
+  },
 });
 
 const loggingMiddleware = t.middleware(async opts => {

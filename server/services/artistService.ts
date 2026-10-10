@@ -9,6 +9,7 @@ import {
   InsertNotificationTemplate,
 } from "../../drizzle/schema";
 import { getDb } from "./core";
+import { TRPCError } from "@trpc/server";
 
 // ============================================================================
 // Artist Settings operations
@@ -33,13 +34,21 @@ export async function getArtistSettings(userId: string) {
     console.error("[getArtistSettings] Failed to fetch settings:", error);
     // Log SQL if available in the error object (common in mysql2/drizzle)
     if (error.sql) console.error("[getArtistSettings] SQL:", error.sql);
-    throw new Error(`Failed query: ${error.message}`);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Couldn’t load your artist settings. Please try again.",
+      cause: error,
+    });
   }
 }
 
 export async function upsertArtistSettings(settings: InsertArtistSettings) {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db)
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Couldn’t save your artist settings. Please try again.",
+    });
 
   const existing = await getArtistSettings(settings.userId);
 
@@ -52,13 +61,16 @@ export async function upsertArtistSettings(settings: InsertArtistSettings) {
       })
       .where(eq(artistSettings.userId, settings.userId));
   } else {
-    await db
-      .insert(artistSettings)
-      .values({
-        ...settings,
-        createdAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
-        updatedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
-      });
+    await db.insert(artistSettings).values({
+      ...settings,
+      // The business step precedes availability and services during setup.
+      // Initialise required JSON fields only on insert; partial edits must
+      // never overwrite an existing artist's schedule or services.
+      workSchedule: settings.workSchedule ?? "{}",
+      services: settings.services ?? "[]",
+      createdAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+      updatedAt: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+    });
   }
 
   return getArtistSettings(settings.userId);

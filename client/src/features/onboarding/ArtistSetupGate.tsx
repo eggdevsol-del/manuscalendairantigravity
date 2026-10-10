@@ -71,38 +71,43 @@ export function ArtistSetupGate({ children }: { children: ReactNode }) {
       key={`${user?.id}:${step}`}
       value={{
         step,
+        progress: (
+          <div className="v3-setup-progress" aria-label="Required artist setup">
+            <p>
+              <strong>
+                Finish setup · {progress.steps.filter(s => s.done).length} of{" "}
+                {progress.steps.length} complete
+              </strong>
+            </p>
+            <p className="v3-muted">
+              Save each step to continue. Your progress is saved to your
+              account.
+            </p>
+            <ol className="v3-inline" style={{ flexWrap: "wrap", gap: 12 }}>
+              {progress.steps.map(s => (
+                <li
+                  key={s.id}
+                  aria-current={s.id === step ? "step" : undefined}
+                >
+                  {s.done ? "✓ " : ""}
+                  {s.title}
+                </li>
+              ))}
+            </ol>
+            <Feedback
+              error={query.error}
+              onRetry={() => void query.refetch()}
+            />
+            <Action tone="quiet" onClick={() => void logout()}>
+              Sign out
+            </Action>
+          </div>
+        ),
         onSaved: async () => {
           await query.refetch();
         },
       }}
     >
-      <div
-        className="v3-stack"
-        style={{ padding: "16px 20px 0" }}
-        aria-label="Required artist setup"
-      >
-        <p>
-          <strong>
-            Finish setup · {progress.steps.filter(s => s.done).length} of{" "}
-            {progress.steps.length} complete
-          </strong>
-        </p>
-        <p className="v3-muted">
-          Save each step to continue. Your progress is saved to your account.
-        </p>
-        <ol className="v3-inline" style={{ flexWrap: "wrap", gap: 12 }}>
-          {progress.steps.map(s => (
-            <li key={s.id} aria-current={s.id === step ? "step" : undefined}>
-              {s.done ? "✓ " : ""}
-              {s.title}
-            </li>
-          ))}
-        </ol>
-        <Feedback error={query.error} onRetry={() => void query.refetch()} />
-        <Action tone="quiet" onClick={() => void logout()}>
-          Sign out
-        </Action>
-      </div>
       {step === "profile" ? (
         <AccountEditor />
       ) : step === "business" ? (

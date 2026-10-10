@@ -1,3 +1,4 @@
+import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
 import { TourHelp } from "@/components/tooltip-tour/TourHelp";
 import {
   createContext,
@@ -43,6 +44,7 @@ export function Screen({
   className?: string;
 }) {
   const { user } = useAuth();
+  const setup = useArtistSetup();
   const panelId = useId();
   const sectionTabs =
     isValidElement<{ items: readonly string[]; value: string }>(subheader) &&
@@ -63,35 +65,41 @@ export function Screen({
             </Link>
           )}
           <div className="v3-heading-lockup">
-            <Link
-              href={
-                user?.role === "client"
-                  ? "/bookings"
-                  : user?.role === "merchant"
-                    ? "/dashboard"
-                    : "/conversations"
-              }
-              className="v3-wordmark"
-            >
-              tattoi
-            </Link>
+            {setup ? (
+              <span className="v3-wordmark">tattoi</span>
+            ) : (
+              <Link
+                href={
+                  user?.role === "client"
+                    ? "/bookings"
+                    : user?.role === "merchant"
+                      ? "/dashboard"
+                      : "/conversations"
+                }
+                className="v3-wordmark"
+              >
+                tattoi
+              </Link>
+            )}
             <h1 className="v3-inline-title">{title}</h1>
           </div>
           <div className="tour-header-actions">
             <TourHelp />
-            {action || (
-              <Link
-                className="v3-icon-button"
-                href="/settings"
-                aria-label="Settings"
-              >
-                <Settings size={22} />
-              </Link>
-            )}
+            {action ||
+              (!setup && (
+                <Link
+                  className="v3-icon-button"
+                  href="/settings"
+                  aria-label="Settings"
+                >
+                  <Settings size={22} />
+                </Link>
+              ))}
           </div>
         </div>
         {subtitle && <p className="v3-subtitle">{subtitle}</p>}
       </header>
+      {setup?.progress}
       {subheader && (
         <div className="v3-subheader">
           <SectionPanelContext.Provider value={panelId}>

@@ -226,7 +226,7 @@ function SignupForm({ role }: { role: "client" | "artist" | "supplier" }) {
       }
       description={
         role === "artist"
-          ? "Start with your account. Set up the details as you go."
+          ? "Create your account, then complete your profile, tattooing location, hours, services and bank payouts to start using Tattoi."
           : role === "supplier"
             ? "Manage your products, orders and artist customers."
             : "Keep your artist, messages and appointments in one place."

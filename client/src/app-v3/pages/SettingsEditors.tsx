@@ -1,6 +1,6 @@
 import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
 import { NumericInput } from "@/components/ui/numeric-input";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
@@ -10,6 +10,43 @@ import {
   Screen,
   Section,
 } from "../design/primitives";
+function useSetupDraft<T extends Record<string, string | number>>(
+  initial: T,
+  section: string
+) {
+  const setup = useArtistSetup();
+  const { user } = useAuth();
+  const key = setup && user ? `tattoi:setup:${user.id}:${section}` : null;
+  const [form, setForm] = useState<T>(() => {
+    if (!key) return initial;
+    try {
+      const stored = JSON.parse(sessionStorage.getItem(key) || "null");
+      if (!stored || typeof stored !== "object") return initial;
+      return Object.fromEntries(
+        Object.entries(initial).map(([name, value]) => [
+          name,
+          typeof stored[name] === typeof value ? stored[name] : value,
+        ])
+      ) as T;
+    } catch {
+      return initial;
+    }
+  });
+  useEffect(() => {
+    if (key)
+      try {
+        sessionStorage.setItem(key, JSON.stringify(form));
+      } catch {}
+  }, [key, form]);
+  const clear = () => {
+    if (key)
+      try {
+        sessionStorage.removeItem(key);
+      } catch {}
+  };
+  return [form, setForm, clear] as const;
+}
+
 export function AccountEditor({ back }: { back?: string } = {}) {
   const { user, refresh } = useAuth();
   if (!user) return <Feedback loading />;
@@ -28,19 +65,23 @@ function AccountForm({
 }) {
   const setup = useArtistSetup();
   const [setupError, setSetupError] = useState("");
-  const [form, setForm] = useState({
-    name: user.name || "",
-    phone: user.phone || "",
-    bio: user.bio || "",
-    city: user.city || "",
-    instagramUsername: user.instagramUsername || "",
-    avatar: user.avatar || "",
-    birthday: user.birthday?.slice(0, 10) || "",
-    country: user.country || "",
-    gender: (user.gender || "") as NonNullable<typeof user.gender> | "",
-  });
+  const [form, setForm, clearDraft] = useSetupDraft(
+    {
+      name: user.name || "",
+      phone: user.phone || "",
+      bio: user.bio || "",
+      city: user.city || "",
+      instagramUsername: user.instagramUsername || "",
+      avatar: user.avatar || "",
+      birthday: user.birthday?.slice(0, 10) || "",
+      country: user.country || "",
+      gender: (user.gender || "") as NonNullable<typeof user.gender> | "",
+    },
+    "profile"
+  );
   const update = trpc.auth.updateProfile.useMutation({
     onSuccess: async () => {
+      clearDraft();
       await refresh();
       await setup?.onSaved();
     },
@@ -105,10 +146,16 @@ function AccountForm({
           });
         }}
       >
+        {setup && (
+          <p className="v3-muted">
+            Required: profile photo, full name, phone, city and country. The
+            other details are optional.
+          </p>
+        )}
         <div className="v3-inline">
           <Avatar name={form.name} src={form.avatar} />
           <label>
-            Profile photo
+            Profile photo{setup ? " (required)" : ""}
             <input
               type="file"
               accept="image/*"
@@ -117,10 +164,11 @@ function AccountForm({
             />
           </label>
         </div>
+        {upload.isPending && <p role="status">Uploading your profile photo…</p>}
         {uploadError && <p role="alert">{uploadError}</p>}
         {setupError && <p role="alert">{setupError}</p>}
         <label>
-          Full name
+          Full name{setup ? " (required)" : ""}
           <input
             required
             maxLength={100}
@@ -133,7 +181,7 @@ function AccountForm({
           />
         </label>
         <label>
-          Phone
+          Phone{setup ? " (required)" : ""}
           <input
             required={!!setup}
             type="tel"
@@ -147,7 +195,7 @@ function AccountForm({
           />
         </label>
         <label>
-          City
+          City{setup ? " (required)" : ""}
           <input
             maxLength={100}
             required={!!setup}
@@ -157,7 +205,7 @@ function AccountForm({
           />
         </label>
         <label>
-          Country
+          Country{setup ? " (required)" : ""}
           <input
             required={!!setup}
             autoComplete="country-name"
@@ -167,7 +215,7 @@ function AccountForm({
           />
         </label>
         <label>
-          Date of birth
+          Date of birth (optional)
           <input
             type="date"
             autoComplete="bday"
@@ -176,7 +224,7 @@ function AccountForm({
           />
         </label>
         <label>
-          Gender
+          Gender (optional)
           <select
             aria-label="Gender"
             value={form.gender}
@@ -192,7 +240,7 @@ function AccountForm({
           </select>
         </label>
         <label>
-          About you
+          About you (optional)
           <textarea
             maxLength={500}
             value={form.bio}
@@ -200,7 +248,7 @@ function AccountForm({
           />
         </label>
         <label>
-          Instagram username
+          Instagram username (optional)
           <input
             maxLength={60}
             value={form.instagramUsername}
@@ -234,20 +282,24 @@ export function BusinessEditor() {
 }
 function BusinessForm({ initial }: { initial: any }) {
   const setup = useArtistSetup();
-  const [form, setForm] = useState({
-    businessName: initial.businessName || "",
-    displayName: initial.displayName || "",
-    businessAddress: initial.businessAddress || "",
-    businessEmail: initial.businessEmail || "",
-    businessCountry: initial.businessCountry || "AU",
-    licenceNumber: initial.licenceNumber || "",
-    rescheduleNoticePeriodHours: initial.rescheduleNoticePeriodHours ?? 72,
-  });
+  const [form, setForm, clearDraft] = useSetupDraft(
+    {
+      businessName: initial.businessName || "",
+      displayName: initial.displayName || "",
+      businessAddress: initial.businessAddress || "",
+      businessEmail: initial.businessEmail || "",
+      businessCountry: initial.businessCountry || "AU",
+      licenceNumber: initial.licenceNumber || "",
+      rescheduleNoticePeriodHours: initial.rescheduleNoticePeriodHours ?? 72,
+    },
+    "business"
+  );
   const utils = trpc.useUtils();
   const save = trpc.artistSettings.upsert.useMutation({
-    onSuccess: () => {
-      void utils.artistSettings.invalidate();
-      void setup?.onSaved();
+    onSuccess: async () => {
+      clearDraft();
+      await utils.artistSettings.invalidate();
+      await setup?.onSaved();
     },
   });
   return (
@@ -258,6 +310,12 @@ function BusinessForm({ initial }: { initial: any }) {
         save.mutate(form);
       }}
     >
+      {setup && (
+        <p className="v3-muted">
+          Add your tattooing address and country to continue. Your working hours
+          and services come next.
+        </p>
+      )}
       <Section title="Where you work">
         <div className="v3-form">
           <label>
@@ -285,7 +343,7 @@ function BusinessForm({ initial }: { initial: any }) {
             />
           </label>
           <label>
-            Studio address
+            Studio address{setup ? " (required)" : ""}
             <textarea
               required={!!setup}
               autoComplete="street-address"
@@ -317,7 +375,7 @@ function BusinessForm({ initial }: { initial: any }) {
       <Section title="Booking details">
         <div className="v3-form">
           <label>
-            Licence number
+            Licence number (optional)
             <input
               value={form.licenceNumber}
               onChange={e =>
