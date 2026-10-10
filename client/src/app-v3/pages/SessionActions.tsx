@@ -1,6 +1,6 @@
 import { RESCHEDULE_HOLD_HOURS } from "../../../../shared/reschedule";
 import { DetailsSheet } from "../components/DetailsSheet";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
@@ -60,6 +60,8 @@ export function SessionActions({
   >(null);
   const [date, setDate] = useState(""),
     [time, setTime] = useState("");
+  const dateInput = useRef<HTMLInputElement>(null);
+  const timeInput = useRef<HTMLInputElement>(null);
   const [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   const update = trpc.appointments.update.useMutation();
@@ -94,9 +96,15 @@ export function SessionActions({
     setError("");
     try {
       if (mode === "reschedule") {
-        const start = fromZonedTime(`${date}T${time}`, s.timeZone);
+        // Read the edited native controls before a render can restore stale state.
+        const start = fromZonedTime(
+          `${dateInput.current?.value ?? date}T${timeInput.current?.value ?? time}`,
+          s.timeZone
+        );
         if (!Number.isFinite(+start) || start <= new Date())
           throw new Error("Choose a valid future time.");
+        if (+start === +instant(s.startsAt))
+          throw new Error("Choose a different date or time to reschedule.");
         const end = new Date(
           +start + (+instant(s.endsAt) - +instant(s.startsAt))
         );
@@ -228,8 +236,13 @@ export function SessionActions({
               <label>
                 New date
                 <input
+                  ref={dateInput}
                   type="date"
                   value={date}
+                  onInput={e => {
+                    setDate(e.currentTarget.value);
+                    setRescheduleTerms(null);
+                  }}
                   onChange={e => {
                     setDate(e.target.value);
                     setRescheduleTerms(null);
@@ -239,8 +252,13 @@ export function SessionActions({
               <label>
                 New time
                 <input
+                  ref={timeInput}
                   type="time"
                   value={time}
+                  onInput={e => {
+                    setTime(e.currentTarget.value);
+                    setRescheduleTerms(null);
+                  }}
                   onChange={e => {
                     setTime(e.target.value);
                     setRescheduleTerms(null);

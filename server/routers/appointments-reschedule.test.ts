@@ -139,3 +139,10 @@ it("does not queue notification when saving the conversation message fails", asy
   ).rejects.toThrow("message failed");
   expect(m.insert).not.toHaveBeenCalled();
 });
+
+it("rejects an unchanged sitting without recording or notifying a reschedule", async () => {
+  await expect(caller().reschedule({ appointmentId: 4, newStartTime: new Date(m.appointment.startTime).toISOString(), newEndTime: new Date(m.appointment.endTime).toISOString() })).rejects.toThrow("Choose a different date or time");
+  expect(m.update).not.toHaveBeenCalled();
+  expect(m.message).not.toHaveBeenCalled();
+  expect(m.insert).not.toHaveBeenCalled();
+});

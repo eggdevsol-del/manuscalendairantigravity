@@ -520,6 +520,11 @@ export const appointmentsRouter = router({
             code: "BAD_REQUEST",
             message: "Only confirmed sittings can be rescheduled.",
           });
+        if (+start === +new Date(current.startTime))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Choose a different date or time to reschedule.",
+          });
         if (
           start <= new Date() ||
           +end - +start !==
