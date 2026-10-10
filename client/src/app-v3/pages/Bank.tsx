@@ -31,6 +31,18 @@ export default function Bank() {
   );
   const config = trpc.artistSettings.getStripeOnboardingConfig.useQuery();
   const create = trpc.artistSettings.connectStripe.useMutation();
+  const refresh = trpc.artistSettings.refreshStripeConnectStatus.useMutation();
+  async function refreshStatus() {
+    setError("");
+    try {
+      await refresh.mutateAsync();
+      await status.refetch();
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : "Couldn’t refresh payment status."
+      );
+    }
+  }
   const [setup, setSetup] = useState(false);
   const [error, setError] = useState("");
   const data = status.data;
@@ -145,8 +157,8 @@ export default function Bank() {
               </Action>
               <Action
                 tone="secondary"
-                disabled={status.isFetching}
-                onClick={() => status.refetch()}
+                disabled={status.isFetching || refresh.isPending}
+                onClick={() => void refreshStatus()}
               >
                 Refresh status
               </Action>

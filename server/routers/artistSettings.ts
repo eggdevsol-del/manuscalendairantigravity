@@ -384,8 +384,11 @@ export const artistSettingsRouter = router({
       };
     }
 
-    const { getAccountStatus } = await import("../services/stripeConnect");
-    const status = await getAccountStatus(settings.stripeConnectAccountId);
+    const { getArtistPaymentStatus } =
+      await import("../services/artistPaymentReadiness");
+    const status = await getArtistPaymentStatus(
+      settings.stripeConnectAccountId
+    );
 
     return {
       connected: true,
@@ -395,6 +398,14 @@ export const artistSettingsRouter = router({
         | "custom",
       ...status,
     };
+  }),
+
+  refreshStripeConnectStatus: artistProcedure.mutation(async ({ ctx }) => {
+    const settings = await db.getArtistSettings(ctx.user.id);
+    if (!settings?.stripeConnectAccountId) return;
+    const { getArtistPaymentStatus } =
+      await import("../services/artistPaymentReadiness");
+    await getArtistPaymentStatus(settings.stripeConnectAccountId, true);
   }),
 
   /**

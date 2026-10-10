@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "./artistPaymentReadiness";
 import { and, eq, or } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import type Stripe from "stripe";
@@ -279,7 +280,7 @@ export async function startOfferBalance(
     };
   }
   const quote = await balanceQuote(db, b, offerId, requestId);
-  if (quote.cashCents && !quote.ready)
+  if (quote.cashCents && !(await artistCanAcceptPayments({ stripeConnectAccountId: quote.destination })))
     fail("Your artist needs to finish payment setup.");
   await retireLegacyPayments(db, b);
   const [created] = await db

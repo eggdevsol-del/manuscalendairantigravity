@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { offersEnabled } from "../services/offerAvailability";
 import { startOfferBalance, cancelOfferBalance } from "../services/offerBalance";
 import { withDatabaseTransaction } from "../services/core";
@@ -219,7 +220,7 @@ export const funnelRouter = router({
 
       if (
         !artistSettingsRow?.stripeConnectAccountId ||
-        artistSettingsRow.stripeConnectOnboardingComplete !== 1
+        !(await artistCanAcceptPayments(artistSettingsRow))
       )
         throw new Error("Your artist needs to finish payment setup.");
       if (lead.depositVerifiedAt)
@@ -472,7 +473,7 @@ export const funnelRouter = router({
 
       if (
         !artistSettingsRow?.stripeConnectAccountId ||
-        artistSettingsRow.stripeConnectOnboardingComplete !== 1
+        !(await artistCanAcceptPayments(artistSettingsRow))
       )
         throw new Error("Your artist needs to finish payment setup.");
       const checkoutResult = await createBalancePaymentIntent({
@@ -1937,7 +1938,7 @@ export const funnelRouter = router({
         return { error: "booking_changed" };
       if (
         !artistSettings?.stripeConnectAccountId ||
-        artistSettings.stripeConnectOnboardingComplete !== 1
+        !(await artistCanAcceptPayments(artistSettings))
       )
         return { error: "artist_payment_setup_required" };
       if (request.stripeCheckoutSessionId) {

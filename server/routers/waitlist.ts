@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { PAYMENT_TIERS, roundCents } from "../../shared/fees";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
@@ -269,7 +270,7 @@ export const waitlistRouter = router({
       });
       if (
         !settings?.stripeConnectAccountId ||
-        settings.stripeConnectOnboardingComplete !== 1
+        !(await artistCanAcceptPayments(settings))
       )
         throw new TRPCError({
           code: "PRECONDITION_FAILED",

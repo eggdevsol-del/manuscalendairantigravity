@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { proposeReschedule } from "../services/rescheduleApproval";
 import {
   parseWorkSchedule,
@@ -1367,7 +1368,7 @@ export const appointmentsRouter = router({
       if (
         appointment.status === "cancelled" ||
         !artistSettings?.stripeConnectAccountId ||
-        artistSettings.stripeConnectOnboardingComplete !== 1
+        !(await artistCanAcceptPayments(artistSettings))
       )
         throw new TRPCError({
           code: "PRECONDITION_FAILED",

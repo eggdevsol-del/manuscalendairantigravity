@@ -246,6 +246,7 @@ export interface ConnectAccountStatus {
   payoutsEnabled: boolean;
   onboardingComplete: boolean;
   detailsSubmitted: boolean;
+  stripeAccountType?: "standard" | "express" | "custom";
 }
 
 /**
@@ -262,6 +263,10 @@ export async function getAccountStatus(
       currentlyDue: account.requirements?.currently_due || [],
       pendingVerification: !!account.requirements?.pending_verification?.length,
       accountId: account.id,
+      stripeAccountType:
+        account.type === "custom" || account.type === "express"
+          ? account.type
+          : "standard",
       chargesEnabled: account.charges_enabled ?? false,
       payoutsEnabled: account.payouts_enabled ?? false,
       onboardingComplete:
@@ -297,47 +302,15 @@ export async function getAccountStatus(
  * Sync Stripe account status back to the database.
  * Called from the `account.updated` webhook.
  *
- * Defensively heals account type if Stripe reports a different type than DB.
+ * Failed synchronisation propagates so the webhook is retried.
  */
 export async function syncAccountStatusToDb(accountId: string): Promise<void> {
-  try {
-    const status = await getAccountStatus(accountId);
-
-    const db = await getDb();
-    if (!db) return;
-
-    // Retrieve the actual Stripe account to check its type
-    const account = await stripe.accounts.retrieve(accountId);
-
-    // Map Stripe account type to our DB enum
-    let stripeType: "standard" | "express" | "custom";
-    if (account.type === "custom") {
-      stripeType = "custom";
-    } else if (account.type === "express") {
-      stripeType = "express";
-    } else {
-      stripeType = "standard";
-    }
-
-    await db
-      .update(artistSettings)
-      .set({
-        stripeConnectOnboardingComplete: status.onboardingComplete ? 1 : 0,
-        stripeConnectPayoutsEnabled: status.payoutsEnabled ? 1 : 0,
-        stripeConnectDetailsSubmitted: status.detailsSubmitted ? 1 : 0,
-        stripeConnectAccountType: stripeType,
-      })
-      .where(eq(artistSettings.stripeConnectAccountId, accountId));
-
-    console.log(
-      `[Stripe Connect] Synced account ${accountId}: type=${stripeType}, charges=${status.chargesEnabled}, payouts=${status.payoutsEnabled}, details=${status.detailsSubmitted}`
-    );
-  } catch (err: any) {
-    console.error(
-      `[Stripe Connect] Failed to sync account ${accountId}:`,
-      err.message
-    );
-  }
+  const { getArtistPaymentStatus, invalidateArtistPaymentStatus } =
+    await import("./artistPaymentReadiness");
+  invalidateArtistPaymentStatus(accountId);
+  // Let failures reach the webhook handler so Stripe retries rather than acknowledging lost updates.
+  await getArtistPaymentStatus(accountId, true);
+  invalidateArtistPaymentStatus(accountId);
 }
 
 // ─── Disconnect ───────────────────────────────────────────────
@@ -611,5 +584,11 @@ export async function updatePayoutSchedule(
 
   console.log(
     `[Stripe Connect] Payout schedule updated for ${accountId}: ${interval}`
+  );
+}
+
+if (process.env.NODE_ENV === "production") {
+  void import("./artistPaymentReadiness").then(
+    ({ startArtistPaymentReconciliation }) => startArtistPaymentReconciliation()
   );
 }

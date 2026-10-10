@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -922,7 +923,7 @@ async function storeSeller(
   });
   if (
     !settings?.stripeConnectAccountId ||
-    !settings.stripeConnectOnboardingComplete
+    !(await artistCanAcceptPayments(settings))
   )
     throw new TRPCError({
       code: "PRECONDITION_FAILED",

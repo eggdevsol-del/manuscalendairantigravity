@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { hasRescheduleHold } from "../services/rescheduleHolds";
 import { offersEnabled } from "../services/offerAvailability";
 import { fulfillSessionPlan } from "../services/sessionPlanFulfillment";
@@ -468,7 +469,7 @@ export const sessionPlansRouter = router({
 
         if (
           !artistSettings?.stripeConnectAccountId ||
-          artistSettings.stripeConnectOnboardingComplete !== 1
+          !(await artistCanAcceptPayments(artistSettings))
         )
           throw new TRPCError({
             code: "PRECONDITION_FAILED",

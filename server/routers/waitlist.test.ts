@@ -10,6 +10,9 @@ const mocks = vi.hoisted(() => ({
   },
   conflicts: [] as any[],
 }));
+vi.mock("../services/artistPaymentReadiness", () => ({
+  artistCanAcceptPayments: vi.fn(async () => true),
+}));
 vi.mock("../services/core", () => {
   const db = {
     query: {

@@ -1,3 +1,4 @@
+import { artistCanAcceptPayments } from "./artistPaymentReadiness";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { TRPCError } from "@trpc/server";
@@ -32,7 +33,7 @@ export async function purchaseVoucher(db: any, id: number, userId: string) {
   });
   if (
     !settings?.stripeConnectAccountId ||
-    settings.stripeConnectOnboardingComplete !== 1
+    !(await artistCanAcceptPayments(settings))
   )
     throw new Error("The artist must finish payment setup first.");
   const tier = await effectivePaymentTier(settings),
