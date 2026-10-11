@@ -1,7 +1,7 @@
 import { NumericInput } from "@/components/ui/numeric-input";
 import { OfferAppearance } from "./OfferAppearance";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { Gift, Sparkles } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -64,8 +64,8 @@ export function OfferCard({
             : "New & existing unpaid balances"}{" "}
           ·{" "}
           {rules.expiresAt
-            ? `Use by ${dateLabel(rules.expiresAt)}`
-            : rules.funding === "sale" && rules.validityYears !== null
+            ? `Confirm by ${new Date(rules.expiresAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`
+            : rules.availableHours ? `Available for ${rules.availableHours} hours after sending` : rules.funding === "sale" && rules.validityYears !== null
               ? `Valid ${rules.validityYears ?? 3} years after purchase`
               : "No expiry"}
         </small>
@@ -249,6 +249,7 @@ function OfferEditor({
               valueType: e.target.value === "voucher" ? "fixed" : "percentage",
               value: e.target.value === "voucher" ? 10000 : 10,
               expiresAt: null,
+              availableHours: null,
               funding: "gift",
               validityYears: 3,
               eligibility: e.target.value === "voucher" ? "unpaid" : "new",
@@ -294,21 +295,20 @@ function OfferEditor({
           <NumericInput
             type="number"
             required
-            min={r.valueType === "percentage" ? 1 : 0.01}
-            step={r.valueType === "percentage" ? "1" : "0.01"}
+            min={0.01}
+            step="0.01"
             max={r.valueType === "percentage" ? 100 : 100000}
             value={r.valueType === "fixed" ? r.value / 100 : r.value}
             onChange={e =>
               change(
                 "value",
-                Math.round(
-                  Number(e.target.value) * (r.valueType === "fixed" ? 100 : 1)
-                )
+                r.valueType === "fixed" ? Math.round(Number(e.target.value) * 100) : Number(e.target.value)
               )
             }
           />
         </label>
       </div>
+      {r.kind === "discount" && <label>Available to clients for<select value={r.availableHours ?? "none"} onChange={e => change("availableHours", e.target.value === "none" ? null : Number(e.target.value))}><option value="none">Until the book-by deadline, or no deadline</option><option value="24">24 hours after sending</option><option value="48">48 hours after sending</option><option value="72">72 hours after sending</option><option value="168">7 days after sending</option></select><small>Booking must be confirmed with its deposit before the offer expires.</small></label>}
       <label>
         Currency
         <select
@@ -539,6 +539,8 @@ function OfferAudience({
   );
 }
 export function ClientOffers({ index }: { index?: number }) {
+  const [clock, setClock] = useState(Date.now);
+  useEffect(() => { const timer = window.setInterval(() => setClock(Date.now()), 1000); return () => window.clearInterval(timer); }, []);
   const query = trpc.offers.list.useQuery();
   const [, go] = useLocation();
   const [transfer, setTransfer] = useState<number | null>(null);
@@ -560,7 +562,7 @@ export function ClientOffers({ index }: { index?: number }) {
   const offers = (query.data?.offers || []).filter(
     o =>
       (o.remainingValue > 0 || o.purchaseRequired) &&
-      (!o.rules.expiresAt || +new Date(o.rules.expiresAt) > Date.now())
+      (!o.rules.expiresAt || +new Date(o.rules.expiresAt) > clock)
   );
   const shown = index === undefined ? offers : offers.slice(index, index + 1);
   if (!shown.length && !query.data?.incoming.length && !query.error)

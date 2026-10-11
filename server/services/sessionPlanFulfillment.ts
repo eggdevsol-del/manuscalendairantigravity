@@ -51,6 +51,13 @@ export async function fulfillSessionPlan(
       .from(schema.users)
       .where(eq(schema.users.id, plan.artistId))
       .for("update");
+    // Scheduling metadata is stored with the proposal, so confirmation preserves its zone.
+    const proposalMessage = plan.messageId ? await tx.query.messages.findFirst({ where: eq(schema.messages.id, plan.messageId) }) : null;
+    let bookingZone = "Australia/Brisbane"; // Legacy proposals predate scheduling metadata.
+    if (proposalMessage?.metadata) {
+      const zone = JSON.parse(proposalMessage.metadata).scheduling?.timeZone;
+      if (zone) { new Intl.DateTimeFormat("en", { timeZone: zone }); bookingZone = zone; }
+    }
     const items = await tx.query.sessionPlanItems.findMany({
       where: eq(schema.sessionPlanItems.sessionPlanId, plan.id),
     });
@@ -126,7 +133,7 @@ export async function fulfillSessionPlan(
         projectName,
         startTime: mysqlDate(start),
         endTime: mysqlDate(end),
-        timeZone: "Australia/Brisbane",
+        timeZone: bookingZone,
         status: "confirmed",
         price: Math.round(item.estimateCents / 100),
         depositAmount: Math.round(item.depositCents / 100),

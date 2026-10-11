@@ -10,7 +10,8 @@ export const offerRulesSchema = z
     funding: z.enum(["gift", "sale"]).optional(),
     validityYears: z.number().int().min(3).max(20).nullable().optional(),
     valueType: z.enum(["fixed", "percentage"]),
-    value: z.number().int().positive().max(10000000),
+    value: z.number().finite().positive().max(10000000),
+    availableHours: z.number().int().min(1).max(8760).nullable().optional(),
     currency: z.enum(["AUD", "NZD"]),
     eligibility: z.enum(["new", "unpaid"]).default("new"),
     expiresAt: z.string().datetime().nullable(),
@@ -28,6 +29,12 @@ export const offerRulesSchema = z
       .default(""),
   })
   .superRefine((v, c) => {
+    if (v.valueType === "fixed" && !Number.isSafeInteger(v.value))
+      c.addIssue({ code: "custom", message: "Fixed values must use whole cents." });
+    if (v.valueType === "percentage" && Math.abs(v.value * 100 - Math.round(v.value * 100)) > 1e-8)
+      c.addIssue({ code: "custom", message: "Percentages support up to two decimal places." });
+    if (v.kind === "voucher" && v.availableHours)
+      c.addIssue({ code: "custom", message: "Limited availability applies to discounts only." });
     if (v.funding === "sale" && v.kind !== "voucher")
       c.addIssue({
         code: "custom",
@@ -141,7 +148,7 @@ export function quoteOffer(
   const amount = Math.min(
     original,
     r.valueType === "percentage"
-      ? Math.round((original * r.value) / 100)
+      ? Math.round((original * Math.round(r.value * 100)) / 10000)
       : remaining
   );
   const shares = allocateCents(
@@ -167,4 +174,11 @@ export function quoteOffer(
     totalEstimateCents: adjusted.reduce((n, i) => n + i.estimateCents, 0),
     depositTotalCents: adjusted.reduce((n, i) => n + i.depositCents, 0),
   };
+}
+
+/** Snapshot the claim deadline when an offer is issued, not when its draft is saved. */
+export function issuedOfferRules(rules: OfferRules, issuedAt: number): OfferRules {
+  if (rules.kind !== "discount" || !rules.availableHours) return rules;
+  const deadline = issuedAt + rules.availableHours * 3600000;
+  return { ...rules, expiresAt: new Date(Math.min(deadline, rules.expiresAt ? +new Date(rules.expiresAt) : deadline)).toISOString() };
 }

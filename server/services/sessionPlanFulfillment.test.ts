@@ -20,7 +20,7 @@ function database(status = "pending", conflict = false, credit = false) {
       artistId: "artist",
       clientId: "client",
       conversationId: 10,
-      messageId: null,
+      messageId: 43,
       stripeSessionId: credit ? null : "pi_plan",
       status,
       depositTotalCents: credit ? 0 : 20000,
@@ -62,6 +62,7 @@ function database(status = "pending", conflict = false, credit = false) {
       }),
     }),
     query: {
+      messages: {findFirst: async () => ({metadata: JSON.stringify({scheduling:{timeZone:"Pacific/Auckland"}})})},
       offerApplications: {
         findFirst: async () =>
           credit
@@ -134,6 +135,7 @@ describe("session plan fulfilment", () => {
     const db = database();
     await fulfillSessionPlan(db, 8, payment);
     expect(db.state.plan.status).toBe("accepted");
+    expect(db.state.appointments.every(a => a.timeZone === "Pacific/Auckland")).toBe(true);
     expect(forms).toHaveBeenCalledTimes(2);
     expect(db.state.writes.filter(x => x === "appointment")).toHaveLength(2);
     const before = [...db.state.writes];

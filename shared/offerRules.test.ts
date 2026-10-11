@@ -140,3 +140,18 @@ it("checks selected sitting months using the booking timezone", () => {
     )
   ).toBeNull();
 });
+
+import { issuedOfferRules } from "./offerRules";
+it("preserves fractional percentages and rejects fractional cents", () => {
+  const base = {name:"Decimal discount", kind:"discount",valueType:"percentage",value:12.5,currency:"AUD",eligibility:"new",expiresAt:null,sittingFrom:null,sittingUntil:null};
+  expect(offerRulesSchema.parse(base).value).toBe(12.5);
+  expect(offerRulesSchema.parse({...base,value:0.5}).value).toBe(0.5);
+  expect(offerRulesSchema.safeParse({...base,value:12.555}).success).toBe(false);
+  expect(offerRulesSchema.safeParse({...base,valueType:"fixed",value:100.5}).success).toBe(false);
+});
+it("starts limited offer availability on issuance and retains an earlier deadline", () => {
+ const rules = offerRulesSchema.parse({name:"48 hour offer",kind:"discount",valueType:"percentage",value:10,currency:"AUD",expiresAt:null,sittingFrom:null,sittingUntil:null,availableHours:48});
+ const issuedAt = Date.parse("2026-10-11T00:00:00Z");
+ expect(issuedOfferRules(rules,issuedAt).expiresAt).toBe("2026-10-13T00:00:00.000Z");
+ expect(issuedOfferRules({...rules,expiresAt:"2026-10-12T00:00:00Z"},issuedAt).expiresAt).toBe("2026-10-12T00:00:00.000Z");
+});

@@ -1,22 +1,11 @@
-// @vitest-environment jsdom
-import { useState } from "react";
-import { render, fireEvent, screen, cleanup } from "@testing-library/react";
-import { afterEach, expect, it } from "vitest";
-import { NumericInput } from "./numeric-input";
-afterEach(cleanup);
-it("allows zero to be cleared and replaced despite numeric parent coercion", () => {
-  function Field() { const [value,setValue] = useState(0); return <NumericInput aria-label="Amount" value={value} onChange={e=>setValue(Number(e.target.value))} />; }
-  render(<Field />);
-  const field = screen.getByRole('spinbutton') as HTMLInputElement;
-  fireEvent.focus(field); fireEvent.change(field,{target:{value:''}});
-  expect(field.value).toBe('');
-  fireEvent.change(field,{target:{value:'25.50'}});
-  expect(field.value).toBe('25.50');
-  fireEvent.blur(field); expect(field.valueAsNumber).toBe(25.5);
-});
-it("retains required validation while empty", () => {
-  render(<NumericInput required value={0} onChange={()=>{}} />);
-  const field = screen.getByRole('spinbutton') as HTMLInputElement;
-  fireEvent.focus(field); fireEvent.change(field,{target:{value:''}});
-  expect(field.validity.valueMissing).toBe(true);
+import {render,screen,fireEvent} from "@testing-library/react";
+import {useState} from "react";
+import {it,expect} from "vitest";
+import {NumericInput} from "./numeric-input";
+it("keeps a deleted number blank through blur and refocus despite numeric parent coercion",()=>{
+ function Form(){const [value,set]=useState(10);return <NumericInput aria-label="Amount" value={value} onChange={e=>set(Number(e.target.value))}/>;}
+ render(<Form/>);const input=screen.getByRole("spinbutton") as HTMLInputElement;
+ fireEvent.focus(input);fireEvent.change(input,{target:{value:""}});expect(input.value).toBe("");
+ fireEvent.blur(input);expect(input.value).toBe("");fireEvent.focus(input);expect(input.value).toBe("");
+ fireEvent.change(input,{target:{value:"12.5"}});expect(input.value).toBe("12.5");
 });

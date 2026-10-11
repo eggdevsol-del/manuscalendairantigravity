@@ -96,7 +96,7 @@ function SignForm({
   }
   return (
     <div className="v3-stack">
-      <h2>{form.title || "Your form"}</h2>
+      <h2>{(form.title || "Your form").replace(/\*\*/g, "")}</h2>
       <p className="v3-muted">
         {remaining} form{remaining === 1 ? "" : "s"} remaining
       </p>
@@ -137,7 +137,7 @@ function SignForm({
                     </div>
                   </fieldset>
                 ) : (
-                  <div key={index}>{line || "\u00a0"}</div>
+                  <div key={index}>{line ? line.split(/(\*\*[^*]+\*\*)/g).map((part, i) => part.startsWith("**") && part.endsWith("**") ? <strong key={i}>{part.slice(2, -2)}</strong> : part) : "\u00a0"}</div>
                 );
               })}
             </div>

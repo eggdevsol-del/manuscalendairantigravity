@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { eq, or } from "drizzle-orm";
+import { eq, or, inArray, sql } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { withDatabaseTransaction } from "../services/core";
 import { z } from "zod";
@@ -15,8 +15,11 @@ export const systemRouter = router({
     const plans = await db.select({ id: schema.sessionPlans.id, status: schema.sessionPlans.status, payment: schema.sessionPlans.stripeSessionId, deposit: schema.sessionPlans.depositTotalCents }).from(schema.sessionPlans).where(or(eq(schema.sessionPlans.artistId, userId), eq(schema.sessionPlans.clientId, userId)));
     const requests = await db.select({ id: schema.paymentRequests.id, status: schema.paymentRequests.status }).from(schema.paymentRequests).where(or(eq(schema.paymentRequests.artistId,userId),eq(schema.paymentRequests.clientId,userId)));
     const conversations = await db.select({ id: schema.conversations.id, updated: schema.conversations.lastMessageAt }).from(schema.conversations).where(or(eq(schema.conversations.artistId,userId),eq(schema.conversations.clientId,userId)));
+    const conversationIds = conversations.map(c => c.id);
+    const messageHeads = conversationIds.length ? await db.select({ id: schema.messages.conversationId, latest: sql<number>`max(${schema.messages.id})` }).from(schema.messages).where(inArray(schema.messages.conversationId, conversationIds)).groupBy(schema.messages.conversationId) : [];
+    const reschedules = await db.select({ id: schema.rescheduleRequests.id, status: schema.rescheduleRequests.status, resolved: schema.rescheduleRequests.resolvedAt }).from(schema.rescheduleRequests).where(or(eq(schema.rescheduleRequests.artistId, userId), eq(schema.rescheduleRequests.clientId, userId)));
     const ledger = await db.select({ id: schema.paymentLedger.id, amount: schema.paymentLedger.amountCents }).from(schema.paymentLedger).where(or(eq(schema.paymentLedger.artistId,userId),eq(schema.paymentLedger.clientId,userId)));
-    const snapshot = [appointments, plans, requests, conversations, ledger].map(rows => rows.sort((a,b)=>a.id-b.id));
+    const snapshot = [appointments, plans, requests, conversations, messageHeads, reschedules, ledger].map(rows => rows.sort((a,b)=>a.id-b.id));
     return { revision: createHash("sha256").update(JSON.stringify(snapshot)).digest("hex") };
   })),
   addLog: protectedProcedure

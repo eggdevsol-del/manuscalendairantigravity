@@ -310,7 +310,7 @@ export function CalendarTimeline({
                       title={
                         event.client?.name || event.clientName || event.title
                       }
-                      detail={<>{event.title}</>}
+                      detail={<>{event.projectName || event.title}{event.sessionIndex ? ` · Sitting ${event.sessionIndex}${event.sessionTotal ? ` of ${event.sessionTotal}` : ""}` : ""}</>}
                       expanded={!!renderDetails && selectedId === event.id}
                       onExpandedChange={open =>
                         open ? onSelect(event) : onDeselect?.()

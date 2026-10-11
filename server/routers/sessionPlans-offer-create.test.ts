@@ -5,6 +5,7 @@ const m = vi.hoisted(() => ({
   database: {} as any,
   setOffer: vi.fn(),
   access: vi.fn(),
+  conflict: false,
 }));
 vi.mock("../db", () => ({ getDb: async () => m.database }));
 vi.mock("../services/offerCheckout", () => ({
@@ -32,10 +33,12 @@ const sessions = [
 ];
 beforeEach(() => {
   vi.clearAllMocks();
+  m.conflict = false;
   m.access.mockResolvedValue({ clientId: "client", artistId: "artist" });
 });
 describe("offer-backed artist proposal", () => {
-  it("applies the issued offer inside the creation transaction and publishes its revised prices", async () => {
+  it.each([false, true])("checks occupied dates before writing the proposal (conflict=%s)", async conflict => {
+    m.conflict = conflict;
     const writes: any[] = [];
     const tx: any = {
       query: {
@@ -53,7 +56,7 @@ describe("offer-backed artist proposal", () => {
         offerApplications: { findFirst: async () => null },
       },
       select: () => ({
-        from: () => ({ where: () => ({ for: async () => [{ id: 1 }] }) }),
+        from: (table: any) => ({ where: () => ({ for: async () => [{ id: 1 }], limit: async () => table === s.appointments && m.conflict ? [{id:99}] : [] }) }),
       }),
       insert: (table: any) => ({
         values: async (value: any) => {
@@ -64,7 +67,7 @@ describe("offer-backed artist proposal", () => {
       update: () => ({ set: () => ({ where: async () => {} }) }),
     };
     m.database = { transaction: async (fn: any) => fn(tx) };
-    const result = await sessionPlansRouter
+    const operation = sessionPlansRouter
       .createCaller({ user: { id: "artist", role: "artist" } } as any)
       .create({
         conversationId: 1,
@@ -73,6 +76,13 @@ describe("offer-backed artist proposal", () => {
         sessions,
         scheduling: { frequency: "weekly", timeZone: "Australia/Brisbane" },
       });
+    if (conflict) {
+      await expect(operation).rejects.toThrow("conflicts with an existing booking");
+      expect(writes).toEqual([]);
+      expect(m.setOffer).not.toHaveBeenCalled();
+      return;
+    }
+    const result = await operation;
     expect(result.sessionPlanId).toBe(42);
     expect(m.setOffer).toHaveBeenCalledWith(
       tx,

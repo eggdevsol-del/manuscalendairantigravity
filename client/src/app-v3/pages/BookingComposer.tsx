@@ -730,7 +730,7 @@ export function BookingComposer({
             ))}
             <small>
               Times in {zone.replaceAll("_", " ")}. Availability is checked when
-              the proposal is sent.
+              the proposal is sent and again before confirmation. Proposed dates are not reserved until the deposit is confirmed.
             </small>
             {fixedDeposit && (
               <small id="booking-deposit-policy">

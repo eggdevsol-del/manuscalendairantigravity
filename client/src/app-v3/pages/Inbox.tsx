@@ -180,7 +180,7 @@ export default function Inbox() {
                 empty={
                   search
                     ? "No conversations match your search."
-                    : "Your conversations will appear here."
+                    : tab === "Unread" ? "No unread messages." : "Your conversations will appear here."
                 }
               />
             )}

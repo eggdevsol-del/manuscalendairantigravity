@@ -825,6 +825,7 @@ function SupplyCheckout({
                     +
                   </Action>
                 </div>
+                {item.quantity >= item.stock && <small role="status">All available stock is in your cart ({item.stock}).</small>}
               </Panel>
             ))}
             {!items.length && <p>Your order is empty.</p>}

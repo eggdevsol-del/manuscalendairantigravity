@@ -42,6 +42,8 @@ export function ArtistSetupGate({ children }: { children: ReactNode }) {
     );
   // Tutorials remain safe and available; live artist routes stay behind setup.
   if (path === "/practice") return <>{children}</>;
+  // Payment onboarding stays incomplete, but artists can prepare their workspace.
+  if (query.data?.nextStep === "bank" && path !== "/artist-setup") return <>{children}</>;
   if (path !== "/artist-setup") return <Redirect to="/artist-setup" />;
   const progress = query.data;
   if (!progress || progress.complete)
@@ -98,6 +100,7 @@ export function ArtistSetupGate({ children }: { children: ReactNode }) {
               error={query.error}
               onRetry={() => void query.refetch()}
             />
+            {step === "bank" && <Action tone="secondary" onClick={() => go("/dashboard")}>Explore your workspace · set up payments later</Action>}
             <Action tone="quiet" onClick={() => void logout()}>
               Sign out
             </Action>

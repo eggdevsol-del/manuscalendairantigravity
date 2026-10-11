@@ -1,3 +1,4 @@
+import { issuedOfferRules } from "../../shared/offerRules";
 import {
   conversationOffers,
   declineConversationOffer,
@@ -490,13 +491,14 @@ export const offersRouter = router({
         const ids = recipients.filter(
           id => !existing.some(o => o.originalClientId === id)
         );
+        const issuedRules = issuedOfferRules(rules, Date.now());
         for (const clientId of ids)
           await db.insert(s.clientOffers).values({
             campaignId: c.id,
             artistId: ctx.user.id,
             clientId,
             originalClientId: clientId,
-            rulesJson: c.rulesJson,
+            rulesJson: JSON.stringify(issuedRules),
             remainingValue: rules.funding === "sale" ? 0 : rules.value,
             purchaseRequired: rules.funding === "sale" ? 1 : 0,
             issuanceKey: `${c.id}:${clientId}`,

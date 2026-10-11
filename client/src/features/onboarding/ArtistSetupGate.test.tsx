@@ -112,6 +112,12 @@ describe("compulsory artist setup flow", () => {
     render(<ArtistSetupGate>Live app</ArtistSetupGate>);
     expect(screen.getByText("Editing services")).toBeTruthy();
   });
+  it("lets an artist explore after their business setup while payouts remain incomplete", () => {
+    mocks.progress = progress("bank"); mocks.path = "/dashboard";
+    render(<ArtistSetupGate>Workspace</ArtistSetupGate>);
+    expect(screen.getByText("Workspace")).toBeTruthy();
+    expect(mocks.complete).not.toHaveBeenCalled();
+  });
   it("leaves completed accounts accessible", () => {
     mocks.user.hasCompletedOnboarding = 1;
     mocks.path = "/dashboard";

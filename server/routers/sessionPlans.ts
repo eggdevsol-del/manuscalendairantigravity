@@ -26,7 +26,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, ne, lt, gt } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { createDepositPaymentIntent } from "../services/paymentIntents";
 
@@ -187,6 +187,19 @@ export const sessionPlansRouter = router({
               "Sessions must not overlap; deposits cannot exceed the estimate.",
           });
 
+        // Match confirmation's artist lock: every proposal is checked against confirmed work.
+        await dbRef.select({ id: schema.users.id }).from(schema.users)
+          .where(eq(schema.users.id, artistId)).for("update");
+        for (const session of sorted) {
+          const start = new Date(session.startsAt);
+          const end = new Date(+start + session.durationMinutes * 60000);
+          const mysql = (date: Date) => date.toISOString().slice(0, 19).replace("T", " ");
+          const conflicts = await dbRef.select({ id: schema.appointments.id }).from(schema.appointments)
+            .where(and(eq(schema.appointments.artistId, artistId), ne(schema.appointments.status, "cancelled"), lt(schema.appointments.startTime, mysql(end)), gt(schema.appointments.endTime, mysql(start)))).limit(1);
+          if (conflicts.length || await hasRescheduleHold(dbRef, artistId, start, end))
+            throw new TRPCError({ code: "CONFLICT", message: "A proposed sitting conflicts with an existing booking or reserved reschedule. Choose another time." });
+        }
+
         // Serialize retries for this client/artist relationship and reuse an identical proposal.
         await dbRef
           .select({ id: schema.conversations.id })
@@ -323,7 +336,7 @@ export const sessionPlansRouter = router({
           .set({ messageId: msgResult.insertId })
           .where(eq(schema.sessionPlans.id, planId));
 
-        if (input.offerId) {
+        {
           await dbRef
             .update(schema.conversations)
             .set({
@@ -339,7 +352,7 @@ export const sessionPlansRouter = router({
             payloadJson: JSON.stringify({
               targetUserId: clientId,
               title: "Review your booking proposal",
-              body: "Your artist has proposed dates and pricing with your offer. Review it before confirming your booking.",
+              body: "Your artist has proposed dates and pricing. Review it before confirming your booking.",
               url: `/chat/${input.conversationId}`,
             }),
           });
@@ -411,6 +424,11 @@ export const sessionPlansRouter = router({
               ? item.startsAt
               : item.startsAt.replace(" ", "T") + "Z"
           );
+          const end = new Date(+start + item.durationMinutes * 60000);
+          const stamp = (date: Date) => date.toISOString().slice(0, 19).replace("T", " ");
+          const occupied = await dbRef.select({ id: schema.appointments.id }).from(schema.appointments)
+            .where(and(eq(schema.appointments.artistId, plan.artistId), ne(schema.appointments.status, "cancelled"), lt(schema.appointments.startTime, stamp(end)), gt(schema.appointments.endTime, stamp(start)))).limit(1);
+          if (occupied.length) throw new TRPCError({ code: "CONFLICT", message: "This sitting is no longer available. Ask your artist for another date before paying." });
           if (
             await hasRescheduleHold(
               dbRef,

@@ -240,8 +240,8 @@ function BookingInspector({
         )}
       </div>
       <p className="v3-muted">
-        {a.title}
-        {a.sessionIndex ? ` · Session ${a.sessionIndex}` : ""}
+        {a.projectName || a.title}
+        {a.sessionIndex ? ` · Sitting ${a.sessionIndex}${a.sessionTotal ? ` of ${a.sessionTotal}` : ""}` : ""}
       </p>
       <div>
         <Status tone={a.status === "confirmed" ? "success" : "neutral"}>
