@@ -188,6 +188,7 @@ export function Thread({
       setLoadingEdit(false);
     }
   }
+  const hasConversationActions = c.isArtist;
   const sharedMedia = conversationMedia(c.messages || []);
   const file = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
@@ -223,13 +224,15 @@ export function Thread({
               </Link>
             )}
           </div>
-          <button
-            className="v3-icon-button"
-            aria-label="Conversation tools"
-            onClick={() => setContextOpen(true)}
-          >
-            <MoreHorizontal />
-          </button>
+          {hasConversationActions && (
+            <button
+              className="v3-icon-button"
+              aria-label="Conversation tools"
+              onClick={() => setContextOpen(true)}
+            >
+              <MoreHorizontal />
+            </button>
+          )}
           <TourHelp />
         </header>
         {activeOffer && offerScrolled && (
@@ -609,7 +612,7 @@ export function Thread({
         />
       )}
       <SheetShell
-        isOpen={contextOpen}
+        isOpen={contextOpen && hasConversationActions}
         onClose={() => setContextOpen(false)}
         title="Conversation tools"
       >
