@@ -86,6 +86,10 @@ export function SessionPlanCheckoutSheet({
   });
   const offerQuote = trpc.sessionPlans.offerOptions.useQuery({ sessionPlanId });
   const plan = query.data;
+  const voucherCreditCents =
+    plan?.offerSummary?.creditCents ??
+    offerQuote.data?.applied?.creditCents ??
+    0;
   const paid = plan?.depositRecorded || plan?.status === "accepted";
   usePaymentRefresh(step === "confirming" || paid);
   useEffect(() => {
@@ -194,9 +198,19 @@ export function SessionPlanCheckoutSheet({
                     <dd>{money(plan.totalEstimateCents)}</dd>
                   </div>
                   <div>
-                    <dt>Deposit due now</dt>
+                    <dt>
+                      {voucherCreditCents > 0
+                        ? "Cash deposit due now"
+                        : "Deposit due now"}
+                    </dt>
                     <dd>{money(plan.depositTotalCents)}</dd>
                   </div>
+                  {voucherCreditCents > 0 && (
+                    <div>
+                      <dt>Voucher credit applied</dt>
+                      <dd>{money(voucherCreditCents)}</dd>
+                    </div>
+                  )}
                   <div>
                     <dt>Platform fee</dt>
                     <dd>{money(plan.platformFeeCents || 0)}</dd>
@@ -221,7 +235,7 @@ export function SessionPlanCheckoutSheet({
                     0,
                     plan.totalEstimateCents -
                       plan.depositTotalCents -
-                      (offerQuote.data?.applied?.creditCents || 0)
+                      voucherCreditCents
                   )
                 )}
                 . Each session’s balance is requested separately.

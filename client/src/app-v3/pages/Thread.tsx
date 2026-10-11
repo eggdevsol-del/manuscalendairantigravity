@@ -992,8 +992,9 @@ function PlanMessage({
                         </span>
                         <span>
                           {money(s.estimateCents)} estimate ·{" "}
-                          {money(s.paidCents)} paid · {money(s.remainingCents)}{" "}
-                          remaining
+                          {money(s.paidCents)}{" "}
+                          {offerSummary.creditCents > 0 ? "settled" : "paid"} ·{" "}
+                          {money(s.remainingCents)} remaining
                         </span>
                       </div>
                     </li>
@@ -1069,9 +1070,23 @@ function PlanMessage({
                 </dd>
               </div>
               <div>
-                <dt>{plan.depositRecorded ? "Deposit recorded" : "Deposit"}</dt>
+                <dt>
+                  {offerSummary.creditCents > 0
+                    ? plan.depositRecorded
+                      ? "Cash deposit paid"
+                      : "Cash deposit"
+                    : plan.depositRecorded
+                      ? "Deposit recorded"
+                      : "Deposit"}
+                </dt>
                 <dd>{money(plan.depositTotalCents)}</dd>
               </div>
+              {offerSummary.creditCents > 0 && (
+                <div>
+                  <dt>Voucher credit applied</dt>
+                  <dd>{money(offerSummary.creditCents)}</dd>
+                </div>
+              )}
               <div>
                 <dt>Platform fee</dt>
                 <dd>{money(plan.platformFeeCents || 0)}</dd>

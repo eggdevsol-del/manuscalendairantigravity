@@ -792,6 +792,7 @@ export const sessionPlansRouter = router({
               offerId: application.offerId,
               originalTotalEstimateCents: q.original,
               discountCents: q.discountCents,
+              creditCents: q.creditCents || 0,
             };
           })()
         : null;
