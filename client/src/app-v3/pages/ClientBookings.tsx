@@ -52,11 +52,39 @@ export default function ClientBookings() {
   const requests = bookings.data?.pendingRequests || [];
   const consults = bookings.data?.pendingConsults || [];
   const next = nextProjectSitting(appointments);
-  const dueForms = appointments.find(
+  const dueForms = appointments.filter(
     a =>
       a.pendingFormCount > 0 &&
       a.conversationId &&
       !["completed", "cancelled", "no-show"].includes(a.status)
+  );
+  const formNotice = (
+    sitting: (typeof appointments)[number],
+    isNext = false
+  ) => (
+    <Link
+      key={sitting.id}
+      className="simple-notice"
+      href={`/projects/${sitting.conversationId}?session=${sitting.id}&action=forms`}
+    >
+      <ClipboardCheck />
+      <span>
+        <strong>
+          {isNext
+            ? "Forms needed for your next sitting"
+            : "Complete sitting forms"}
+        </strong>
+        <small>
+          {sitting.artist.name} ·{" "}
+          {bookingDate(sitting.startsAt, sitting.timeZone)}
+        </small>
+        <small>
+          {sitting.pendingFormCount}{" "}
+          {sitting.pendingFormCount === 1 ? "form" : "forms"} remaining
+        </small>
+      </span>
+      <ChevronRight />
+    </Link>
   );
   const projectCards = (
     groups: ReturnType<
@@ -206,22 +234,16 @@ export default function ClientBookings() {
               </ActionLink>
             </div>
           )}
+          {dueForms.some(sitting => sitting.id === next.id) &&
+            formNotice(next, true)}
         </Panel>
       )}
-      {dueForms && (
-        <Link
-          className="simple-notice"
-          href={`/projects/${dueForms.conversationId}?session=${dueForms.id}&action=forms`}
-        >
-          <ClipboardCheck />
-          <span>
-            <strong>Complete your forms</strong>
-            <small>
-              Before your sitting · {dueForms.pendingFormCount} to complete
-            </small>
-          </span>
-          <ChevronRight />
-        </Link>
+      {dueForms.some(sitting => sitting.id !== next?.id) && (
+        <Section title="Forms for other sittings">
+          {dueForms
+            .filter(sitting => sitting.id !== next?.id)
+            .map(sitting => formNotice(sitting))}
+        </Section>
       )}
       {standaloneProposals.length > 0 && (
         <div className="v3-summary-list">

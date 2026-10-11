@@ -84,6 +84,7 @@ function SignForm({
       });
       [0, 600, 1500].forEach(delay =>
         setTimeout(() => {
+          void utils.appointments.invalidate();
           void utils.forms.invalidate();
           void utils.clientProfile.invalidate();
           void utils.projects.invalidate();
