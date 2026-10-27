@@ -1,0 +1,22 @@
+// No secrets. Override the host in a build configuration for staging.
+TATTOI_API_HOST = www.tattoi.app
+IPHONEOS_DEPLOYMENT_TARGET = 17.0
+PRODUCT_BUNDLE_IDENTIFIER = app.tattoi.native
+PRODUCT_NAME = TattoiNative
+SWIFT_VERSION = 6.0
+GENERATE_INFOPLIST_FILE = NO
+INFOPLIST_FILE = Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = Tattoi
+INFOPLIST_KEY_TattoiAPIBaseURL = https:/$()/$(TATTOI_API_HOST)
+INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES
+INFOPLIST_KEY_UILaunchScreen_Generation = YES
+INFOPLIST_KEY_NSCameraUsageDescription = Take tattoo reference and healed work photographs to share in your conversations.
+TARGETED_DEVICE_FAMILY = 1,2
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+CODE_SIGN_STYLE = Automatic
+
+CODE_SIGN_ENTITLEMENTS = TattoiNative.entitlements
+CODE_SIGN_IDENTITY[sdk=iphonesimulator*] = -
+CODE_SIGN_STYLE[sdk=iphonesimulator*] = Manual
+CODE_SIGNING_ALLOWED[sdk=iphonesimulator*] = YES

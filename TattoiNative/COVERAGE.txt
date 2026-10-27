@@ -1,0 +1,37 @@
+NATIVE CONVERSION COVERAGE — INITIAL IMPLEMENTATION
+
+IMPLEMENTED IN SOURCE / COMPILED (authenticated flows require manual validation)
+- Ivory light/dark theme, native tab navigation, scalable type and SwiftUI sheets.
+- Existing-account sign-in, Keychain persistence, restoration, sign-out and account-scoped cache clearing.
+- Today: setup checklist, needs-attention tasks and next-seven-days work/remaining estimates from server data.
+- Searchable inbox, unread filtering, threads, text messages, reference-photo upload and read receipts.
+- Structured session-plan cards and reschedule requests link to native details.
+- Reference image gallery and design brief using the same conversation records as the PWA.
+- Artist week calendar; client sitting list; normalized server-side sitting balances.
+- Service-based single/multi-sitting booking wizard: frequency, server availability search, reviewed per-sitting price/deposit and proposal submission. No client-side fee recomputation.
+- Direct reschedule and two-step preview/send of changed-promotion terms; client accept/decline and artist withdrawal through the same backend.
+- Finish-session/final-payment-request flow; zero-remaining completion uses the existing appointment action. These actions were not executed in testing.
+- Client profile/history, scoped private notes and form-status visibility.
+- Client consent review, medical answers and PencilKit signature submission. Not signed during testing.
+- Campaign create/edit, image upload, percentage/fixed discounts, paid/complimentary vouchers, selected sitting months, limited availability, expiry, issue to one client, audiences/manual selection/presets/birthday/city filters, SMS/push channel options subject to server capability, and archive.
+- Client offer display (use/redemption/transfer/checkout UI still pending).
+- Profile/photo/location/business editing, services and weekday hours. Unknown saved service/day properties survive edits.
+- Payout status, pending payout, earnings display/chart; hosted Stripe setup and native identity/address/bank submission through existing server endpoints. Document verification remains pending. No financial/identity data submitted during testing.
+- Supplier directory/search, two-column product/variant display, quantity/stock controls, account-scoped cart persistence and shipping-rate display. Checkout deliberately unavailable until native payment integration is completed.
+- Client CSV parsing and preview/commit UI; existing server still owns duplicate/conflict/import decisions. Appointment CSV mode is disabled until the existing, unrelated backend timezone update is deployed. Existing CSV formats requiring custom column mapping need a mapping UI.
+- Instagram import start/latest/status polling; real server status and counters, no fabricated progress.
+
+NOT YET A COMPLETE NATIVE PORT
+- Native Stripe payment checkout for client deposits/balances, voucher purchases and supplier purchases. Existing APIs return a mix of PaymentIntent and embedded Checkout session secrets; an appropriate native checkout contract/SDK must be completed and tested, not treated as interchangeable.
+- APNs notification delivery, device-token registration, user-bound token lifecycle, background/deep-link notification routing. Web Push subscriptions do not work as native push. Requires Apple team/capability and backend delivery work.
+- Push and SMS delivery tests, physical-device lifecycle/offline recovery, automatic browser-to-native return links.
+- Native supplier and master-developer account roles.
+- Client Discover/feed/reels and complete client portal parity.
+- Complete Stripe verification-document upload, native account registration/recovery/deletion and policy screens required for release.
+- Studio/team management, storefront/event management, purchases/refunds, billing/subscriptions, waitlist and all secondary business operations.
+- Advanced schedule breaks/time-off/travel editors, service mapping, full portfolio editing/classification, aftercare editing and procedure-record detail/export.
+- Complete voucher acceptance/use/transfer, pinned promotion consultation UI, rich media/video/structured-message parity, older-message pagination and thread attachments beyond direct image messages.
+- End-to-end authenticated tests of every implemented native mutation; no production scale/security/App Store sign-off is implied by compiler success or six core tests.
+
+WHY THIS LIST EXISTS
+A native conversion is a frontend rewrite. The existing backend is reused, but browser components cannot simply become SwiftUI. This branch provides a real compiling and launched native implementation, with unsupported flows clearly identified. It must not be described as a finished replacement for the PWA.

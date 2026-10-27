@@ -1,0 +1,9 @@
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+Local.xcconfig
+
+!README.txt
+!COVERAGE.txt
