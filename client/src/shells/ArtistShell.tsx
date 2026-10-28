@@ -28,7 +28,7 @@ function ArtistWorkspace() {
           </Route>
         </Switch>
       </AnimatedSwitch>
-      {path !== "/practice" && (
+      {path !== "/practice" && path !== "/dashboard" && (
         <ErrorBoundary boundary="fab">
           <BottomNav />
         </ErrorBoundary>

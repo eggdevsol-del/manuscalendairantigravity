@@ -1,6 +1,7 @@
 /** Artist page to tutorial mapping; public/client/supplier-only pages are deliberately absent. */
 export const PRACTICE_ROUTES: Record<string, string> = {
   "/dashboard": "today",
+  "/today": "today",
   "/calendar": "enquiry",
   "/conversations": "messages",
   "/chat": "enquiry",

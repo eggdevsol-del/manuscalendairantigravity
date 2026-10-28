@@ -361,3 +361,383 @@ select {
 .iosm-wall-phone i:first-of-type {
   margin-top: 12px;
 }
+
+/* ── Landing page: a lock screen for the studio ── */
+.iosm-home {
+  position: relative;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: calc(var(--app-safe-top, 0px) + 56px) 14px 48px;
+  color: #fff;
+}
+.iosm-avatar {
+  position: absolute;
+  top: calc(var(--app-safe-top, 0px) + 10px);
+  right: 16px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 35%);
+}
+.iosm-lock {
+  text-align: center;
+  padding-bottom: 8px;
+}
+.iosm-clock {
+  display: block;
+  font: 700 84px/1 var(--iosm-rounded);
+  letter-spacing: -0.02em;
+}
+.iosm-date {
+  margin: 4px 0 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+.iosm-widgets {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin: 22px 0 18px;
+}
+.iosm-widget {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  color: #fff;
+  text-decoration: none;
+}
+.iosm-widget small {
+  font-size: 11px;
+  opacity: 0.85;
+  max-width: 76px;
+}
+.iosm-ring {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+}
+.iosm-ring svg {
+  position: absolute;
+  inset: 0;
+}
+.iosm-ring .bg,
+.iosm-ring .fg {
+  fill: none;
+  stroke-width: 5;
+}
+.iosm-ring .bg {
+  stroke: rgb(255 255 255 / 22%);
+}
+.iosm-ring .fg {
+  stroke: #fff;
+  stroke-linecap: round;
+}
+.iosm-ring b {
+  font: 700 15px var(--iosm-rounded);
+}
+.iosm-live {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 24px;
+  background: rgb(var(--wall-base-rgb) / 45%);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  overflow: hidden;
+}
+.iosm-live-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--glass-strong);
+  font: 700 18px var(--iosm-rounded);
+  flex: none;
+}
+.iosm-live-copy {
+  display: grid;
+  min-width: 0;
+}
+.iosm-live-copy small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-live-copy strong {
+  font-size: 17px;
+}
+.iosm-live-copy em {
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.iosm-live-progress {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 25%);
+}
+.iosm-live-progress s {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: #fff;
+}
+.iosm-group {
+  margin-top: 24px;
+}
+.iosm-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px 8px;
+  color: #fff;
+  text-decoration: none;
+}
+.iosm-group-head i {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--wall-acc);
+  display: grid;
+  place-items: center;
+}
+.iosm-group-head i svg {
+  width: 13px;
+  height: 13px;
+}
+.iosm-group-head strong {
+  flex: 1;
+  font: 700 17px var(--iosm-rounded);
+}
+.iosm-group-head span {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  color: rgb(255 255 255 / 60%);
+}
+.iosm-group-body {
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+  overscroll-behavior: none;
+  transition: max-height 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.iosm-group.open .iosm-group-body {
+  overflow-y: auto;
+  padding-bottom: 32px;
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+}
+.iosm-group-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px auto 0;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: rgb(255 255 255 / 85%);
+  font-size: 13px;
+  font-weight: 600;
+}
+.iosm-group-toggle svg {
+  transition: transform 0.3s;
+}
+.iosm-group.open .iosm-group-toggle svg {
+  transform: rotate(180deg);
+}
+.iosm-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+}
+.iosm-note.live {
+  box-shadow: inset 0 0 0 2px var(--wall-acc);
+}
+.iosm-note-icon {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--wall-acc);
+  display: grid;
+  place-items: center;
+}
+.iosm-note-icon svg {
+  width: 17px;
+  height: 17px;
+}
+.iosm-note-copy {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.iosm-note-copy strong {
+  font-size: 14px;
+}
+.iosm-note-copy span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+.iosm-note small {
+  align-self: start;
+  font-size: 11px;
+  opacity: 0.6;
+}
+.iosm-today {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-radius: 24px;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #fff;
+  text-decoration: none;
+}
+.iosm-today-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.iosm-today-head strong {
+  font: 700 17px var(--iosm-rounded);
+}
+.iosm-today-head em {
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.75;
+}
+.iosm-today-line {
+  position: relative;
+  height: 48px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 8%);
+}
+.iosm-block {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 70%);
+}
+.iosm-block.done {
+  opacity: 0.35;
+}
+.iosm-block.live {
+  background: #fff;
+  box-shadow: 0 0 0 2px var(--wall-acc);
+}
+.iosm-now {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--wall-acc);
+}
+.iosm-ticks {
+  position: relative;
+  height: 14px;
+}
+.iosm-ticks s {
+  position: absolute;
+  transform: translateX(-50%);
+  text-decoration: none;
+  font-size: 11px;
+  opacity: 0.6;
+}
+.iosm-posts {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  margin: 0 -14px;
+  padding: 0 14px 4px;
+}
+.iosm-post {
+  flex: 0 0 min(80%, 290px);
+  scroll-snap-align: center;
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #fff;
+  color: var(--wall-deep);
+  text-decoration: none;
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 40%);
+}
+.iosm-post img,
+.iosm-post-blank {
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  object-fit: cover;
+}
+.iosm-post-blank {
+  display: grid;
+  place-items: center;
+  background: var(--wall);
+  color: #fff;
+}
+.iosm-post > span:last-child {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 12px;
+}
+.iosm-post i {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--wall-acc);
+}
+.iosm-post q {
+  font-size: 14px;
+  opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.iosm-post em {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.6;
+  text-transform: capitalize;
+}

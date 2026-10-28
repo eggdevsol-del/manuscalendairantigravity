@@ -381,10 +381,10 @@ export const PRACTICE_TOURS: Record<
     ],
   },
   promotion: { route: "/chat/1", steps: promo() },
-  "calendar-fill": { route: "/dashboard", steps: promo(true) },
+  "calendar-fill": { route: "/today", steps: promo(true) },
   voucher: { route: "/chat/1", steps: promo(false, true) },
   today: {
-    route: "/dashboard",
+    route: "/today",
     steps: [
       review(
         "Your populated artist day",
@@ -406,7 +406,7 @@ export const PRACTICE_TOURS: Record<
         "Review your week",
         "Next 7 days|Next seven|Booked work",
         "Check upcoming work and remaining balances.",
-        "/dashboard"
+        "/today"
       ),
     ],
   },
