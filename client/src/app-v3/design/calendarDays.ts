@@ -40,10 +40,16 @@ export function parseSchedule(value: unknown): any[] {
     }
   }
   if (Array.isArray(parsed)) return parsed;
-  return parsed && typeof parsed === "object" ? Object.values(parsed) : [];
+  // Keyed by day name ({ monday: { enabled, start, end } }): the key is the day.
+  return parsed && typeof parsed === "object"
+    ? Object.entries(parsed).map(([key, value]) => ({
+        day: key,
+        ...(value && typeof value === "object" ? value : {}),
+      }))
+    : [];
 }
 
-/** Opening hours for a day, in minutes from midnight. A day off gets a standard 9:30–5:30 day, flagged closed. */
+/** Opening hours for a day, in minutes from midnight, from the artist's saved schedule. A day off has none. */
 export function hoursFor(schedule: any[], day: number) {
   const name = new Date(day).toLocaleDateString("en-US", { weekday: "long" });
   const row = schedule.find(
@@ -52,22 +58,23 @@ export function hoursFor(schedule: any[], day: number) {
   const start = minutes(row?.start || row?.startTime);
   const close = minutes(row?.end || row?.endTime);
   if (!row?.enabled || start === null || close === null || close <= start)
-    return { open: false, start: 570, end: 1050, breaks: 0 };
+    return { open: false as const, start: null, end: null, breaks: 0 };
   const breaks = (row.breaks || []).reduce((sum: number, b: any) => {
     const a = minutes(b.start || b.startTime);
     const z = minutes(b.end || b.endTime);
     return a !== null && z !== null && z > a ? sum + z - a : sum;
   }, 0);
-  return { open: true, start, end: close, breaks };
+  return { open: true as const, start, end: close, breaks };
 }
 
-/** Free working minutes: opening hours less breaks and bookings. */
+/** Free working minutes: opening hours less breaks and bookings. None on a day off. */
 export function freeMinutes(
   schedule: any[],
   day: number,
   sittings: CalendarSitting[]
 ) {
   const h = hoursFor(schedule, day);
+  if (!h.open) return 0;
   const booked = sittings
     .filter(s => s.status !== "cancelled")
     .reduce((sum, s) => sum + (end(s) - ms(s.startTime)) / 60000, 0);

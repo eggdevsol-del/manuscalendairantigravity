@@ -214,15 +214,28 @@ export default function Plans() {
 const whole = (c: number) => money(c).replace(/\.00$/, "");
 /** Slide to a typical month of takings and see which plan leaves you the most. */
 function PlanCompare({ current }: { current: string }) {
-  const [month, setMonth] = useState(800000);
+  // Start from what clients actually paid in the last 30 days.
+  const earnings = trpc.payouts.earningsBreakdown.useQuery({
+    period: "30d",
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+  const actual = earnings.data?.grossCents ?? null;
+  const [picked, setMonth] = useState<number | null>(null);
+  const month = picked ?? actual;
+  if (month === null) return null;
+  const top = Math.max(4000000, Math.ceil((actual ?? 0) * 2 / 50000) * 50000);
   const { plans, best, proBreakEven } = planKeep(month);
-  const top = Math.max(1, ...plans.map(p => p.keep));
+  const tallest = Math.max(1, ...plans.map(p => p.keep));
   const bestLabel = plans.find(p => p.key === best)!.label;
   return (
     <>
       <LiveStage className="iosm-plans" label={`${bestLabel} leaves you the most`}>
         <StageNumber
-          over={`A month of ${whole(month)} in payments`}
+          over={
+            picked === null || picked === actual
+              ? `Your last 30 days: ${whole(month)} in payments`
+              : `A month of ${whole(month)} in payments`
+          }
           value={bestLabel}
           under="leaves you the most"
         />
@@ -230,7 +243,7 @@ function PlanCompare({ current }: { current: string }) {
           {plans.map(p => (
             <span key={p.key} className={p.key === best ? "best" : ""}>
               <span>
-                <i style={{ height: `${Math.max(4, (Math.max(0, p.keep) / top) * 100)}%` }} />
+                <i style={{ height: `${Math.max(4, (Math.max(0, p.keep) / tallest) * 100)}%` }} />
               </span>
               <b>{p.label}</b>
               <em>{whole(p.keep)}</em>
@@ -243,8 +256,8 @@ function PlanCompare({ current }: { current: string }) {
         label="Monthly takings"
         tone="money"
         value={month}
-        min={100000}
-        max={4000000}
+        min={0}
+        max={top}
         step={50000}
         format={whole}
         onChange={setMonth}

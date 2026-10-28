@@ -15,7 +15,7 @@ import { useBusinessTasks } from "@/features/dashboard/useBusinessTasks";
 import { useTotalUnreadCount } from "@/lib/selectors/conversation.selectors";
 import { money } from "@/features/workspace/bookingPresentation";
 import { Avatar, Feedback } from "../design/primitives";
-import { dayTimeline, firstImage, relativeStart } from "../design/lockHome";
+import { dayTimeline, firstImage, projectTitle, relativeStart, startLabel } from "../design/lockHome";
 import {
   Group,
   Note,
@@ -130,10 +130,10 @@ export default function LockHome() {
               <small>
                 {live
                   ? "In the chair"
-                  : `Next up ${relativeStart(next.startTime, now)}`}
+                  : `Next up ${startLabel(next.startTime, now)}`}
               </small>
               <strong>{next.clientName}</strong>
-              <em>{next.title}</em>
+              <em>{projectTitle(next.title) ?? "Sitting"}</em>
             </span>
             {live && (
               <i className="iosm-live-progress" aria-hidden="true">
@@ -229,7 +229,7 @@ export default function LockHome() {
               key={s.id}
               icon={<CalendarDays />}
               title={s.clientName}
-              detail={`${s.title} · ${new Date(s.startTime).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}`}
+              detail={`${projectTitle(s.title) ?? "Sitting"} · ${new Date(s.startTime).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}`}
               when={relativeDay(s.startTime, now)}
               href={
                 s.conversationId

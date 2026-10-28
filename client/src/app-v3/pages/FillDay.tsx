@@ -54,7 +54,7 @@ export function FillDay({
   const free = freeMinutes(schedule, day, sittings);
   const date = format(day, "yyyy-MM-dd");
   const start = new Date(day);
-  start.setHours(Math.floor(hours.start / 60), hours.start % 60, 0, 0);
+  if (hours.open) start.setHours(Math.floor(hours.start / 60), hours.start % 60, 0, 0);
   // What the free time is worth at the rate of the first saved service.
   const svc = services.find(s => s.duration > 0 && s.price > 0);
   const worth = svc
@@ -68,16 +68,15 @@ export function FillDay({
   return (
     <div className="iosm-fillsheet">
       <div className="iosm-fill-stage">
-        <small>
-          {format(day, "EEEE d MMMM")}
-          {hours.open ? "" : " · usually a day off"}
-        </small>
+        <small>{format(day, "EEEE d MMMM")}</small>
         <b>{worth ? money(worth).replace(/\.00$/, "") : duration(free)}</b>
         <em>
           {worth ? `open to earn · ${duration(free)} free` : "free"}
           {sittings.length
             ? ` around ${sittings.length} booking${sittings.length === 1 ? "" : "s"}`
-            : ` · ${clock(hours.start)}–${clock(hours.end)}`}
+            : hours.open
+              ? ` · ${clock(hours.start)}–${clock(hours.end)}`
+              : ""}
         </em>
         <span className="iosm-fill-ghost">
           <b>{sittings.length ? "Room for more" : "Your empty day"}</b>

@@ -14,7 +14,6 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { TeaserProvider } from "@/contexts/TeaserContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { UpdateBanner } from "@/components/UpdateBanner";
-import { InstallAppBanner } from "@/components/InstallAppBanner";
 import { PaymentRequestBanner } from "@/components/PaymentRequestBanner";
 import { TooltipTourProvider } from "@/components/tooltip-tour";
 import { useVersionCheck } from "@/lib/useVersionCheck";
@@ -283,7 +282,8 @@ function AuthOnlyBanners() {
   if (!user || user.role === "master_dev" || path === "/practice") return null;
   return (
     <>
-      <InstallAppBanner />
+      {/* InstallAppBanner is off until Tattoi has its own App Store and Google Play listings: it named an
+          old app and linked to another company's store pages. */}
       <PaymentRequestBanner />
     </>
   );

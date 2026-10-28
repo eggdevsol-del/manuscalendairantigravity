@@ -97,3 +97,24 @@ export function firstImage(value: unknown): string | null {
     return String((item as { url: unknown }).url);
   return null;
 }
+
+/** A project title worth showing: placeholder text such as "N/A", "none" or "-" counts as no title. */
+export function projectTitle(...values: (string | null | undefined)[]) {
+  for (const v of values) {
+    const t = v?.trim();
+    if (t && !/^(n\/?a|none|null|undefined|-+)$/i.test(t)) return t;
+  }
+  return null;
+}
+
+/** When a sitting starts: "now", "in 25 min" or a time today; a weekday and time on any other day. */
+export function startLabel(start: string | Date, now: number) {
+  const d = new Date(start);
+  if (d.toDateString() === new Date(now).toDateString()) return relativeStart(start, now);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const time = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" }).replace(" ", "").toLowerCase();
+  return d.toDateString() === tomorrow.toDateString()
+    ? `tomorrow ${time}`
+    : `${d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" })}, ${time}`;
+}

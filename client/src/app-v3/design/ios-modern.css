@@ -1924,3 +1924,32 @@ html:root .practice-app .v3-scroll {
 .iosm-split {
   margin-top: 8px;
 }
+
+/* Inbox filters: the chosen chip is solid white with dark text on the wallpaper. */
+html:root .simple-inbox-filters > button[aria-pressed="true"] {
+  background: #fff;
+  color: var(--wall-deep);
+}
+/* The pinned next-sitting card in the inbox is a glass notification, not the old green tint. */
+html:root .simple-pin {
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: inset 0 0 0 2px var(--wall-acc);
+  color: #fff;
+}
+/* Working hours: start "to" end on one line, the day type on its own line, so times are never cut off. */
+html:root .v3-hours-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+html:root .v3-hours-fields > label:last-child {
+  grid-column: 1 / -1;
+}
+html:root .v3-hours-fields input,
+html:root .v3-hours-fields select {
+  width: 100%;
+  min-width: 0;
+}

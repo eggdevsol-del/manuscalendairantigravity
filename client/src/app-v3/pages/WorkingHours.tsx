@@ -401,7 +401,7 @@ export default function WorkingHours() {
               <DepositSetting
                 tier={resolvePaymentTier(query.data.subscriptionTier)}
                 saved={query.data.depositPercentage}
-                price={services.find(s => s.price > 0)?.price ?? 1000}
+                price={services.find(s => s.price > 0)?.price ?? null}
                 saving={save.isPending}
                 onSave={depositPercentage =>
                   save.mutate({ depositPercentage })
@@ -434,6 +434,7 @@ export default function WorkingHours() {
               sittings={Number(draft.sittings) || 1}
               tier={resolvePaymentTier(query.data?.subscriptionTier)}
               depositPercent={query.data?.depositPercentage}
+              opensAt={days.find(d => d.enabled && d.type === "work")?.start}
             />
             <label>
               Service name
@@ -609,6 +610,7 @@ function ServiceDisplay({
   sittings,
   tier,
   depositPercent,
+  opensAt,
 }: {
   name: string;
   duration: number;
@@ -616,10 +618,18 @@ function ServiceDisplay({
   sittings: number;
   tier: ReturnType<typeof resolvePaymentTier>;
   depositPercent?: number | null;
+  opensAt?: string;
 }) {
   const cents = Math.round(price * 100);
   const split = sittingSplit(cents, tier, depositPercent);
-  const end = new Date(2000, 0, 1, 10, duration);
+  // The sitting is drawn from the artist's first working day's opening time.
+  const [h, m] = (opensAt || "").split(":").map(Number);
+  const opens = Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
+  const clock = (mins: number) =>
+    new Date(2000, 0, 1, 0, mins)
+      .toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
+      .replace(" ", "")
+      .toLowerCase();
   const whole = (c: number) => money(c).replace(/\.00$/, "");
   return (
     <LiveStage className="iosm-svc" label="This service as a sitting">
@@ -628,11 +638,9 @@ function ServiceDisplay({
         style={{ height: 44 + Math.min(duration, 720) / 60 * 16 }}
       >
         <i>
-          10:00am –{" "}
-          {end
-            .toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
-            .replace(" ", "")
-            .toLowerCase()}
+          {opens !== null
+            ? `${clock(opens)} – ${clock(opens + duration)}`
+            : minutesLabel(duration)}
         </i>
         <b>{name || "New service"}</b>
       </span>
@@ -681,7 +689,7 @@ function DepositSetting({
 }: {
   tier: ReturnType<typeof resolvePaymentTier>;
   saved?: number | null;
-  price: number;
+  price: number | null;
   saving: boolean;
   onSave: (percent: number) => void;
 }) {
@@ -690,11 +698,12 @@ function DepositSetting({
     ? PAYMENT_TIERS[tier].defaultDepositPercent
     : (saved ?? PAYMENT_TIERS[tier].defaultDepositPercent);
   const [percent, setPercent] = useState(current);
-  // Preview the chosen split as if the plan allowed it.
-  const split = sittingSplit(Math.round(price * 100), "pro", percent);
+  // Preview the chosen split as if the plan allowed it, on the artist's own first priced service.
+  const split = price ? sittingSplit(Math.round(price * 100), "pro", percent) : null;
   const whole = (c: number) => money(c).replace(/\.00$/, "");
   return (
     <div className="v3-stack">
+      {split && price ? (
       <LiveStage className="iosm-split" label="How a sitting's payment splits">
         <StageNumber
           over={`A ${whole(Math.round(price * 100))} sitting`}
@@ -721,6 +730,11 @@ function DepositSetting({
           </span>
         </span>
       </LiveStage>
+      ) : (
+        <p className="v3-muted">
+          Add a service with a price to see how a sitting's payment splits.
+        </p>
+      )}
       <TouchSlider
         label="Deposit"
         tone="money"

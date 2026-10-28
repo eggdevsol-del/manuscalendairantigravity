@@ -46,6 +46,7 @@ import {
 } from "../design/calendarDays";
 import { BookingComposer } from "./BookingComposer";
 import { ProjectArt } from "../design/LockParts";
+import { projectTitle } from "../design/lockHome";
 import { FillDay } from "./FillDay";
 import { SessionActions } from "./SessionActions";
 
@@ -297,7 +298,7 @@ export default function Calendar() {
   const openingTime = (day: number) => {
     const h = hoursFor(schedule, day);
     const d = new Date(day);
-    d.setHours(Math.floor(h.start / 60), h.start % 60, 0, 0);
+    if (h.open) d.setHours(Math.floor(h.start / 60), h.start % 60, 0, 0);
     return d;
   };
 
@@ -574,7 +575,7 @@ function SittingCard({
           {short ? `${time}${live ? " · now" : ""} · ` : ""}
           {external
             ? "External calendar"
-            : a.projectName || a.serviceName || a.title}
+            : projectTitle(a.projectName, a.serviceName, a.title) ?? "Sitting"}
           {index && total > 1 ? `, ${index} of ${total}` : ""}
         </em>
         {!short && ready.length > 0 && (
@@ -632,7 +633,7 @@ function BookingInspector({
         )}
       </div>
       <p className="v3-muted">
-        {a.projectName || a.title}
+        {projectTitle(a.projectName, a.title) ?? "Sitting"}
         {a.sessionIndex ? ` · Sitting ${a.sessionIndex}${a.sessionTotal ? ` of ${a.sessionTotal}` : ""}` : ""}
       </p>
       <div>

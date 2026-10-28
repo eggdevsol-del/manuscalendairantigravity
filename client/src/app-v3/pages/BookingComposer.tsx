@@ -133,7 +133,9 @@ export function BookingComposer({
     if (!held) return;
     const noon = new Date(`${held}T12:00`);
     const open = hoursFor(parseSchedule(settings.data?.workSchedule), +noon);
-    const time = `${String(Math.floor(open.start / 60)).padStart(2, "0")}:${String(open.start % 60).padStart(2, "0")}`;
+    const time = open.open
+      ? `${String(Math.floor(open.start / 60)).padStart(2, "0")}:${String(open.start % 60).padStart(2, "0")}`
+      : null;
     setAutoScheduled(false);
     setSessions(rows => {
       const shift = differenceInCalendarDays(
@@ -143,7 +145,7 @@ export function BookingComposer({
       return rows.map((r, i) => ({
         ...r,
         date: format(addDays(new Date(`${r.date}T12:00`), shift), "yyyy-MM-dd"),
-        time: i === 0 ? time : r.time,
+        time: i === 0 && time ? time : r.time,
       }));
     });
     setStep("details");

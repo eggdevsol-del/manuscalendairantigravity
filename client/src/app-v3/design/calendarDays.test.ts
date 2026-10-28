@@ -38,8 +38,12 @@ describe("calendar days", () => {
     });
     const keyed = parseSchedule({ wed: { day: "Wednesday", enabled: true, startTime: "09:00", endTime: "17:00" } });
     expect(hoursFor(keyed, day)).toMatchObject({ open: true, start: 540, end: 1020 });
-    // A day off still gets a standard day, flagged closed, so it can be filled.
-    expect(hoursFor(schedule, addDays(day, 1))).toMatchObject({ open: false, start: 570, end: 1050 });
+    // The format production stores: keyed by day name, with no day field inside.
+    const byName = parseSchedule('{"wednesday":{"enabled":true,"start":"09:00","end":"17:00","type":"work"}}');
+    expect(hoursFor(byName, day)).toMatchObject({ open: true, start: 540, end: 1020 });
+    // A day off has no hours, so nothing to fill.
+    expect(hoursFor(schedule, addDays(day, 1))).toMatchObject({ open: false, start: null, end: null });
+    expect(freeMinutes(schedule, addDays(day, 1), [])).toBe(0);
   });
 
   it("counts free minutes after breaks and bookings, ignoring cancellations", () => {

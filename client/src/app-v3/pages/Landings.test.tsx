@@ -57,13 +57,20 @@ describe("client landing", () => {
       "bookings:past": {
         appointments: [{ id: 4, status: "completed", endsAt: at(1, 15), completedAt: at(1, 15), projectName: "Dagger", artist: { name: "Rory Vale" }, conversationId: 2 }],
       },
+      aftercare: {
+        daysSince: 4,
+        totalDays: 30,
+        isHealed: false,
+        template: { phases: [{ id: 1, fromDay: 1, toDay: 7, label: "Peeling", instruction: "Don't pick" }] },
+      },
       conversations: [{ id: 2, otherUser: { name: "Rory Vale" }, unreadCount: 2, lastMessage: { content: "See you Saturday!", messageType: "text" } }],
     };
     render(<ClientHome />);
     expect(screen.getByText("Next sitting in 3 days")).toBeTruthy();
     expect(screen.getByText("with Rory Vale · sitting 2 of 3")).toBeTruthy();
     expect(screen.getByText("D4")).toBeTruthy();
-    expect(screen.getByText("Day 4 of healing")).toBeTruthy();
+    expect(screen.getByText("Day 4 of healing · Peeling")).toBeTruthy();
+    expect(screen.getByText("Don't pick")).toBeTruthy();
     expect(screen.getByText("1 form for Botanical sleeve")).toBeTruthy();
     expect(screen.getByText("Waiting on Mia Chen")).toBeTruthy();
     expect(screen.getByText("Rory Vale · 2 new")).toBeTruthy();

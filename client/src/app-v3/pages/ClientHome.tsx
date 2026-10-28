@@ -14,7 +14,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { money } from "@/features/workspace/bookingPresentation";
 import { Avatar, Feedback } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
-import { relativeStart } from "../design/lockHome";
+import { projectTitle, relativeStart } from "../design/lockHome";
 import { Group, Note, ProjectArt, Widget, relativeDay, useNow } from "../design/LockParts";
 import { aftercareStage, daysUntil, healingDay } from "../design/landingData";
 
@@ -50,12 +50,11 @@ export default function ClientHome() {
     { enabled: !!recent }
   );
   const care = aftercare.data;
-  const totalDays = care?.totalDays || 30;
-  const healingNow = recent
-    ? { ...recent, day: care?.daysSince ?? recent.day }
-    : null;
+  const totalDays = care?.totalDays ?? 0;
   const healing =
-    healingNow && !care?.isHealed && healingNow.day <= totalDays ? healingNow : null;
+    recent && care && !care.isHealed && care.daysSince <= totalDays
+      ? { ...recent, day: care.daysSince }
+      : null;
   const phases = [...(care?.template?.phases ?? [])].sort(
     (a, b) => a.fromDay - b.fromDay
   );
@@ -89,7 +88,7 @@ export default function ClientHome() {
       ? `sitting ${a.sessionIndex} of ${a.sessionTotal}`
       : a.serviceName || "sitting";
   const project = (a: (typeof sittings)[number]) =>
-    a.projectName || a.serviceName || a.title || "Your tattoo";
+    projectTitle(a.projectName, a.serviceName, a.title) ?? "Your tattoo";
   const inDays = (date: string) => {
     const n = daysUntil(date, now);
     return n === 0 ? relativeDay(date, now) : n === 1 ? "tomorrow" : `in ${n} days`;
