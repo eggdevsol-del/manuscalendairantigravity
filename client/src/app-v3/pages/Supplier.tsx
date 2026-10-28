@@ -36,8 +36,9 @@ export default function SupplierToday() {
   const data = stats.data;
   return (
     <Screen
-      title="Home"
+      title="Store"
       subtitle={profile.data?.businessName || "Your store at a glance"}
+      back="/dashboard"
     >
       <Feedback
         loading={stats.isLoading}

@@ -15,8 +15,10 @@ import Conversations from "@/app-v3/pages/Inbox";
 import Chat from "@/app-v3/pages/Inbox";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/app-v3/pages/Settings";
+import SupplierLockHome from "@/app-v3/pages/SupplierHome";
 
 export default function MerchantShell() {
+  const [path] = useLocation();
   return (
     <div className="min-h-screen pb-16">
       <AnimatedSwitch>
@@ -25,7 +27,8 @@ export default function MerchantShell() {
           <Route path="/">
             <Redirect to="/dashboard" />
           </Route>
-          <Route path="/dashboard" component={Dashboard} />
+          <Route path="/dashboard" component={SupplierLockHome} />
+          <Route path="/merchant/store" component={Dashboard} />
           <Route path="/merchant/orders" component={MerchantOrders} />
           <Route path="/merchant/products" component={MerchantProducts} />
           <Route path="/settings" component={MerchantSettings} />
@@ -42,9 +45,12 @@ export default function MerchantShell() {
         </Switch>
       </AnimatedSwitch>
 
-      <ErrorBoundary boundary="fab">
-        <BottomNav />
-      </ErrorBoundary>
+      {/* The landing page is a lock screen with no tab bar. */}
+      {path !== "/dashboard" && (
+        <ErrorBoundary boundary="fab">
+          <BottomNav />
+        </ErrorBoundary>
+      )}
     </div>
   );
 }

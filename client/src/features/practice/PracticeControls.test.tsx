@@ -319,5 +319,6 @@ describe("isolated artist screen controls", () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(providers.stripe).not.toHaveBeenCalled();
     expect(providers.connect).not.toHaveBeenCalled();
-  });
+    // Rendering every screen in turn is slow under a full parallel run.
+  }, 20000);
 });

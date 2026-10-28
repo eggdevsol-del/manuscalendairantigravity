@@ -32,7 +32,9 @@ export const ARTIST_NAV_ITEMS: BottomNavButton[] = [
   },
 ];
 
+// Profile and settings sit behind the avatar on the Home lock screen.
 export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
+  { id: "home", path: "/home", label: "Home", icon: Home },
   { id: "bookings", path: "/bookings", label: "My Tattoos", icon: Leaf },
   {
     id: "messages",
@@ -41,7 +43,6 @@ export const CLIENT_NAV_ITEMS: BottomNavButton[] = [
     icon: MessageCircle,
   },
   { id: "discover", path: "/discover", label: "Discover", icon: Compass },
-  { id: "profile", path: "/profile", label: "Profile", icon: User },
 ];
 
 export const STUDIO_NAV_ITEMS: BottomNavButton[] = [
