@@ -189,8 +189,15 @@ export default function LockHome() {
     .slice(0, 6);
 
   // ── Offers and supplies ─────────────────────────────────
+  // Running offers first; ended ones stay listed but say so.
+  const ended = (c: any) =>
+    !!c.rules.expiresAt && new Date(c.rules.expiresAt).getTime() <= now;
   const campaigns =
-    offers.data?.enabled === false ? null : (offers.data?.campaigns ?? []);
+    offers.data?.enabled === false
+      ? null
+      : [...(offers.data?.campaigns ?? [])].sort(
+          (a: any, b: any) => Number(ended(a)) - Number(ended(b))
+        );
   const carts = (suppliers.data ?? []).flatMap(s => {
     let count = 0;
     try {
@@ -549,9 +556,10 @@ export default function LockHome() {
                 title={c.rules.name}
                 detail={
                   c.rules.expiresAt
-                    ? `Ends ${new Date(c.rules.expiresAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`
+                    ? `${ended(c) ? "Ended" : "Ends"} ${new Date(c.rules.expiresAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`
                     : "No end date"
                 }
+                live={!ended(c)}
                 href="/today?promotions=1"
               />
             ))
