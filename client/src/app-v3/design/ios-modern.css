@@ -2155,3 +2155,84 @@ html:root .v3-avatar img {
   height: 100%;
   object-fit: cover;
 }
+
+/* ── Money page ───────────────────────────────────────── */
+.iosm-money-stage .iosm-river {
+  margin-top: 4px;
+}
+.iosm-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.iosm-facts > div {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #fff;
+}
+.iosm-facts b {
+  font: 700 18px var(--iosm-rounded);
+  overflow-wrap: anywhere;
+}
+.iosm-facts span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.iosm-chips > button {
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--glass);
+  color: #fff;
+  font: 600 13px var(--iosm-rounded);
+}
+.iosm-chips > button[aria-pressed="true"] {
+  background: #fff;
+  color: var(--wall-deep);
+}
+.iosm-ledger-face {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
+  color: #fff;
+  font: 700 13px var(--iosm-rounded);
+}
+.iosm-ledger-out {
+  color: var(--wall-acc-soft);
+}
+.iosm-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.iosm-ledger-row > button > .v3-row-copy {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+.iosm-ledger-row > button > .v3-row-copy > .v3-row-copy {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.iosm-ledger-row > button > .v3-row-copy > strong {
+  flex: none;
+}
