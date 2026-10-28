@@ -1,5 +1,6 @@
 import { NumericInput } from "@/components/ui/numeric-input";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearch } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { PAYMENT_TIERS, resolvePaymentTier, roundCents } from "@shared/fees";
@@ -61,6 +62,16 @@ export default function Waitlist() {
       void query.refetch();
     },
   });
+  // "Fill this day" on the calendar links here with ?offer=<entry>&start=<local time> to pre-fill the offer.
+  const search = useSearch();
+  const linked = useRef(new URLSearchParams(search));
+  useEffect(() => {
+    const id = Number(linked.current.get("offer"));
+    if (!id || !query.data?.some(row => row.id === id)) return;
+    setDraft(d => ({ ...d, startsAt: linked.current.get("start") || "" }));
+    setOffering(id);
+    linked.current = new URLSearchParams();
+  }, [query.data]);
   const error = offer.error || accept.error || leave.error;
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return (

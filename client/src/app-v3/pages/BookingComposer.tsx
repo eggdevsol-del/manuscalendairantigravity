@@ -12,8 +12,8 @@ import {
   feasibleOfferFrequencies,
   type OfferFrequency,
 } from "../data/offerFrequencies";
-import { addDays, format, isSameDay } from "date-fns";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { addDays, differenceInCalendarDays, format, isSameDay } from "date-fns";
+import { ArrowLeft, Check, Plus, Trash2, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
@@ -27,6 +27,13 @@ import {
   Section,
   Status,
 } from "../design/primitives";
+import {
+  forgetDay,
+  hoursFor,
+  parseSchedule,
+  savedDay,
+  savedKeys,
+} from "../design/calendarDays";
 type DraftSession = {
   date: string;
   time: string;
@@ -119,6 +126,29 @@ export function BookingComposer({
     conversation.data?.otherUser?.name || selectedClient?.name || "Client";
   const clientId = conversation.data?.clientId || client;
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  // A day saved for this client from "Fill this day" on the calendar is offered when choosing dates.
+  const heldKeys = savedKeys(clientId || null, conversationId || null);
+  const [, setHeldVersion] = useState(0);
+  const held = savedDay(heldKeys);
+  function applyHeldDay() {
+    if (!held) return;
+    const noon = new Date(`${held}T12:00`);
+    const open = hoursFor(parseSchedule(settings.data?.workSchedule), +noon);
+    const time = `${String(Math.floor(open.start / 60)).padStart(2, "0")}:${String(open.start % 60).padStart(2, "0")}`;
+    setAutoScheduled(false);
+    setSessions(rows => {
+      const shift = differenceInCalendarDays(
+        noon,
+        new Date(`${rows[0].date}T12:00`)
+      );
+      return rows.map((r, i) => ({
+        ...r,
+        date: format(addDays(new Date(`${r.date}T12:00`), shift), "yyyy-MM-dd"),
+        time: i === 0 ? time : r.time,
+      }));
+    });
+    setStep("details");
+  }
   const tier = settings.data?.subscriptionTier?.toLowerCase();
   const fixedDeposit = !tier || tier === "free" || tier === "basic";
   async function findDates(selectedFrequency = frequency) {
@@ -367,6 +397,7 @@ export function BookingComposer({
         utils.projects.summary.invalidate({ conversationId: target }),
         utils.conversations.list.invalidate(),
       ]);
+      forgetDay(heldKeys);
       onSuccess(target);
     } catch (e) {
       setError(
@@ -448,6 +479,49 @@ export function BookingComposer({
           }[step]
         }
       </Status>
+      {held && (step === "frequency" || step === "details") && (
+        <div
+          className={`iosm-held${sessions[0].date === held ? " on" : ""}`}
+        >
+          <span className="iosm-held-d">
+            <small>{format(new Date(`${held}T12:00`), "EEE")}</small>
+            <b>{format(new Date(`${held}T12:00`), "d")}</b>
+          </span>
+          <span className="iosm-held-t">
+            <b>
+              {sessions[0].date === held
+                ? "Using the day you saved"
+                : `The day you saved for ${clientName.split(" ")[0]}`}
+            </b>
+            <em>
+              {format(new Date(`${held}T12:00`), "EEEE d MMMM")}
+              {sessions.length > 1
+                ? `, then ${sessions.length - 1} more sitting${sessions.length === 2 ? "" : "s"} after`
+                : ""}
+            </em>
+          </span>
+          {sessions[0].date === held ? (
+            <span className="iosm-held-ok" aria-hidden="true">
+              <Check />
+            </span>
+          ) : (
+            <button type="button" className="iosm-held-use" onClick={applyHeldDay}>
+              Use
+            </button>
+          )}
+          <button
+            type="button"
+            className="iosm-held-x"
+            aria-label="Forget this day"
+            onClick={() => {
+              forgetDay(heldKeys);
+              setHeldVersion(v => v + 1);
+            }}
+          >
+            <X />
+          </button>
+        </div>
+      )}
       <Feedback
         loading={settings.isLoading || conversation.isLoading}
         error={settings.error || conversation.error || clients.error}
