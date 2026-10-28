@@ -91,43 +91,17 @@ describe("Portfolio artwork viewer", () => {
   });
 });
 
-it("starts an artwork tour inside the lightbox without advancing the artwork", () => {
-  const rects = vi
-    .spyOn(Element.prototype, "getClientRects")
-    .mockReturnValue([{ width: 44, height: 44 }] as unknown as DOMRectList);
-  function TourState() {
-    const { activeTour } = useTooltipTour();
-    return (
-      <output data-testid="active-artwork-tour">
-        {activeTour?.steps.map(step => step.title).join(" | ")}
-      </output>
-    );
-  }
-  try {
-    render(
-      <TooltipTourProvider>
-        <PortfolioExpand artistId="ella" artistName="Ella" />
-        <TourState />
-      </TooltipTourProvider>
-    );
-    fireEvent.click(screen.getByRole("button", { name: "View Olive branch" }));
-    const dialog = screen.getByRole("dialog", { name: "Ella’s portfolio" });
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Tour this feature" })
-    );
-    expect(screen.getByTestId("active-artwork-tour")).toHaveTextContent(
-      "Assess the artwork"
-    );
-    expect(screen.getByTestId("active-artwork-tour")).not.toHaveTextContent(
-      "Next artwork"
-    );
-    expect(screen.getByTestId("active-artwork-tour")).not.toHaveTextContent(
-      "Previous artwork"
-    );
-    expect(
-      within(dialog).getByRole("img", { name: "Olive branch" })
-    ).toBeInTheDocument();
-  } finally {
-    rects.mockRestore();
-  }
+// Guide entry points were removed (TourHelp renders nothing), so the lightbox offers no tour button.
+it("opens the chosen artwork in the lightbox without a tour control", () => {
+  render(
+    <TooltipTourProvider>
+      <PortfolioExpand artistId="ella" artistName="Ella" />
+    </TooltipTourProvider>
+  );
+  fireEvent.click(screen.getByRole("button", { name: "View Olive branch" }));
+  const dialog = screen.getByRole("dialog", { name: "Ella’s portfolio" });
+  expect(within(dialog).getByRole("img", { name: "Olive branch" })).toBeInTheDocument();
+  expect(
+    within(dialog).queryByRole("button", { name: "Tour this feature" })
+  ).toBeNull();
 });

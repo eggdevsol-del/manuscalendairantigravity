@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { format } from "date-fns";
 import {
   ChevronRight,
+  Gift,
   Hourglass,
   Link2,
   Plus,
@@ -15,11 +16,13 @@ import {
   duration,
   freeMinutes,
   hoursFor,
-  saveDay,
-  savedDay,
   savedKeys,
 } from "../design/calendarDays";
-import { Feedback } from "../design/primitives";
+import { Action, Feedback } from "../design/primitives";
+import { useSavedDays } from "../data/useSavedDays";
+import { TouchSlider } from "../design/live";
+import { OfferAudience, OfferCard } from "../components/Offers";
+import type { OfferRules } from "@shared/offerRules";
 
 const clock = (mins: number) =>
   format(new Date(2000, 0, 1, Math.floor(mins / 60), mins % 60), "h:mmaaa");
@@ -45,7 +48,8 @@ export function FillDay({
     limit: 5,
     offset: 0,
   });
-  const [, rerender] = useState(0);
+  const saved = useSavedDays();
+  const [offering, setOffering] = useState(false);
   const hours = hoursFor(schedule, day);
   const free = freeMinutes(schedule, day, sittings);
   const date = format(day, "yyyy-MM-dd");
@@ -59,6 +63,8 @@ export function FillDay({
   const waiting = (waitlist.data ?? []).filter(w => w.status === "waiting");
   const requests = leads.data?.leads ?? [];
 
+  if (offering)
+    return <LastMinuteOffer day={day} start={start} onBack={() => setOffering(false)} />;
   return (
     <div className="iosm-fillsheet">
       <div className="iosm-fill-stage">
@@ -107,7 +113,7 @@ export function FillDay({
         <Choices title="Waiting on a reply">
           {requests.slice(0, 3).map(lead => {
             const keys = savedKeys(lead.clientId, lead.conversationId);
-            const saved = savedDay(keys) === date;
+            const isSaved = saved.get(keys) === date;
             const img = firstImage(lead.referenceImages);
             const first = String(lead.clientName || "them").split(" ")[0];
             return (
@@ -116,12 +122,10 @@ export function FillDay({
                 icon={<Sparkles />}
                 image={img}
                 title={`Quote ${first} for this day`}
-                detail={`${String(lead.projectType || "Tattoo").replace(/-/g, " ")}${lead.budgetLabel ? ` · ${lead.budgetLabel}` : ""}${saved ? " · date saved" : ""}`}
+                detail={`${String(lead.projectType || "Tattoo").replace(/-/g, " ")}${lead.budgetLabel ? ` · ${lead.budgetLabel}` : ""}${isSaved ? " · date saved" : ""}`}
                 onClick={() => {
                   // Remember the day so the booking composer offers it when you book them.
-                  if (keys.length) saveDay(keys, date);
-                  rerender(n => n + 1);
-                  go(`/lead/${lead.id}`);
+                  void saved.save(keys, date).finally(() => go(`/lead/${lead.id}`));
                 }}
               />
             );
@@ -129,6 +133,12 @@ export function FillDay({
         </Choices>
       )}
       <Choices title="Reach more people">
+        <Choice
+          icon={<Gift />}
+          title="Post a last-minute offer"
+          detail={`A discount on sittings on ${format(day, "EEE d MMM")}, sent to clients you choose`}
+          onClick={() => setOffering(true)}
+        />
         <Choice
           icon={<Link2 />}
           title="Share your booking page"
@@ -183,5 +193,97 @@ function Choice({
       </span>
       <ChevronRight className="iosm-note-chev" aria-hidden="true" />
     </button>
+  );
+}
+
+/** A discount for sittings on this one day. The slider sets it and the card shows the offer clients will
+ *  receive. Creating it saves the offer, then the usual audience step decides who it's sent to. */
+function LastMinuteOffer({
+  day,
+  start,
+  onBack,
+}: {
+  day: number;
+  start: Date;
+  onBack: () => void;
+}) {
+  const offers = trpc.offers.list.useQuery();
+  const save = trpc.offers.save.useMutation();
+  const [percent, setPercent] = useState(15);
+  const [saved, setSaved] = useState<number | null>(null);
+  const [sent, setSent] = useState("");
+  const end = new Date(day);
+  end.setHours(23, 59, 0, 0);
+  // The offer must be claimed before the day starts, or before the day ends if it's today.
+  const expires = start.getTime() > Date.now() + 3600000 ? start : end;
+  const rules: OfferRules = {
+    name: `${percent}% off ${format(day, "EEE d MMM")}`,
+    description: `A last-minute opening. ${percent}% off a sitting on ${format(day, "EEEE d MMMM")}.`,
+    kind: "discount",
+    valueType: "percentage",
+    value: percent,
+    currency: "AUD",
+    eligibility: "new",
+    expiresAt: expires.toISOString(),
+    sittingFrom: new Date(day).toISOString(),
+    sittingUntil: end.toISOString(),
+    backgroundImageUrl: "",
+  };
+  if (offers.data?.enabled === false)
+    return (
+      <div className="iosm-fillsheet">
+        <p>Promotions aren't switched on for this server yet.</p>
+        <Action tone="secondary" onClick={onBack}>
+          Back
+        </Action>
+      </div>
+    );
+  if (sent)
+    return (
+      <div className="iosm-fillsheet">
+        <p role="status">{sent}</p>
+        <Action tone="secondary" onClick={onBack}>
+          Done
+        </Action>
+      </div>
+    );
+  if (saved)
+    return (
+      <div className="iosm-fillsheet">
+        <OfferCard rules={rules} />
+        <OfferAudience id={saved} onDone={setSent} />
+      </div>
+    );
+  return (
+    <div className="iosm-fillsheet">
+      <OfferCard rules={rules} />
+      <TouchSlider
+        label="Last-minute discount"
+        tone="money"
+        value={percent}
+        min={5}
+        max={40}
+        step={5}
+        format={v => `${v}% off`}
+        onChange={setPercent}
+      />
+      <p className="iosm-fill-note">
+        Only for sittings on {format(day, "EEEE d MMMM")}. Clients can claim it until{" "}
+        {format(expires, "h:mmaaa EEE d MMM")}. You choose who receives it next.
+      </p>
+      {save.error && <p role="alert">{save.error.message}</p>}
+      <Action
+        disabled={save.isPending}
+        onClick={async () => {
+          const result = await save.mutateAsync({ rules }).catch(() => null);
+          if (result) setSaved(result.id);
+        }}
+      >
+        {save.isPending ? "Creating…" : "Create offer and choose clients"}
+      </Action>
+      <Action tone="quiet" onClick={onBack}>
+        Back
+      </Action>
+    </div>
   );
 }

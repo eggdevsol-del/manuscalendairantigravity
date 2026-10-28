@@ -1,5 +1,7 @@
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { PAYMENT_TIERS } from "../../shared/fees";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { parseExternalCalendar } from "../services/icalParser";
@@ -129,6 +131,7 @@ export const artistSettingsRouter = router({
         accountNumber: z.string().optional(),
         businessCountry: z.string().length(2).optional(),
         depositAmount: z.number().optional(),
+        depositPercentage: z.number().int().min(5).max(100).optional(),
         autoSendDepositInfo: z.boolean().optional(),
         sendAutomatedReminders: z.boolean().optional(),
         workSchedule: z.string().optional(),
@@ -154,6 +157,17 @@ export const artistSettingsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Only plans with a customisable deposit may change it; Free stays at its fixed percentage.
+      if (input.depositPercentage !== undefined) {
+        const tier = await effectivePaymentTier(
+          await db.getArtistSettings(ctx.user.id)
+        );
+        if (!PAYMENT_TIERS[tier].depositCustomisable)
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `Your plan uses a fixed ${PAYMENT_TIERS[tier].defaultDepositPercent}% deposit. Upgrade to Pro to choose your own.`,
+          });
+      }
       // Auto-geocode businessAddress → lat/lng using OpenStreetMap Nominatim
       let geoUpdate: { lat?: string; lng?: string } = {};
       if (input.businessAddress) {

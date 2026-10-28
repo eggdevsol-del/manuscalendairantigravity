@@ -29,6 +29,7 @@ import { getBankDetailLabels } from "../../shared/utils/bankDetails";
 import { eq, sql, and, or, gte, lte, inArray, not } from "drizzle-orm";
 import * as schema from "../../drizzle/schema";
 import { canAccessFeature, getFeatureLimit } from "../_core/tierPermissions";
+import { withProjectImages } from "../services/projectImages";
 
 export const appointmentsRouter = router({
   getArtistCalendar: protectedProcedure
@@ -88,7 +89,7 @@ export const appointmentsRouter = router({
         input.endDate,
         ["cancelled", "pending"]
       );
-      return results;
+      return withProjectImages(results);
     }),
 
   getClientCalendar: protectedProcedure
@@ -1522,7 +1523,7 @@ export const appointmentsRouter = router({
         : [];
       const timestamp = (value: string) => value.replace(" ", "T") + "Z";
       return {
-        appointments: selected.map(a => {
+        appointments: await withProjectImages(selected.map(a => {
           const financials = sittingFinancials(a);
           const artist = artists.find(u => u.id === a.artistId);
           const setting = settings.find(s => s.userId === a.artistId);
@@ -1575,7 +1576,7 @@ export const appointmentsRouter = router({
             aftercareTemplateId: a.aftercareTemplateId,
             conversationId: a.conversationId,
           };
-        }),
+        })),
         pendingRequests: leads.map(l => ({
           id: l.id,
           artistName:

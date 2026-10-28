@@ -5,7 +5,8 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { getAssetUrl } from "@/lib/assets";
 import { Sparkles } from "lucide-react";
 import { LiveStage } from "../design/live";
-import { savedDay, savedKeys } from "../design/calendarDays";
+import { savedKeys } from "../design/calendarDays";
+import { useSavedDays } from "../data/useSavedDays";
 import {
   Action,
   Avatar,
@@ -210,7 +211,7 @@ function RequestPostcard({
   };
 }) {
   const image = lead.referenceImages[0];
-  const day = savedDay(savedKeys(lead.clientId, lead.conversationId));
+  const day = useSavedDays().get(savedKeys(lead.clientId, lead.conversationId));
   return (
     <LiveStage className="iosm-postcard">
       {image ? (

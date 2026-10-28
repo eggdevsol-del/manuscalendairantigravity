@@ -1,9 +1,7 @@
 import Purchases from "@/app-v3/pages/Purchases";
 import React from "react";
 import { Redirect, Route, Switch, useLocation } from "wouter";
-import BottomNav from "@/app-v3/design/Navigation";
 
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import Dashboard, {
   SupplierOrders as MerchantOrders,
@@ -18,9 +16,8 @@ import Settings from "@/app-v3/pages/Settings";
 import SupplierLockHome from "@/app-v3/pages/SupplierHome";
 
 export default function MerchantShell() {
-  const [path] = useLocation();
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen">
       <AnimatedSwitch>
         <Switch>
           <Route path="/purchases" component={Purchases} />
@@ -45,12 +42,6 @@ export default function MerchantShell() {
         </Switch>
       </AnimatedSwitch>
 
-      {/* The landing page is a lock screen with no tab bar. */}
-      {path !== "/dashboard" && (
-        <ErrorBoundary boundary="fab">
-          <BottomNav />
-        </ErrorBoundary>
-      )}
     </div>
   );
 }

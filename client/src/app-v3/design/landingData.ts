@@ -12,10 +12,11 @@ export function daysUntil(date: string | Date, now: number) {
   return Math.max(0, Math.round((midnight(new Date(date).getTime()) - midnight(now)) / DAY));
 }
 
-/** The most recent finished sitting still healing (the first 30 days), and which day of healing it is. */
+/** The most recent finished sitting that may still be healing (within `window` days), and which day of
+ *  healing it is. The artist's aftercare guide decides the real length once it loads. */
 export function healingDay<
   T extends { status: string; endsAt: string; completedAt?: string | Date | null },
->(past: T[], now: number) {
+>(past: T[], now: number, window = 30) {
   const done = past
     .filter(a => a.status === "completed")
     .map(a => ({ sitting: a, at: new Date(a.completedAt || a.endsAt).getTime() }))
@@ -23,7 +24,7 @@ export function healingDay<
     .sort((a, b) => b.at - a.at)[0];
   if (!done) return null;
   const day = Math.floor((midnight(now) - midnight(done.at)) / DAY) + 1;
-  return day <= 30 ? { sitting: done.sitting, day } : null;
+  return day <= window ? { sitting: done.sitting, day } : null;
 }
 
 type Order = {
@@ -71,4 +72,17 @@ export function lowStock<T extends Product>(products: T[], threshold = 5) {
         : [];
     return low.length ? [{ product: p, low }] : [];
   });
+}
+
+/** The aftercare stage covering a day of healing, or the last one once past every stage. */
+export function aftercareStage<T extends { fromDay: number; toDay: number }>(
+  phases: T[],
+  day: number
+) {
+  return (
+    phases.find(p => day >= p.fromDay && day <= p.toDay) ??
+    (phases.length && day > phases[phases.length - 1].toDay
+      ? phases[phases.length - 1]
+      : null)
+  );
 }

@@ -2,8 +2,6 @@ import { ArtistRoutes } from "./ArtistRoutes";
 import { ArtistSetupGate } from "@/features/onboarding/ArtistSetupGate";
 import React from "react";
 import { Redirect, Route, Switch, useLocation, useSearch } from "wouter";
-import BottomNav from "@/app-v3/design/Navigation";
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { ArrivalToast } from "@/components/ArrivalToast";
@@ -28,11 +26,6 @@ function ArtistWorkspace() {
           </Route>
         </Switch>
       </AnimatedSwitch>
-      {path !== "/practice" && path !== "/dashboard" && (
-        <ErrorBoundary boundary="fab">
-          <BottomNav />
-        </ErrorBoundary>
-      )}
       {path !== "/practice" && <ArrivalOverlay />}
     </div>
   );

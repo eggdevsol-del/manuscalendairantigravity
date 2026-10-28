@@ -9,7 +9,7 @@ import {
   type Ref,
   type ButtonHTMLAttributes,
 } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,6 +22,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 const SectionPanelContext = createContext<string | undefined>(undefined);
 
 /** V3 presentation primitives. Domain operations belong to data hooks, never here. */
+/** Each role's lock-screen landing page. */
+export const landingFor = (role?: string | null) =>
+  role === "client" ? "/home" : "/dashboard";
 export function Screen({
   title,
   subtitle,
@@ -52,6 +55,10 @@ export function Screen({
       ? subheader.props
       : null;
   const activeTab = sectionTabs?.items.indexOf(sectionTabs.value);
+  // There is no tab bar: every signed-in screen without its own back link returns to the role's landing.
+  const home = landingFor(user?.role);
+  const [path] = useLocation();
+  back ??= !setup && !publicView && user && path !== home ? home : undefined;
   return (
     <div
       data-tour-surface={title}
@@ -69,13 +76,7 @@ export function Screen({
               <span className="v3-wordmark">tattoi</span>
             ) : (
               <Link
-                href={
-                  user?.role === "client"
-                    ? "/bookings"
-                    : user?.role === "merchant"
-                      ? "/dashboard"
-                      : "/conversations"
-                }
+                href={home}
                 className="v3-wordmark"
               >
                 tattoi

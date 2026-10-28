@@ -3011,3 +3011,16 @@ export const artistPracticeSessions = mysqlTable("artist_practice_sessions", {
   state: longtext("state").notNull(),
   updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
+
+/** A day an artist saved for a client from "Fill this day". The booking composer offers it when booking
+ *  them. The key is "client:<id>" or "conversation:<id>", so either side of a request can find it. */
+export const savedDays = mysqlTable(
+  "saved_days",
+  {
+    artistId: varchar("artist_id", { length: 64 }).notNull().references(() => users.id, { onDelete: "cascade" }),
+    clientKey: varchar("client_key", { length: 96 }).notNull(),
+    day: varchar("day", { length: 10 }).notNull(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  t => [primaryKey({ columns: [t.artistId, t.clientKey] })]
+);

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { Link } from "wouter";
 import { relativeStart } from "./lockHome";
+import { getAssetUrl } from "@/lib/assets";
 
 export function Widget({
   href,
@@ -268,4 +269,15 @@ export function relativeDay(start: string | Date, now: number) {
   return d.toDateString() === tomorrow
     ? "tomorrow"
     : d.toLocaleDateString("en-AU", { weekday: "short" });
+}
+
+/** A project's picture: the client's first reference image when there is one, otherwise their initials.
+ *  An image that fails to load (a removed upload, say) falls back to the initials too. */
+export function ProjectArt({ src, name }: { src?: string | null; name: string }) {
+  const [failed, setFailed] = useState<string | null>(null);
+  return src && failed !== src ? (
+    <img src={getAssetUrl(src)} alt="" loading="lazy" onError={() => setFailed(src)} />
+  ) : (
+    <>{initials(name)}</>
+  );
 }

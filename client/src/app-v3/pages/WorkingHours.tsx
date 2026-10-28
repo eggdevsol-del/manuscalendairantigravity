@@ -15,7 +15,7 @@ import {
   Tabs,
 } from "../design/primitives";
 import { readSchedule, writeSchedule, type WorkDay } from "../data/schedule";
-import { resolvePaymentTier } from "@shared/fees";
+import { PAYMENT_TIERS, resolvePaymentTier } from "@shared/fees";
 import { LiveStage, StageNumber, TouchSlider } from "../design/live";
 import { sittingSplit, weekWindows } from "../design/liveDisplays";
 import { duration as minutesLabel } from "../design/calendarDays";
@@ -398,6 +398,15 @@ export default function WorkingHours() {
               {!services.length && (
                 <Feedback empty="Add your first service to start creating proposals." />
               )}
+              <DepositSetting
+                tier={resolvePaymentTier(query.data.subscriptionTier)}
+                saved={query.data.depositPercentage}
+                price={services.find(s => s.price > 0)?.price ?? 1000}
+                saving={save.isPending}
+                onSave={depositPercentage =>
+                  save.mutate({ depositPercentage })
+                }
+              />
             </Section>
           )}
           {error && <p role="alert">{error}</p>}
@@ -658,5 +667,83 @@ function ServiceDisplay({
           : ". No Tattoi fee on your plan."}
       </em>
     </LiveStage>
+  );
+}
+
+/** Deposits: drag the bar to set how much clients pay to book, and watch the split of a sitting change.
+ *  Free plans have a fixed deposit, so the slider previews other splits without saving. */
+function DepositSetting({
+  tier,
+  saved,
+  price,
+  saving,
+  onSave,
+}: {
+  tier: ReturnType<typeof resolvePaymentTier>;
+  saved?: number | null;
+  price: number;
+  saving: boolean;
+  onSave: (percent: number) => void;
+}) {
+  const locked = !PAYMENT_TIERS[tier].depositCustomisable;
+  const current = locked
+    ? PAYMENT_TIERS[tier].defaultDepositPercent
+    : (saved ?? PAYMENT_TIERS[tier].defaultDepositPercent);
+  const [percent, setPercent] = useState(current);
+  // Preview the chosen split as if the plan allowed it.
+  const split = sittingSplit(Math.round(price * 100), "pro", percent);
+  const whole = (c: number) => money(c).replace(/\.00$/, "");
+  return (
+    <div className="v3-stack">
+      <LiveStage className="iosm-split" label="How a sitting's payment splits">
+        <StageNumber
+          over={`A ${whole(Math.round(price * 100))} sitting`}
+          value={`${percent}% to book`}
+          under={
+            locked && percent !== current
+              ? `Preview · your plan uses ${current}%`
+              : percent === current
+                ? "Your current deposit"
+                : "Not saved yet"
+          }
+        />
+        <span className="iosm-split-bar" aria-hidden="true">
+          <i style={{ width: `${percent}%` }} />
+        </span>
+        <span className="iosm-svc-facts">
+          <span>
+            <small>Client pays to book</small>
+            <b>{whole(split.depositClient)}</b>
+          </span>
+          <span>
+            <small>On the day</small>
+            <b>{whole(split.balanceClient)}</b>
+          </span>
+        </span>
+      </LiveStage>
+      <TouchSlider
+        label="Deposit"
+        tone="money"
+        value={percent}
+        min={10}
+        max={50}
+        step={5}
+        format={v => `${v}%`}
+        onChange={setPercent}
+      />
+      {locked ? (
+        <p className="v3-muted">
+          Your plan takes a fixed {current}% deposit. Pro lets you choose your
+          own.
+        </p>
+      ) : (
+        <Action
+          disabled={saving || percent === current}
+          onClick={() => onSave(percent)}
+        >
+          {saving ? "Saving…" : `Save ${percent}% deposit`}
+        </Action>
+      )}
+    </div>
   );
 }

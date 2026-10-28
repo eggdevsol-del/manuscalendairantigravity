@@ -3,6 +3,7 @@ import { reschedulesRouter } from "./reschedules";
 import { offersRouter } from "./offers";
 import { masterDevRouter } from "./masterDev";
 import { waitlistRouter } from "./waitlist";
+import { savedDaysRouter } from "./savedDays";
 import { projectsRouter } from "./projects";
 import { reconciliationRouter } from "./reconciliation";
 import { router } from "../_core/trpc";
@@ -52,6 +53,7 @@ export const appRouter = router({
   practice: practiceRouter,
   masterDev: masterDevRouter,
   waitlist: waitlistRouter,
+  savedDays: savedDaysRouter,
   projects: projectsRouter,
   reconciliation: reconciliationRouter,
   appointments: appointmentsRouter,

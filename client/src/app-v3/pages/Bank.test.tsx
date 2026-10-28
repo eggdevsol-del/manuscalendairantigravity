@@ -35,6 +35,9 @@ vi.mock("@/lib/trpc", () => ({
       },
       connectStripe: { useMutation: () => ({ mutateAsync: mocks.create }) },
       getStripeAccountLink: { useMutation: () => ({ mutate: vi.fn() }) },
+      refreshStripeConnectStatus: {
+        useMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+      },
     },
   },
 }));

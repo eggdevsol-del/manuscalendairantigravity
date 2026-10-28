@@ -3,6 +3,7 @@ import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { TouchSlider, clampStep } from "./live";
 import {
+  payoutDates,
   planKeep,
   sittingProgress,
   sittingSplit,
@@ -86,5 +87,14 @@ describe("live display maths", () => {
     expect(sittingProgress(a, z, Date.parse("2026-11-05T09:00:00Z"))).toBe(0);
     expect(sittingProgress(a, z, Date.parse("2026-11-05T11:00:00Z"))).toBe(0.25);
     expect(sittingProgress(a, z, Date.parse("2026-11-05T15:00:00Z"))).toBe(1);
+  });
+
+  it("lists the next payout dates for each schedule", () => {
+    const from = new Date(2026, 10, 4, 9).getTime(); // a Wednesday
+    const label = (d: Date) => d.toLocaleDateString("en-CA");
+    expect(payoutDates("daily", null, null, from, 3).map(label)).toEqual(["2026-11-05", "2026-11-06", "2026-11-09"]);
+    expect(payoutDates("weekly", "monday", null, from, 2).map(label)).toEqual(["2026-11-09", "2026-11-16"]);
+    expect(payoutDates("monthly", null, 31, from, 2).map(label)).toEqual(["2026-11-30", "2026-12-31"]);
+    expect(payoutDates("manual", null, null, from)).toEqual([]);
   });
 });

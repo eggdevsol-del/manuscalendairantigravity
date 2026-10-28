@@ -127,24 +127,9 @@ export function duration(mins: number) {
 }
 
 // ── Saved days ─────────────────────────────────────────────
-// "Quote for this day" remembers the date for that client on this device, and the booking composer
-// offers it when you book them. Keys are "client:<id>" and "conversation:<id>" so either side can find it.
-const STORE = "tattoi:saved-days:v1";
-type SavedDays = Record<string, string>;
-
-function readSaved(): SavedDays {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STORE) || "{}");
-    return raw && typeof raw === "object" ? raw : {};
-  } catch {
-    return {};
-  }
-}
-function writeSaved(days: SavedDays) {
-  try {
-    localStorage.setItem(STORE, JSON.stringify(days));
-  } catch {}
-}
+// "Quote for this day" saves the date for that client on the server (see useSavedDays), and the booking
+// composer offers it when you book them. Keys are "client:<id>" and "conversation:<id>" so either side of
+// a request can find it.
 export const savedKeys = (
   clientId?: string | null,
   conversationId?: number | null
@@ -154,21 +139,25 @@ export const savedKeys = (
     conversationId ? `conversation:${conversationId}` : "",
   ].filter(Boolean);
 
-/** Saves a day (yyyy-MM-dd) for a client. */
-export function saveDay(keys: string[], date: string) {
-  const days = readSaved();
-  for (const k of keys) days[k] = date;
-  writeSaved(days);
-}
 /** The saved day for any of these keys, if it hasn't passed. */
-export function savedDay(keys: string[], now = Date.now()) {
-  const days = readSaved();
+export function savedDayIn(
+  days: Record<string, string> | undefined,
+  keys: string[],
+  now = Date.now()
+) {
   const today = new Date(startOfDay(now)).toLocaleDateString("en-CA");
-  for (const k of keys) if (days[k] && days[k] >= today) return days[k];
+  for (const k of keys) if (days?.[k] && days[k] >= today) return days[k];
   return null;
 }
-export function forgetDay(keys: string[]) {
-  const days = readSaved();
-  for (const k of keys) delete days[k];
-  writeSaved(days);
+
+/** Days saved on this device before they moved to the server. Returns them once, then clears them. */
+const LEGACY_STORE = "tattoi:saved-days:v1";
+export function takeLocalSavedDays(): Record<string, string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LEGACY_STORE) || "{}");
+    localStorage.removeItem(LEGACY_STORE);
+    return raw && typeof raw === "object" ? raw : {};
+  } catch {
+    return {};
+  }
 }

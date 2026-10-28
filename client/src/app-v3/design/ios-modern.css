@@ -1812,3 +1812,115 @@ form > .iosm-stage {
   font-style: normal;
   opacity: 0.85;
 }
+
+/* No tab bar in the app, so pages only need room for the home indicator. The practice sandbox keeps its
+   own tab bar for its guided tours, and the space for it. */
+html:root .v3-scroll {
+  padding-bottom: calc(32px + var(--app-safe-bottom, 0px));
+}
+html:root .practice-app .v3-scroll {
+  padding-bottom: var(--simple-scroll-clearance);
+}
+
+/* Payouts: the bank card and the next payout dates. */
+.iosm-bankcard {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  aspect-ratio: 1.75;
+  max-width: 340px;
+  width: 100%;
+  justify-self: center;
+  align-content: space-between;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--wall-acc), var(--wall-deep) 70%);
+  box-shadow: 0 14px 30px rgb(0 0 0 / 30%);
+}
+.iosm-bankcard.off {
+  background: rgb(255 255 255 / 10%);
+  border: 1.5px dashed rgb(255 255 255 / 45%);
+  box-shadow: none;
+}
+.iosm-bankcard small {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.iosm-bankcard b {
+  font: 600 20px var(--iosm-rounded);
+  letter-spacing: 0.04em;
+}
+.iosm-bankcard > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.iosm-bankcard em,
+.iosm-drops em {
+  font-style: normal;
+}
+.iosm-drops {
+  display: grid;
+  gap: 8px;
+}
+.iosm-drops small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-drops > span {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.iosm-drops i {
+  display: grid;
+  justify-items: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 12%);
+  font-style: normal;
+  font-size: 12px;
+}
+.iosm-drops i b {
+  font-size: 14px;
+}
+.iosm-drops > em {
+  font-size: 13px;
+  opacity: 0.85;
+}
+.iosm-fill-note {
+  margin: 0 4px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.iosm-split-bar {
+  height: 14px;
+  border-radius: 7px;
+  background: rgb(255 255 255 / 22%);
+  overflow: hidden;
+}
+.iosm-split-bar i {
+  display: block;
+  height: 100%;
+  background: var(--wall-acc);
+  transition: width 0.15s;
+}
+/* Project photos fill their frames wherever initials used to sit. */
+.iosm-live-mark,
+.iosm-sc-art,
+.iosm-note-icon {
+  overflow: hidden;
+}
+.iosm-live-mark img,
+.iosm-sc-art img,
+.iosm-note-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.iosm-split {
+  margin-top: 8px;
+}

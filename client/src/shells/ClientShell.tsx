@@ -2,10 +2,8 @@ import Purchases from "@/app-v3/pages/Purchases";
 import WaitlistPage from "@/app-v3/pages/Waitlist";
 import ProjectSummary from "@/app-v3/pages/Booking";
 import React from "react";
-import { Redirect, Route, Switch, useLocation } from "wouter";
-import BottomNav from "@/app-v3/design/Navigation";
+import { Redirect, Route, Switch } from "wouter";
 
-import ErrorBoundary from "@/components/ErrorBoundary";
 import { AnimatedSwitch } from "@/components/AnimatedSwitch";
 import ClientHome from "@/app-v3/pages/Discover";
 import Conversations from "@/app-v3/pages/Inbox";
@@ -17,9 +15,8 @@ import ClientProfilePage from "@/app-v3/pages/Profile";
 import ClientLockHome from "@/app-v3/pages/ClientHome";
 
 export default function ClientShell() {
-  const [path] = useLocation();
   return (
-    <div className="min-h-screen pb-16">
+    <div className="min-h-screen">
       <AnimatedSwitch>
         <Switch>
           <Route path="/purchases" component={Purchases} />
@@ -39,12 +36,6 @@ export default function ClientShell() {
         </Switch>
       </AnimatedSwitch>
 
-      {/* The landing page is a lock screen with no tab bar. */}
-      {path !== "/home" && (
-        <ErrorBoundary boundary="fab">
-          <BottomNav />
-        </ErrorBoundary>
-      )}
     </div>
   );
 }

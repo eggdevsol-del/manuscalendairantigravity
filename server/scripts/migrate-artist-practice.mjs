@@ -26,6 +26,13 @@ try {
  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (artist_id), CONSTRAINT artist_practice_sessions_artist_fk FOREIGN KEY (artist_id) REFERENCES users(id) ON DELETE CASCADE
  )`);
+  // Days saved for clients from the calendar's "Fill this day". Additive: a new table only.
+  await db.query(`CREATE TABLE IF NOT EXISTS saved_days (
+ artist_id varchar(64) CHARACTER SET ${userId.CHARACTER_SET_NAME} COLLATE ${userId.COLLATION_NAME} NOT NULL,
+ client_key varchar(96) NOT NULL, day varchar(10) NOT NULL,
+ updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY (artist_id, client_key), CONSTRAINT saved_days_artist_fk FOREIGN KEY (artist_id) REFERENCES users(id) ON DELETE CASCADE
+ )`);
   const [schema] = await db.query(
     "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='artist_practice_sessions'"
   );
@@ -35,8 +42,17 @@ try {
     )
   )
     throw new Error("Artist practice table is incomplete.");
+  const [saved] = await db.query(
+    "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='saved_days'"
+  );
+  if (
+    !["artist_id", "client_key", "day", "updated_at"].every(name =>
+      saved.some(c => c.COLUMN_NAME === name)
+    )
+  )
+    throw new Error("Saved days table is incomplete.");
   console.log(
-    "Artist practice migration verified. Production user and booking records were not modified."
+    "Artist practice and saved days migration verified. Production user and booking records were not modified."
   );
 } finally {
   await db.end();

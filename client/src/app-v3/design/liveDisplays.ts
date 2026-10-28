@@ -104,3 +104,33 @@ export function sittingProgress(start: string | Date, end: string | Date, now: n
   if (!(z > a)) return 0;
   return Math.max(0, Math.min(1, (now - a) / (z - a)));
 }
+
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+/** The next payout dates for a Stripe payout schedule. Manual payouts have no dates. */
+export function payoutDates(
+  interval: "daily" | "weekly" | "monthly" | "manual",
+  weeklyAnchor: string | null | undefined,
+  monthlyAnchor: number | null | undefined,
+  from: number,
+  count = 4
+) {
+  const out: Date[] = [];
+  if (interval === "manual") return out;
+  const d = new Date(from);
+  d.setHours(12, 0, 0, 0);
+  for (let i = 0; out.length < count && i < 400; i++) {
+    d.setDate(d.getDate() + 1);
+    const hit =
+      interval === "daily"
+        ? d.getDay() !== 0 && d.getDay() !== 6
+        : interval === "weekly"
+          ? WEEKDAYS[d.getDay()] === (weeklyAnchor || "monday")
+          : d.getDate() ===
+            Math.min(
+              monthlyAnchor || 1,
+              new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+            );
+    if (hit) out.push(new Date(d));
+  }
+  return out;
+}

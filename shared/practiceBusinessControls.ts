@@ -64,8 +64,11 @@ export const BUSINESS_QUERIES = [
   "policies.list",
   "paymentMethodSettings.get",
   "notificationTemplates.list",
+  "savedDays.list",
 ] as const;
 export const BUSINESS_MUTATIONS = [
+  "savedDays.save",
+  "savedDays.forget",
   "practice.clientOutcome",
   "practice.guideProgress",
   "forms.signForm",
@@ -666,6 +669,12 @@ export function queryBusinessControl(
       return b.policies ?? [];
     case "paymentMethodSettings.get":
       return b.paymentMethods ?? { cash: true, card: true, bankTransfer: true };
+    case "savedDays.list":
+      return Object.fromEntries(
+        Object.entries((b.savedDays ?? {}) as Record<string, string>).filter(
+          ([, day]) => day >= (input?.today ?? "")
+        )
+      );
     default:
       throw new Error(`Unregistered practice query: ${path}`);
   }
@@ -973,6 +982,14 @@ export function mutateBusinessControl(
       b.funnel = { ...b.funnel, ...raw };
       b.settings = { ...b.settings, ...raw };
       return { success: true };
+    case "savedDays.save":
+      b.savedDays = { ...b.savedDays };
+      for (const key of raw.keys ?? []) b.savedDays[key] = raw.day;
+      return { ok: true };
+    case "savedDays.forget":
+      b.savedDays = { ...b.savedDays };
+      for (const key of raw.keys ?? []) delete b.savedDays[key];
+      return { ok: true };
     case "funnel.updateLeadStatus":
       b.leadStatus = raw.status;
       return { success: true };

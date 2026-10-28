@@ -28,12 +28,11 @@ import {
   Status,
 } from "../design/primitives";
 import {
-  forgetDay,
   hoursFor,
   parseSchedule,
-  savedDay,
   savedKeys,
 } from "../design/calendarDays";
+import { useSavedDays } from "../data/useSavedDays";
 type DraftSession = {
   date: string;
   time: string;
@@ -128,8 +127,8 @@ export function BookingComposer({
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   // A day saved for this client from "Fill this day" on the calendar is offered when choosing dates.
   const heldKeys = savedKeys(clientId || null, conversationId || null);
-  const [, setHeldVersion] = useState(0);
-  const held = savedDay(heldKeys);
+  const savedDays = useSavedDays();
+  const held = savedDays.get(heldKeys);
   function applyHeldDay() {
     if (!held) return;
     const noon = new Date(`${held}T12:00`);
@@ -397,7 +396,7 @@ export function BookingComposer({
         utils.projects.summary.invalidate({ conversationId: target }),
         utils.conversations.list.invalidate(),
       ]);
-      forgetDay(heldKeys);
+      void savedDays.forget(heldKeys);
       onSuccess(target);
     } catch (e) {
       setError(
@@ -514,8 +513,7 @@ export function BookingComposer({
             className="iosm-held-x"
             aria-label="Forget this day"
             onClick={() => {
-              forgetDay(heldKeys);
-              setHeldVersion(v => v + 1);
+              void savedDays.forget(heldKeys);
             }}
           >
             <X />

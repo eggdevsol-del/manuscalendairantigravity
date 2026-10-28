@@ -22,6 +22,8 @@ import {
   Section,
   Status,
 } from "../design/primitives";
+import { LiveStage } from "../design/live";
+import { payoutDates } from "../design/liveDisplays";
 
 export default function Bank() {
   const artistSetup = useArtistSetup();
@@ -399,6 +401,21 @@ function PayoutSettings({ onDisconnect }: { onDisconnect: () => unknown }) {
       />
       {data && (
         <>
+          <PayoutCard
+            bank={
+              data.bankLast4
+                ? `${data.bankName || "Bank account"} •••• ${data.bankLast4}`
+                : null
+            }
+            available={money(data.availableBalance, data.currency)}
+            pending={money(data.pendingBalance, data.currency)}
+            dates={
+              editing
+                ? payoutDates(interval, weekly, monthly, Date.now())
+                : payoutDates(data.interval, data.weeklyAnchor, data.monthlyAnchor, Date.now())
+            }
+            draft={editing}
+          />
           <Section title="Bank balance">
             <Panel>
               <dl className="v3-facts">
@@ -584,5 +601,49 @@ function PayoutSettings({ onDisconnect }: { onDisconnect: () => unknown }) {
         </>
       )}
     </>
+  );
+}
+
+/** The bank card payouts land on, and the next payout dates. While the schedule is being changed the dates
+ *  follow the draft, so you see when money would arrive before saving. */
+function PayoutCard({
+  bank,
+  available,
+  pending,
+  dates,
+  draft,
+}: {
+  bank: string | null;
+  available: string;
+  pending: string;
+  dates: Date[];
+  draft: boolean;
+}) {
+  return (
+    <LiveStage className="iosm-payout" label="Your payout card and next payout dates">
+      <span className={`iosm-bankcard${bank ? "" : " off"}`}>
+        <small>Tattoi payouts</small>
+        <b>{bank || "No bank account yet"}</b>
+        <span>
+          <em>Available {available}</em>
+          <em>Pending {pending}</em>
+        </span>
+      </span>
+      <span className="iosm-drops">
+        <small>{draft ? "With this schedule" : "Next payouts"}</small>
+        {dates.length ? (
+          <span>
+            {dates.map(d => (
+              <i key={d.toISOString()}>
+                <b>{d.toLocaleDateString("en-AU", { weekday: "short" })}</b>
+                {d.toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
+              </i>
+            ))}
+          </span>
+        ) : (
+          <em>Manual: you choose when to pay out in Stripe</em>
+        )}
+      </span>
+    </LiveStage>
   );
 }

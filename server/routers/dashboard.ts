@@ -22,6 +22,7 @@ import { getDb } from "../db";
 import { sittingFinancials } from "../services/sittingFinancials";
 import { upcomingWeekWindow, upcomingSittings } from "../services/upcomingWeek";
 import { currencyForCountry } from "../services/exchangeRate";
+import { withProjectImages } from "../services/projectImages";
 
 export const dashboardRouter = router({
   getUpcomingWeek: protectedProcedure
@@ -71,7 +72,7 @@ export const dashboardRouter = router({
       );
       return {
         dates: window.dates,
-        sittings,
+        sittings: await withProjectImages(sittings),
         currency: currencyForCountry(ctx.user.country || "AU"),
         estimateCents: sittings.reduce((sum, s) => sum + s.estimateCents, 0),
         remainingCents: sittings.reduce((sum, s) => sum + s.remainingCents, 0),

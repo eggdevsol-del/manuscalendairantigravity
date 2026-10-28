@@ -45,6 +45,7 @@ import {
   startOfDay,
 } from "../design/calendarDays";
 import { BookingComposer } from "./BookingComposer";
+import { ProjectArt } from "../design/LockParts";
 import { FillDay } from "./FillDay";
 import { SessionActions } from "./SessionActions";
 
@@ -559,12 +560,7 @@ function SittingCard({
       onClick={onOpen}
     >
       <span className="iosm-sc-art" aria-hidden="true">
-        {name
-          .split(/\s+/)
-          .slice(0, 2)
-          .map((w: string) => w[0])
-          .join("")
-          .toUpperCase()}
+        <ProjectArt src={a.imageUrl} name={name} />
       </span>
       <span className="iosm-sc-copy">
         {!short && (

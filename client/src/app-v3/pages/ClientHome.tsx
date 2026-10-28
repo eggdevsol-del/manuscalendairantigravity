@@ -15,8 +15,8 @@ import { money } from "@/features/workspace/bookingPresentation";
 import { Avatar, Feedback } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
 import { relativeStart } from "../design/lockHome";
-import { Group, Note, Widget, initials, relativeDay, useNow } from "../design/LockParts";
-import { daysUntil, healingDay } from "../design/landingData";
+import { Group, Note, ProjectArt, Widget, relativeDay, useNow } from "../design/LockParts";
+import { aftercareStage, daysUntil, healingDay } from "../design/landingData";
 
 /** The client's landing page: the same lock screen as the artist's, about their own tattoos. A clock and
  *  rings for the next sitting, healing and forms, then groups for sittings, healing, forms, requests,
@@ -29,6 +29,7 @@ export default function ClientHome() {
   const conversations = trpc.conversations.list.useQuery(undefined, {
     refetchInterval: 30000,
   });
+  const offers = trpc.offers.list.useQuery();
   const [open, setOpen] = useState<string | null>(null);
   const toggle = (key: string) => setOpen(o => (o === key ? null : key));
 
@@ -42,7 +43,23 @@ export default function ClientHome() {
   const live = next && new Date(next.startsAt).getTime() <= now ? next : null;
   const forms = sittings.filter(a => a.pendingFormCount > 0 && a.conversationId);
   const formCount = forms.reduce((n, a) => n + a.pendingFormCount, 0);
-  const healing = healingDay(past.data?.appointments ?? [], now);
+  // Look back 60 days, then let the artist's aftercare guide decide whether it's still healing.
+  const recent = healingDay(past.data?.appointments ?? [], now, 60);
+  const aftercare = trpc.aftercare.getForBooking.useQuery(
+    { appointmentId: recent?.sitting.id ?? 0 },
+    { enabled: !!recent }
+  );
+  const care = aftercare.data;
+  const totalDays = care?.totalDays || 30;
+  const healingNow = recent
+    ? { ...recent, day: care?.daysSince ?? recent.day }
+    : null;
+  const healing =
+    healingNow && !care?.isHealed && healingNow.day <= totalDays ? healingNow : null;
+  const phases = [...(care?.template?.phases ?? [])].sort(
+    (a, b) => a.fromDay - b.fromDay
+  );
+  const stage = healing ? aftercareStage(phases, healing.day) : null;
   const waiting = [
     ...(upcoming.data?.pendingRequests ?? []).map(r => ({
       key: `r${r.id}`,
@@ -57,6 +74,12 @@ export default function ClientHome() {
       href: c.conversationId ? `/chat/${c.conversationId}` : "/bookings",
     })),
   ];
+  // Vouchers and offers the client can still use, like the list on their bookings page.
+  const vouchers = (offers.data?.offers ?? []).filter(
+    o =>
+      (o.remainingValue > 0 || o.purchaseRequired) &&
+      (!o.rules.expiresAt || new Date(o.rules.expiresAt).getTime() > now)
+  );
   const chats = [...(conversations.data ?? [])].sort(
     (a, b) => (b.unreadCount || 0) - (a.unreadCount || 0)
   );
@@ -103,9 +126,9 @@ export default function ClientHome() {
           {healing && (
             <Widget
               href={projectHref(healing.sitting)}
-              value={healing.day / 30}
+              value={healing.day / totalDays}
               label={`D${healing.day}`}
-              caption="healing"
+              caption={stage ? stage.label.toLowerCase() : "healing"}
             />
           )}
           <Widget
@@ -118,7 +141,7 @@ export default function ClientHome() {
         {next && (
           <Link href={projectHref(next)} className="iosm-live">
             <span className="iosm-live-mark" aria-hidden="true">
-              {initials(project(next))}
+              <ProjectArt src={next.imageUrl} name={project(next)} />
             </span>
             <span className="iosm-live-copy">
               <small>
@@ -156,7 +179,7 @@ export default function ClientHome() {
           {sittings.map(a => (
             <Note
               key={a.id}
-              icon={<CalendarDays />}
+              icon={a.imageUrl ? <ProjectArt src={a.imageUrl} name={project(a)} /> : <CalendarDays />}
               title={project(a)}
               detail={`${new Date(a.startsAt).toLocaleDateString("en-AU", {
                 weekday: "short",
@@ -183,11 +206,26 @@ export default function ClientHome() {
         >
           <Note
             icon={<Droplets />}
-            title={`Day ${healing.day} of healing`}
-            detail={`${healing.sitting.projectName || "Your new tattoo"} · follow ${healing.sitting.artist.name}'s aftercare`}
+            title={`Day ${healing.day} of healing${stage ? ` · ${stage.label}` : ""}`}
+            detail={
+              stage?.instruction ||
+              `${healing.sitting.projectName || "Your new tattoo"} · follow ${healing.sitting.artist.name}'s aftercare`
+            }
             when="today"
             href={projectHref(healing.sitting)}
           />
+          {phases
+            .filter(p => p !== stage)
+            .map(p => (
+              <Note
+                key={p.id}
+                icon={<Droplets />}
+                title={p.label}
+                detail={`Days ${p.fromDay} to ${p.toDay} · ${p.instruction}`}
+                when={healing.day > p.toDay ? "done" : `day ${p.fromDay}`}
+                href={projectHref(healing.sitting)}
+              />
+            ))}
         </Group>
       )}
 
@@ -251,6 +289,38 @@ export default function ClientHome() {
               detail={messagePreview(c.lastMessage?.content, c.lastMessage?.messageType)}
               href={`/chat/${c.id}`}
               live={!!c.unreadCount}
+            />
+          ))}
+        </Group>
+      )}
+
+      {vouchers.length > 0 && (
+        <Group
+          id="vouchers"
+          icon={<Gift />}
+          title="Vouchers & offers"
+          href="/bookings"
+          open={open === "vouchers"}
+          onToggle={toggle}
+        >
+          {vouchers.map(o => (
+            <Note
+              key={o.id}
+              icon={<Gift />}
+              title={o.rules.name}
+              detail={`${o.artistName || "Your artist"} · ${
+                o.purchaseRequired
+                  ? "gift voucher to buy"
+                  : o.rules.valueType === "percentage"
+                    ? `${o.rules.value}% off`
+                    : `${money(o.remainingValue, o.rules.currency)} left`
+              }`}
+              when={
+                o.rules.expiresAt
+                  ? `until ${new Date(o.rules.expiresAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`
+                  : undefined
+              }
+              href="/bookings"
             />
           ))}
         </Group>

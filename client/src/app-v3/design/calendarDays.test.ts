@@ -4,12 +4,11 @@ import {
   canFill,
   dayColumn,
   duration,
-  forgetDay,
   freeMinutes,
   hoursFor,
   parseSchedule,
-  saveDay,
-  savedDay,
+  savedDayIn,
+  takeLocalSavedDays,
   savedKeys,
 } from "./calendarDays";
 
@@ -77,14 +76,17 @@ describe("calendar days", () => {
   });
 
   describe("saved days", () => {
-    beforeEach(() => localStorage.clear());
     it("finds a day saved under either the client or the conversation", () => {
-      saveDay(savedKeys("client-1", 7), "2026-11-04");
-      expect(savedDay(savedKeys(null, 7), at(9))).toBe("2026-11-04");
-      expect(savedDay(savedKeys("client-1"), at(9))).toBe("2026-11-04");
-      expect(savedDay(savedKeys("client-1"), addDays(day, 1))).toBeNull();
-      forgetDay(savedKeys("client-1", 7));
-      expect(savedDay(savedKeys("client-1", 7), at(9))).toBeNull();
+      const days = { "client:client-1": "2026-11-04", "conversation:7": "2026-11-04" };
+      expect(savedDayIn(days, savedKeys(null, 7), at(9))).toBe("2026-11-04");
+      expect(savedDayIn(days, savedKeys("client-1"), at(9))).toBe("2026-11-04");
+      expect(savedDayIn(days, savedKeys("client-1"), addDays(day, 1))).toBeNull();
+      expect(savedDayIn(undefined, savedKeys("client-1", 7), at(9))).toBeNull();
+    });
+    it("hands over days saved on this device once, then forgets them", () => {
+      localStorage.setItem("tattoi:saved-days:v1", JSON.stringify({ "client:a": "2026-11-05" }));
+      expect(takeLocalSavedDays()).toEqual({ "client:a": "2026-11-05" });
+      expect(takeLocalSavedDays()).toEqual({});
     });
   });
 });

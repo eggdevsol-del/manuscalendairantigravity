@@ -1,6 +1,28 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { saveDay, savedDay, savedKeys } from "../design/calendarDays";
+import { savedKeys } from "../design/calendarDays";
+const store = vi.hoisted(() => ({ saved: {} as Record<string, string> }));
+vi.mock("../data/useSavedDays", async () => {
+  const { useState } = await import("react");
+  return {
+    useSavedDays: () => {
+      const [, bump] = useState(0);
+      return {
+        days: store.saved,
+        get: (keys: string[]) => keys.map(k => store.saved[k]).find(Boolean) ?? null,
+        save: async () => {},
+        forget: async (keys: string[]) => {
+          for (const k of keys) delete store.saved[k];
+          bump(n => n + 1);
+        },
+      };
+    },
+  };
+});
+const saveDay = (keys: string[], day: string) => {
+  for (const k of keys) store.saved[k] = day;
+};
+const savedDay = (keys: string[]) => keys.map(k => store.saved[k]).find(Boolean) ?? null;
 vi.mock("@/_core/hooks/useAuth", () => ({
   useAuth: () => ({ user: { id: "artist" } }),
 }));
@@ -39,7 +61,7 @@ import { BookingComposer } from "./BookingComposer";
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date(2026, 10, 4, 9));
-  localStorage.clear();
+  store.saved = {};
 });
 afterEach(() => vi.useRealTimers());
 

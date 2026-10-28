@@ -18,6 +18,8 @@ vi.mock("@/lib/trpc", () => {
     trpc: {
       appointments: { getClientBookings: q("bookings") },
       conversations: { list: q("conversations") },
+      offers: { list: q("offers") },
+      aftercare: { getForBooking: q("aftercare") },
       merchantAuth: { getMerchantProfile: q("profile") },
       storefront: { getOrders: q("orders"), getProducts: q("products") },
     },

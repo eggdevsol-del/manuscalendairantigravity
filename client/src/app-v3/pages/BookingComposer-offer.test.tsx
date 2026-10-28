@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ search: vi.fn(), services: [] as any[] }));
+vi.mock("../data/useSavedDays", () => ({
+  useSavedDays: () => ({ days: {}, get: () => null, save: async () => {}, forget: async () => {} }),
+}));
 vi.mock("@/_core/hooks/useAuth", () => ({
   useAuth: () => ({ user: { id: "artist" } }),
 }));

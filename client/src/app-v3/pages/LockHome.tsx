@@ -19,6 +19,7 @@ import { dayTimeline, firstImage, relativeStart } from "../design/lockHome";
 import {
   Group,
   Note,
+  ProjectArt,
   Widget,
   compactMoney,
   initials,
@@ -123,7 +124,7 @@ export default function LockHome() {
             className="iosm-live"
           >
             <span className="iosm-live-mark" aria-hidden="true">
-              {initials(next.clientName)}
+              <ProjectArt src={next.imageUrl} name={next.clientName} />
             </span>
             <span className="iosm-live-copy">
               <small>

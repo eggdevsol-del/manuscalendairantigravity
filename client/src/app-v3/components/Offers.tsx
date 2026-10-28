@@ -415,7 +415,7 @@ function OfferEditor({
     </form>
   );
 }
-function OfferAudience({
+export function OfferAudience({
   id,
   onDone,
 }: {
