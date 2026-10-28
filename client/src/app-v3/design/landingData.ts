@@ -86,3 +86,118 @@ export function aftercareStage<T extends { fromDay: number; toDay: number }>(
       : null)
   );
 }
+
+// ── Artist landing ─────────────────────────────────────────
+
+/** Calendar rows from connected calendars (Google and others) are blocked time, not sittings. */
+export function isExternalEvent(a: {
+  id: unknown;
+  isExternal?: unknown;
+  source?: unknown;
+}) {
+  return (
+    typeof a.id !== "number" ||
+    a.id < 0 ||
+    !!a.isExternal ||
+    a.source === "google" ||
+    a.source === "external"
+  );
+}
+
+type SittingRow = {
+  startTime: string | Date;
+  endTime?: string | Date | null;
+  totalExpectedAmountCents?: number | null;
+  totalPaidAmountCents?: number | null;
+  remainingBalanceCents?: number | null;
+  price?: number | null;
+  amountPaid?: number | null;
+  depositPaid?: number | boolean | null;
+  depositAmount?: number | null;
+  paymentStatus?: string | null;
+};
+
+/** A sitting's estimate, paid and remaining amounts in cents, read the same way the server reads them:
+ *  explicit cents win over the older dollar columns, and a missing balance is derived, never assumed. */
+export function sittingMoney(row: SittingRow) {
+  const estimateCents =
+    row.totalExpectedAmountCents ?? Math.round((row.price ?? 0) * 100);
+  const paidCents =
+    row.totalPaidAmountCents ??
+    Math.round(
+      (row.amountPaid ?? (row.depositPaid ? row.depositAmount : 0) ?? 0) * 100
+    );
+  const remainingCents =
+    row.remainingBalanceCents ??
+    (row.paymentStatus === "fully_paid"
+      ? 0
+      : Math.max(0, estimateCents - paidCents));
+  return { estimateCents, paidCents, remainingCents };
+}
+
+/** Money still to come from sittings booked over the next `days` days. */
+export function bookedAhead(sittings: SittingRow[], now: number, days = 56) {
+  const until = now + days * DAY;
+  return sittings
+    .filter(s => {
+      const t = new Date(s.startTime).getTime();
+      return t > now && t < until;
+    })
+    .reduce((sum, s) => sum + sittingMoney(s).remainingCents, 0);
+}
+
+/** Weeks for the money river, Monday to Sunday: what was earned in each past week (from the daily
+ *  earnings), and what is still to come from sittings booked in each week from now on. */
+export function moneyWeeks(
+  daily: { date: string; netCents: number }[],
+  sittings: SittingRow[],
+  now: number,
+  past = 10,
+  ahead = 8
+) {
+  const today = new Date(midnight(now));
+  const monday = today.getTime() - ((today.getDay() + 6) % 7) * DAY;
+  const key = (t: number) => new Date(t).toLocaleDateString("en-CA");
+  const weeks = [];
+  for (let w = -(past - 1); w <= ahead; w++) {
+    const start = new Date(monday);
+    start.setDate(start.getDate() + w * 7);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    const from = key(start.getTime());
+    const to = key(end.getTime());
+    weeks.push({
+      w,
+      start: start.getTime(),
+      earned:
+        w <= 0
+          ? daily
+              .filter(d => d.date >= from && d.date < to)
+              .reduce((sum, d) => sum + d.netCents, 0)
+          : 0,
+      booked: sittings
+        .filter(s => {
+          const t = new Date(s.startTime).getTime();
+          return t > now && t >= start.getTime() && t < end.getTime();
+        })
+        .reduce((sum, s) => sum + sittingMoney(s).remainingCents, 0),
+    });
+  }
+  return weeks;
+}
+
+/** Each client's next sitting from now, soonest first. */
+export function nextSittingByClient<
+  T extends { clientId?: string | null; startTime: string | Date },
+>(sittings: T[], now: number) {
+  const next = new Map<string, T>();
+  for (const s of sittings) {
+    if (!s.clientId || new Date(s.startTime).getTime() <= now) continue;
+    const seen = next.get(s.clientId);
+    if (!seen || new Date(s.startTime) < new Date(seen.startTime))
+      next.set(s.clientId, s);
+  }
+  return [...next.values()].sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+  );
+}

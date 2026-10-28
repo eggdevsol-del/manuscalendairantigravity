@@ -5,7 +5,7 @@ import { WeekAgenda } from "../design/WeekAgenda";
 import { HomeTabs } from "../design/HomeTabs";
 import { PromotionsManager } from "../components/Offers";
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { CheckCircle2, Circle } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -24,7 +24,11 @@ import {
 export default function Today() {
   const tasks = useBusinessTasks();
   const [, go] = useLocation();
-  const [promo, setPromo] = useState(false);
+  // The landing page's Offers group links here with ?promotions=1 to open the promotions manager.
+  const search = useSearch();
+  const [promo, setPromo] = useState(
+    () => new URLSearchParams(search).get("promotions") === "1"
+  );
   const [actionError, setActionError] = useState("");
   return (
     <Screen

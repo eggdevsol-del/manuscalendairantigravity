@@ -82,7 +82,10 @@ export default function Calendar() {
   const [range, setRange] = useState({ from: -7, to: 35 });
   const [artist, setArtist] = useState("");
   const [selected, setSelected] = useState<any>(null);
-  const [fillDay, setFillDay] = useState<number | null>(null);
+  // ?fill=1 (from the landing page) opens Fill this day for the anchor day.
+  const [fillDay, setFillDay] = useState<number | null>(() =>
+    new URLSearchParams(search).get("fill") ? anchor : null
+  );
   const [bookingDay, setBookingDay] = useState<Date | null>(null);
   const [month, setMonth] = useState(() => format(anchor, "MMMM yyyy"));
   const [todayVisible, setTodayVisible] = useState(true);
@@ -407,7 +410,7 @@ export default function Calendar() {
   );
 }
 
-function DayCard({
+export function DayCard({
   day,
   now,
   sittings,

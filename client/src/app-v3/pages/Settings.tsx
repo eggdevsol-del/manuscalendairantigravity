@@ -1,7 +1,7 @@
 import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import { useLocation, useSearch, Redirect } from "wouter";
-import {
+import { Briefcase,
   Bell,
   UserRound,
   MapPin,
@@ -90,6 +90,12 @@ export default function Settings() {
           {
             title: "Your business",
             items: [
+              {
+                title: "Business",
+                detail: "Earnings, shopfront, offers and studio",
+                icon: Briefcase,
+                href: "/business",
+              },
               {
                 title: "Business details",
                 detail: "Location, contact information and licence",
