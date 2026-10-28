@@ -10,6 +10,7 @@ import {
   Screen,
   Section,
 } from "../design/primitives";
+import { LiveStage } from "../design/live";
 type Trip = {
   id: string;
   location: string;
@@ -83,6 +84,7 @@ function Itinerary({ initial }: { initial: Trip[] }) {
   }
   return (
     <>
+      <TravelRibbon trips={trips} />
       <Panel>
         <p>
           Save your guest spots and find existing clients in the same city or
@@ -163,6 +165,10 @@ function Itinerary({ initial }: { initial: Trip[] }) {
               write([...trips.filter(trip => trip.id !== draft.id), draft]);
             }}
           >
+            <TravelRibbon
+              trips={[...trips.filter(trip => trip.id !== draft.id), draft]}
+              highlight={draft.id}
+            />
             <fieldset disabled={save.isPending}>
               <label>
                 City
@@ -295,5 +301,63 @@ function MatchedClients({ trip }: { trip: Trip }) {
         />
       ))}
     </div>
+  );
+}
+
+/** The next six months as a flight ribbon, with a stamp for each trip. The trip you're editing glows. */
+function TravelRibbon({ trips, highlight }: { trips: Trip[]; highlight?: string }) {
+  const start = new Date();
+  start.setDate(1);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + 6);
+  const span = end.getTime() - start.getTime();
+  const at = (d: string) => new Date(`${d}T00:00`).getTime();
+  const months = Array.from({ length: 6 }, (_, i) => {
+    const m = new Date(start);
+    m.setMonth(m.getMonth() + i);
+    return m.toLocaleDateString("en-AU", { month: "short" });
+  });
+  const shown = trips.filter(
+    t => t.startDate && t.endDate && at(t.endDate) >= start.getTime() && at(t.startDate) < end.getTime()
+  );
+  return (
+    <LiveStage className="iosm-ribbon" label="Your next six months of travel">
+      <span className="iosm-rib-months">
+        {months.map(m => (
+          <span key={m}>{m}</span>
+        ))}
+      </span>
+      <span className="iosm-rib-road">
+        {shown.map(t => {
+          const left = Math.max(0, ((at(t.startDate) - start.getTime()) / span) * 100);
+          const width = Math.max(
+            2,
+            ((at(t.endDate) + 86400000 - Math.max(at(t.startDate), start.getTime())) / span) * 100
+          );
+          return (
+            <span key={t.id}>
+              <i
+                className={t.id === highlight ? "on" : ""}
+                style={{ left: `${left}%`, width: `${Math.min(width, 100 - left)}%` }}
+              />
+              <s
+                className={t.id === highlight ? "on" : ""}
+                style={{ left: `${Math.min(70, left)}%` }}
+              >
+                <b>{t.location || "New trip"}</b>
+                <small>
+                  {new Date(`${t.startDate}T12:00`).toLocaleDateString("en-AU", {
+                    day: "numeric",
+                    month: "short",
+                  })}
+                </small>
+              </s>
+            </span>
+          );
+        })}
+        {!shown.length && <em>No trips in the next six months</em>}
+      </span>
+    </LiveStage>
   );
 }

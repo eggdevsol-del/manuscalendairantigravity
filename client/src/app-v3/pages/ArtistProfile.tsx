@@ -7,6 +7,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { useDebounce } from "@/hooks/useDebounce";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
+import { LiveStage } from "../design/live";
 import {
   Action,
   ActionLink,
@@ -521,6 +522,22 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
     (slug === debounced && !check.isFetching && check.data?.available === true);
   return (
     <>
+      <LinkPhone
+        slug={slug}
+        state={
+          slug.length < 3
+            ? "short"
+            : !changed
+              ? saved
+                ? "live"
+                : "draft"
+              : slug !== debounced || check.isFetching
+                ? "checking"
+                : check.data?.available === false
+                  ? "taken"
+                  : "draft"
+        }
+      />
       <Panel>
         <p>
           Clients open your profile and submit their request first. They create
@@ -598,5 +615,43 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
         </Section>
       )}
     </>
+  );
+}
+
+/** A phone showing exactly what a client opens from your link, updating as you type its name. */
+function LinkPhone({
+  slug,
+  state,
+}: {
+  slug: string;
+  state: "short" | "live" | "draft" | "checking" | "taken";
+}) {
+  const { user } = useAuth();
+  const host = window.location.host.replace(/^www\./, "");
+  const note = {
+    short: "Use at least 3 characters",
+    live: "Live now",
+    draft: "Not saved yet",
+    checking: "Checking it’s free…",
+    taken: "Someone already has this link",
+  }[state];
+  return (
+    <LiveStage className="iosm-phone-stage" label="Your booking page on a client’s phone">
+      <span className="iosm-phone">
+        <span className={`iosm-phone-url ${state}`}>
+          {host}/book/<b>{slug || "your-name"}</b>
+        </span>
+        <span className="iosm-phone-me">
+          <Avatar name={user?.name} src={user?.avatar} />
+          <b>{user?.name || "Your name"}</b>
+          <small>Booking requests open</small>
+        </span>
+        <span className="iosm-phone-step">Your idea</span>
+        <span className="iosm-phone-step">Placement and size</span>
+        <span className="iosm-phone-step">Reference images</span>
+        <span className="iosm-phone-btn">Request a booking</span>
+      </span>
+      <em className={`iosm-phone-note ${state}`}>{note}</em>
+    </LiveStage>
   );
 }

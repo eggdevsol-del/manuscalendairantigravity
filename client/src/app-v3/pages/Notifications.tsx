@@ -15,6 +15,8 @@ import {
   Section,
   Status,
 } from "../design/primitives";
+import { Bell, CalendarCheck, CreditCard, MessageCircle } from "lucide-react";
+import { LiveStage } from "../design/live";
 type Template = inferRouterOutputs<AppRouter>["notifications"]["list"][number];
 const kinds = {
   confirmation: "Confirmation",
@@ -46,6 +48,7 @@ function DeviceNotifications() {
   const active = push.status === "granted" && !!push.subscription;
   return (
     <Section title="This device">
+      <LockPreview on={active} />
       <Panel>
         <div className="v3-inline">
           <h2>Push notifications</h2>
@@ -82,6 +85,60 @@ function DeviceNotifications() {
         )}
       </Panel>
     </Section>
+  );
+}
+const SAMPLES = [
+  [MessageCircle, "Mia Chen", "Could we add a few more leaves around the elbow?"],
+  [CalendarCheck, "New request", "Elena asked about a half sleeve"],
+  [CreditCard, "Deposit paid", "Maya paid her deposit for 3 Nov"],
+] as const;
+/** Your lock screen as it will look: alerts arrive when push is on, and nothing does when it's off. */
+function LockPreview({ on }: { on: boolean }) {
+  const now = new Date();
+  return (
+    <LiveStage
+      className="iosm-lockprev"
+      label={on ? "Lock screen with Tattoi alerts arriving" : "Lock screen with no Tattoi alerts"}
+    >
+      <span className="iosm-lp-time">
+        {now
+          .toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
+          .replace(/\s?(am|pm)/i, "")}
+      </span>
+      <span className="iosm-lp-date">
+        {now.toLocaleDateString("en-AU", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        })}
+      </span>
+      <span className="iosm-lp-stack">
+        {on ? (
+          SAMPLES.map(([Icon, title, body], i) => (
+            <span className="iosm-lp-note" key={title} style={{ ["--i" as string]: i }}>
+              <i>
+                <Icon />
+              </i>
+              <span>
+                <b>{title}</b>
+                {body}
+              </span>
+              <small>now</small>
+            </span>
+          ))
+        ) : (
+          <span className="iosm-lp-note empty">
+            <i>
+              <Bell />
+            </i>
+            <span>
+              <b>Nothing will come through</b>
+              Turn on notifications to see bookings and messages here
+            </span>
+          </span>
+        )}
+      </span>
+    </LiveStage>
   );
 }
 function Templates() {
@@ -183,6 +240,26 @@ function TemplateEditor({
         void save();
       }}
     >
+      <LiveStage
+        className={`iosm-msgprev${draft.enabled ? "" : " off"}`}
+        label="How this message reads"
+      >
+        <small>
+          {kinds[draft.templateType as keyof typeof kinds]}
+          {draft.timing ? ` · ${draft.timing}` : ""}
+          {draft.enabled ? "" : " · disabled"}
+        </small>
+        <span className="iosm-lp-note">
+          <i>
+            <MessageCircle />
+          </i>
+          <span>
+            <b>{draft.title || "Your title"}</b>
+            {draft.content || "Start typing your message to see it here."}
+          </span>
+          <small>now</small>
+        </span>
+      </LiveStage>
       <label>
         Purpose
         <select

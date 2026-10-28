@@ -7,6 +7,7 @@ import {
   orderedProjectGroups,
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
+import { SessionStage } from "../components/SessionStage";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
@@ -289,6 +290,7 @@ export function BookingProject({
           ))}
         {session ? (
           <>
+            <SessionStage session={session} clientName={data.client?.name} />
             <div>
               <Status
                 tone={

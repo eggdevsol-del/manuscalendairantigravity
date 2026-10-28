@@ -195,7 +195,7 @@ export default function Calendar() {
       (sc === document.scrollingElement ? 0 : sc.getBoundingClientRect().top) +
       sc.scrollTop -
       72;
-    sc.scrollTo({ top, behavior: "auto" });
+    sc.scrollTop = top;
     return true;
   }, []);
 

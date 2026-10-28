@@ -1151,3 +1151,606 @@ img.iosm-note-icon {
   background: rgb(255 255 255 / 14%);
   color: #fff;
 }
+
+/* ── Live displays ────────────────────────────────────────
+   A stage on the wallpaper shows the result of a setting as you change it. */
+.iosm-stage {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: 20px 16px;
+  border-radius: 24px;
+  background: var(--wall);
+  color: #fff;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 12%);
+}
+.iosm-stage-num {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+.iosm-stage-num small {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.iosm-stage-num b {
+  font: 700 38px var(--iosm-rounded);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+.iosm-stage-num em {
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+/* The touch fill slider: the whole bar is the control. */
+.iosm-slider {
+  position: relative;
+  min-height: 56px;
+  border-radius: 18px;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: #fff;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: ew-resize;
+  transition: transform 0.15s;
+}
+.iosm-slider:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.iosm-slider.on {
+  transform: scale(1.015);
+}
+.iosm-slider > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill);
+  background: rgb(255 255 255 / 30%);
+  transition: width 0.08s;
+}
+.iosm-slider.money > i {
+  background: linear-gradient(90deg, rgb(255 255 255 / 22%), var(--wall-acc));
+}
+.iosm-slider.time > i {
+  background: linear-gradient(90deg, rgb(255 255 255 / 18%), rgb(255 255 255 / 45%));
+}
+.iosm-slider > span {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.iosm-slider b {
+  font-size: 15px;
+  font-weight: 600;
+}
+.iosm-slider em {
+  font: 700 17px var(--iosm-rounded);
+  font-style: normal;
+}
+.iosm-slider.locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Notifications: the lock screen as it will look. */
+.iosm-lockprev {
+  justify-items: center;
+  padding-top: 24px;
+}
+.iosm-lp-time {
+  font: 600 56px var(--iosm-rounded);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.iosm-lp-date {
+  font-size: 15px;
+  opacity: 0.9;
+}
+.iosm-lp-stack {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+}
+.iosm-lp-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 20px;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.3;
+  animation: iosm-drop 0.45s both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.iosm-lp-note > i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--wall-acc);
+}
+.iosm-lp-note > i svg {
+  width: 17px;
+  height: 17px;
+}
+.iosm-lp-note > span {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+.iosm-lp-note b {
+  font-size: 14px;
+}
+.iosm-lp-note > small {
+  align-self: start;
+  font-size: 11px;
+  opacity: 0.6;
+}
+.iosm-lp-note.empty {
+  background: rgb(255 255 255 / 8%);
+  border: 1.5px dashed rgb(255 255 255 / 35%);
+}
+.iosm-lp-note.empty > i {
+  background: rgb(255 255 255 / 18%);
+}
+@keyframes iosm-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+  }
+}
+.iosm-msgprev > small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-msgprev .iosm-lp-note > span {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.iosm-msgprev.off .iosm-lp-note {
+  opacity: 0.45;
+}
+
+/* Working hours: the week as bars down a 24-hour column. */
+.iosm-weekbars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.iosm-weekbar {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.iosm-weekbar-col {
+  position: relative;
+  width: 100%;
+  max-width: 34px;
+  height: 120px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+.iosm-weekbar-col i,
+.iosm-week-key i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-radius: 6px;
+  background: #fff;
+  transition:
+    top 0.25s,
+    height 0.25s;
+}
+.iosm-weekbar-col i.design,
+.iosm-week-key i.design {
+  background: var(--wall-acc-soft);
+}
+.iosm-weekbar-col i.personal,
+.iosm-week-key i.personal {
+  background: rgb(255 255 255 / 40%);
+}
+.iosm-weekbar-col s {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgb(var(--wall-base-rgb) / 0.75);
+}
+.iosm-weekbar small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-week-key {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.iosm-week-key > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.iosm-week-key i {
+  position: static;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* Services: the sitting drawn to its length, with what it earns. */
+.iosm-svc-card {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
+  box-shadow: 0 8px 20px rgb(0 0 0 / 20%);
+  transition: height 0.2s;
+  overflow: hidden;
+}
+.iosm-svc-card i {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.iosm-svc-card b {
+  font: 700 18px var(--iosm-rounded);
+}
+.iosm-svc-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.iosm-svc-facts > span {
+  display: grid;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 12%);
+}
+.iosm-svc-facts small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-svc-facts b {
+  font: 700 20px var(--iosm-rounded);
+}
+.iosm-svc-note {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Booking link: a client's phone. */
+.iosm-phone-stage {
+  justify-items: center;
+}
+.iosm-phone {
+  display: grid;
+  gap: 8px;
+  width: min(240px, 100%);
+  padding: 12px 12px 16px;
+  border-radius: 30px;
+  border: 6px solid rgb(0 0 0 / 35%);
+  background: rgb(255 255 255 / 92%);
+  color: var(--wall-base);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 30%);
+}
+.iosm-phone-url {
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgb(var(--wall-base-rgb) / 0.08);
+  font-size: 11px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.iosm-phone-url.taken b {
+  color: #c62828;
+  text-decoration: line-through;
+}
+.iosm-phone-me {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  text-align: center;
+}
+.iosm-phone-me small {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.iosm-phone-step {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgb(var(--wall-base-rgb) / 0.06);
+  font-size: 12px;
+}
+.iosm-phone-btn {
+  margin-top: 4px;
+  padding: 10px;
+  border-radius: 999px;
+  background: var(--wall-deep);
+  color: #fff;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+.iosm-phone-note {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 600;
+}
+.iosm-phone-note.taken {
+  color: var(--wall-acc-soft);
+}
+
+/* Plans: bars of what each plan leaves you. */
+.iosm-plan-bars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.iosm-plan-bars > span {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.iosm-plan-bars > span > span {
+  position: relative;
+  width: 100%;
+  max-width: 64px;
+  height: 120px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+.iosm-plan-bars i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 45%);
+  transition: height 0.2s;
+}
+.iosm-plan-bars .best i {
+  background: #fff;
+}
+.iosm-plan-bars b {
+  font-size: 14px;
+}
+.iosm-plan-bars em {
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.85;
+}
+.iosm-plan-bars small {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--wall-acc);
+  font-size: 11px;
+}
+
+/* A sitting, like now playing. */
+.iosm-np {
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 14px;
+}
+.iosm-np-art {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
+  font: 700 22px var(--iosm-rounded);
+}
+.iosm-np.live .iosm-np-art {
+  box-shadow: 0 0 0 3px var(--wall-acc-soft);
+}
+.iosm-np-copy {
+  display: grid;
+  min-width: 0;
+}
+.iosm-np-copy small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-np-copy b {
+  font: 700 20px var(--iosm-rounded);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iosm-np-copy em {
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.85;
+}
+.iosm-np-bar,
+.iosm-np-times {
+  grid-column: 1 / -1;
+}
+.iosm-np-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 22%);
+  overflow: hidden;
+}
+.iosm-np-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: #fff;
+}
+.iosm-np-times {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -6px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* A request, as a postcard. */
+.iosm-postcard {
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 14px;
+  padding: 12px;
+}
+.iosm-postcard img,
+.iosm-postcard-blank {
+  width: 112px;
+  height: 140px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+.iosm-postcard-blank {
+  display: grid;
+  place-items: center;
+  background: rgb(255 255 255 / 14%);
+}
+.iosm-postcard-copy {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+}
+.iosm-postcard-copy i {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-postcard-copy b {
+  font: 700 18px var(--iosm-rounded);
+}
+.iosm-postcard-copy q {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 14px;
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+.iosm-postcard-copy em {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.8;
+  text-transform: capitalize;
+}
+.iosm-postcard-copy u {
+  justify-self: start;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--wall-acc);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Travel: a six-month flight ribbon. */
+.iosm-rib-months {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  font-size: 12px;
+  opacity: 0.8;
+}
+.iosm-rib-road {
+  position: relative;
+  min-height: 72px;
+  border-top: 2px dashed rgb(255 255 255 / 40%);
+  margin-top: 8px;
+}
+.iosm-rib-road i {
+  position: absolute;
+  top: -5px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 75%);
+}
+.iosm-rib-road i.on {
+  background: var(--wall-acc);
+  box-shadow: 0 0 12px var(--wall-acc);
+}
+.iosm-rib-road s {
+  position: absolute;
+  top: 14px;
+  display: grid;
+  padding: 6px 10px;
+  border: 1.5px solid rgb(255 255 255 / 60%);
+  border-radius: 10px;
+  transform: rotate(-4deg);
+  text-decoration: none;
+  background: rgb(255 255 255 / 10%);
+}
+.iosm-rib-road s.on {
+  border-color: var(--wall-acc-soft);
+}
+.iosm-rib-road s b {
+  font-size: 13px;
+}
+.iosm-rib-road s small {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.iosm-rib-road em {
+  display: block;
+  padding-top: 20px;
+  text-align: center;
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.75;
+}
+@media (prefers-reduced-motion: reduce) {
+  .iosm-lp-note,
+  .iosm-slider,
+  .iosm-slider > i,
+  .iosm-svc-card,
+  .iosm-plan-bars i,
+  .iosm-weekbar-col i {
+    animation: none;
+    transition: none;
+  }
+}
+/* In an editor sheet the display stays pinned in view while you type and slide below it. */
+form > .iosm-stage {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 12%),
+    0 10px 24px rgb(0 0 0 / 28%);
+}
+.iosm-phone .v3-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
+  color: #fff;
+}

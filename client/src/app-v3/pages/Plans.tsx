@@ -13,6 +13,8 @@ import {
   Section,
   Status,
 } from "../design/primitives";
+import { LiveStage, StageNumber, TouchSlider } from "../design/live";
+import { planKeep } from "../design/liveDisplays";
 
 export default function Plans() {
   const practice = usePractice();
@@ -101,6 +103,7 @@ export default function Plans() {
               <ActionLink href="/studio">Manage studio membership</ActionLink>
             )}
           </Panel>
+          <PlanCompare current={status.data.tier} />
           <div className="v3-plan-grid">
             {plans.map(plan => (
               <Panel
@@ -205,5 +208,51 @@ export default function Plans() {
         />
       )}
     </Screen>
+  );
+}
+
+const whole = (c: number) => money(c).replace(/\.00$/, "");
+/** Slide to a typical month of takings and see which plan leaves you the most. */
+function PlanCompare({ current }: { current: string }) {
+  const [month, setMonth] = useState(800000);
+  const { plans, best, proBreakEven } = planKeep(month);
+  const top = Math.max(1, ...plans.map(p => p.keep));
+  const bestLabel = plans.find(p => p.key === best)!.label;
+  return (
+    <>
+      <LiveStage className="iosm-plans" label={`${bestLabel} leaves you the most`}>
+        <StageNumber
+          over={`A month of ${whole(month)} in payments`}
+          value={bestLabel}
+          under="leaves you the most"
+        />
+        <span className="iosm-plan-bars">
+          {plans.map(p => (
+            <span key={p.key} className={p.key === best ? "best" : ""}>
+              <span>
+                <i style={{ height: `${Math.max(4, (Math.max(0, p.keep) / top) * 100)}%` }} />
+              </span>
+              <b>{p.label}</b>
+              <em>{whole(p.keep)}</em>
+              {current === p.key && <small>Yours</small>}
+            </span>
+          ))}
+        </span>
+      </LiveStage>
+      <TouchSlider
+        label="Monthly takings"
+        tone="money"
+        value={month}
+        min={100000}
+        max={4000000}
+        step={50000}
+        format={whole}
+        onChange={setMonth}
+      />
+      <p className="v3-muted">
+        Pro pays for itself from {whole(proBreakEven)} a month. Clients pay the
+        card fee on every plan.
+      </p>
+    </>
   );
 }

@@ -3,6 +3,9 @@ import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { getAssetUrl } from "@/lib/assets";
+import { Sparkles } from "lucide-react";
+import { LiveStage } from "../design/live";
+import { savedDay, savedKeys } from "../design/calendarDays";
 import {
   Action,
   Avatar,
@@ -58,6 +61,7 @@ export default function Lead() {
       {lead && (
         <div className="v3-grid">
           <section className="v3-stack">
+            <RequestPostcard lead={lead} />
             <Row
               title={lead.clientName}
               icon={<Avatar name={lead.clientName} />}
@@ -186,5 +190,59 @@ export default function Lead() {
         </div>
       </SheetShell>
     </Screen>
+  );
+}
+
+/** The request as a postcard: their first reference, budget and timing, their words, and any day you saved. */
+function RequestPostcard({
+  lead,
+}: {
+  lead: {
+    clientName: string;
+    clientId?: string | null;
+    conversationId?: number | null;
+    projectType?: string | null;
+    projectDescription?: string | null;
+    placement?: string | null;
+    budgetLabel?: string | null;
+    preferredTimeframe?: string | null;
+    referenceImages: string[];
+  };
+}) {
+  const image = lead.referenceImages[0];
+  const day = savedDay(savedKeys(lead.clientId, lead.conversationId));
+  return (
+    <LiveStage className="iosm-postcard">
+      {image ? (
+        <img src={getAssetUrl(image)} alt="" />
+      ) : (
+        <span className="iosm-postcard-blank" aria-hidden="true">
+          <Sparkles />
+        </span>
+      )}
+      <span className="iosm-postcard-copy">
+        <i>
+          {[lead.budgetLabel || "Budget to discuss", lead.preferredTimeframe]
+            .filter(Boolean)
+            .join(" · ")}
+        </i>
+        <b>{lead.clientName}</b>
+        <q>{lead.projectDescription || "No description yet"}</q>
+        <em>
+          {(lead.projectType || "Tattoo").replace(/-/g, " ")}
+          {lead.placement ? `, ${lead.placement.toLowerCase()}` : ""}
+        </em>
+        {day && (
+          <u>
+            Day saved:{" "}
+            {new Date(`${day}T12:00`).toLocaleDateString("en-AU", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            })}
+          </u>
+        )}
+      </span>
+    </LiveStage>
   );
 }

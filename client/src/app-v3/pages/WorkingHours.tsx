@@ -15,6 +15,10 @@ import {
   Tabs,
 } from "../design/primitives";
 import { readSchedule, writeSchedule, type WorkDay } from "../data/schedule";
+import { resolvePaymentTier } from "@shared/fees";
+import { LiveStage, StageNumber, TouchSlider } from "../design/live";
+import { sittingSplit, weekWindows } from "../design/liveDisplays";
+import { duration as minutesLabel } from "../design/calendarDays";
 type Service = {
   name: string;
   duration: number;
@@ -197,6 +201,7 @@ export default function WorkingHours() {
         <>
           {tab === "Availability" ? (
             <>
+              <WeekDisplay days={days} />
               <p className="v3-muted">
                 Your regular week. Design and personal days stay separate from
                 tattooing availability.
@@ -413,6 +418,14 @@ export default function WorkingHours() {
               saveService();
             }}
           >
+            <ServiceDisplay
+              name={draft.name}
+              duration={Number(draft.duration) || 0}
+              price={Number(draft.price) || 0}
+              sittings={Number(draft.sittings) || 1}
+              tier={resolvePaymentTier(query.data?.subscriptionTier)}
+              depositPercent={query.data?.depositPercentage}
+            />
             <label>
               Service name
               <input
@@ -445,25 +458,28 @@ export default function WorkingHours() {
                 }
               />
             </label>
+            <TouchSlider
+              label="Length of each sitting"
+              tone="time"
+              value={Number(draft.duration) || 0}
+              min={15}
+              max={720}
+              step={15}
+              format={v => minutesLabel(v)}
+              onChange={v => setDraft({ ...draft, duration: v })}
+            />
+            <TouchSlider
+              label="Price per sitting"
+              tone="money"
+              value={Number(draft.price) || 0}
+              min={0}
+              max={5000}
+              step={50}
+              format={v => money(Math.round(v * 100)).replace(/\.00$/, "")}
+              onChange={v => setDraft({ ...draft, price: v })}
+            />
             <label>
-              Duration per session · minutes
-              <NumericInput
-                type="number"
-                required
-                min={1}
-                max={1440}
-                value={draft.duration}
-                onChange={e =>
-                  setDraft({
-                    ...draft,
-                    duration:
-                      e.target.value === "" ? "" : Number(e.target.value),
-                  })
-                }
-              />
-            </label>
-            <label>
-              Price per session · AUD
+              Exact price per sitting · AUD
               <NumericInput
                 type="number"
                 required
@@ -478,23 +494,15 @@ export default function WorkingHours() {
                 }
               />
             </label>
-            <label>
-              Number of sessions
-              <NumericInput
-                type="number"
-                required
-                min={1}
-                max={52}
-                value={draft.sittings}
-                onChange={e =>
-                  setDraft({
-                    ...draft,
-                    sittings:
-                      e.target.value === "" ? "" : Number(e.target.value),
-                  })
-                }
-              />
-            </label>
+            <TouchSlider
+              label="Sittings"
+              tone="time"
+              value={Number(draft.sittings) || 1}
+              min={1}
+              max={12}
+              format={v => `${v} sitting${v === 1 ? "" : "s"}`}
+              onChange={v => setDraft({ ...draft, sittings: v })}
+            />
             <label>
               <span>
                 <input
@@ -544,5 +552,111 @@ export default function WorkingHours() {
         )}
       </SheetShell>
     </Screen>
+  );
+}
+
+/** The week at a glance: each day's working window down a 24-hour column, with breaks cut out. */
+function WeekDisplay({ days }: { days: WorkDay[] }) {
+  const week = weekWindows(days);
+  return (
+    <LiveStage className="iosm-week" label="Your working week">
+      <StageNumber
+        over="Tattooing each week"
+        value={`${Math.round(week.tattooHours * 10) / 10}h`}
+        under={`${week.days.filter(d => d.on).length} working days`}
+      />
+      <span className="iosm-weekbars">
+        {week.days.map(d => (
+          <span key={d.day} className="iosm-weekbar">
+            <span className="iosm-weekbar-col">
+              {d.on && (
+                <i
+                  className={d.type}
+                  style={{ top: `${d.top}%`, height: `${d.height}%` }}
+                />
+              )}
+              {d.breaks.map((b, n) => (
+                <s key={n} style={{ top: `${b.top}%`, height: `${b.height}%` }} />
+              ))}
+            </span>
+            <small>{d.day.slice(0, 1).toUpperCase()}</small>
+          </span>
+        ))}
+      </span>
+      <span className="iosm-week-key">
+        <span><i className="work" /> Tattooing</span>
+        <span><i className="design" /> Design</span>
+        <span><i className="personal" /> Personal</span>
+      </span>
+    </LiveStage>
+  );
+}
+
+/** The service as a sitting: a card drawn to its length, with what the client pays and what you keep. */
+function ServiceDisplay({
+  name,
+  duration,
+  price,
+  sittings,
+  tier,
+  depositPercent,
+}: {
+  name: string;
+  duration: number;
+  price: number;
+  sittings: number;
+  tier: ReturnType<typeof resolvePaymentTier>;
+  depositPercent?: number | null;
+}) {
+  const cents = Math.round(price * 100);
+  const split = sittingSplit(cents, tier, depositPercent);
+  const end = new Date(2000, 0, 1, 10, duration);
+  const whole = (c: number) => money(c).replace(/\.00$/, "");
+  return (
+    <LiveStage className="iosm-svc" label="This service as a sitting">
+      <span
+        className="iosm-svc-card"
+        style={{ height: 44 + Math.min(duration, 720) / 60 * 16 }}
+      >
+        <i>
+          10:00am –{" "}
+          {end
+            .toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
+            .replace(" ", "")
+            .toLowerCase()}
+        </i>
+        <b>{name || "New service"}</b>
+      </span>
+      <span className="iosm-svc-facts">
+        <span>
+          <small>Per sitting</small>
+          <b>{whole(cents)}</b>
+        </span>
+        <span>
+          <small>{duration ? minutesLabel(duration) : "No length"}</small>
+          <b>{duration ? `${whole(Math.round(cents / (duration / 60) / 100) * 100)}/h` : "–"}</b>
+        </span>
+        <span>
+          <small>{split.percent}% to book</small>
+          <b>{whole(split.depositClient)}</b>
+        </span>
+        <span>
+          <small>You keep</small>
+          <b>{whole(split.keep)}</b>
+        </span>
+        {sittings > 1 && (
+          <span>
+            <small>{sittings} sittings</small>
+            <b>{whole(cents * sittings)}</b>
+          </span>
+        )}
+      </span>
+      <em className="iosm-svc-note">
+        Clients pay the card fee on top
+        {split.artistFee
+          ? `. The Tattoi fee on your plan is ${whole(split.artistFee)}.`
+          : ". No Tattoi fee on your plan."}
+      </em>
+    </LiveStage>
   );
 }
