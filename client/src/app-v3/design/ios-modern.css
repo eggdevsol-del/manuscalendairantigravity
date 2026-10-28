@@ -1,0 +1,363 @@
+/* iOS Modern: the app lives on a lock-screen wallpaper, and every surface is a frosted iOS notification.
+   Loaded after the Ivory layers and overrides their tokens, so existing pages adopt it without changes.
+   Wallpapers set the gradient, a solid base and deep tone (for bars and text on white) and one accent. */
+html:root {
+  --wall: linear-gradient(
+    170deg,
+    #1b1840 0%,
+    #2e2766 38%,
+    #4b3592 72%,
+    #7a4cad 100%
+  );
+  --wall-base: #1b1840;
+  --wall-base-rgb: 27, 24, 64;
+  --wall-deep: #2e2766;
+  --wall-acc: #ff6a5c;
+  --wall-acc-soft: #ffb4b0;
+  --glass: rgb(255 255 255 / 14%);
+  --glass-strong: rgb(255 255 255 / 22%);
+  --glass-blur: blur(24px) saturate(1.4);
+  --iosm-rounded:
+    ui-rounded, "SF Pro Rounded", -apple-system, system-ui, sans-serif;
+}
+html:root[data-wall="ocean"] {
+  --wall: linear-gradient(
+    170deg,
+    #071a33 0%,
+    #0b3157 40%,
+    #10577a 75%,
+    #1b8a9a 100%
+  );
+  --wall-base: #071a33;
+  --wall-base-rgb: 7, 26, 51;
+  --wall-deep: #0b3157;
+  --wall-acc: #ffb340;
+  --wall-acc-soft: #ffd99a;
+}
+html:root[data-wall="sunset"] {
+  --wall: linear-gradient(
+    170deg,
+    #2a1033 0%,
+    #6b1f4f 40%,
+    #c2455a 75%,
+    #f08a5d 100%
+  );
+  --wall-base: #2a1033;
+  --wall-base-rgb: 42, 16, 51;
+  --wall-deep: #6b1f4f;
+  --wall-acc: #ffd166;
+  --wall-acc-soft: #ffe7a8;
+}
+html:root[data-wall="forest"] {
+  --wall: linear-gradient(
+    170deg,
+    #0c1f17 0%,
+    #173a2b 40%,
+    #2b5e45 75%,
+    #5c8f6a 100%
+  );
+  --wall-base: #0c1f17;
+  --wall-base-rgb: 12, 31, 23;
+  --wall-deep: #173a2b;
+  --wall-acc: #f2c14e;
+  --wall-acc-soft: #f7dd99;
+}
+html:root[data-wall="graphite"] {
+  --wall: linear-gradient(
+    170deg,
+    #121417 0%,
+    #262a31 40%,
+    #3e4550 75%,
+    #66707e 100%
+  );
+  --wall-base: #121417;
+  --wall-base-rgb: 18, 20, 23;
+  --wall-deep: #262a31;
+  --wall-acc: #0a84ff;
+  --wall-acc-soft: #8ec5ff;
+}
+html:root[data-wall="rose"] {
+  --wall: linear-gradient(
+    170deg,
+    #2b0f1e 0%,
+    #5c1a3a 40%,
+    #a03a63 75%,
+    #e07a9a 100%
+  );
+  --wall-base: #2b0f1e;
+  --wall-base-rgb: 43, 15, 30;
+  --wall-deep: #5c1a3a;
+  --wall-acc: #ffffff;
+  --wall-acc-soft: #ffd1de;
+}
+html:root[data-wall="dawn"] {
+  --wall: linear-gradient(
+    170deg,
+    #3b3a7a 0%,
+    #7a6cc2 40%,
+    #d89bc4 75%,
+    #ffc39a 100%
+  );
+  --wall-base: #2c2a5e;
+  --wall-base-rgb: 44, 42, 94;
+  --wall-deep: #3b3a7a;
+  --wall-acc: #ff5e7e;
+  --wall-acc-soft: #ffc0cc;
+}
+
+/* Tokens: every Ivory and shadcn token resolves to the lock-screen look, in light and dark alike. */
+html:root,
+html:root.dark,
+html:root.noir {
+  --v3-paper: transparent;
+  --v3-ink: #ffffff;
+  --v3-surface: var(--glass);
+  --v3-line: rgb(255 255 255 / 12%);
+  --v3-muted: rgb(255 255 255 / 68%);
+  --v3-soft: rgb(255 255 255 / 10%);
+  --v3-gold: #ffffff;
+  --v3-gold-ink: #ffffff;
+  --v3-gold-soft: rgb(255 255 255 / 16%);
+  --v3-green: #8ff0b5;
+  --v3-green-soft: rgb(52 199 89 / 24%);
+  --v3-red: #ffb4b0;
+  --v3-red-soft: rgb(255 106 92 / 24%);
+  --ivory-warning: #ffd99a;
+  --ivory-warning-bg: rgb(255 179 64 / 22%);
+  --ivory-shadow: none;
+  --ivory-display: var(--iosm-rounded);
+  --background: transparent;
+  --foreground: #ffffff;
+  --card: var(--glass);
+  --card-foreground: #ffffff;
+  --popover: var(--wall-deep);
+  --popover-foreground: #ffffff;
+  --muted: rgb(255 255 255 / 10%);
+  --muted-foreground: rgb(255 255 255 / 68%);
+  --secondary: rgb(255 255 255 / 16%);
+  --secondary-foreground: #ffffff;
+  --accent: rgb(255 255 255 / 16%);
+  --accent-foreground: #ffffff;
+  --border: rgb(255 255 255 / 12%);
+  --input: rgb(255 255 255 / 12%);
+  --primary: #ffffff;
+  --primary-foreground: var(--wall-deep);
+  --primary-rgb: 255, 255, 255;
+  --ring: var(--wall-acc);
+  --destructive: #ff6b6b;
+  --v3-radius: 24px;
+  --v3-summary-radius: 22px;
+  color-scheme: dark;
+}
+
+html:root,
+html:root body {
+  background: var(--wall-base);
+  color: #ffffff;
+}
+html:root body {
+  background-image: var(--wall);
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+html:root body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(
+    90% 40% at 85% 0%,
+    rgb(255 255 255 / 14%),
+    transparent 70%
+  );
+}
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* Type: SF Rounded for display, SF Pro for text. */
+.v3-wordmark,
+.v3-header h1,
+.v3-section-heading,
+.v3-inline-title,
+h1,
+h2 {
+  font-family: var(--iosm-rounded);
+  letter-spacing: -0.01em;
+}
+.v3-header h1 {
+  font-weight: 700;
+  font-size: 34px;
+}
+
+/* Every surface is a notification card. */
+.simple-datebox,
+.supplier-directory-card,
+.v3-attention,
+.v3-booking-message,
+.v3-choice,
+.v3-composer,
+.v3-continuous-calendar,
+.v3-conversation-project,
+.v3-home-tabs a,
+.v3-message > div,
+.v3-panel,
+.v3-section > .v3-row,
+.v3-summary-card,
+.v3-identity-roles a[aria-current],
+body .artist-focus-pill,
+body .booking-form-modal,
+body .client-home-header,
+body .feed-card:not(.feed-card-focus),
+[data-slot="card"] {
+  background: var(--glass) !important;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #ffffff;
+}
+.v3-section > .v3-row {
+  border-radius: 22px;
+}
+.v3-section > .v3-row + .v3-row {
+  margin-top: 8px;
+}
+
+/* Floating chrome: bars and sheets sit on a deeper glass so content scrolling under stays readable. */
+.v3-navigation,
+[data-slot="sheet-content"],
+[data-slot="dialog-content"],
+[data-slot="drawer-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"] {
+  background: rgb(var(--wall-base-rgb) / 72%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  backdrop-filter: blur(28px) saturate(1.4);
+  border-color: rgb(255 255 255 / 10%) !important;
+  color: #ffffff;
+}
+[data-slot="sheet-content"],
+[data-slot="drawer-content"] {
+  background-image: var(--wall) !important;
+}
+
+/* Inputs */
+.v3-form input,
+.v3-form select,
+.v3-form textarea,
+.v3-composer textarea,
+.supplier-quantity input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  background-color: rgb(255 255 255 / 12%);
+  color: #ffffff;
+  border-color: transparent;
+}
+::placeholder {
+  color: rgb(255 255 255 / 55%);
+}
+
+/* Buttons: primary is white with the wallpaper's deep tone, secondary is glass. */
+.v3-action:not(.v3-action-secondary):not([data-tone="quiet"]) {
+  background: #ffffff;
+  color: var(--wall-deep);
+}
+.v3-action-secondary,
+.v3-icon-button,
+.v3-tabs {
+  background: var(--glass);
+  color: #ffffff;
+}
+.v3-tabs button[aria-selected="true"],
+.v3-home-tabs a[aria-current="page"] {
+  background: #ffffff !important;
+  color: var(--wall-deep) !important;
+}
+
+/* Switches and focus use the wallpaper accent. */
+[role="switch"][aria-checked="true"],
+[data-slot="switch"][data-state="checked"] {
+  background-color: #34c759;
+}
+:focus-visible {
+  outline-color: var(--wall-acc);
+}
+
+/* Wallpaper picker (Settings): each option is a tiny lock screen. */
+.iosm-walls {
+  display: grid;
+  gap: 14px;
+  padding: 4px 0 8px;
+}
+.iosm-walls-now {
+  margin: 0;
+  text-align: center;
+  display: grid;
+}
+.iosm-walls-now small {
+  font-size: 13px;
+  color: rgb(255 255 255 / 70%);
+}
+.iosm-walls-now b {
+  font: 700 30px var(--iosm-rounded);
+}
+.iosm-walls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 12px;
+}
+.iosm-wall {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.iosm-wall-phone {
+  width: 100%;
+  aspect-ratio: 9 / 17;
+  border-radius: 20px;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  padding-top: 18%;
+  box-shadow: 0 12px 24px -12px rgb(0 0 0 / 60%);
+  outline: 3px solid transparent;
+  outline-offset: 3px;
+}
+.iosm-wall[aria-checked="true"] .iosm-wall-phone {
+  outline-color: #ffffff;
+}
+.iosm-wall-phone b {
+  font: 700 24px var(--iosm-rounded);
+}
+.iosm-wall-phone small {
+  font-size: 8px;
+  opacity: 0.85;
+}
+.iosm-wall-phone i {
+  width: 78%;
+  height: 13px;
+  margin-top: 5px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 20%);
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+}
+.iosm-wall-phone i::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--a);
+}
+.iosm-wall-phone i:first-of-type {
+  margin-top: 12px;
+}

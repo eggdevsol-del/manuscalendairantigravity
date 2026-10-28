@@ -60,14 +60,9 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-      root.classList.remove("noir");
-    } else if (theme === "noir") {
-      root.classList.add("dark", "noir");
-    } else {
-      root.classList.remove("dark", "noir");
-    }
+    // iOS Modern always sits on a dark wallpaper, so dark variants (light text) apply in every theme.
+    root.classList.add("dark");
+    root.classList.toggle("noir", theme === "noir");
   }, [theme]);
 
   // Sync when forceTheme changes (e.g. user data loads after reload)

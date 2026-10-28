@@ -15,10 +15,15 @@ import "./features/workspace/workspace.css";
 import "./app-v3/design/system.css";
 import "./app-v3/design/ivory.css";
 import "./app-v3/design/simple-ivory.css";
+import "./app-v3/design/ios-modern.css";
+import { applyWallpaper } from "./app-v3/design/wallpaper";
 import { registerServiceWorker } from "./lib/pwa";
 import { initializeAnalytics } from "./lib/analytics";
 import { initGlobalErrorListeners } from "./lib/errorReporter";
 import { APP_VERSION, compareVersions } from "./lib/version";
+
+// Paint the saved wallpaper before React renders, so the first frame is already themed.
+applyWallpaper();
 
 // Initialize global error listeners before anything else
 initGlobalErrorListeners();

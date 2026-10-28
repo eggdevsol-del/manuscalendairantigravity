@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   HelpCircle,
   LogOut,
-  Moon,
   RefreshCw,
   CreditCard,
   Database,
@@ -19,7 +18,6 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useTheme } from "@/contexts/ThemeContext";
 import { APP_VERSION } from "@/lib/version";
 import { forceUpdate } from "@/lib/pwa";
 import { BookingLink } from "./ArtistProfile";
@@ -38,12 +36,12 @@ import {
   Section,
 } from "../design/primitives";
 import { AccountEditor, BusinessEditor } from "./SettingsEditors";
+import { WallpaperPicker } from "../design/WallpaperPicker";
 
 /** Route-backed settings preserve deep links and browser navigation. */
 export default function Settings() {
   const practice = usePractice();
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [, go] = useLocation();
   const search = useSearch();
   const section = new URLSearchParams(search).get("section");
@@ -203,29 +201,8 @@ export default function Settings() {
           </Section>
         ) : null;
       })}
-      <Section title="Preferences">
-        <Row
-          title="Dark appearance"
-          detail={theme === "dark" ? "On" : "Off"}
-          icon={<Moon />}
-          trailing={
-            <button
-              className="v3-action v3-action-secondary"
-              role="switch"
-              aria-checked={theme === "dark"}
-              aria-label="Dark appearance"
-              onClick={() =>
-                practice
-                  ? practice.simulate(
-                      "Theme preview: use the practice Light/Dark switch"
-                    )
-                  : toggleTheme()
-              }
-            >
-              {theme === "dark" ? "On" : "Off"}
-            </button>
-          }
-        />
+      <Section title="Appearance">
+        <WallpaperPicker />
         <Row
           title="Reload latest version"
           detail={`Version ${APP_VERSION}`}
