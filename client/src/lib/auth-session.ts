@@ -11,6 +11,7 @@ export function finishSignIn(
   storage.setItem("user", JSON.stringify(data.user));
   const returnTo = sessionStorage.getItem("tattoi-return-to");
   sessionStorage.removeItem("tattoi-return-to");
+  sessionStorage.removeItem("tattoi-signed-out");
   const safeReturn =
     returnTo?.startsWith("/") &&
     !returnTo.startsWith("//") &&
@@ -20,7 +21,7 @@ export function finishSignIn(
     data.user.role === "master_dev" ? "/dev" : safeReturn && returnTo
       ? returnTo
       : data.user.role === "client"
-        ? "/bookings"
+        ? "/home"
         : "/dashboard"
   );
 }

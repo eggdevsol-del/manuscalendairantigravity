@@ -78,10 +78,12 @@ function GuardedShell() {
     // Using !loading alone creates a single-frame gap where loading=false
     // but user hasn't populated yet, causing a premature /login redirect.
     if (isSessionChecked && !loading && !user) {
-      sessionStorage.setItem(
-        "tattoi-return-to",
-        window.location.pathname + window.location.search
-      );
+      // Remember the page only when the session lapsed, not after the person signed out themselves.
+      if (!sessionStorage.getItem("tattoi-signed-out"))
+        sessionStorage.setItem(
+          "tattoi-return-to",
+          window.location.pathname + window.location.search
+        );
       setLocation("/login");
     }
   }, [user, loading, isSessionChecked, setLocation]);
@@ -148,6 +150,10 @@ const KNOWN_APP_ROUTES = new Set([
   "waitlist",
   "projects",
   "supply-orders",
+  "home",
+  "today",
+  "shopfront",
+  "onboarding",
 ]);
 
 /**

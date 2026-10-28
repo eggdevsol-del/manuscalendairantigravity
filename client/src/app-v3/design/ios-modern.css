@@ -1953,3 +1953,74 @@ html:root .v3-hours-fields select {
   width: 100%;
   min-width: 0;
 }
+
+/* Landing pages scroll themselves: the app body is fixed, like every other screen's scroll area. */
+html:root .iosm-home {
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+html:root .iosm-home::-webkit-scrollbar {
+  display: none;
+}
+
+/* Profile photos: the link is exactly the photo's circle, so the ring sits evenly around it, and every
+   avatar crops its photo to the centre. */
+html:root .iosm-avatar {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  line-height: 0;
+  overflow: hidden;
+}
+html:root .iosm-avatar .v3-avatar {
+  width: 100%;
+  height: 100%;
+}
+html:root .v3-avatar {
+  aspect-ratio: 1;
+  flex: none;
+}
+html:root .v3-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  display: block;
+}
+
+/* A sitting with a project photo: the photo fills the whole card, as in the prototype, and the text sits
+   on a dark fade from the left so it stays readable on any image. */
+.iosm-sc.photo {
+  background: var(--wall-deep);
+}
+.iosm-sc.photo .iosm-sc-art,
+.iosm-sc.photo.short .iosm-sc-art {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  border-radius: inherit;
+  z-index: 0;
+}
+.iosm-sc.photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgb(10 14 28 / 72%), rgb(10 14 28 / 18%));
+  pointer-events: none;
+}
+.iosm-sc.photo .iosm-sc-copy {
+  position: relative;
+  z-index: 1;
+  padding: 2px 4px;
+}
+.iosm-sc.photo.live {
+  box-shadow: inset 0 0 0 2px var(--wall-acc), 0 0 0 2px var(--wall-acc);
+}

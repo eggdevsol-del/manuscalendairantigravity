@@ -17,4 +17,17 @@ describe("artist onboarding routing contract", () => {
       expect(reserved.has(destination.slice(1))).toBe(true);
     expect(reserved.has("bank-payouts")).toBe(true);
   });
+
+  it("reserves every page the role shells serve, so none opens the public artist page", () => {
+    const app = readFileSync("client/src/App.tsx", "utf8");
+    const routes = app.match(/const KNOWN_APP_ROUTES = new Set\(\[([\s\S]*?)\]\)/)?.[1];
+    const reserved = new Set(Array.from(routes!.matchAll(/"([^"]+)"/g), m => m[1]));
+    const missing: string[] = [];
+    for (const shell of ["ArtistRoutes", "ClientShell", "MerchantShell"]) {
+      const source = readFileSync(`client/src/shells/${shell}.tsx`, "utf8");
+      for (const [, first] of source.matchAll(/path="\/([a-z0-9-]+)/g))
+        if (!reserved.has(first)) missing.push(`${shell}: /${first}`);
+    }
+    expect(missing).toEqual([]);
+  });
 });

@@ -149,8 +149,11 @@ export function Group({
       if (el) el.scrollTop = 0;
       return;
     }
+    // The landing scrolls itself (the app body never scrolls), so hand edge swipes to it.
     const page = () =>
-      (document.scrollingElement || document.documentElement) as HTMLElement;
+      (el.closest<HTMLElement>(".iosm-home") ||
+        document.scrollingElement ||
+        document.documentElement) as HTMLElement;
     const atEdge = (dy: number) =>
       (dy > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 1) ||
       (dy < 0 && el.scrollTop <= 0);

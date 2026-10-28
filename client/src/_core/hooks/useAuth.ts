@@ -37,6 +37,9 @@ export function useAuth(options?: UseAuthOptions) {
     if (practice) { practice.exit(); return; }
     sessionGeneration++;
     refreshedUsers.clear();
+    // A deliberate sign-out isn't an expired session: don't send the next sign-in back to this page.
+    sessionStorage.setItem("tattoi-signed-out", "1");
+    sessionStorage.removeItem("tattoi-return-to");
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {

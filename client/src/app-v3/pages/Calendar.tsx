@@ -556,7 +556,7 @@ function SittingCard({
   return (
     <button
       type="button"
-      className={`iosm-sc${live ? " live" : ""}${short ? " short" : ""}${a.status === "pending" ? " pending" : ""}`}
+      className={`iosm-sc${a.imageUrl ? " photo" : ""}${live ? " live" : ""}${short ? " short" : ""}${a.status === "pending" ? " pending" : ""}`}
       style={style}
       onClick={onOpen}
     >

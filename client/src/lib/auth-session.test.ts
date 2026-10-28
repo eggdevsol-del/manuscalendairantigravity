@@ -7,4 +7,4 @@ it('routes developer sign-in to the private dashboard without persistent storage
  finishSignIn({token:'fixture',user:{role:'master_dev'}},true);
  expect(assign).toHaveBeenCalledWith('/dev');expect(localStorage.getItem('authToken')).toBeNull();expect(sessionStorage.getItem('authToken')).toBe('fixture');
 });
-it('preserves ordinary client navigation and remember-me',()=>{const assign=vi.fn();vi.stubGlobal('window',{location:{assign}});finishSignIn({token:'fixture',user:{role:'client'}},true);expect(assign).toHaveBeenCalledWith('/bookings');expect(localStorage.getItem('authToken')).toBe('fixture');});
+it('preserves ordinary client navigation and remember-me',()=>{const assign=vi.fn();vi.stubGlobal('window',{location:{assign}});finishSignIn({token:'fixture',user:{role:'client'}},true);expect(assign).toHaveBeenCalledWith('/home');expect(localStorage.getItem('authToken')).toBe('fixture');});
