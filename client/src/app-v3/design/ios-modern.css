@@ -3740,3 +3740,8 @@ button.iosm-weekbar[aria-pressed="true"] small {
     transition: none;
   }
 }
+/* Shelves hold every product; cards off screen skip layout and paint until scrolled near. */
+.iosm-ss-row > .iosm-ss-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 158px auto 250px;
+}

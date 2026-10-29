@@ -378,11 +378,12 @@ export function Suggestions({
   );
 }
 
-const SHELF = 12;
+/** More than this on a shelf runs past a phone's width, so the shelf offers See all. */
+const SHELF_FITS = 2;
 const PAGE = 60;
 
-/** Search, category chips and the shelves of up to twelve products, each with See all. With a search or a
- *  category picked, matches show as one grid, sixty at a time. */
+/** Search, category chips and a shelf per category holding every product in it, with See all on shelves that
+ *  run past the screen. With a search or a category picked, matches show as one grid, sixty at a time. */
 export function StoreShelves({
   products,
   currency,
@@ -494,7 +495,7 @@ export function StoreShelves({
           <section key={s.title || "more"} className="iosm-ss-shelf">
             <div className="iosm-ss-shelf-head">
               <h2>{s.title || "More"}</h2>
-              {s.products.length > SHELF ? (
+              {s.products.length > SHELF_FITS ? (
                 <button
                   type="button"
                   className="iosm-ss-seeall"
@@ -507,7 +508,7 @@ export function StoreShelves({
                 <small>{plural(s.products.length, "product")}</small>
               )}
             </div>
-            <div className="iosm-ss-row">{s.products.slice(0, SHELF).map(card)}</div>
+            <div className="iosm-ss-row">{s.products.map(card)}</div>
           </section>
         ))
       )}

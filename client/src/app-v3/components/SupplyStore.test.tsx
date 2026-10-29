@@ -70,7 +70,7 @@ describe("StoreShelves", () => {
 });
 
 describe("StoreShelves paging", () => {
-  it("shows twelve on a shelf with See all, then the category sixty at a time", () => {
+  it("shows every product on its shelf, and the category as a grid sixty at a time", () => {
     const many = (category: string, from: number, n: number): StoreProduct[] =>
       Array.from({ length: n }, (_, i) => ({
         id: from + i,
@@ -88,7 +88,8 @@ describe("StoreShelves paging", () => {
         onOpen={() => {}}
       />
     );
-    expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(12);
+    expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(70);
+    expect(screen.getAllByRole("button", { name: /^Ink \d+,/ })).toHaveLength(3);
     expect(screen.getAllByRole("button", { name: /In stock$/ }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByRole("button", { name: "See all 70 in Needles" }));
     expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(60);
