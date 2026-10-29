@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
-  chairWeek,
+  chairDays,
   countsStock,
   freeDelivery,
   fromLastOrder,
   shelvesOf,
+  weeksOf,
   type StoreProduct,
 } from "./supplyStore";
 
@@ -25,7 +26,7 @@ const product = (
   })),
 });
 
-describe("chairWeek", () => {
+describe("chairDays", () => {
   const monday = new Date(2026, 10, 2, 9).getTime();
   const at = (day: number, hour: number) => new Date(2026, 10, day, hour);
   const schedule = [
@@ -33,7 +34,7 @@ describe("chairWeek", () => {
     { day: "Tuesday", enabled: true, start: "10:00", end: "16:00", breaks: [{ start: "12:00", end: "13:00" }] },
   ];
   it("counts booked hours and open hours for each of the next seven days", () => {
-    const week = chairWeek(
+    const week = chairDays(
       [
         { id: 1, startTime: at(2, 10), endTime: at(2, 14) },
         { id: 2, startTime: at(3, 11), endTime: at(3, 13) },
@@ -49,6 +50,14 @@ describe("chairWeek", () => {
     expect(week[0].open).toBe(8);
     expect(week[1].open).toBe(5);
     expect(week[2].open).toBe(0);
+  });
+  it("reaches as far ahead as asked, in weeks of seven", () => {
+    const days = chairDays([{ id: 1, startTime: at(30, 10), endTime: at(30, 13) }], schedule, monday, 90);
+    expect(days).toHaveLength(90);
+    expect(days[28].hours).toBe(3);
+    const weeks = weeksOf(days);
+    expect(weeks.map(w => w.length)).toEqual([7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 6]);
+    expect(weeks[4].reduce((n, d) => n + d.hours, 0)).toBe(3);
   });
 });
 

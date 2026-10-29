@@ -22,8 +22,8 @@ import {
   StoreByline,
   StoreShelves,
   TrayPill,
-  WeekStage,
-  useChairWeek,
+  ChairStage,
+  useChairDays,
 } from "../components/SupplyStore";
 import {
   Action,
@@ -78,7 +78,7 @@ function StoreContent({ store, slug }: { store: Store; slug: string }) {
 function SupplierShop({ store, slug }: { store: Store; slug: string }) {
   const cart = useCart();
   const { user } = useAuth();
-  const week = useChairWeek();
+  const days = useChairDays();
   const [selected, setSelected] = useState<StoreProduct | null>(null);
   const currency = store.currency || "AUD";
   // Products sold without options become one option with id 0, the cart's "base" line.
@@ -126,7 +126,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
         </Action>
       }
     >
-      {week && <WeekStage week={week} />}
+      {days && <ChairStage days={days} />}
       <StoreShelves
         products={products}
         currency={currency}

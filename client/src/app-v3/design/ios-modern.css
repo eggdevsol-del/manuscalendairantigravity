@@ -3643,3 +3643,100 @@ button.iosm-weekbar[aria-pressed="true"] small {
 .iosm-ss-tile .iosm-jar i {
   background: hsl(var(--h) 85% 74%);
 }
+/* Time in the chair: the card swipes between the next 7 days, the next month and the next 90 days. The
+   ranges slide edge to edge inside the rounded card; vertical scrolling still passes through. */
+.iosm-ss-week {
+  overflow: hidden;
+}
+.iosm-ss-swipe {
+  margin: 0 -16px;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  outline: none;
+}
+.iosm-ss-swipe:focus-visible {
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.iosm-ss-track {
+  display: flex;
+  transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.iosm-ss-track.drag {
+  transition: none;
+}
+.iosm-ss-page {
+  display: grid;
+  flex: 0 0 100%;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 0 16px;
+}
+.iosm-ss-caption {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.iosm-ss-days.month {
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+  gap: 3px;
+}
+.iosm-ss-days.quarter {
+  grid-template-columns: repeat(13, minmax(0, 1fr));
+  gap: 5px;
+}
+.iosm-ss-days.month .iosm-ss-bar i {
+  width: 100%;
+  border-radius: 3px;
+}
+.iosm-ss-days.quarter .iosm-ss-bar i {
+  width: min(100%, 22px);
+  border-radius: 6px;
+}
+.iosm-ss-days.month b,
+.iosm-ss-days.quarter b {
+  white-space: nowrap;
+}
+.iosm-ss-dots {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin: -8px 0 -6px;
+}
+.iosm-ss-dots button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.iosm-ss-dots button:focus-visible {
+  outline: 2px solid #fff;
+  border-radius: 12px;
+}
+.iosm-ss-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 35%);
+  transition:
+    width 0.25s,
+    background 0.25s;
+}
+.iosm-ss-dots [aria-current="true"] i {
+  width: 18px;
+  background: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  .iosm-ss-track,
+  .iosm-ss-dots i {
+    transition: none;
+  }
+}

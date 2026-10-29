@@ -43,14 +43,15 @@ export type WeekDay = {
   sittings: number;
 };
 
-/** Each of the next seven days: hours booked, hours open and the number of sittings. */
-export function chairWeek(
+/** Each of the next days from today (seven unless asked for more): hours booked, hours open and sittings. */
+export function chairDays(
   sittings: CalendarSitting[],
   schedule: any[],
-  now: number
+  now: number,
+  count = 7
 ): WeekDay[] {
   const first = startOfDay(now);
-  return Array.from({ length: 7 }, (_, i) => {
+  return Array.from({ length: count }, (_, i) => {
     const day = addDays(first, i);
     const next = addDays(first, i + 1);
     const booked = sittings.filter(
@@ -75,6 +76,12 @@ export function chairWeek(
     return { day, hours, open, sittings: booked.length };
   });
 }
+
+/** Days in runs of seven from the first; the last run is shorter when the days run out. */
+export const weeksOf = (days: WeekDay[]) =>
+  Array.from({ length: Math.ceil(days.length / 7) }, (_, i) =>
+    days.slice(i * 7, i * 7 + 7)
+  );
 
 /** Products on shelves by category, in catalogue order. Products without a category share the last shelf. */
 export function shelvesOf(products: StoreProduct[]) {

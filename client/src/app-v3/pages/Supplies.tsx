@@ -24,10 +24,10 @@ import {
   StoreShelves,
   Suggestions,
   TrayPill,
-  WeekStage,
   goalNote,
   optionName,
-  useChairWeek,
+  ChairStage,
+  useChairDays,
 } from "../components/SupplyStore";
 import {
   Action,
@@ -332,7 +332,7 @@ function Catalogue({ id }: { id: number }) {
   const orders = trpc.supplierOrders.getSupplierOrders.useQuery();
   const rhythm = trpc.supplierOrders.getReorderRecommendations.useQuery();
   const rates = trpc.supplierOrders.getShippingRates.useQuery({ supplierId: id });
-  const week = useChairWeek();
+  const days = useChairDays();
   const last = orders.data ? fromLastOrder(orders.data, id, products) : null;
   const usual = rhythm.data?.find(r => r.supplierId === id);
   const reordered = useRef(false);
@@ -408,8 +408,8 @@ function Catalogue({ id }: { id: number }) {
           void query.refetch();
         }}
       />
-      {week && (
-        <WeekStage week={week}>
+      {days && (
+        <ChairStage days={days}>
           {last &&
             (last.lines.every(l => (quantities[l.variant.id] || 0) >= l.quantity) ? (
               <p className="iosm-ss-done">
@@ -437,7 +437,7 @@ function Catalogue({ id }: { id: number }) {
                 }
               />
             ))}
-        </WeekStage>
+        </ChairStage>
       )}
       {stockAdjusted && (
         <p role="status">

@@ -1,7 +1,13 @@
-/* The supplier store, on the wallpaper: the artist's week in the chair, shelves of products with their stock,
+/* The supplier store, on the wallpaper: the artist's time in the chair (7 days, a month, 90 days), shelves of products with their stock,
    a product sheet with the touch quantity slider and a live total, and the tray bar. Shared by catalogue
    suppliers and supplier-run stores; each page keeps its own cart and checkout. */
-import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight } from "lucide-react";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
@@ -15,7 +21,7 @@ import { Jar } from "./DetailStages";
 import { LiveStage, StageNumber, TouchSlider } from "../design/live";
 import { Action, Feedback, SearchField } from "../design/primitives";
 import {
-  chairWeek,
+  chairDays,
   optionsInStock,
   priceFrom,
   shelvesOf,
@@ -23,6 +29,7 @@ import {
   type StoreProduct,
   type StoreVariant,
   type WeekDay,
+  weeksOf,
 } from "../design/supplyStore";
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
@@ -31,14 +38,16 @@ const hoursText = (h: number) => String(Math.round(h * 2) / 2);
 export const optionName = (name?: string | null) =>
   !name || name === "Default Title" ? "" : name;
 
-/** An artist's next seven days from their calendar and working hours. Null for anyone else, or while loading. */
-export function useChairWeek() {
+const AHEAD = 90;
+
+/** An artist's next 90 days from their calendar and working hours. Null for anyone else, or while loading. */
+export function useChairDays() {
   const { user } = useAuth();
   const artist = user?.role === "artist";
   const [now] = useState(() => Date.now());
   const range = useMemo(() => {
     const start = startOfDay(now);
-    return { start: new Date(start), end: new Date(addDays(start, 7)) };
+    return { start: new Date(start), end: new Date(addDays(start, AHEAD)) };
   }, [now]);
   const calendar = trpc.appointments.getArtistCalendar.useQuery(
     { artistId: user?.id ?? "", startDate: range.start, endDate: range.end },
@@ -48,10 +57,11 @@ export function useChairWeek() {
     enabled: artist,
   });
   return artist && calendar.data && settings.isSuccess
-    ? chairWeek(
+    ? chairDays(
         (calendar.data as any[]).filter(a => !isExternalEvent(a)),
         parseSchedule(settings.data?.workSchedule),
-        now
+        now,
+        AHEAD
       )
     : null;
 }
@@ -107,58 +117,219 @@ export function StoreByline({
   );
 }
 
-/** The next seven days: one bar per day, as tall as the day is open and filled with the hours booked. */
-export function WeekStage({
-  week,
+type ChairBar = {
+  key: number;
+  open: number;
+  hours: number;
+  top: string;
+  bottom: string;
+  spoken: string;
+};
+const weekday = (day: number, style: "long" | "narrow") =>
+  new Date(day).toLocaleDateString("en-AU", { weekday: style });
+const monthOf = (day: number) =>
+  new Date(day).toLocaleDateString("en-AU", { month: "short" });
+const dateOf = (day: number) =>
+  new Date(day).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+
+/** The three ranges the card swipes between: days for the week and the month, weeks for 90 days. */
+function chairPages(days: WeekDay[]) {
+  const week = days.slice(0, 7);
+  const month = days.slice(0, 30);
+  const booked = (d: WeekDay) =>
+    d.hours ? `${hoursText(d.hours)} hours booked` : d.open ? "nothing booked" : "closed";
+  const total = (list: WeekDay[], key: "hours" | "open" | "sittings") =>
+    list.reduce((n, d) => n + d[key], 0);
+  return [
+    {
+      title: "Your next 7 days",
+      kind: "",
+      list: week,
+      bars: week.map<ChairBar>(d => ({
+        key: d.day,
+        open: d.open,
+        hours: d.hours,
+        top: weekday(d.day, "narrow"),
+        bottom: String(new Date(d.day).getDate()),
+        spoken: `${weekday(d.day, "long")}: ${booked(d)}`,
+      })),
+    },
+    {
+      title: "Your next month",
+      kind: "month",
+      list: month,
+      // Mondays are labelled, with the month on the first one and once a new month starts.
+      bars: month.map<ChairBar>((d, i) => {
+        const date = new Date(d.day);
+        return {
+          key: d.day,
+          open: d.open,
+          hours: d.hours,
+          top:
+            date.getDay() === 1
+              ? `${date.getDate()}${i < 7 || date.getDate() <= 7 ? ` ${monthOf(d.day)}` : ""}`
+              : "",
+          bottom: "",
+          spoken: d.hours ? `${dateOf(d.day)}: ${hoursText(d.hours)} hours` : "",
+        };
+      }),
+    },
+    {
+      title: "Your next 90 days",
+      kind: "quarter",
+      list: days,
+      // A week is labelled with the month that starts in it.
+      bars: weeksOf(days).map<ChairBar>(w => {
+        const first = w.find(d => new Date(d.day).getDate() === 1);
+        return {
+          key: w[0].day,
+          open: total(w, "open"),
+          hours: total(w, "hours"),
+          top: first ? monthOf(first.day) : "",
+          bottom: "",
+          spoken: `Week of ${new Date(w[0].day).toLocaleDateString("en-AU", { day: "numeric", month: "long" })}: ${hoursText(total(w, "hours"))} of ${hoursText(total(w, "open"))} open hours booked`,
+        };
+      }),
+    },
+  ].map(page => {
+    const hours = total(page.list, "hours");
+    const open = total(page.list, "open");
+    const sittings = total(page.list, "sittings");
+    return {
+      ...page,
+      hours,
+      sittings,
+      caption: open
+        ? `Booked ${hoursText(hours)} of ${hoursText(open)} open hours`
+        : `Booked ${hoursText(hours)} hours`,
+      scale: Math.max(1, ...page.bars.map(b => Math.max(b.open, b.hours))),
+      spoken: page.bars.map(b => b.spoken).filter(Boolean).join(", ") || "Nothing booked",
+    };
+  });
+}
+
+/** Your time in the chair, swiped between the next 7 days, the next month and the next 90 days. Each bar is
+ *  as tall as the hours open and filled with the hours booked. */
+export function ChairStage({
+  days,
   children,
 }: {
-  week: WeekDay[];
+  days: WeekDay[];
   children?: ReactNode;
 }) {
-  const hours = week.reduce((sum, d) => sum + d.hours, 0);
-  const sittings = week.reduce((sum, d) => sum + d.sittings, 0);
-  const scale = Math.max(1, ...week.map(d => Math.max(d.open, d.hours)));
-  const label = week
-    .map(
-      d =>
-        `${new Date(d.day).toLocaleDateString("en-AU", { weekday: "long" })}: ${
-          d.hours ? `${hoursText(d.hours)} hours booked` : d.open ? "nothing booked" : "closed"
-        }`
-    )
-    .join(", ");
+  const pages = chairPages(days);
+  const [page, setPage] = useState(0);
+  const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const start = useRef<{ x: number; width: number } | null>(null);
+  const go = (next: number) => {
+    setPage(Math.max(0, Math.min(pages.length - 1, next)));
+    setDx(0);
+    setDragging(false);
+    start.current = null;
+  };
   return (
-    <section className="iosm-ss-week" aria-label="Your next 7 days">
-      <div className="iosm-ss-week-head">
-        <span>
-          <small>Your next 7 days</small>
-          <b>
-            {hoursText(hours)}
-            <em> h in the chair</em>
-          </b>
-        </span>
-        <small>{sittings ? plural(sittings, "sitting") : "Nothing booked yet"}</small>
-      </div>
-      <ol className="iosm-ss-days" role="img" aria-label={label}>
-        {week.map(d => (
-          <li key={d.day} className={d.hours ? "on" : d.open ? "" : "off"}>
-            <span
-              className="iosm-ss-bar"
-              style={
-                {
-                  "--cap": `${(Math.max(d.open, d.hours) / scale) * 100}%`,
-                  "--fill": `${(d.hours / Math.max(d.open, d.hours, 1)) * 100}%`,
-                } as CSSProperties
-              }
+    <section
+      className="iosm-ss-week"
+      aria-roledescription="carousel"
+      aria-label="Your time in the chair"
+    >
+      <div
+        className="iosm-ss-swipe"
+        tabIndex={0}
+        aria-label={`${pages[page].title}. Swipe or use the arrow keys for other ranges.`}
+        onKeyDown={e => {
+          if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+            e.preventDefault();
+            go(page + (e.key === "ArrowRight" ? 1 : -1));
+          }
+        }}
+        onPointerDown={e => {
+          start.current = { x: e.clientX, width: e.currentTarget.clientWidth || 1 };
+        }}
+        onPointerMove={e => {
+          if (!start.current) return;
+          let moved = e.clientX - start.current.x;
+          if (!dragging) {
+            if (Math.abs(moved) < 8) return;
+            setDragging(true);
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+          }
+          // Past the first or last range the card resists, like a scroll view at its edge.
+          if ((page === 0 && moved > 0) || (page === pages.length - 1 && moved < 0))
+            moved /= 3;
+          setDx(moved);
+        }}
+        onPointerUp={() => {
+          if (!start.current) return;
+          // A flick past 15% of the card (at least 24px, at most 50px) moves on; less springs back.
+          const far = Math.max(24, Math.min(50, start.current.width * 0.15));
+          go(page + (dragging ? (dx < -far ? 1 : dx > far ? -1 : 0) : 0));
+        }}
+        onPointerCancel={() => go(page)}
+      >
+        <div
+          className={`iosm-ss-track${dragging ? " drag" : ""}`}
+          style={{ transform: `translateX(calc(${-page * 100}% + ${dx}px))` }}
+        >
+          {pages.map((p, i) => (
+            <div
+              key={p.title}
+              className="iosm-ss-page"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${i + 1} of ${pages.length}: ${p.title}`}
+              aria-hidden={i !== page}
             >
-              <i />
-            </span>
-            <b>
-              {new Date(d.day).toLocaleDateString("en-AU", { weekday: "narrow" })}
-            </b>
-            <small>{new Date(d.day).getDate()}</small>
-          </li>
+              <div className="iosm-ss-week-head">
+                <span>
+                  <small>{p.title}</small>
+                  <b>
+                    {hoursText(p.hours)}
+                    <em> h in the chair</em>
+                  </b>
+                </span>
+                <small>
+                  {p.sittings ? plural(p.sittings, "sitting") : "Nothing booked yet"}
+                </small>
+              </div>
+              <ol className={`iosm-ss-days ${p.kind}`} role="img" aria-label={p.spoken}>
+                {p.bars.map(b => (
+                  <li key={b.key} className={b.hours ? "on" : b.open ? "" : "off"}>
+                    <span
+                      className="iosm-ss-bar"
+                      style={
+                        {
+                          "--cap": `${(Math.max(b.open, b.hours) / p.scale) * 100}%`,
+                          "--fill": `${(b.hours / Math.max(b.open, b.hours, 1)) * 100}%`,
+                        } as CSSProperties
+                      }
+                    >
+                      <i />
+                    </span>
+                    <b>{b.top || "\u00a0"}</b>
+                    <small>{b.bottom || "\u00a0"}</small>
+                  </li>
+                ))}
+              </ol>
+              <p className="iosm-ss-caption">{p.caption}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="iosm-ss-dots">
+        {pages.map((p, i) => (
+          <button
+            key={p.title}
+            type="button"
+            aria-label={`Show ${p.title.toLowerCase()}`}
+            aria-current={i === page}
+            onClick={() => go(i)}
+          >
+            <i />
+          </button>
         ))}
-      </ol>
+      </div>
       {children}
     </section>
   );

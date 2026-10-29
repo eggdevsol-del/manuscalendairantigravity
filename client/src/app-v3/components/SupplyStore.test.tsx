@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { ProductSheet, StoreShelves } from "./SupplyStore";
+import { ChairStage, ProductSheet, StoreShelves } from "./SupplyStore";
 import type { StoreProduct } from "../design/supplyStore";
 
 vi.mock("@/components/ui/overlays/sheet-shell", () => ({
@@ -97,3 +97,57 @@ describe("StoreShelves paging", () => {
   });
 });
 
+describe("ChairStage", () => {
+  // jsdom has no PointerEvent; a MouseEvent with a pointer id carries clientX the same way.
+  if (!("PointerEvent" in window))
+    (window as any).PointerEvent = class extends MouseEvent {
+      pointerId: number;
+      constructor(type: string, init: any = {}) {
+        super(type, init);
+        this.pointerId = init.pointerId ?? 0;
+      }
+    };
+  // Friday 30 October 2026 onwards: open Monday to Wednesday for 8 hours, 6 hours booked on Tuesday 3 November
+  // and 4 on Monday 30 November.
+  const days = Array.from({ length: 90 }, (_, i) => {
+    const day = new Date(2026, 9, 30 + i).getTime();
+    const dow = new Date(day).getDay();
+    const hours = i === 4 ? 6 : i === 31 ? 4 : 0;
+    return { day, open: dow >= 1 && dow <= 3 ? 8 : 0, hours, sittings: hours ? 1 : 0 };
+  });
+  const current = () =>
+    screen.getAllByRole("button", { name: /^Show your next/ }).find(b => b.getAttribute("aria-current") === "true")
+      ?.getAttribute("aria-label");
+
+  it("swipes between the week, the month and 90 days", () => {
+    const { container } = render(<ChairStage days={days} />);
+    const slide = (n: string) => container.querySelector(`[aria-label="${n}"]`)?.textContent;
+    const card = screen.getByLabelText(/Swipe or use the arrow keys/);
+    expect(current()).toBe("Show your next 7 days");
+    expect(slide("1 of 3: Your next 7 days")).toContain("Booked 6 of 24 open hours");
+    expect(slide("2 of 3: Your next month")).toContain("Booked 6 of 96 open hours");
+    expect(slide("2 of 3: Your next month")).toContain("2 Nov");
+    expect(slide("3 of 3: Your next 90 days")).toContain("2 sittings");
+    expect(slide("3 of 3: Your next 90 days")).toContain("Dec");
+    fireEvent.keyDown(card, { key: "ArrowRight" });
+    expect(current()).toBe("Show your next month");
+    fireEvent.keyDown(card, { key: "ArrowRight" });
+    fireEvent.keyDown(card, { key: "ArrowRight" });
+    expect(current()).toBe("Show your next 90 days");
+    fireEvent.click(screen.getByRole("button", { name: "Show your next 7 days" }));
+    expect(current()).toBe("Show your next 7 days");
+  });
+
+  it("follows a sideways drag and settles on the next range", () => {
+    render(<ChairStage days={days} />);
+    const card = screen.getByLabelText(/Swipe or use the arrow keys/);
+    fireEvent.pointerDown(card, { clientX: 300, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 200, pointerId: 1 });
+    fireEvent.pointerUp(card, { clientX: 200, pointerId: 1 });
+    expect(current()).toBe("Show your next month");
+    fireEvent.pointerDown(card, { clientX: 200, pointerId: 1 });
+    fireEvent.pointerMove(card, { clientX: 210, pointerId: 1 });
+    fireEvent.pointerUp(card, { clientX: 210, pointerId: 1 });
+    expect(current()).toBe("Show your next month");
+  });
+});
