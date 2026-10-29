@@ -15,6 +15,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { LiveStage, StageNumber, TouchSlider } from "../design/live";
 import { MoneyRiver } from "../design/MoneyRiver";
 import { SplitBar } from "../components/DetailStages";
+import { StorePhone } from "../components/StoreParts";
 import { initials, startOfDay, useNow } from "../design/LockParts";
 import { addDays } from "../design/calendarDays";
 import { isExternalEvent, moneyWeeks, sittingMoney } from "../design/landingData";
@@ -114,12 +115,44 @@ export default function Business() {
   );
 }
 export function Shopfront() {
+  const { user } = useAuth();
+  const settings = trpc.artistSettings.get.useQuery();
+  const products = trpc.storefront.getProducts.useQuery();
+  const slug = settings.data?.publicSlug;
+  // With a booking link, the phone shows the public shop exactly as clients load it.
+  const store = trpc.storefront.getArtistStorefront.useQuery(
+    { slug: slug || "" },
+    { enabled: !!slug }
+  );
   return (
     <Screen
       title="Shopfront"
       back="/business"
       subtitle="Your products and experiences"
     >
+      {slug && store.data ? (
+        <StorePhone
+          label="Your shop on a client’s phone"
+          name={store.data.artistName}
+          open
+          status={`tattoi.app/shop/${slug}`}
+          products={store.data.products}
+          currency={store.data.currency || "AUD"}
+        />
+      ) : (
+        settings.data &&
+        !slug &&
+        products.data && (
+          <StorePhone
+            label="Your shop on a client’s phone"
+            name={settings.data.displayName || user?.name || "Your shop"}
+            open={false}
+            status="Choose a booking link to open your shop"
+            products={products.data}
+            currency="AUD"
+          />
+        )
+      )}
       <div className="simple-business-list">
         <Row
           title="Products"

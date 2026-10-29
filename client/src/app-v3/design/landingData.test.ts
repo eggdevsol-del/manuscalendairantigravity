@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   bookedAhead,
+  clientProjects,
   daysUntil,
+  discoverArtists,
   healingDay,
   isExternalEvent,
   lowStock,
@@ -108,5 +110,101 @@ describe("landing data", () => {
     expect(isExternalEvent({ id: -4 })).toBe(true);
     expect(isExternalEvent({ id: "google-1" })).toBe(true);
     expect(isExternalEvent({ id: 12 })).toBe(false);
+  });
+});
+
+describe("client projects", () => {
+  const sitting = (
+    id: number,
+    plan: number | null,
+    d: number,
+    status: string,
+    extra: Record<string, unknown> = {}
+  ) => ({
+    id,
+    sessionPlanId: plan,
+    conversationId: 12,
+    projectName: plan ? "Back piece" : null,
+    serviceName: "Day session",
+    title: null,
+    imageUrl: null as string | null,
+    status,
+    startsAt: day(d),
+    sessionTotal: plan ? 4 : 1,
+    artist: { name: "P Mason" },
+    ...extra,
+  });
+
+  it("groups a proposal's sittings and counts the ones done", () => {
+    const [back, single] = clientProjects([
+      sitting(1, 7, 1, "completed", { imageUrl: "/ref.jpg" }),
+      sitting(2, 7, 2, "completed"),
+      sitting(3, 7, 9, "confirmed"),
+      sitting(4, 7, 3, "cancelled"),
+      sitting(9, null, 20, "confirmed"),
+    ]);
+    expect(back).toMatchObject({
+      key: "plan:7",
+      name: "Back piece",
+      artist: "P Mason",
+      image: "/ref.jpg",
+      done: 2,
+      total: 4,
+      href: "/projects/12?session=3",
+    });
+    // A sitting without a proposal stands alone, named by its service.
+    expect(single).toMatchObject({ key: "sitting:9", name: "Day session", done: 0, total: 1 });
+  });
+
+  it("counts a sitting once when it comes from both tabs", () => {
+    const s = sitting(1, 7, 1, "completed");
+    expect(clientProjects([s, s])[0].done).toBe(1);
+  });
+
+  it("puts tattoos with a sitting to come first, soonest first, then the most recent", () => {
+    const order = clientProjects([
+      sitting(1, 1, 1, "completed"),
+      sitting(2, 2, 2, "completed"),
+      sitting(3, 3, 20, "confirmed"),
+      sitting(4, 4, 10, "confirmed"),
+    ]).map(p => p.key);
+    expect(order).toEqual(["plan:4", "plan:3", "plan:2", "plan:1"]);
+  });
+});
+
+describe("discover artists", () => {
+  const card = (id: number, artistId: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    artistId,
+    artistName: artistId === "a" ? "Ana Ink" : "Bo Lines",
+    artistAvatar: null,
+    artistCity: artistId === "a" ? "Brisbane" : null,
+    artistSlug: artistId === "a" ? "anaink" : "bolines",
+    keywords: [] as string[],
+    tags: ["fineline"],
+    imageUrl: `/p${id}.jpg`,
+    mediaType: "image",
+    ...extra,
+  });
+
+  it("shows each artist once with their newest picture", () => {
+    const artists = discoverArtists([
+      card(1, "a"),
+      card(5, "a", { mediaType: "video" }),
+      card(3, "a", { keywords: ["Realism", "Black & Grey"] }),
+      card(2, "b"),
+    ]);
+    expect(artists).toHaveLength(2);
+    expect(artists[0]).toMatchObject({
+      name: "Ana Ink",
+      slug: "anaink",
+      city: "Brisbane",
+      image: "/p3.jpg",
+    });
+    expect(artists[1].styles).toEqual(["fineline"]);
+  });
+
+  it("leaves out artists without a public page", () => {
+    expect(discoverArtists([card(1, "a", { artistSlug: null })])).toEqual([]);
   });
 });

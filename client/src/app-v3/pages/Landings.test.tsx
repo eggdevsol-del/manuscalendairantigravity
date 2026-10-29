@@ -20,6 +20,7 @@ vi.mock("@/lib/trpc", () => {
       conversations: { list: q("conversations") },
       offers: { list: q("offers") },
       aftercare: { getForBooking: q("aftercare") },
+      feed: { getDiscoverFeed: q("feed") },
       merchantAuth: { getMerchantProfile: q("profile") },
       storefront: { getOrders: q("orders"), getProducts: q("products") },
     },
@@ -64,8 +65,21 @@ describe("client landing", () => {
         template: { phases: [{ id: 1, fromDay: 1, toDay: 7, label: "Peeling", instruction: "Don't pick" }] },
       },
       conversations: [{ id: 2, otherUser: { name: "Rory Vale" }, unreadCount: 2, lastMessage: { content: "See you Saturday!", messageType: "text" } }],
+      feed: {
+        cards: [
+          { id: 9, artistId: "a", artistName: "Ana Ink", artistCity: "Brisbane", artistSlug: "anaink", keywords: ["Fine line"], tags: [], imageUrl: "/p9.jpg", mediaType: "image" },
+          { id: 8, artistId: "a", artistName: "Ana Ink", artistCity: "Brisbane", artistSlug: "anaink", keywords: ["Fine line"], tags: [], imageUrl: "/p8.jpg", mediaType: "image" },
+        ],
+      },
     };
     render(<ClientHome />);
+    // My tattoos: one postcard for each tattoo, with the sittings done.
+    expect(
+      screen.getByRole("link", { name: "Botanical sleeve with Rory Vale, 0 of 3 sittings done" })
+    ).toBeTruthy();
+    expect(screen.getByRole("link", { name: "Dagger with Rory Vale, 1 of 1 sittings done" })).toBeTruthy();
+    // Discover: one card for each artist, opening their page.
+    expect(screen.getByRole("link", { name: "Ana Ink, Brisbane" }).getAttribute("href")).toBe("/anaink");
     expect(screen.getByText("Next sitting in 3 days")).toBeTruthy();
     expect(screen.getByText("with Rory Vale · sitting 2 of 3")).toBeTruthy();
     expect(screen.getByText("D4")).toBeTruthy();

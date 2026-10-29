@@ -17,6 +17,7 @@ import {
 import { money } from "@/features/workspace/bookingPresentation";
 import { LiveStage } from "../design/live";
 import { Jar, StageFigure } from "../components/DetailStages";
+import { StockShelf } from "../components/StoreParts";
 
 type ProductDraft = {
   id?: number;
@@ -124,6 +125,36 @@ export default function Products() {
         <ActionLink href="/settings">Review Shopify connection</ActionLink>
       ) : null}
       {saved && <p role="status">Product saved.</p>}
+      <StockShelf
+        products={query.data || []}
+        threshold={isMerchant ? profile.data?.lowStockThreshold : null}
+        saving={update.isPending && !draft}
+        error={!draft ? update.error?.message : undefined}
+        onSave={(product, stock) => {
+          const p = query.data?.find(x => x.id === product.id);
+          if (!p) return;
+          setSaved(false);
+          // The product as it is, with only the stock changed.
+          update.mutate({
+            id: p.id,
+            title: p.title,
+            description: p.description || "",
+            priceCents: p.variants.length
+              ? Math.min(...p.variants.map(v => v.priceCents))
+              : p.priceCents,
+            inventoryCount: p.variants.length ? p.inventoryCount : stock[0],
+            shippingCents: p.shippingCents || 0,
+            fulfillmentType: p.fulfillmentType,
+            isActive: p.isActive === 1,
+            imageUrl: p.imageUrl || null,
+            variants: p.variants.map(v => ({
+              id: v.id,
+              priceCents: v.priceCents,
+              inventoryCount: stock[v.id] ?? v.inventoryCount,
+            })),
+          });
+        }}
+      />
       <SearchField
         value={search}
         onChange={setSearch}

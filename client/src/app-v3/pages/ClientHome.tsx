@@ -5,6 +5,7 @@ import {
   Droplets,
   Gift,
   Hourglass,
+  Images,
   MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
@@ -16,7 +17,14 @@ import { Avatar, Feedback } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
 import { projectTitle, relativeStart } from "../design/lockHome";
 import { Group, Note, ProjectArt, Widget, relativeDay, useNow } from "../design/LockParts";
-import { aftercareStage, daysUntil, healingDay } from "../design/landingData";
+import {
+  aftercareStage,
+  clientProjects,
+  daysUntil,
+  discoverArtists,
+  healingDay,
+} from "../design/landingData";
+import { ArtistCards, ProjectPostcards } from "../components/ClientParts";
 
 /** The client's landing page: the same lock screen as the artist's, about their own tattoos. A clock and
  *  rings for the next sitting, healing and forms, then groups for sittings, healing, forms, requests,
@@ -30,6 +38,7 @@ export default function ClientHome() {
     refetchInterval: 30000,
   });
   const offers = trpc.offers.list.useQuery();
+  const feed = trpc.feed.getDiscoverFeed.useQuery({ limit: 20 });
   const [open, setOpen] = useState<string | null>(null);
   const toggle = (key: string) => setOpen(o => (o === key ? null : key));
 
@@ -79,6 +88,11 @@ export default function ClientHome() {
       (o.remainingValue > 0 || o.purchaseRequired) &&
       (!o.rules.expiresAt || new Date(o.rules.expiresAt).getTime() > now)
   );
+  const projects = clientProjects([
+    ...(upcoming.data?.appointments ?? []),
+    ...(past.data?.appointments ?? []),
+  ]);
+  const artists = discoverArtists(feed.data?.cards ?? []);
   const chats = [...(conversations.data ?? [])].sort(
     (a, b) => (b.unreadCount || 0) - (a.unreadCount || 0)
   );
@@ -165,6 +179,20 @@ export default function ClientHome() {
           void conversations.refetch();
         }}
       />
+
+      {projects.length > 0 && (
+        <Group
+          id="tattoos"
+          icon={<Images />}
+          title="My tattoos"
+          href="/bookings"
+          open={open === "tattoos"}
+          onToggle={toggle}
+          peek={1}
+        >
+          <ProjectPostcards projects={projects} />
+        </Group>
+      )}
 
       {sittings.length > 0 && (
         <Group
@@ -333,12 +361,16 @@ export default function ClientHome() {
         open={open === "discover"}
         onToggle={toggle}
       >
-        <Note
-          icon={<Compass />}
-          title="Find your next artist"
-          detail="Browse artists by style and city"
-          href="/discover"
-        />
+        {artists.length > 0 ? (
+          <ArtistCards artists={artists} />
+        ) : (
+          <Note
+            icon={<Compass />}
+            title="Find your next artist"
+            detail="Browse artists by style and city"
+            href="/discover"
+          />
+        )}
         <Note
           icon={<Gift />}
           title="Vouchers and purchases"

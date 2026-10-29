@@ -57,33 +57,58 @@ function Directory() {
   const items = query.data?.filter(item =>
     item.name.toLowerCase().includes(search.toLowerCase())
   );
+  // Every saved cart, priced from each supplier's current catalogue, for the tray.
+  const baskets = (query.data || [])
+    .map(supplier => ({
+      supplier,
+      quantities: savedBasket(
+        practice ? (practice.cart ?? {}) : null,
+        `tattoi-supply-basket:${user?.id}:${supplier.id}`
+      ),
+    }))
+    .filter(b => Object.keys(b.quantities).length > 0);
+  const catalogues = trpc.useQueries(t =>
+    baskets.map(b =>
+      t.suppliers.getSupplierProducts({ supplierId: b.supplier.id })
+    )
+  );
+  const lines: Item[] = baskets.flatMap((b, i) =>
+    (catalogues[i]?.data || []).flatMap(product =>
+      product.variants.flatMap(v =>
+        b.quantities[v.id] > 0 && v.inventoryCount > 0
+          ? [
+              {
+                productId: product.id,
+                variantId: v.id,
+                title: product.title,
+                variant: v.title,
+                price: v.priceCents,
+                stock: v.inventoryCount,
+                quantity: Math.min(b.quantities[v.id], v.inventoryCount),
+              },
+            ]
+          : []
+      )
+    )
+  );
+  const currencies = [
+    ...new Set(baskets.map(b => b.supplier.currency || "AUD")),
+  ];
   return (
     <Screen
       title="Supplies"
       subtitle="Find what you need for the next session."
       back="/dashboard"
     >
-      {query.data?.map(supplier => {
-        let count = 0;
-        try {
-          count = Object.values(
-            practice
-              ? (practice.cart ?? {})
-              : JSON.parse(
-                  sessionStorage.getItem(
-                    `tattoi-supply-basket:${user?.id}:${supplier.id}`
-                  ) || "{}"
-                )
-          ).reduce<number>(
-            (sum, value) =>
-              sum +
-              (typeof value === "number" && Number.isInteger(value) && value > 0
-                ? value
-                : 0),
-            0
-          );
-        } catch {}
-        return count > 0 ? (
+      {query.data && (
+        <SupplyTray
+          items={lines}
+          currency={currencies.length > 1 ? null : currencies[0] || "AUD"}
+        />
+      )}
+      {baskets.map(({ supplier, quantities }) => {
+        const count = Object.values(quantities).reduce((sum, n) => sum + n, 0);
+        return (
           <Row
             key={`cart-${supplier.id}`}
             title={`${supplier.name} cart`}
@@ -91,7 +116,7 @@ function Directory() {
             icon={<ShoppingBag />}
             href={`/supplies?supplier=${supplier.id}&cart=1`}
           />
-        ) : null;
+        );
       })}
       <ActionLink href="/supply-orders">Your supply orders</ActionLink>
       <SearchField
@@ -933,13 +958,20 @@ function ProductStage({
 }
 
 /** The cart as a tray of bottles, one for each line, with the running total. */
-function SupplyTray({ items, currency }: { items: Item[]; currency: string }) {
+function SupplyTray({
+  items,
+  currency,
+}: {
+  items: Item[];
+  currency: string | null;
+}) {
   const count = items.reduce((n, item) => n + item.quantity, 0);
   const subtotal = items.reduce((n, item) => n + item.price * item.quantity, 0);
+  const total = currency ? money(subtotal, currency) : `${count} items`;
   return (
     <LiveStage
       className="iosm-detail-stage"
-      label={`${count} items in your cart, ${money(subtotal, currency)}`}
+      label={`${count} items in your cart, ${total}`}
     >
       <span className="iosm-tray" aria-hidden="true">
         {items.length ? (
@@ -959,9 +991,31 @@ function SupplyTray({ items, currency }: { items: Item[]; currency: string }) {
       </span>
       <StageNumber
         over={`${count} item${count === 1 ? "" : "s"} in your cart`}
-        value={money(subtotal, currency)}
-        under="Before shipping and checkout fees"
+        value={total}
+        under={
+          currency
+            ? "Before shipping and checkout fees"
+            : "Across suppliers in different currencies"
+        }
       />
     </LiveStage>
   );
+}
+
+/** A saved cart: variant ids and quantities only. Prices and stock come from the current catalogue. */
+function savedBasket(practiceCart: Record<number, number> | null, key: string) {
+  let raw: Record<string, unknown> = {};
+  try {
+    raw = practiceCart ?? JSON.parse(sessionStorage.getItem(key) || "{}");
+  } catch {}
+  return Object.fromEntries(
+    Object.entries(raw).filter(
+      ([id, qty]) =>
+        Number.isInteger(Number(id)) &&
+        Number(id) > 0 &&
+        typeof qty === "number" &&
+        Number.isInteger(qty) &&
+        qty > 0
+    )
+  ) as Record<number, number>;
 }

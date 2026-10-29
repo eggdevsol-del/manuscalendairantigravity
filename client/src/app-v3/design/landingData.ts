@@ -201,3 +201,112 @@ export function nextSittingByClient<
     (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
   );
 }
+
+type BookedSitting = {
+  id: number;
+  sessionPlanId?: number | null;
+  conversationId: number | null;
+  projectName?: string | null;
+  serviceName?: string | null;
+  title?: string | null;
+  imageUrl?: string | null;
+  status: string;
+  startsAt: string;
+  sessionTotal?: number | null;
+  artist: { name: string };
+};
+
+/** A client's tattoos as projects: the sittings of one proposal together (a sitting without a proposal
+ *  stands alone), with the first reference image, the artist, and how many sittings are done. Projects
+ *  with a sitting still to come are first, then the most recent. */
+export function clientProjects<T extends BookedSitting>(sittings: T[]) {
+  const groups = new Map<string, T[]>();
+  const seen = new Set<number>();
+  for (const s of sittings) {
+    if (seen.has(s.id)) continue;
+    seen.add(s.id);
+    const key = s.sessionPlanId ? `plan:${s.sessionPlanId}` : `sitting:${s.id}`;
+    groups.set(key, [...(groups.get(key) ?? []), s]);
+  }
+  const closed = ["cancelled", "no-show"];
+  return [...groups.entries()]
+    .map(([key, list]) => {
+      const sorted = [...list].sort(
+        (a, b) => +new Date(a.startsAt) - +new Date(b.startsAt)
+      );
+      const kept = sorted.filter(s => !closed.includes(s.status));
+      const done = kept.filter(s => s.status === "completed").length;
+      const total = Math.max(
+        1,
+        kept.length,
+        ...kept.map(s => s.sessionTotal || 0)
+      );
+      const next = kept.find(s => s.status !== "completed");
+      const shown = next ?? sorted[sorted.length - 1];
+      return {
+        key,
+        name:
+          sorted.find(s => s.projectName)?.projectName ||
+          sorted[0].serviceName ||
+          sorted[0].title ||
+          "Your tattoo",
+        artist: sorted[0].artist.name,
+        image: sorted.find(s => s.imageUrl)?.imageUrl ?? null,
+        done,
+        total,
+        next: next ?? null,
+        last: +new Date(sorted[sorted.length - 1].startsAt),
+        href: shown.conversationId
+          ? `/projects/${shown.conversationId}?session=${shown.id}`
+          : "/bookings",
+      };
+    })
+    .sort((a, b) =>
+      !!a.next !== !!b.next
+        ? a.next
+          ? -1
+          : 1
+        : a.next && b.next
+          ? +new Date(a.next.startsAt) - +new Date(b.next.startsAt)
+          : b.last - a.last
+    );
+}
+
+type FeedCard = {
+  id: number;
+  artistId: string;
+  artistName: string;
+  artistAvatar?: string | null;
+  artistCity?: string | null;
+  artistSlug?: string | null;
+  keywords?: string[];
+  tags?: string[];
+  imageUrl?: string | null;
+  mediaType?: string | null;
+};
+
+/** One card for each artist in the discover feed: their newest picture, name, city and styles. */
+export function discoverArtists<T extends FeedCard>(cards: T[]) {
+  const artists = new Map<string, T[]>();
+  for (const c of cards)
+    if (c.artistSlug)
+      artists.set(c.artistId, [...(artists.get(c.artistId) ?? []), c]);
+  return [...artists.values()].map(list => {
+    const newest = [...list].sort((a, b) => b.id - a.id);
+    const first = newest[0];
+    const styles = first.keywords?.length
+      ? first.keywords
+      : [...new Set(newest.flatMap(c => c.tags ?? []))];
+    return {
+      id: first.artistId,
+      name: first.artistName,
+      avatar: first.artistAvatar ?? null,
+      city: first.artistCity ?? null,
+      slug: first.artistSlug as string,
+      styles: styles.slice(0, 3),
+      image:
+        newest.find(c => c.imageUrl && c.mediaType !== "video")?.imageUrl ??
+        null,
+    };
+  });
+}

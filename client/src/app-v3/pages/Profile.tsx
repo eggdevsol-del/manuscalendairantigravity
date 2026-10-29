@@ -16,12 +16,31 @@ import {
   Status,
 } from "../design/primitives";
 import { AccountEditor } from "./SettingsEditors";
+import { PassCard } from "../components/ClientParts";
+import { clientProjects } from "../design/landingData";
 export default function Profile() {
   const { user } = useAuth();
   const search = useSearch();
   const documentsOnly = new URLSearchParams(search).get("tab") === "forms";
   const forms = trpc.clientProfile.getConsentForms.useQuery();
+  const offers = trpc.offers.list.useQuery();
+  const upcoming = trpc.appointments.getClientBookings.useQuery({ tab: "upcoming" });
+  const past = trpc.appointments.getClientBookings.useQuery({ tab: "past" });
   const [sign, setSign] = useState<number | null>(null);
+  // The same vouchers and tattoos the landing page shows.
+  const vouchers = (offers.data?.offers ?? []).filter(
+    o =>
+      (o.remainingValue > 0 || o.purchaseRequired) &&
+      (!o.rules.expiresAt || new Date(o.rules.expiresAt).getTime() > Date.now())
+  ).length;
+  const tattoos = clientProjects([
+    ...(upcoming.data?.appointments ?? []),
+    ...(past.data?.appointments ?? []),
+  ]).length;
+  const facts = [
+    offers.data && `${vouchers} voucher${vouchers === 1 ? "" : "s"}`,
+    upcoming.data && past.data && `${tattoos} tattoo${tattoos === 1 ? "" : "s"}`,
+  ].filter((f): f is string => !!f);
   if (new URLSearchParams(search).get("edit") === "true")
     return <AccountEditor back="/profile" />;
   return (
@@ -40,11 +59,20 @@ export default function Profile() {
         </ActionLink>
       }
     >
-      <Row
-        title={user?.name || "Your profile"}
-        detail={user?.email}
-        icon={<Avatar name={user?.name} src={user?.avatar} />}
-      />
+      {documentsOnly ? (
+        <Row
+          title={user?.name || "Your profile"}
+          detail={user?.email}
+          icon={<Avatar name={user?.name} src={user?.avatar} />}
+        />
+      ) : (
+        <PassCard
+          name={user?.name || "You"}
+          avatar={user?.avatar}
+          detail={user?.email}
+          facts={facts}
+        />
+      )}
       {!documentsOnly && (
         <div className="simple-business-list">
           <Row

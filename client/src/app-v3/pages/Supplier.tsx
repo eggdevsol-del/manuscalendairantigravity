@@ -27,6 +27,7 @@ import {
 } from "../design/primitives";
 import { LiveStage, StageNumber } from "../design/live";
 import { OrderTrack } from "../components/DetailStages";
+import { StorePhone } from "../components/StoreParts";
 import { ShopifyCatalogue as ShopifySyncTier } from "./Integrations";
 export default function SupplierToday() {
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
@@ -35,6 +36,7 @@ export default function SupplierToday() {
     await Promise.all([profile.refetch(), utils.suppliers.getSuppliers.invalidate(), utils.storefront.getProducts.invalidate(), utils.storefront.getArtistStorefront.invalidate()]);
   } });
   const stats = trpc.merchantAuth.getDashboardStats.useQuery();
+  const products = trpc.storefront.getProducts.useQuery();
   const data = stats.data;
   return (
     <Screen
@@ -50,6 +52,16 @@ export default function SupplierToday() {
           void profile.refetch();
         }}
       />
+      {profile.data && (
+        <StorePhone
+          label="Your store as artists see it"
+          name={profile.data.businessName || "Your store"}
+          open={profile.data.status === "active"}
+          status={profile.data.status === "active" ? "Open on Tattoi" : "Hidden from artists"}
+          products={products.data || []}
+          currency={profile.data.country === "NZ" ? "NZD" : "AUD"}
+        />
+      )}
       {profile.data && <Panel>
         <Status>{profile.data.status === "active" ? "Live on Tattoi" : profile.data.status === "suspended" ? "Suspended" : "Draft · only you can see your store"}</Status>
         <p className="v3-muted">{profile.data.status === "active" ? "Artists can find your store and browse your published products." : "Publish your store here when you’re ready. On your first launch, if no products are published yet, your imported catalogue goes live too."}</p>

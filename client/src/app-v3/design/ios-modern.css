@@ -2874,3 +2874,148 @@ button.iosm-weekbar[aria-pressed="true"] small {
 .iosm-np-next {
   grid-column: 1 / -1;
 }
+
+/* ── Client: tattoos and artists as tall postcards, and the Tattoi pass ── */
+.iosm-post.tall {
+  flex-basis: 200px;
+  grid-template-columns: 1fr;
+}
+.iosm-post.tall img,
+.iosm-post.tall .iosm-post-blank {
+  height: 170px;
+  min-height: 0;
+}
+.iosm-post.tall > span:last-child {
+  position: relative;
+}
+.iosm-post .iosm-sring {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.iosm-post .iosm-sring .bg {
+  stroke: rgb(var(--wall-base-rgb) / 0.12);
+}
+.iosm-post.tall strong {
+  padding-right: 44px;
+}
+.iosm-pass {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-height: 140px;
+  padding: 16px 84px 16px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--wall-acc), var(--wall-deep));
+  color: #fff;
+  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 50%);
+}
+.iosm-pass > span {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+.iosm-pass b {
+  font: 700 24px var(--iosm-rounded);
+  overflow-wrap: anywhere;
+}
+.iosm-pass small {
+  font-size: 13px;
+  opacity: 0.8;
+  overflow-wrap: anywhere;
+}
+.iosm-pass em {
+  margin-top: auto;
+  padding-top: 18px;
+  font-style: normal;
+  font-size: 13px;
+  opacity: 0.9;
+}
+.iosm-pass .v3-avatar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border: 3px solid rgb(255 255 255 / 70%);
+}
+
+/* ── Store: the stock shelf and the shop on a phone ───────── */
+.iosm-shelf-room {
+  display: grid;
+  gap: 12px;
+}
+.iosm-shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 14px 8px;
+  padding-bottom: 10px;
+  background: linear-gradient(
+    transparent calc(100% - 4px),
+    rgb(255 255 255 / 30%) 0
+  );
+}
+.iosm-prod {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: #fff;
+  text-align: center;
+}
+.iosm-prod[aria-pressed="true"] {
+  background: rgb(255 255 255 / 14%);
+}
+.iosm-prod[aria-pressed="true"] .iosm-jar {
+  box-shadow: 0 0 0 3px #fff;
+}
+.iosm-prod b {
+  font-size: 12px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.iosm-prod em {
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.8;
+}
+.iosm-phone-shop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.iosm-phone-shop > span {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  background: rgb(var(--wall-base-rgb) / 0.06);
+  text-align: center;
+}
+.iosm-phone-shop img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.iosm-phone-shop .iosm-jar {
+  border-color: rgb(var(--wall-base-rgb) / 0.3);
+}
+.iosm-phone-shop b {
+  font-size: 11px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.iosm-phone-shop em {
+  font-style: normal;
+  font-size: 11px;
+  opacity: 0.7;
+}
