@@ -396,6 +396,7 @@ function Catalogue({ id }: { id: number }) {
           <CatalogueProduct
             key={product.id}
             product={product}
+            supplierName={supplier.data?.name}
             currency={currency}
             quantities={cart}
             onAdd={item =>
@@ -451,11 +452,13 @@ function Catalogue({ id }: { id: number }) {
 }
 function CatalogueProduct({
   product,
+  supplierName,
   currency,
   quantities,
   onAdd,
 }: {
   product: Product;
+  supplierName?: string;
   currency: string;
   quantities: Item[];
   onAdd: (item: Item) => void;
@@ -506,7 +509,12 @@ function CatalogueProduct({
       >
         {open && (
           <div className="v3-stack">
-            <ProductStage product={product} variant={variant} currency={currency} />
+            <ProductStage
+              product={product}
+              variant={variant}
+              supplierName={supplierName}
+              currency={currency}
+            />
             <div className="v3-form">
               <label>
                 Variant
@@ -888,10 +896,12 @@ function SupplyCheckout({
 function ProductStage({
   product,
   variant,
+  supplierName,
   currency,
 }: {
   product: Product;
   variant?: Product["variants"][number];
+  supplierName?: string;
   currency: string;
 }) {
   const stock = product.variants.reduce(
@@ -914,7 +924,7 @@ function ProductStage({
             <Jar big seed={product.id} fill={options ? inStock / options : 0} />
           )
         }
-        over={product.category || "Supplies"}
+        over={[supplierName, product.category].filter(Boolean).join(" · ") || "Supplies"}
         value={price}
         under={`${options} option${options === 1 ? "" : "s"}, ${stock} in stock`}
       />

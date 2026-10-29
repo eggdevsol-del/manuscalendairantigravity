@@ -17,6 +17,7 @@ import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import {
   bookingDate,
+  instant,
   money,
   statusLabel,
 } from "@/features/workspace/bookingPresentation";
@@ -325,14 +326,15 @@ function ClientStage({
   const now = useNow();
   const today0 = startOfDay(now);
   const spent = sessions.reduce((sum, s) => sum + (s.paidCents || 0), 0);
+  // Workspace times arrive as UTC without a zone marker; instant() reads them as UTC.
   const next = sessions
     .filter(
       s =>
         !["cancelled", "no-show", "completed"].includes(s.status) &&
-        new Date(s.startTime).getTime() >= today0
+        instant(s.startTime).getTime() >= today0
     )
-    .sort((a, b) => +new Date(a.startTime) - +new Date(b.startTime))[0];
-  const days = next ? daysUntil(next.startTime, now) : undefined;
+    .sort((a, b) => +instant(a.startTime) - +instant(b.startTime))[0];
+  const days = next ? daysUntil(instant(next.startTime), now) : undefined;
   const done = sessions.filter(s => s.status === "completed").length;
   const when =
     days === undefined

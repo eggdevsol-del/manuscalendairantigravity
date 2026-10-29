@@ -5,7 +5,7 @@ import { CheckCircle2, LockKeyhole } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
-import { bookingDate, money } from "@/features/workspace/bookingPresentation";
+import { bookingDate, instant, money } from "@/features/workspace/bookingPresentation";
 import {
   Action,
   Feedback,
@@ -185,7 +185,7 @@ export function SessionPlanCheckoutSheet({
                   .sort((a, b) => a.sessionIndex - b.sessionIndex)
                   .map(item => ({
                     key: item.id,
-                    label: new Date(item.startsAt).toLocaleDateString("en-AU", {
+                    label: instant(item.startsAt).toLocaleDateString("en-AU", {
                       day: "numeric",
                       month: "short",
                     }),

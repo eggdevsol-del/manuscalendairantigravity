@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { formatInTimeZone } from "date-fns-tz";
-import { money } from "@/features/workspace/bookingPresentation";
+import { instant, money } from "@/features/workspace/bookingPresentation";
 import { useAppointmentCheckIn } from "@/features/appointments/useAppointmentCheckIn";
 import { LiveStage } from "../design/live";
 import { Action } from "../design/primitives";
@@ -109,8 +109,8 @@ export function sittingNextStep(
   now: number
 ): "arrived" | "finish" | null {
   if (session.status !== "confirmed") return null;
-  const start = new Date(session.startsAt).getTime();
-  const end = new Date(session.endsAt).getTime();
+  const start = instant(session.startsAt).getTime();
+  const end = instant(session.endsAt).getTime();
   if (arrived === false && now >= start - ARRIVAL_WINDOW && now < end)
     return "arrived";
   return availableSessionActions(session, new Date(now)).includes("finish")

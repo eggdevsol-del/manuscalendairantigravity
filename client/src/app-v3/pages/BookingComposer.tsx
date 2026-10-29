@@ -13,7 +13,7 @@ import {
   type OfferFrequency,
 } from "../data/offerFrequencies";
 import { addDays, differenceInCalendarDays, format, isSameDay } from "date-fns";
-import { ArrowLeft, Check, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Plus, Trash2, User, X } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
@@ -472,7 +472,7 @@ export function BookingComposer({
         </p>
       )}
       <ProposalPreview
-        who={step === "client" && !clientId ? "Choose a client" : clientName}
+        who={clientId ? clientName : null}
         avatar={
           selectedClient?.avatar ||
           (conversation.data?.otherUser as { avatar?: string | null } | undefined)
@@ -962,7 +962,7 @@ function ProposalPreview({
   sessions,
   dated,
 }: {
-  who: string;
+  who: string | null;
   avatar?: string | null;
   service: string;
   sessions: DraftSession[];
@@ -980,10 +980,10 @@ function ProposalPreview({
     <ProposalStage
       face={
         <span className="iosm-orb-face" style={{ width: 56, height: 56 }}>
-          <ProjectArt src={avatar} name={who} />
+          {who ? <ProjectArt src={avatar} name={who} /> : <User aria-hidden="true" />}
         </span>
       }
-      who={who}
+      who={who || "Choose a client"}
       title={service || "New project"}
       summary={summary}
       sittings={

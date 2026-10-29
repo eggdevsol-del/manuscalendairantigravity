@@ -67,7 +67,7 @@ export default function Forms() {
               <StageNumber
                 over={`${record.clientName} · ${bookingDate(record.date)}`}
                 value={money(record.amountPaid)}
-                under={`${record.paymentMethod || "Paid"} · licence ${record.artistLicenceNumber || "not recorded"}`}
+                under={`${record.paymentMethod ? record.paymentMethod[0].toUpperCase() + record.paymentMethod.slice(1) : "Paid"} · licence ${record.artistLicenceNumber || "not recorded"}`}
               />
             </LiveStage>
           ) : (
