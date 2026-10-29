@@ -25,13 +25,20 @@ export function ProjectHero({
     { enabled: conversationId > 0 }
   );
   const image = conversationMedia(references.data || [])[0];
+  // Dots follow the sitting number, so a rescheduled sitting keeps its place; each shows its own date.
   const ordered = [...sittings].sort(
     (a, b) =>
-      Date.parse(a.startsAt || "") - Date.parse(b.startsAt || "") || a.id - b.id
+      (a.sessionIndex || Infinity) - (b.sessionIndex || Infinity) ||
+      Date.parse(a.startsAt || "") - Date.parse(b.startsAt || "") ||
+      a.id - b.id
+  );
+  // The last finished sitting is the one most recently done, whatever its number.
+  const byDate = [...sittings].sort(
+    (a, b) => Date.parse(a.startsAt || "") - Date.parse(b.startsAt || "")
   );
   const progress = projectProgress(sittings);
   const toBook = Math.max(0, (progress.total ?? 0) - ordered.length);
-  const lastDone = [...ordered].reverse().find(s => s.status === "completed");
+  const lastDone = [...byDate].reverse().find(s => s.status === "completed");
   const aftercare = trpc.aftercare.getForBooking.useQuery(
     { appointmentId: lastDone?.id ?? 0 },
     { enabled: !!lastDone }
