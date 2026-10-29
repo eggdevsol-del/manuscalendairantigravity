@@ -72,10 +72,11 @@ export function StockShelf({
               type="button"
               className="iosm-prod"
               aria-pressed={p.id === selected}
+              aria-label={`${p.title.trim()}, ${shown(p)} left${low(p) ? ", low" : ""}`}
               onClick={() => setSelected(p.id === selected ? null : p.id)}
             >
               <Jar seed={p.id} fill={shown(p) / Math.max(most, shown(p))} />
-              <b>{p.title}</b>
+              <b>{p.title.trim()}</b>
               <em>
                 {shown(p)} left{low(p) ? " · low" : ""}
               </em>
@@ -83,7 +84,7 @@ export function StockShelf({
           ))}
         </div>
         <p className="iosm-stage-cap">
-          {product ? `Slide to count ${product.title}.` : "Tap a jar, then slide to count stock."}
+          {product ? `Slide to count ${product.title.trim()}.` : "Tap a jar, then slide to count stock."}
         </p>
       </LiveStage>
       {product && (
@@ -91,7 +92,7 @@ export function StockShelf({
           {lines.map(l => (
             <TouchSlider
               key={l.id}
-              label={l.id ? l.name : `${product.title} in stock`}
+              label={l.id ? l.name.trim() : `${product.title.trim()} in stock`}
               value={counts[l.id] ?? 0}
               min={0}
               max={Math.max(most, l.stock) * 2}
@@ -143,7 +144,7 @@ export function StorePhone({
                 ) : (
                   <Jar seed={p.id} fill={stockOf(p) / most} />
                 )}
-                <b>{p.title}</b>
+                <b>{p.title.trim()}</b>
                 <em>{money(p.priceCents, currency)}</em>
               </span>
             ))}

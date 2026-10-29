@@ -76,10 +76,11 @@ export function StageFigure({
   );
 }
 
+// Neighbouring ids step around the colour wheel by the golden angle, so jars side by side differ.
 const hue = (seed: string | number) => {
   let h = 0;
-  for (const ch of String(seed)) h = (h * 31 + ch.charCodeAt(0)) % 360;
-  return h;
+  for (const ch of String(seed)) h = (h * 31 + ch.charCodeAt(0)) % 9973;
+  return Math.round((h * 137.508) % 360);
 };
 
 /** A supply as a jar that fills with its stock. */

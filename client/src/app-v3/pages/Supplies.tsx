@@ -967,11 +967,13 @@ function SupplyTray({
 }) {
   const count = items.reduce((n, item) => n + item.quantity, 0);
   const subtotal = items.reduce((n, item) => n + item.price * item.quantity, 0);
-  const total = currency ? money(subtotal, currency) : `${count} items`;
+  const total = currency
+    ? money(subtotal, currency)
+    : `${count} item${count === 1 ? "" : "s"}`;
   return (
     <LiveStage
       className="iosm-detail-stage"
-      label={`${count} items in your cart, ${total}`}
+      label={`${count} item${count === 1 ? "" : "s"} in your cart, ${total}`}
     >
       <span className="iosm-tray" aria-hidden="true">
         {items.length ? (
