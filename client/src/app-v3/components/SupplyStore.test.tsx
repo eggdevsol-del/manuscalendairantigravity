@@ -68,3 +68,32 @@ describe("StoreShelves", () => {
     expect(onOpen).toHaveBeenCalledWith(ink);
   });
 });
+
+describe("StoreShelves paging", () => {
+  it("shows twelve on a shelf with See all, then the category sixty at a time", () => {
+    const many = (category: string, from: number, n: number): StoreProduct[] =>
+      Array.from({ length: n }, (_, i) => ({
+        id: from + i,
+        title: `${category} ${i + 1}`,
+        category,
+        imageUrl: null,
+        variants: [{ id: from + i, name: "", priceCents: 1000, stock: 1 }],
+      }));
+    render(
+      <StoreShelves
+        products={[...many("Needles", 1, 70), ...many("Ink", 200, 3)]}
+        currency="AUD"
+        storeName="Harbour Supply"
+        counts={false}
+        onOpen={() => {}}
+      />
+    );
+    expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(12);
+    expect(screen.getAllByRole("button", { name: /In stock$/ }).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: "See all 70 in Needles" }));
+    expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(60);
+    fireEvent.click(screen.getByRole("button", { name: "Show more · 10 to go" }));
+    expect(screen.getAllByRole("button", { name: /^Needles \d+,/ })).toHaveLength(70);
+  });
+});
+

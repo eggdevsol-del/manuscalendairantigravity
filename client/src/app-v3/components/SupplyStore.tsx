@@ -207,7 +207,11 @@ export function Suggestions({
   );
 }
 
-/** Search, category chips and the shelves. With a search or a category picked, matches show as one grid. */
+const SHELF = 12;
+const PAGE = 60;
+
+/** Search, category chips and the shelves of up to twelve products, each with See all. With a search or a
+ *  category picked, matches show as one grid, sixty at a time. */
 export function StoreShelves({
   products,
   currency,
@@ -224,20 +228,30 @@ export function StoreShelves({
   loading?: boolean;
   onOpen: (product: StoreProduct) => void;
 }) {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
+  const [search, setSearchText] = useState("");
+  // null shows every category; "" is the shelf of products without one.
+  const [category, setCategoryValue] = useState<string | null>(null);
   const [inStock, setInStock] = useState(false);
+  const [limit, setLimit] = useState(PAGE);
+  const setSearch = (value: string) => {
+    setSearchText(value);
+    setLimit(PAGE);
+  };
+  const setCategory = (value: string | null) => {
+    setCategoryValue(value);
+    setLimit(PAGE);
+  };
   const categories = shelvesOf(products)
     .map(s => s.title)
     .filter(Boolean);
   const shown = products.filter(
     p =>
       p.title.toLowerCase().includes(search.trim().toLowerCase()) &&
-      (!category || (p.category?.trim() || "") === category) &&
+      (category === null || (p.category?.trim() || "") === category) &&
       (!inStock || stockOf(p) > 0)
   );
   const shelves = shelvesOf(shown);
-  const flat = !!search.trim() || !!category || shelves.length < 2;
+  const flat = !!search.trim() || category !== null || shelves.length < 2;
   const card = (p: StoreProduct) => (
     <ShelfCard
       key={p.id}
@@ -258,7 +272,11 @@ export function StoreShelves({
         }
       />
       <div className="iosm-chips iosm-ss-chips" role="group" aria-label="Show">
-        <button type="button" aria-pressed={!category} onClick={() => setCategory("")}>
+        <button
+          type="button"
+          aria-pressed={category === null}
+          onClick={() => setCategory(null)}
+        >
           All
         </button>
         {categories.map(c => (
@@ -266,12 +284,19 @@ export function StoreShelves({
             key={c}
             type="button"
             aria-pressed={category === c}
-            onClick={() => setCategory(category === c ? "" : c)}
+            onClick={() => setCategory(category === c ? null : c)}
           >
             {c}
           </button>
         ))}
-        <button type="button" aria-pressed={inStock} onClick={() => setInStock(v => !v)}>
+        <button
+          type="button"
+          aria-pressed={inStock}
+          onClick={() => {
+            setInStock(v => !v);
+            setLimit(PAGE);
+          }}
+        >
           In stock
         </button>
       </div>
@@ -285,15 +310,33 @@ export function StoreShelves({
         />
       )}
       {flat ? (
-        <div className="iosm-ss-grid">{shown.map(card)}</div>
+        <>
+          <div className="iosm-ss-grid">{shown.slice(0, limit).map(card)}</div>
+          {shown.length > limit && (
+            <Action tone="secondary" onClick={() => setLimit(n => n + PAGE)}>
+              Show more · {shown.length - limit} to go
+            </Action>
+          )}
+        </>
       ) : (
         shelves.map(s => (
           <section key={s.title || "more"} className="iosm-ss-shelf">
             <div className="iosm-ss-shelf-head">
               <h2>{s.title || "More"}</h2>
-              <small>{plural(s.products.length, "product")}</small>
+              {s.products.length > SHELF ? (
+                <button
+                  type="button"
+                  className="iosm-ss-seeall"
+                  aria-label={`See all ${s.products.length} in ${s.title || "More"}`}
+                  onClick={() => setCategory(s.title)}
+                >
+                  See all {s.products.length}
+                </button>
+              ) : (
+                <small>{plural(s.products.length, "product")}</small>
+              )}
             </div>
-            <div className="iosm-ss-row">{s.products.map(card)}</div>
+            <div className="iosm-ss-row">{s.products.slice(0, SHELF).map(card)}</div>
           </section>
         ))
       )}

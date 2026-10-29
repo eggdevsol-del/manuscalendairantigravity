@@ -3627,3 +3627,13 @@ button.iosm-weekbar[aria-pressed="true"] small {
   justify-self: stretch;
   margin-top: 12px;
 }
+.iosm-ss-seeall {
+  flex: none;
+  min-height: 44px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--wall-acc-soft);
+  font-size: 15px;
+  font-weight: 600;
+}
