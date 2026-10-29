@@ -1218,6 +1218,17 @@ async function startServer() {
         console.error("[Scheduler] Failed to start scheduled tasks:", err);
       });
 
+    // One-time: store products imported before categories were saved get them (idempotent)
+    import("../startup/backfillProductCategories")
+      .then(({ backfillProductCategories }) =>
+        backfillProductCategories().catch(err => {
+          console.error("[Backfill] Product categories failed:", err);
+        })
+      )
+      .catch(err => {
+        console.error("[Backfill] Could not load the product category backfill:", err);
+      });
+
     // One-time: Seed portfolio images for mock artists (idempotent)
     import("../startup/seedPortfolios")
       .then(({ seedPortfolioImages }) => {

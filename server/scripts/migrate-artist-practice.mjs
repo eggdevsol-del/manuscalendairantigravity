@@ -33,6 +33,12 @@ try {
  updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
  PRIMARY KEY (artist_id, client_key), CONSTRAINT saved_days_artist_fk FOREIGN KEY (artist_id) REFERENCES users(id) ON DELETE CASCADE
  )`);
+  // Store product categories (Shopify's product type). Additive: one nullable column.
+  const [category] = await db.query(
+    "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='products' AND COLUMN_NAME='category'"
+  );
+  if (!category.length)
+    await db.query("ALTER TABLE products ADD COLUMN category varchar(255) NULL");
   const [schema] = await db.query(
     "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='artist_practice_sessions'"
   );
@@ -51,8 +57,12 @@ try {
     )
   )
     throw new Error("Saved days table is incomplete.");
+  const [productColumns] = await db.query(
+    "SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='products' AND COLUMN_NAME='category'"
+  );
+  if (!productColumns.length) throw new Error("Product category column is missing.");
   console.log(
-    "Artist practice and saved days migration verified. Production user and booking records were not modified."
+    "Artist practice, saved days and product category migration verified. Production user and booking records were not modified."
   );
 } finally {
   await db.end();

@@ -232,6 +232,13 @@
       "when": 1791072000000,
       "tag": "0032_artist_practice",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1793318400000,
+      "tag": "0033_product_category",
+      "breakpoints": true
     }
   ]
 }

@@ -32,6 +32,7 @@ export function translateShopifyToTattoi(product: ScrapedProduct, userId: string
     artistId: userId,
     ownerType: "merchant" as const,
     title,
+    category: product.product_type?.trim().slice(0, 255) ?? "",
     description,
     imageUrl: product.images && product.images.length > 0 ? product.images[0].src : null,
     priceCents: basePriceCents,

@@ -85,7 +85,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
   const products: StoreProduct[] = store.products.map(p => ({
     id: p.id,
     title: p.title.trim(),
-    category: null,
+    category: p.category,
     imageUrl: p.imageUrl,
     variants: p.variants.length
       ? [...p.variants]

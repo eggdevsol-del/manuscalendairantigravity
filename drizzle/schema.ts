@@ -2031,6 +2031,8 @@ export const products = mysqlTable(
       .references(() => users.id, { onDelete: "cascade" }),
     ownerType: mysqlEnum(["artist", "merchant"]).default("artist").notNull(),
     title: varchar({ length: 255 }).notNull(),
+    // Shopify's product type for imported products. Null: not checked yet; "": the store gives none.
+    category: varchar({ length: 255 }),
     description: text().notNull(),
     priceCents: int().notNull(),
     hasVariants: tinyint().default(0).notNull(),
