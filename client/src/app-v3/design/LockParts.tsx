@@ -1,6 +1,6 @@
 /* The building blocks of the iOS Modern landing pages (artist, client and supplier): ring widgets,
    notification rows and expandable notification groups, plus small time and money helpers. */
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 import {
   useEffect,
   useLayoutEffect,
@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { Link } from "wouter";
-import { relativeStart } from "./lockHome";
+import { firstImage, relativeStart } from "./lockHome";
 import { getAssetUrl } from "@/lib/assets";
 
 export function Widget({
@@ -282,5 +282,76 @@ export function ProjectArt({ src, name }: { src?: string | null; name: string })
     <img src={getAssetUrl(src)} alt="" loading="lazy" onError={() => setFailed(src)} />
   ) : (
     <>{initials(name)}</>
+  );
+}
+
+/** A client's photo (or initials) in a ring that fills as their next sitting gets closer. */
+export function Orb({
+  name,
+  src,
+  fill,
+  size,
+}: {
+  name: string;
+  src?: string | null;
+  fill: number;
+  size: number;
+}) {
+  const box = size + 14;
+  const r = size / 2 + 5;
+  const c = 2 * Math.PI * r;
+  // No sitting booked: an empty ring. Otherwise always show a sliver so the ring reads as started.
+  const f = fill <= 0 ? 0 : Math.max(0.06, Math.min(1, fill));
+  return (
+    <span className="iosm-orb" style={{ width: box, height: box }}>
+      <span className="iosm-orb-face" style={{ width: size, height: size }}>
+        <ProjectArt src={src} name={name} />
+      </span>
+      <svg viewBox={`0 0 ${box} ${box}`} aria-hidden="true">
+        <circle cx={box / 2} cy={box / 2} r={r} className="bg" />
+        {f > 0 && (
+          <circle
+            cx={box / 2}
+            cy={box / 2}
+            r={r}
+            className="fg"
+            strokeDasharray={`${c * f} ${c}`}
+            transform={`rotate(-90 ${box / 2} ${box / 2})`}
+          />
+        )}
+      </svg>
+    </span>
+  );
+}
+
+/** New booking requests as a strip of postcards: the client's first reference image, budget, their own
+ *  words, and the project type and placement. Each opens the request. */
+export function RequestPostcards({ leads }: { leads: Record<string, unknown>[] }) {
+  return (
+    <div className="iosm-posts">
+      {leads.map(l => {
+        const img = firstImage(l.referenceImages);
+        return (
+          <Link key={String(l.id)} href={`/lead/${l.id}`} className="iosm-post">
+            {img ? (
+              <img src={getAssetUrl(img)} alt="" />
+            ) : (
+              <span className="iosm-post-blank">
+                <Sparkles />
+              </span>
+            )}
+            <span>
+              <i>{String(l.budgetLabel || "Budget to discuss")}</i>
+              <strong>{String(l.clientName || "New client")}</strong>
+              <q>{String(l.projectDescription || "No description yet")}</q>
+              <em>
+                {String(l.projectType || "Tattoo").replace(/-/g, " ")}
+                {l.placement ? `, ${String(l.placement).toLowerCase()}` : ""}
+              </em>
+            </span>
+          </Link>
+        );
+      })}
+    </div>
   );
 }

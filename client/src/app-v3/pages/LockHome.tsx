@@ -29,7 +29,9 @@ import {
 import {
   Group,
   Note,
+  Orb,
   ProjectArt,
+  RequestPostcards,
   Widget,
   compactMoney,
   initials,
@@ -402,34 +404,7 @@ export default function LockHome() {
         onToggle={toggle}
         peek={newLeads.length ? 1 : 2}
       >
-        {newLeads.length > 0 && (
-          <div className="iosm-posts">
-            {newLeads.map(lead => {
-              const l = lead as Record<string, unknown>;
-              const img = firstImage(l.referenceImages);
-              return (
-                <Link key={String(l.id)} href={`/lead/${l.id}`} className="iosm-post">
-                  {img ? (
-                    <img src={getAssetUrl(img)} alt="" />
-                  ) : (
-                    <span className="iosm-post-blank">
-                      <Sparkles />
-                    </span>
-                  )}
-                  <span>
-                    <i>{String(l.budgetLabel || "Budget to discuss")}</i>
-                    <strong>{String(l.clientName || "New client")}</strong>
-                    <q>{String(l.projectDescription || "No description yet")}</q>
-                    <em>
-                      {String(l.projectType || "Tattoo").replace(/-/g, " ")}
-                      {l.placement ? `, ${String(l.placement).toLowerCase()}` : ""}
-                    </em>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+        {newLeads.length > 0 && <RequestPostcards leads={newLeads} />}
         {newLeads.map(lead => {
           const l = lead as Record<string, unknown>;
           return (
@@ -633,42 +608,6 @@ function agoLabel(at: string | Date, now: number) {
   if (Number.isNaN(d.getTime())) return undefined;
   const days = Math.round((startOfDay(now) - startOfDay(d.getTime())) / 86400000);
   return days <= 0 ? "today" : days === 1 ? "yesterday" : format(d, "d MMM");
-}
-
-/** A client's photo (or initials) in a ring that fills as their next sitting gets closer. */
-function Orb({
-  name,
-  src,
-  fill,
-  size,
-}: {
-  name: string;
-  src?: string | null;
-  fill: number;
-  size: number;
-}) {
-  const box = size + 14;
-  const r = size / 2 + 5;
-  const c = 2 * Math.PI * r;
-  const f = Math.max(0.06, Math.min(1, fill));
-  return (
-    <span className="iosm-orb" style={{ width: box, height: box }}>
-      <span className="iosm-orb-face" style={{ width: size, height: size }}>
-        <ProjectArt src={src} name={name} />
-      </span>
-      <svg viewBox={`0 0 ${box} ${box}`} aria-hidden="true">
-        <circle cx={box / 2} cy={box / 2} r={r} className="bg" />
-        <circle
-          cx={box / 2}
-          cy={box / 2}
-          r={r}
-          className="fg"
-          strokeDasharray={`${c * f} ${c}`}
-          transform={`rotate(-90 ${box / 2} ${box / 2})`}
-        />
-      </svg>
-    </span>
-  );
 }
 
 /** "Coming up" in the Calendar group: the same day cards as the Calendar page, from tomorrow. Fourteen

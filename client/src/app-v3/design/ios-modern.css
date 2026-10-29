@@ -2236,3 +2236,212 @@ html:root .v3-avatar img {
 .iosm-ledger-row > button > .v3-row-copy > strong {
   flex: none;
 }
+
+/* ── Clients: circles grouped by next sitting ─────────── */
+.iosm-constellation {
+  display: grid;
+  gap: 16px;
+  color: #fff;
+}
+.iosm-constellation h3 {
+  margin: 0 4px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(255 255 255 / 75%);
+}
+.iosm-constellation h3 span {
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 16%);
+  font-size: 11px;
+}
+.iosm-stars {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 10px;
+  padding: 14px 10px;
+  border-radius: 22px;
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.iosm-star {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 72px;
+  max-width: 96px;
+  padding: 2px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: #fff;
+  font: inherit;
+  text-align: center;
+}
+.iosm-star[aria-current="true"] {
+  background: rgb(255 255 255 / 14%);
+}
+.iosm-star b {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.iosm-star span {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.iosm-caption {
+  margin: 0 4px;
+  font-size: 12px;
+  color: rgb(255 255 255 / 65%);
+}
+
+/* ── Project: hero, sitting dots and healing ───────────── */
+.iosm-project-hero {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #fff;
+}
+.iosm-hero-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 190px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
+  font: 700 44px var(--iosm-rounded);
+}
+.iosm-hero-art > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.iosm-hero-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgb(10 14 28 / 72%), rgb(10 14 28 / 0%) 60%);
+}
+.iosm-hero-copy {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  z-index: 1;
+  display: grid;
+  text-align: left;
+}
+.iosm-hero-copy i {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.iosm-hero-copy b {
+  font: 700 24px var(--iosm-rounded);
+}
+.iosm-sprog {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 2px 4px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.iosm-sprog li {
+  flex: 1 0 56px;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.iosm-sprog b {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgb(255 255 255 / 55%);
+  font: 700 14px var(--iosm-rounded);
+}
+.iosm-sprog small {
+  font-size: 11px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+.iosm-sprog .completed b {
+  background: #fff;
+  border-color: #fff;
+  color: var(--wall-deep);
+}
+.iosm-sprog .confirmed b {
+  border-color: var(--wall-acc);
+}
+.iosm-sprog .cancelled b,
+.iosm-sprog .no-show b {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+.iosm-sprog .todo b {
+  border-style: dashed;
+  opacity: 0.6;
+}
+.iosm-hero-heal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 20px;
+  background: var(--glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+.iosm-hero-heal > i {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--wall-acc);
+}
+.iosm-hero-heal > i svg {
+  width: 17px;
+  height: 17px;
+}
+.iosm-hero-heal > span {
+  flex: 1;
+  display: grid;
+  font-size: 13px;
+}
+.iosm-hero-heal em {
+  font-style: normal;
+  opacity: 0.85;
+}
+.iosm-hero-heal svg[aria-label] {
+  width: 34px;
+  height: 34px;
+  flex: none;
+}
+.iosm-hero-heal .bg,
+.iosm-hero-heal .fg {
+  fill: none;
+  stroke-width: 4;
+}
+.iosm-hero-heal .bg {
+  stroke: rgb(255 255 255 / 22%);
+}
+.iosm-hero-heal .fg {
+  stroke: #fff;
+  stroke-linecap: round;
+}

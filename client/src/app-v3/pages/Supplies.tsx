@@ -3,7 +3,6 @@ import { NumericInput } from "@/components/ui/numeric-input";
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
 import { ChevronRight, ShoppingBag } from "lucide-react";
-import { HomeTabs } from "../design/HomeTabs";
 import { useEffect, useState, useRef } from "react";
 import { Link, useSearch } from "wouter";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -60,7 +59,6 @@ function Directory() {
     <Screen
       title="Supplies"
       subtitle="Find what you need for the next session."
-      subheader={<HomeTabs />}
       back="/dashboard"
     >
       {query.data?.map(supplier => {

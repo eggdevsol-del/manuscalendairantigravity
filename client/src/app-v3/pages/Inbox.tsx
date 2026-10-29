@@ -17,6 +17,7 @@ import {
   Status,
 } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
+import { RequestPostcards } from "../design/LockParts";
 import { Thread } from "./Thread";
 
 export default function Inbox() {
@@ -32,6 +33,11 @@ export default function Inbox() {
   );
   const next = day.data?.nextAppointment;
   const requests = useInboxRequests();
+  // New booking requests as postcards above the conversations, as in the prototype.
+  const newLeads = trpc.funnel.getLeads.useQuery(
+    { status: "new", limit: 20, offset: 0 },
+    { enabled: isArtist }
+  );
   useArtistReferral();
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState<"All" | "Unread" | "Enquiries" | "Contacts">(
@@ -112,6 +118,14 @@ export default function Inbox() {
               void requests.refetch();
             }}
           />
+          {isArtist &&
+            (tab === "All" || tab === "Enquiries") &&
+            !search &&
+            !!newLeads.data?.leads.length && (
+              <RequestPostcards
+                leads={newLeads.data.leads as Record<string, unknown>[]}
+              />
+            )}
           {isArtist && next && tab === "All" && !search && (
             <Link
               className="simple-pin"

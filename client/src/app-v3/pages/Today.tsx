@@ -2,7 +2,6 @@ import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DetailsSheet } from "../components/DetailsSheet";
 import { WeekAgenda } from "../design/WeekAgenda";
-import { HomeTabs } from "../design/HomeTabs";
 import { PromotionsManager } from "../components/Offers";
 import { useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -39,7 +38,6 @@ export default function Today() {
         month: "long",
       })}
       wide
-      subheader={<HomeTabs />}
     >
       <div className="v3-home-workspace">
         <div className="v3-home-main">

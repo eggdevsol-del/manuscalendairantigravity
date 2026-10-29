@@ -8,6 +8,7 @@ import {
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
 import { SessionStage } from "../components/SessionStage";
+import { ProjectHero } from "../components/ProjectHero";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
@@ -492,6 +493,21 @@ export function BookingProject({
       )}
       {data && (
         <>
+          {siblings.length > 0 && (
+            <ProjectHero
+              conversationId={id}
+              title={
+                session?.projectName ||
+                data.plans[0]?.projectName ||
+                "Tattoo project"
+              }
+              person={
+                (client ? data.artist?.name : data.client?.name) ||
+                (client ? "your artist" : "Client")
+              }
+              sittings={siblings}
+            />
+          )}
           <div className="ivory-project-heading">
             <h2>
               {session?.projectName ||

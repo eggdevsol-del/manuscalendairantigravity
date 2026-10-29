@@ -1,7 +1,14 @@
 import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
-import { HomeTabs } from "../design/HomeTabs";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { Orb, startOfDay, useNow } from "../design/LockParts";
+import { addDays } from "../design/calendarDays";
+import {
+  daysUntil,
+  isExternalEvent,
+  nextSittingByClient,
+} from "../design/landingData";
 import { useLocation, useSearch } from "wouter";
 import { Plus, MessageCircle, Mail, Phone, CheckCircle2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -51,7 +58,6 @@ export default function Clients() {
     <Screen
       title="Clients"
       subtitle="Your people and their pieces"
-      subheader={<HomeTabs />}
       wide
       action={
         <Action
@@ -85,15 +91,11 @@ export default function Clients() {
                 : undefined
             }
           />
-          {people.map(c => (
-            <Row
-              key={c.id}
-              title={c.name || "Client"}
-              detail={c.email || c.phone || "View client"}
-              icon={<Avatar name={c.name} src={c.avatar} />}
-              onClick={() => go(`/clients?client=${encodeURIComponent(c.id)}`)}
-            />
-          ))}
+          <ClientCircles
+            people={people}
+            selected={selected}
+            onOpen={id => go(`/clients?client=${encodeURIComponent(id)}`)}
+          />
         </section>
         <aside className="v3-client-detail" aria-label="Client details">
           {selected ? (
@@ -302,6 +304,104 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+/** People, as in the prototype: one circle per client, grouped by their next sitting. A bigger circle
+ *  means they have spent more with you, and the ring fills as their next sitting gets closer. The amount
+ *  spent and the sittings come from the client list and the calendar. */
+function ClientCircles({
+  people,
+  selected,
+  onOpen,
+}: {
+  people: {
+    id: string;
+    name?: string | null;
+    avatar?: string | null;
+    tlv?: number | null;
+    hasLead?: boolean | null;
+  }[];
+  selected: string | null;
+  onOpen: (id: string) => void;
+}) {
+  const { user } = useAuth();
+  const now = useNow();
+  const today0 = startOfDay(now);
+  const range = useMemo(
+    () => ({ start: new Date(today0), end: new Date(addDays(today0, 366)) }),
+    [today0]
+  );
+  const calendar = trpc.appointments.getArtistCalendar.useQuery(
+    { artistId: user?.id ?? "", startDate: range.start, endDate: range.end },
+    { enabled: !!user?.id }
+  );
+  const next = new Map(
+    nextSittingByClient(
+      ((calendar.data ?? []) as any[]).filter(a => !isExternalEvent(a)),
+      now
+    ).map(a => [a.clientId as string, daysUntil(a.startTime, now)])
+  );
+  const most = Math.max(1, ...people.map(p => p.tlv || 0));
+  const groups = [
+    ["This week", people.filter(p => (next.get(p.id) ?? 999) <= 7)],
+    ["This month", people.filter(p => { const d = next.get(p.id); return d !== undefined && d > 7 && d <= 31; })],
+    ["Later", people.filter(p => (next.get(p.id) ?? -1) > 31)],
+    ["Not booked yet", people.filter(p => !next.has(p.id))],
+  ] as const;
+  const note = (p: (typeof people)[number]) => {
+    const d = next.get(p.id);
+    if (d !== undefined) return d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
+    if (p.hasLead) return "Sent a request";
+    return p.tlv ? `${money(Math.round(p.tlv * 100))} spent` : "New";
+  };
+  return (
+    <div className="iosm-constellation">
+      {groups
+        .filter(([, list]) => list.length)
+        .map(([title, list]) => (
+          <section key={title} aria-label={title}>
+            <h3>
+              {title} <span>{list.length}</span>
+            </h3>
+            <div className="iosm-stars">
+              {[...list]
+                .sort(
+                  (a, b) =>
+                    (next.get(a.id) ?? 999) - (next.get(b.id) ?? 999) ||
+                    (b.tlv || 0) - (a.tlv || 0)
+                )
+                .map(p => {
+                  const d = next.get(p.id);
+                  const name = p.name || "Client";
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className="iosm-star"
+                      aria-label={`${name}, ${note(p)}`}
+                      aria-current={selected === p.id ? "true" : undefined}
+                      onClick={() => onOpen(p.id)}
+                    >
+                      <Orb
+                        name={name}
+                        src={p.avatar}
+                        fill={d === undefined ? 0 : 1 - Math.min(1, d / 60)}
+                        size={Math.round(48 + ((p.tlv || 0) / most) * 26)}
+                      />
+                      <b>{name.split(" ")[0]}</b>
+                      <span>{note(p)}</span>
+                    </button>
+                  );
+                })}
+            </div>
+          </section>
+        ))}
+      <p className="iosm-caption">
+        Bigger circles have spent more with you. The ring fills as their next
+        sitting gets closer.
+      </p>
     </div>
   );
 }
