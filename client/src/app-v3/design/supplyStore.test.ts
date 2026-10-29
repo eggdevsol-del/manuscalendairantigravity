@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   chairWeek,
+  countsStock,
   freeDelivery,
   fromLastOrder,
   shelvesOf,
@@ -113,5 +114,12 @@ describe("freeDelivery", () => {
   });
   it("is null when the supplier has no free rate", () => {
     expect(freeDelivery([rate("Standard", 1200, null)], 50000)).toBeNull();
+  });
+});
+
+describe("countsStock", () => {
+  it("is false for catalogues that only know whether an option is available", () => {
+    expect(countsStock([product(1, null, [[1, 100, 1], [2, 100, 0]])])).toBe(false);
+    expect(countsStock([product(1, null, [[1, 100, 1]]), product(2, null, [[2, 100, 6]])])).toBe(true);
   });
 });

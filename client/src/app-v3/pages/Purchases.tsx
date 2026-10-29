@@ -14,8 +14,8 @@ import {
   Status,
 } from "../design/primitives";
 import { LiveStage } from "../design/live";
-import { Jar, OrderTrack } from "../components/DetailStages";
-import { optionName } from "../components/SupplyStore";
+import { OrderTrack } from "../components/DetailStages";
+import { ProductArt, optionName } from "../components/SupplyStore";
 export default function Purchases() {
   const { user } = useAuth();
   const query = trpc.storefront.getPurchases.useQuery();
@@ -174,6 +174,13 @@ export function SupplyOrders() {
       .includes(search.toLowerCase())
   );
   const order = query.data?.find(order => order.id === selected);
+  // Order lines keep no photo; the supplier's catalogue still has one while it sells the product.
+  const catalogue = trpc.suppliers.getSupplierProducts.useQuery(
+    { supplierId: order?.supplierId ?? 0 },
+    { enabled: !!order && order.supplier?.isActive === 1 }
+  );
+  const photo = (productId: number) =>
+    catalogue.data?.find(p => p.id === productId)?.imageUrl;
   return (
     <Screen
       title="Supply orders"
@@ -220,7 +227,11 @@ export function SupplyOrders() {
             {order.items.map(item => (
               <li key={item.id}>
                 <span className="iosm-ss-tile">
-                  <Jar seed={item.supplierProductId} fill={1} />
+                  <ProductArt
+                    imageUrl={photo(item.supplierProductId)}
+                    seed={item.supplierProductId}
+                    fill={1}
+                  />
                   <em>×{item.quantity}</em>
                 </span>
                 <span className="iosm-ss-line-copy">
@@ -265,7 +276,7 @@ export function SupplyOrders() {
               </p>
             )}
           </Panel>
-          {order.status === "paid" && (
+          {order.status === "paid" && order.supplier?.isActive === 1 && (
             <ActionLink
               href={`/supplies?supplier=${order.supplierId}&reorder=${order.id}`}
             >

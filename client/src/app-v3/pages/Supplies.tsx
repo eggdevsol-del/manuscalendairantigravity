@@ -1,7 +1,7 @@
 import { usePractice } from "@/features/practice/PracticeContext";
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { ChevronRight, ShoppingBag } from "lucide-react";
-import { useEffect, useState, useRef, type CSSProperties } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, Redirect, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -10,6 +10,7 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { money } from "@/features/workspace/bookingPresentation";
 import { LiveStage, StageNumber } from "../design/live";
 import {
+  countsStock,
   freeDelivery,
   fromLastOrder,
   type StoreProduct,
@@ -68,6 +69,14 @@ function Directory() {
   const items = query.data?.filter(item =>
     item.name.toLowerCase().includes(search.toLowerCase())
   );
+  // Supplier-run stores are slow to load, so start loading the first few while the list is open.
+  const utils = trpc.useUtils();
+  useEffect(() => {
+    for (const s of (query.data || []).filter(s => s.merchantId).slice(0, 3))
+      void utils.storefront.getArtistStorefront.prefetch({
+        slug: `supplier-${s.merchantId}`,
+      });
+  }, [query.data, utils]);
   // Every saved cart, priced from each supplier's current catalogue, for the tray.
   const baskets = (query.data || [])
     .map(supplier => ({
@@ -96,6 +105,7 @@ function Directory() {
                 price: v.priceCents,
                 stock: v.inventoryCount,
                 quantity: Math.min(b.quantities[v.id], v.inventoryCount),
+                imageUrl: product.imageUrl,
               },
             ]
           : []
@@ -265,6 +275,7 @@ function Catalogue({ id }: { id: number }) {
       stock: v.inventoryCount,
     })),
   }));
+  const counts = countsStock(products);
   // Only identifiers and quantities are retained. Current catalogue data supplies prices and stock.
   const cart: Item[] = (
     restoredKey === basketKey ? query.data || [] : []
@@ -441,6 +452,7 @@ function Catalogue({ id }: { id: number }) {
           products={products}
           currency={currency}
           storeName={name}
+          counts={counts}
           onOpen={setSelected}
         />
       )}
@@ -453,7 +465,7 @@ function Catalogue({ id }: { id: number }) {
         count={count}
         subtotal={subtotal}
         currency={currency}
-        note={goalNote(goal, currency, "Before delivery and checkout fees")}
+        note={goalNote(goal, currency, "Before delivery and fees")}
         onOpen={() => setCheckout(true)}
       />
       {selected && (
@@ -462,6 +474,7 @@ function Catalogue({ id }: { id: number }) {
           product={selected}
           sub={[selected.category, name].filter(Boolean).join(" · ")}
           currency={currency}
+          counts={counts}
           inTray={variantId => quantities[variantId] || 0}
           onAdd={(variant, quantity) =>
             setQuantities(current => ({
@@ -477,6 +490,7 @@ function Catalogue({ id }: { id: number }) {
           supplierId={id}
           supplierName={supplier.data.name}
           currency={currency}
+          counts={counts}
           items={cart}
           onQuantity={(id, quantity) =>
             setCart(current =>
@@ -505,6 +519,7 @@ function SupplyCheckout({
   supplierId,
   supplierName,
   currency,
+  counts,
   items,
   onQuantity,
   onClose,
@@ -514,6 +529,7 @@ function SupplyCheckout({
   supplierId: number;
   supplierName: string;
   currency: string;
+  counts: boolean;
   items: Item[];
   onQuantity: (id: number, quantity: number) => void;
   onClose: () => void;
@@ -690,7 +706,9 @@ function SupplyCheckout({
                       <em>{money(item.price * item.quantity, currency)}</em>
                       {item.quantity >= item.stock && (
                         <small role="status">
-                          All {item.stock} in stock are in your tray.
+                          {counts
+                            ? `All ${item.stock} in stock are in your tray.`
+                            : "One of each option per order."}
                         </small>
                       )}
                     </span>
@@ -804,22 +822,19 @@ function SupplyTray({
       className="iosm-detail-stage"
       label={`${count} item${count === 1 ? "" : "s"} in your tray, ${total}`}
     >
-      <span className="iosm-tray" aria-hidden="true">
+      <ul className="iosm-ss-shelfline" aria-hidden="true">
         {items.length ? (
           items.slice(0, 8).map(item => (
-            <span
-              key={item.variantId}
-              className="iosm-bottle"
-              style={{ "--h": (item.productId * 47) % 360 } as CSSProperties}
-            >
-              <i />
-              <b>{item.quantity}</b>
-            </span>
+            <li key={item.variantId} className="iosm-ss-tile">
+              <ProductArt imageUrl={item.imageUrl} seed={item.productId} fill={1} />
+              <em>×{item.quantity}</em>
+            </li>
           ))
         ) : (
           <small>Your tray is empty</small>
         )}
-      </span>
+        {items.length > 8 && <small>+{items.length - 8}</small>}
+      </ul>
       <StageNumber
         over={`${count} item${count === 1 ? "" : "s"} in your tray`}
         value={total}

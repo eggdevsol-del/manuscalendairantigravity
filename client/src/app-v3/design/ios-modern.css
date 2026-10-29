@@ -3365,26 +3365,25 @@ button.iosm-weekbar[aria-pressed="true"] small {
   border-radius: 3px 3px 4px 4px;
 }
 .iosm-ss-hero {
-  position: relative;
-  display: grid;
-  place-items: center;
-  min-height: 200px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 6px;
 }
 .iosm-ss-hero > .iosm-ss-photo {
-  width: min(220px, 64%);
+  width: min(200px, 58%);
   height: auto;
   aspect-ratio: 1;
   border-radius: 28px;
   box-shadow: 0 18px 40px -16px rgb(0 0 0 / 55%);
 }
 .iosm-ss-left {
-  position: absolute;
-  top: 0;
-  right: 0;
   display: grid;
+  flex: none;
   justify-items: center;
   gap: 6px;
-  max-width: 84px;
+  width: 76px;
   text-align: center;
 }
 .iosm-ss-left small {
@@ -3408,6 +3407,7 @@ button.iosm-weekbar[aria-pressed="true"] small {
   opacity: 0.45;
 }
 .supplier-cart-dock.iosm-ss-pill {
+  bottom: max(16px, calc(var(--app-safe-bottom, 0px) + 8px));
   flex-direction: row;
   align-items: center;
   gap: 12px;
@@ -3582,6 +3582,32 @@ button.iosm-weekbar[aria-pressed="true"] small {
 }
 .iosm-ss .v3-content {
   padding-bottom: 104px;
+}
+/* The search field is the glass; its input stays clear so there is one box, not two. */
+.v3-search input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  background-color: transparent;
+}
+/* The tray: each line as its product, with how many. */
+.iosm-ss-shelfline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px 12px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.iosm-ss-shelfline .iosm-ss-tile {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+}
+.iosm-ss-shelfline .iosm-ss-tile .iosm-jar {
+  width: 24px;
+  height: 32px;
+}
+.iosm-ss-shelfline > small {
+  opacity: 0.8;
 }
 .iosm-ss-track {
   justify-items: center;

@@ -212,12 +212,15 @@ export function StoreShelves({
   products,
   currency,
   storeName,
+  counts = true,
   loading,
   onOpen,
 }: {
   products: StoreProduct[];
   currency: string;
   storeName: string;
+  /** False when the supplier shares only whether an option is in stock, not how many. */
+  counts?: boolean;
   loading?: boolean;
   onOpen: (product: StoreProduct) => void;
 }) {
@@ -236,7 +239,13 @@ export function StoreShelves({
   const shelves = shelvesOf(shown);
   const flat = !!search.trim() || !!category || shelves.length < 2;
   const card = (p: StoreProduct) => (
-    <ShelfCard key={p.id} product={p} currency={currency} onOpen={() => onOpen(p)} />
+    <ShelfCard
+      key={p.id}
+      product={p}
+      currency={currency}
+      counts={counts}
+      onOpen={() => onOpen(p)}
+    />
   );
   return (
     <>
@@ -295,16 +304,22 @@ export function StoreShelves({
 function ShelfCard({
   product,
   currency,
+  counts,
   onOpen,
 }: {
   product: StoreProduct;
   currency: string;
+  counts: boolean;
   onOpen: () => void;
 }) {
   const stock = stockOf(product);
   const varied = new Set(product.variants.map(v => v.priceCents)).size > 1;
   const price = `${varied ? "From " : ""}${money(priceFrom(product), currency)}`;
-  const stockText = !stock ? "Sold out" : stock < 100 ? `${stock} left` : "In stock";
+  const stockText = !stock
+    ? "Sold out"
+    : counts && stock < 100
+      ? `${stock} left`
+      : "In stock";
   return (
     <button
       type="button"
@@ -344,12 +359,15 @@ export function ProductSheet({
   about,
   inTray,
   limit = Infinity,
+  counts = true,
   onAdd,
   onClose,
 }: {
   product: StoreProduct;
   sub: string;
   currency: string;
+  /** False when the supplier shares only whether an option is in stock, not how many. */
+  counts?: boolean;
   about?: ReactNode;
   inTray: (variantId: number) => number;
   /** The most of one option a single order can hold, where the store sets one. */
@@ -370,12 +388,17 @@ export function ProductSheet({
   const price = variant?.priceCents ?? 0;
   const left = variant ? Math.max(0, variant.stock - held - (available ? qty : 0)) : 0;
   const option = optionName(variant?.name);
+  const leftText = !variant || variant.stock <= 0
+    ? "Sold out"
+    : counts
+      ? `${left} left after yours`
+      : "In stock";
   return (
     <SheetShell isOpen onClose={onClose} title={product.title}>
       <div className="v3-stack iosm-ss-sheet">
         <LiveStage
           className="iosm-ss-stage"
-          label={`${product.title}${option ? `, ${option}` : ""}: ${qty} for ${money(price * qty, currency)}, ${left} left after yours`}
+          label={`${product.title}${option ? `, ${option}` : ""}: ${qty} for ${money(price * qty, currency)}, ${leftText.toLowerCase()}`}
         >
           <div className="iosm-ss-hero">
             <ProductArt
@@ -385,10 +408,11 @@ export function ProductSheet({
               big
             />
             <span className="iosm-ss-left">
-              <Jar seed={product.id} fill={variant?.stock ? left / variant.stock : 0} />
-              <small>
-                {variant && variant.stock > 0 ? `${left} left after yours` : "Sold out"}
-              </small>
+              <Jar
+                seed={product.id}
+                fill={!variant?.stock ? 0 : counts ? left / variant.stock : 1}
+              />
+              <small>{leftText}</small>
             </span>
           </div>
           <StageNumber
@@ -426,6 +450,12 @@ export function ProductSheet({
         />
         {held > 0 && (
           <p className="v3-muted">{held} already in your tray</p>
+        )}
+        {!counts && variant && variant.stock > 0 && (
+          <p className="v3-muted">
+            This supplier shares whether an item is in stock, not how many, so
+            an order takes one of each option.
+          </p>
         )}
         {about}
         <Action

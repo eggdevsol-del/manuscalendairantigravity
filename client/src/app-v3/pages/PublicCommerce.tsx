@@ -16,7 +16,7 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { ShoppingBag } from "lucide-react";
-import type { StoreProduct } from "../design/supplyStore";
+import { countsStock, type StoreProduct } from "../design/supplyStore";
 import {
   ProductSheet,
   StoreByline,
@@ -46,15 +46,18 @@ export function PublicStorefront() {
     { slug },
     { enabled: !!slug, retry: false }
   );
+  const { user } = useAuth();
+  const supplier = slug.startsWith("supplier-");
   return query.data ? (
     <CartProvider key={query.data.artistId} storeId={query.data.artistId}>
       <StoreContent slug={slug} store={query.data} />
     </CartProvider>
   ) : (
     <Screen
-      publicView
-      title="Shop"
-      action={<ActionLink href="/login">Sign in</ActionLink>}
+      publicView={!user}
+      title={supplier ? "Supplier store" : "Shop"}
+      back={supplier && user?.role === "artist" ? "/supplies" : undefined}
+      action={user ? undefined : <ActionLink href="/login">Sign in</ActionLink>}
     >
       <Feedback
         loading={query.isLoading}
@@ -95,6 +98,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
           }))
       : [{ id: 0, name: "", priceCents: p.priceCents, stock: p.inventoryCount }],
   }));
+  const counts = countsStock(products);
   const held = (productId: number, variantId: number) =>
     cart.items.find(i => i.cartItemId === `${productId}-${variantId || "base"}`)
       ?.quantity || 0;
@@ -127,6 +131,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
         products={products}
         currency={currency}
         storeName={store.artistName}
+        counts={counts}
         onOpen={setSelected}
       />
       <p className="v3-muted ivory-shop-fee-note">
@@ -142,7 +147,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
         count={cart.totalItems}
         subtotal={cart.subtotalCents}
         currency={currency}
-        note="Before delivery and checkout fees"
+        note="Before delivery and fees"
         onOpen={() => cart.setIsCartOpen(true)}
       />
       {selected && source && (
@@ -160,6 +165,7 @@ function SupplierShop({ store, slug }: { store: Store; slug: string }) {
                   : "Pickup",
           ].join(" · ")}
           currency={currency}
+          counts={counts}
           limit={100}
           about={
             source.description && (

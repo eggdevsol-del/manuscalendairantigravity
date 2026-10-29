@@ -223,6 +223,20 @@ export default function LockHome() {
     } catch {}
     return count ? [{ supplier: s, count }] : [];
   });
+  // Supplier-run stores are slow to load: start on the ones the Supplies group shows, once the landing settles.
+  const utils = trpc.useUtils();
+  const shownStores = (suppliers.data ?? [])
+    .slice(0, open === "supplies" ? 3 : Math.max(0, 2 - carts.length))
+    .flatMap(s => (s.merchantId ? [`supplier-${s.merchantId}`] : []))
+    .join(",");
+  useEffect(() => {
+    if (!shownStores) return;
+    const timer = setTimeout(() => {
+      for (const slug of shownStores.split(","))
+        void utils.storefront.getArtistStorefront.prefetch({ slug });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [shownStores, utils]);
 
   return (
     <div className="v3-screen iosm-home">

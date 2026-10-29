@@ -24,6 +24,10 @@ export const stockOf = (p: StoreProduct) =>
   p.variants.reduce((sum, v) => sum + Math.max(0, v.stock), 0);
 export const priceFrom = (p: StoreProduct) =>
   p.variants.length ? Math.min(...p.variants.map(v => v.priceCents)) : 0;
+/** Catalogues imported from a Shopify store know only whether an option is available, which is stored as
+ *  one in stock. A catalogue counts its stock once any option has more than one. */
+export const countsStock = (products: StoreProduct[]) =>
+  products.some(p => p.variants.some(v => v.stock > 1));
 /** How many of a product's options are in stock, as a share of its options. */
 export const optionsInStock = (p: StoreProduct) =>
   p.variants.length
