@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { dayTimeline, firstImage, relativeStart } from "./lockHome";
+import {
+  dayTimeline,
+  firstImage,
+  relativeStart,
+  projectTitle,
+} from "./lockHome";
 
 const day = new Date("2026-10-29T00:00:00").getTime();
 const at = (h: number, m = 0) => new Date(day + (h * 60 + m) * 60000);
@@ -46,5 +51,13 @@ describe("firstImage", () => {
     expect(firstImage([{ url: "/b.jpg" }])).toBe("/b.jpg");
     expect(firstImage("not json")).toBeNull();
     expect(firstImage(null)).toBeNull();
+  });
+});
+
+describe("project title", () => {
+  it("skips placeholders such as N/A and takes the next real name", () => {
+    expect(projectTitle("N/A", "Back piece")).toBe("Back piece");
+    expect(projectTitle(" n/a ", "none", "-", null, "Sleeve")).toBe("Sleeve");
+    expect(projectTitle("N/A", undefined)).toBeNull();
   });
 });

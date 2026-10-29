@@ -10,6 +10,11 @@ import { SittingCard } from "../components/SittingCard";
 import { SessionStage, SittingNext } from "../components/SessionStage";
 import { ProjectHero } from "../components/ProjectHero";
 import { projectKey, projectSessions } from "../data/projectSessions";
+import { projectTitle } from "../design/lockHome";
+
+/** A project's name: the first real one given, or "Tattoo project". Placeholders such as "N/A" don't count. */
+const nameOf = (...names: (string | null | undefined)[]) =>
+  projectTitle(...names) ?? "Tattoo project";
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useSearch, useLocation } from "wouter";
 import {
@@ -89,14 +94,13 @@ export default function Booking() {
   }, [query.data, selectedId, focusedKey, requestedProject, id]);
   return (
     <Screen
-      title={
-        selected?.projectName ||
+      title={nameOf(
+        selected?.projectName,
         query.data?.sessions.find(s => projectKey(s) === focusedKey)
-          ?.projectName ||
+          ?.projectName,
         query.data?.plans.find(p => `plan:${p.id}` === focusedKey)
-          ?.projectName ||
-        "Tattoo project"
-      }
+          ?.projectName
+      )}
       subtitle={
         user?.role === "client"
           ? query.data?.artist?.name
@@ -132,13 +136,12 @@ export default function Booking() {
             .map(key => (
               <Row
                 key={key}
-                title={
+                title={nameOf(
                   query.data?.sessions.find(s => projectKey(s) === key)
-                    ?.projectName ||
+                    ?.projectName,
                   query.data?.plans.find(p => `plan:${p.id}` === key)
-                    ?.projectName ||
-                  "Tattoo project"
-                }
+                    ?.projectName
+                )}
                 href={`/projects/${id}?project=${encodeURIComponent(key)}`}
               />
             ))}
@@ -274,7 +277,7 @@ export function BookingProject({
         {client &&
           pending.map(p => (
             <Panel tone="attention" key={p.id}>
-              <h2>{p.projectName || "Review your booking proposal"}</h2>
+              <h2>{projectTitle(p.projectName) ?? "Review your booking proposal"}</h2>
               <p>
                 {p.paymentState
                   ? "Your payment is being checked. Do not pay again while we confirm the booking."
@@ -506,7 +509,10 @@ export function BookingProject({
           session={session}
           initialMode={sessionAction}
           onChange={refresh}
-          onClose={() => setSessionAction(null)}
+          onClose={() => {
+            setSessionAction(null);
+            setCollapsedSitting(null);
+          }}
         />
       )}
       {data && (
@@ -514,11 +520,7 @@ export function BookingProject({
           {siblings.length > 0 && (
             <ProjectHero
               conversationId={id}
-              title={
-                session?.projectName ||
-                data.plans[0]?.projectName ||
-                "Tattoo project"
-              }
+              title={nameOf(session?.projectName, data.plans[0]?.projectName)}
               person={
                 (client ? data.artist?.name : data.client?.name) ||
                 (client ? "your artist" : "Client")
@@ -528,9 +530,7 @@ export function BookingProject({
           )}
           <div className="ivory-project-heading">
             <h2>
-              {session?.projectName ||
-                data.plans[0]?.projectName ||
-                "Tattoo project"}
+              {nameOf(session?.projectName, data.plans[0]?.projectName)}
             </h2>
             {!client && (session?.sessionPlanId || data.plans.length === 1) && (
               <Action
@@ -538,7 +538,7 @@ export function BookingProject({
                 onClick={() => {
                   setEditingName(session?.sessionPlanId || data.plans[0].id);
                   setNameDraft(
-                    session?.projectName || data.plans[0]?.projectName || ""
+                    projectTitle(session?.projectName, data.plans[0]?.projectName) ?? ""
                   );
                   saveName.reset();
                 }}
@@ -783,11 +783,12 @@ export function BookingProject({
                       ...new Set(
                         h.projectKeys.map(
                           key =>
-                            data.sessions.find(s => projectKey(s) === key)
-                              ?.projectName ||
-                            data.plans.find(p => `plan:${p.id}` === key)
-                              ?.projectName ||
-                            "Tattoo project"
+                            nameOf(
+                              data.sessions.find(s => projectKey(s) === key)
+                                ?.projectName,
+                              data.plans.find(p => `plan:${p.id}` === key)
+                                ?.projectName
+                            )
                         )
                       ),
                     ];
@@ -867,7 +868,10 @@ export function BookingProject({
       </SheetShell>
       <SheetShell
         isOpen={sign}
-        onClose={() => setSign(false)}
+        onClose={() => {
+          setSign(false);
+          setCollapsedSitting(null);
+        }}
         title="Consent forms"
       >
         {sign && (
@@ -876,6 +880,7 @@ export function BookingProject({
             onSuccess={refresh}
             onClose={() => {
               setSign(false);
+              setCollapsedSitting(null);
               refresh();
             }}
           />
@@ -896,12 +901,13 @@ export function BookingProject({
           open={balance}
           onClose={() => {
             setBalance(false);
+            setCollapsedSitting(null);
             refresh();
           }}
           appointmentId={session.id}
           balanceDueCents={session.remainingCents}
           artistName={data?.artist?.name || "Your artist"}
-          projectName={session.projectName || "Tattoo project"}
+          projectName={nameOf(session.projectName)}
         />
       )}
     </Panel>
