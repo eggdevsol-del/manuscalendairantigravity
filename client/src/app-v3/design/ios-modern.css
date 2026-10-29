@@ -2445,3 +2445,211 @@ html:root .v3-avatar img {
   stroke: #fff;
   stroke-linecap: round;
 }
+
+/* ── Offers: the voucher ───────────────────────────────── */
+.iosm-voucher-stage {
+  justify-items: center;
+}
+.iosm-voucher {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: min(300px, 100%);
+  padding: 18px 16px 14px;
+  border-radius: 20px;
+  background: #fff;
+  color: var(--wall-deep);
+  text-align: center;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 28%);
+}
+.iosm-voucher small {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+.iosm-voucher b {
+  font: 800 44px var(--iosm-rounded);
+  color: var(--wall-acc);
+  line-height: 1.1;
+}
+.iosm-voucher em {
+  font-style: normal;
+  font-weight: 600;
+}
+.iosm-voucher > span {
+  font-size: 12px;
+  opacity: 0.75;
+}
+.iosm-voucher > i {
+  width: 100%;
+  margin: 10px 0 6px;
+  border-top: 2px dashed rgb(0 0 0 / 15%);
+}
+.iosm-voucher s {
+  font-size: 12px;
+  text-decoration: none;
+}
+
+/* ── Working hours: day buttons and the dial ───────────── */
+button.iosm-weekbar {
+  padding: 4px 0;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: #fff;
+  font: inherit;
+}
+button.iosm-weekbar[aria-pressed="true"] {
+  background: rgb(255 255 255 / 16%);
+}
+button.iosm-weekbar[aria-pressed="true"] small {
+  font-weight: 700;
+  opacity: 1;
+}
+.iosm-dial-stage {
+  justify-items: center;
+  margin-top: 12px;
+}
+.iosm-dial-day {
+  font: 700 17px var(--iosm-rounded);
+  text-transform: capitalize;
+}
+.iosm-dial {
+  width: min(260px, 100%);
+  height: auto;
+  touch-action: none;
+  overflow: visible;
+}
+.iosm-dial .track {
+  fill: none;
+  stroke: rgb(255 255 255 / 16%);
+  stroke-width: 14;
+}
+.iosm-dial .open {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 14;
+  stroke-linecap: round;
+}
+.iosm-dial .brk {
+  fill: none;
+  stroke: rgb(var(--wall-base-rgb) / 0.85);
+  stroke-width: 14;
+}
+.iosm-dial .mk {
+  stroke: rgb(255 255 255 / 30%);
+  stroke-width: 1.5;
+}
+.iosm-dial .mk.big {
+  stroke: rgb(255 255 255 / 60%);
+  stroke-width: 2;
+}
+.iosm-dial text {
+  fill: rgb(255 255 255 / 75%);
+  font-size: 11px;
+}
+.iosm-dial .ctr {
+  fill: #fff;
+  font: 700 30px var(--iosm-rounded);
+}
+.iosm-dial .ctr2,
+.iosm-dial .off {
+  fill: rgb(255 255 255 / 85%);
+  font-size: 13px;
+}
+.iosm-dial .off {
+  font-size: 18px;
+  font-weight: 600;
+}
+.iosm-dial .hd {
+  cursor: grab;
+}
+.iosm-dial .hd circle {
+  fill: var(--wall-acc);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.iosm-dial .hd text {
+  fill: #fff;
+  font-size: 15px;
+  pointer-events: none;
+}
+.iosm-dial .hd:focus-visible circle {
+  stroke-width: 4;
+}
+.iosm-dial-note {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.8;
+  text-align: center;
+  text-transform: none;
+}
+
+/* ── Phone previews: banner, steps, portfolio, forms ───── */
+.iosm-phone-banner {
+  width: 100%;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.iosm-phone-step b {
+  font-weight: 700;
+}
+.iosm-phone-btn.off {
+  background: rgb(var(--wall-base-rgb) / 0.35);
+}
+.iosm-phone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.iosm-phone-grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.iosm-phone-me small {
+  overflow-wrap: anywhere;
+}
+.iosm-phone-doc {
+  max-height: 300px;
+  overflow-y: auto;
+  text-align: left;
+}
+.iosm-doc-title {
+  font: 700 15px var(--iosm-rounded);
+}
+.iosm-doc-body {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.iosm-doc-q {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgb(var(--wall-base-rgb) / 0.06);
+}
+.iosm-doc-yn {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+.iosm-doc-yn i {
+  padding: 1px 6px;
+  border: 1px solid rgb(var(--wall-base-rgb) / 0.3);
+  border-radius: 6px;
+  font-style: normal;
+}
+.iosm-doc-sign {
+  padding-top: 14px;
+  border-bottom: 1.5px solid rgb(var(--wall-base-rgb) / 0.45);
+  font-size: 11px;
+  opacity: 0.6;
+}

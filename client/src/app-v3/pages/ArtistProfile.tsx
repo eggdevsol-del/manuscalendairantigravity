@@ -5,6 +5,7 @@ import type { AppRouter } from "../../../../server/routers";
 import { useLocation, useSearch } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { getAssetUrl } from "@/lib/assets";
 import { useDebounce } from "@/hooks/useDebounce";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { LiveStage } from "../design/live";
@@ -122,6 +123,7 @@ function PublicDetails({ settings }: { settings: Settings }) {
           });
         }}
       >
+        <ProfilePhone form={form} />
         <fieldset disabled={save.isPending}>
           <label>
             Artist display name
@@ -465,12 +467,28 @@ export function BookingLink() {
         onRetry={() => query.refetch()}
       />
       {query.data && (
-        <BookingLinkForm initialSlug={query.data.publicSlug || ""} />
+        <BookingLinkForm
+          initialSlug={query.data.publicSlug || ""}
+          funnel={query.data}
+        />
       )}
     </Screen>
   );
 }
-function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
+type FunnelPreview = {
+  funnelEnabled?: number | boolean | null;
+  funnelBannerUrl?: string | null;
+  styleOptions?: string[] | null;
+  placementOptions?: string[] | null;
+  budgetRanges?: { label: string }[] | null;
+};
+function BookingLinkForm({
+  initialSlug,
+  funnel,
+}: {
+  initialSlug: string;
+  funnel: FunnelPreview;
+}) {
   const practice = usePractice();
   const [slug, setSlug] = useState(initialSlug);
   const [saved, setSaved] = useState(initialSlug);
@@ -524,6 +542,7 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
     <>
       <LinkPhone
         slug={slug}
+        funnel={funnel}
         state={
           slug.length < 3
             ? "short"
@@ -621,12 +640,22 @@ function BookingLinkForm({ initialSlug }: { initialSlug: string }) {
 /** A phone showing exactly what a client opens from your link, updating as you type its name. */
 function LinkPhone({
   slug,
+  funnel,
   state,
 }: {
   slug: string;
+  funnel: FunnelPreview;
   state: "short" | "live" | "draft" | "checking" | "taken";
 }) {
   const { user } = useAuth();
+  const settings = trpc.artistSettings.get.useQuery();
+  const open = funnel.funnelEnabled !== 0 && funnel.funnelEnabled !== false;
+  // The request steps, with the choices the artist has set for each one.
+  const steps = [
+    ["Style", funnel.styleOptions],
+    ["Placement", funnel.placementOptions],
+    ["Budget", funnel.budgetRanges?.map(b => b.label)],
+  ] as const;
   const host = window.location.host.replace(/^www\./, "");
   const note = {
     short: "Use at least 3 characters",
@@ -641,17 +670,72 @@ function LinkPhone({
         <span className={`iosm-phone-url ${state}`}>
           {host}/book/<b>{slug || "your-name"}</b>
         </span>
+        {funnel.funnelBannerUrl && (
+          <img className="iosm-phone-banner" src={getAssetUrl(funnel.funnelBannerUrl)} alt="" />
+        )}
         <span className="iosm-phone-me">
           <Avatar name={user?.name} src={user?.avatar} />
-          <b>{user?.name || "Your name"}</b>
-          <small>Booking requests open</small>
+          <b>{settings.data?.displayName || user?.name || "Your name"}</b>
+          <small>{open ? "Taking booking requests" : "Not taking requests"}</small>
         </span>
-        <span className="iosm-phone-step">Your idea</span>
-        <span className="iosm-phone-step">Placement and size</span>
-        <span className="iosm-phone-step">Reference images</span>
-        <span className="iosm-phone-btn">Request a booking</span>
+        {steps.map(([label, options]) => (
+          <span key={label} className="iosm-phone-step">
+            <b>{label}</b>
+            {options?.length ? ` · ${options.slice(0, 3).join(", ")}${options.length > 3 ? ` +${options.length - 3}` : ""}` : ""}
+          </span>
+        ))}
+        <span className={`iosm-phone-btn${open ? "" : " off"}`}>
+          {open ? "Request a booking" : "Requests paused"}
+        </span>
       </span>
       <em className={`iosm-phone-note ${state}`}>{note}</em>
+    </LiveStage>
+  );
+}
+
+/** A phone showing your profile as signed-in clients see it: your name, the contact details you choose
+ *  to show, your bio and your latest work. It follows the form as you change it. */
+function ProfilePhone({
+  form,
+}: {
+  form: {
+    displayName: string;
+    showEmail: boolean;
+    showPhone: boolean;
+    showCity: boolean;
+    showWebsite: boolean;
+    websiteUrl: string;
+  };
+}) {
+  const { user } = useAuth();
+  const portfolio = trpc.portfolio.list.useQuery();
+  const contact = [
+    form.showCity && user?.city,
+    form.showEmail && user?.email,
+    form.showPhone && user?.phone,
+    form.showWebsite && form.websiteUrl,
+  ].filter(Boolean) as string[];
+  return (
+    <LiveStage className="iosm-phone-stage" label="Your profile on a client’s phone">
+      <span className="iosm-phone">
+        <span className="iosm-phone-me">
+          <Avatar name={user?.name} src={user?.avatar} />
+          <b>{form.displayName || user?.name || "Your name"}</b>
+          {contact.map(c => (
+            <small key={c}>{c}</small>
+          ))}
+          {!contact.length && <small>No contact details shown</small>}
+        </span>
+        {user?.bio && <span className="iosm-phone-step">{user.bio}</span>}
+        {!!portfolio.data?.length && (
+          <span className="iosm-phone-grid">
+            {portfolio.data.slice(0, 6).map(item => (
+              <img key={item.id} src={item.displayUrl} alt="" loading="lazy" />
+            ))}
+          </span>
+        )}
+        <span className="iosm-phone-btn">Message</span>
+      </span>
     </LiveStage>
   );
 }

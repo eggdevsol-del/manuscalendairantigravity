@@ -15,6 +15,7 @@ import { Redirect, Route, Switch } from "wouter";
 
 import Dashboard from "@/app-v3/pages/Today";
 import LockHome from "@/app-v3/pages/LockHome";
+import OffersPage from "@/app-v3/pages/Offers";
 import Conversations from "@/app-v3/pages/Inbox";
 import Chat from "@/app-v3/pages/Inbox";
 import Calendar from "@/app-v3/pages/Calendar";
@@ -44,6 +45,7 @@ export function ArtistRoutes() {
       </Route>
       <Route path="/dashboard" component={LockHome} />
       <Route path="/today" component={Dashboard} />
+      <Route path="/offers" component={OffersPage} />
       <Route path="/business" component={BusinessPage} />
       <Route path="/shopfront" component={Shopfront} />
       <Route path="/products" component={Products} />

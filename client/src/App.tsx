@@ -154,6 +154,7 @@ const KNOWN_APP_ROUTES = new Set([
   "today",
   "shopfront",
   "onboarding",
+  "offers",
 ]);
 
 /**

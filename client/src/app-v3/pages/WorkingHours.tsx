@@ -44,6 +44,8 @@ export default function WorkingHours() {
       void setup?.onSaved();
     },
   });
+  // The day shown on the hours dial: today's weekday to start with.
+  const [dialDay, setDialDay] = useState(() => (new Date().getDay() + 6) % 7);
   const [tab, setTab] = useState<"Availability" | "Services">(
     setupTab || "Availability"
   );
@@ -201,7 +203,14 @@ export default function WorkingHours() {
         <>
           {tab === "Availability" ? (
             <>
-              <WeekDisplay days={days} />
+              <WeekDisplay days={days} selected={dialDay} onPick={setDialDay} />
+              {days[dialDay] && (
+                <HoursDial
+                  day={days[dialDay]}
+                  disabled={save.isPending || scheduleUnreadable}
+                  onChange={patch => updateDay(dialDay, patch)}
+                />
+              )}
               <p className="v3-muted">
                 Your regular week. Design and personal days stay separate from
                 tattooing availability.
@@ -566,7 +575,15 @@ export default function WorkingHours() {
 }
 
 /** The week at a glance: each day's working window down a 24-hour column, with breaks cut out. */
-function WeekDisplay({ days }: { days: WorkDay[] }) {
+function WeekDisplay({
+  days,
+  selected,
+  onPick,
+}: {
+  days: WorkDay[];
+  selected: number;
+  onPick: (index: number) => void;
+}) {
   const week = weekWindows(days);
   return (
     <LiveStage className="iosm-week" label="Your working week">
@@ -576,8 +593,15 @@ function WeekDisplay({ days }: { days: WorkDay[] }) {
         under={`${week.days.filter(d => d.on).length} working days`}
       />
       <span className="iosm-weekbars">
-        {week.days.map(d => (
-          <span key={d.day} className="iosm-weekbar">
+        {week.days.map((d, i) => (
+          <button
+            key={d.day}
+            type="button"
+            className="iosm-weekbar"
+            aria-pressed={i === selected}
+            aria-label={`Show ${d.day} on the dial`}
+            onClick={() => onPick(i)}
+          >
             <span className="iosm-weekbar-col">
               {d.on && (
                 <i
@@ -590,7 +614,7 @@ function WeekDisplay({ days }: { days: WorkDay[] }) {
               ))}
             </span>
             <small>{d.day.slice(0, 1).toUpperCase()}</small>
-          </span>
+          </button>
         ))}
       </span>
       <span className="iosm-week-key">
@@ -598,6 +622,151 @@ function WeekDisplay({ days }: { days: WorkDay[] }) {
         <span><i className="design" /> Design</span>
         <span><i className="personal" /> Personal</span>
       </span>
+    </LiveStage>
+  );
+}
+
+const toMinutes = (t?: string) => {
+  const [h, m] = String(t || "").split(":").map(Number);
+  return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
+};
+const toClock = (m: number) =>
+  `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+
+/** The hours dial, as in the prototype: one day as an arc round a 24-hour clock, with its breaks cut out.
+ *  Drag the sun to move the start and the moon to move the end, in 15-minute steps. */
+function HoursDial({
+  day,
+  disabled,
+  onChange,
+}: {
+  day: WorkDay;
+  disabled: boolean;
+  onChange: (patch: Partial<WorkDay>) => void;
+}) {
+  const C = 130;
+  const R = 96;
+  const start = toMinutes(day.start);
+  const end = toMinutes(day.end);
+  const on = day.enabled && start !== null && end !== null && end > start;
+  const pt = (m: number, r = R) => {
+    const a = (m / 1440) * 2 * Math.PI - Math.PI / 2;
+    return [C + Math.cos(a) * r, C + Math.sin(a) * r];
+  };
+  const arc = (a: number, b: number) => {
+    const [x1, y1] = pt(a);
+    const [x2, y2] = pt(b);
+    const large = (b - a + 1440) % 1440 > 720 ? 1 : 0;
+    return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  const dragging = useRef<"start" | "end" | null>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  const minutesAt = (x: number, y: number) => {
+    const r = svg.current!.getBoundingClientRect();
+    let a = Math.atan2(y - (r.top + r.height / 2), x - (r.left + r.width / 2)) + Math.PI / 2;
+    if (a < 0) a += 2 * Math.PI;
+    return (Math.round(((a / (2 * Math.PI)) * 1440) / 15) * 15) % 1440;
+  };
+  const move = (x: number, y: number) => {
+    if (!dragging.current || start === null || end === null) return;
+    const m = minutesAt(x, y);
+    if (dragging.current === "start" && m < end - 60) onChange({ start: toClock(m) });
+    if (dragging.current === "end" && m > start + 60) onChange({ end: toClock(m) });
+  };
+  const handle = (which: "start" | "end", m: number, symbol: string) => {
+    const [x, y] = pt(m);
+    return (
+      <g
+        className="hd"
+        role="slider"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={which === "start" ? "Start of the day" : "End of the day"}
+        aria-valuetext={toClock(m)}
+        aria-valuenow={m}
+        aria-valuemin={0}
+        aria-valuemax={1439}
+        onPointerDown={e => {
+          if (disabled) return;
+          dragging.current = which;
+          svg.current?.setPointerCapture?.(e.pointerId);
+        }}
+        onKeyDown={e => {
+          if (disabled || start === null || end === null) return;
+          const dir = e.key === "ArrowRight" || e.key === "ArrowUp" ? 15 : e.key === "ArrowLeft" || e.key === "ArrowDown" ? -15 : 0;
+          if (!dir) return;
+          e.preventDefault();
+          const next = m + dir;
+          if (which === "start" && next >= 0 && next < end - 60) onChange({ start: toClock(next) });
+          if (which === "end" && next < 1440 && next > start + 60) onChange({ end: toClock(next) });
+        }}
+      >
+        <circle cx={x} cy={y} r={17} />
+        <text x={x} y={y} textAnchor="middle" dominantBaseline="central">
+          {symbol}
+        </text>
+      </g>
+    );
+  };
+  const marks = Array.from({ length: 24 }, (_, i) => {
+    const [x1, y1] = pt(i * 60, R - 26);
+    const [x2, y2] = pt(i * 60, R - (i % 6 ? 22 : 18));
+    const [tx, ty] = pt(i * 60, R - 40);
+    return (
+      <g key={i}>
+        <line x1={x1} y1={y1} x2={x2} y2={y2} className={i % 6 ? "mk" : "mk big"} />
+        {i % 6 === 0 && (
+          <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle">
+            {i === 0 ? "12am" : i === 12 ? "12pm" : i < 12 ? `${i}am` : `${i - 12}pm`}
+          </text>
+        )}
+      </g>
+    );
+  });
+  const breaks = (day.breaks || []).flatMap(b => {
+    const a = toMinutes(b.start);
+    const z = toMinutes(b.end);
+    return a !== null && z !== null && z > a ? [[a, z]] : [];
+  });
+  const hours = on ? (end! - start! - breaks.reduce((n, [a, z]) => n + z - a, 0)) / 60 : 0;
+  return (
+    <LiveStage className="iosm-dial-stage" label={`${day.day} working hours`}>
+      <span className="iosm-dial-day">{day.day}</span>
+      <svg
+        ref={svg}
+        className="iosm-dial"
+        viewBox="0 0 260 260"
+        onPointerMove={e => move(e.clientX, e.clientY)}
+        onPointerUp={() => (dragging.current = null)}
+        onPointerCancel={() => (dragging.current = null)}
+      >
+        <circle cx={C} cy={C} r={R} className="track" />
+        {marks}
+        {on ? (
+          <>
+            <path d={arc(start!, end!)} className="open" />
+            {breaks.map(([a, z]) => (
+              <path key={`${a}-${z}`} d={arc(a, z)} className="brk" />
+            ))}
+            {handle("start", start!, "☀︎")}
+            {handle("end", end!, "☾")}
+            <text x={C} y={C - 6} textAnchor="middle" className="ctr">
+              {Math.round(hours * 10) / 10}h
+            </text>
+            <text x={C} y={C + 14} textAnchor="middle" className="ctr2">
+              {day.start} – {day.end}
+            </text>
+          </>
+        ) : (
+          <text x={C} y={C} textAnchor="middle" className="off">
+            Day off
+          </text>
+        )}
+      </svg>
+      <em className="iosm-dial-note">
+        {on
+          ? `Drag the sun and moon to set ${day.day}. ${breaks.length ? "The gaps are your breaks. " : ""}Save availability to keep it.`
+          : `Tick ${day.day} below to make it a working day.`}
+      </em>
     </LiveStage>
   );
 }

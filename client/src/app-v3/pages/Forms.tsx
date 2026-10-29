@@ -11,6 +11,7 @@ import {
   Section,
   Tabs,
 } from "../design/primitives";
+import { LiveStage } from "../design/live";
 export default function Forms() {
   const [tab, setTab] = useState<"Procedure log" | "Medical" | "Consent">(
     "Procedure log"
@@ -172,6 +173,7 @@ function TemplateEditor({
           );
         }}
       >
+        <FormPhone type={type} text={text} />
         <label>
           Template wording
           <textarea
@@ -194,5 +196,38 @@ function TemplateEditor({
         </Action>
       </form>
     </Section>
+  );
+}
+
+/** The form on a client's phone, as they will see it before their sitting. Medical questions numbered
+ *  "1. …" become yes/no questions, as the signing screen asks them. It follows the wording as you type. */
+function FormPhone({ type, text }: { type: "Medical" | "Consent"; text: string }) {
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+  return (
+    <LiveStage className="iosm-phone-stage" label={`The ${type.toLowerCase()} form on a client’s phone`}>
+      <span className="iosm-phone iosm-phone-doc">
+        <b className="iosm-doc-title">{type} form</b>
+        <span className="iosm-doc-body">
+          {lines.map((line, i) =>
+            type === "Medical" && /^\d+\.\s/.test(line) ? (
+              <span key={i} className="iosm-doc-q">
+                <span>{line}</span>
+                <span className="iosm-doc-yn">
+                  <i>Yes</i>
+                  <i>No</i>
+                </span>
+              </span>
+            ) : (
+              <span key={i} className="iosm-doc-p">
+                {line}
+              </span>
+            )
+          )}
+          {!lines.length && <span className="iosm-doc-p">Start writing to see the form.</span>}
+        </span>
+        <span className="iosm-doc-sign">Signature</span>
+        <span className="iosm-phone-btn">Sign and submit</span>
+      </span>
+    </LiveStage>
   );
 }

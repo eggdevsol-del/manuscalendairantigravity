@@ -519,7 +519,7 @@ export default function LockHome() {
           id="offers"
           icon={<Gift />}
           title="Offers"
-          href="/today?promotions=1"
+          href="/offers"
           open={open === "offers"}
           onToggle={toggle}
         >
@@ -535,7 +535,7 @@ export default function LockHome() {
                     : "No end date"
                 }
                 live={!ended(c)}
-                href="/today?promotions=1"
+                href="/offers"
               />
             ))
           ) : (
@@ -543,7 +543,7 @@ export default function LockHome() {
               icon={<Gift />}
               title="No offers running"
               detail="Create a discount or a gift voucher"
-              href="/today?promotions=1"
+              href="/offers"
             />
           )}
         </Group>
