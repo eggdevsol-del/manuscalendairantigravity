@@ -3661,11 +3661,11 @@ button.iosm-weekbar[aria-pressed="true"] small {
   border-radius: 18px;
   box-shadow: inset 0 0 0 2px #fff;
 }
-.iosm-ss-track {
+.iosm-ss-slides {
   display: flex;
   transition: transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.iosm-ss-track.drag {
+.iosm-ss-slides.drag {
   transition: none;
 }
 .iosm-ss-page {
@@ -3735,7 +3735,7 @@ button.iosm-weekbar[aria-pressed="true"] small {
   background: #fff;
 }
 @media (prefers-reduced-motion: reduce) {
-  .iosm-ss-track,
+  .iosm-ss-slides,
   .iosm-ss-dots i {
     transition: none;
   }

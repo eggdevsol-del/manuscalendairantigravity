@@ -269,7 +269,7 @@ export function ChairStage({
         onPointerCancel={() => go(page)}
       >
         <div
-          className={`iosm-ss-track${dragging ? " drag" : ""}`}
+          className={`iosm-ss-slides${dragging ? " drag" : ""}`}
           style={{ transform: `translateX(calc(${-page * 100}% + ${dx}px))` }}
         >
           {pages.map((p, i) => (
