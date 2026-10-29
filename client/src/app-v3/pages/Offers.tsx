@@ -4,7 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { money } from "@/features/workspace/bookingPresentation";
 import type { OfferRules } from "@shared/offerRules";
 import { Action, Feedback, Panel, Screen, Section } from "../design/primitives";
-import { LiveStage, TouchSlider } from "../design/live";
+import { TouchSlider } from "../design/live";
+import { Voucher } from "../components/DetailStages";
 import { parseSchedule } from "../design/calendarDays";
 import { OfferAudience, PromotionsManager } from "../components/Offers";
 
@@ -64,22 +65,18 @@ export default function Offers() {
         </Panel>
       ) : (
         <>
-          <LiveStage className="iosm-voucher-stage" label={rules.name}>
-            <span className="iosm-voucher">
-              <small>{name}</small>
-              <b>{percent}% off</b>
-              <em>your next sitting</em>
-              <span>
-                Valid for {days} days · until {untilText}
-              </span>
-              <i aria-hidden="true" />
-              <s>
-                {service
-                  ? `On a ${whole(Math.round(service.price * 100))} ${service.name.toLowerCase()} the client saves ${whole(Math.round(service.price * percent))}`
-                  : "Add a priced service to see what clients save"}
-              </s>
-            </span>
-          </LiveStage>
+          <Voucher
+            label={rules.name}
+            from={name}
+            value={`${percent}% off`}
+            title="your next sitting"
+            valid={`Valid for ${days} days · until ${untilText}`}
+            foot={
+              service
+                ? `On a ${whole(Math.round(service.price * 100))} ${service.name.toLowerCase()} the client saves ${whole(Math.round(service.price * percent))}`
+                : "Add a priced service to see what clients save"
+            }
+          />
           {sent ? (
             <Panel>
               <p role="status">{sent}</p>

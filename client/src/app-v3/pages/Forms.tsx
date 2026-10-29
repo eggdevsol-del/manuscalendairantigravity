@@ -11,7 +11,7 @@ import {
   Section,
   Tabs,
 } from "../design/primitives";
-import { LiveStage } from "../design/live";
+import { LiveStage, StageNumber } from "../design/live";
 export default function Forms() {
   const [tab, setTab] = useState<"Procedure log" | "Medical" | "Consent">(
     "Procedure log"
@@ -59,6 +59,35 @@ export default function Forms() {
             error={logs.error}
             onRetry={() => logs.refetch()}
           />
+          {record ? (
+            <LiveStage
+              className="iosm-detail-stage"
+              label={`${record.clientName}, ${bookingDate(record.date)}: ${money(record.amountPaid)} paid`}
+            >
+              <StageNumber
+                over={`${record.clientName} · ${bookingDate(record.date)}`}
+                value={money(record.amountPaid)}
+                under={`${record.paymentMethod || "Paid"} · licence ${record.artistLicenceNumber || "not recorded"}`}
+              />
+            </LiveStage>
+          ) : (
+            !!logs.data?.length && (
+              <LiveStage
+                className="iosm-detail-stage"
+                label={`${logs.data.length} procedure records`}
+              >
+                <StageNumber
+                  over="Procedure records"
+                  value={logs.data.length}
+                  under={`Latest ${bookingDate(
+                    logs.data.reduce((a, b) =>
+                      +new Date(b.date) > +new Date(a.date) ? b : a
+                    ).date
+                  )}`}
+                />
+              </LiveStage>
+            )
+          )}
           {!logs.isLoading && !logs.error && !filtered.length && (
             <Panel>
               <p>No matching procedure records.</p>

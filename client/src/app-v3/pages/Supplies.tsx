@@ -3,7 +3,7 @@ import { NumericInput } from "@/components/ui/numeric-input";
 import { ReorderRecommendations } from "../components/ReorderRecommendations";
 import { createPortal } from "react-dom";
 import { ChevronRight, ShoppingBag } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, type CSSProperties } from "react";
 import { Link, useSearch } from "wouter";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "../../../../server/routers";
@@ -12,6 +12,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { money } from "@/features/workspace/bookingPresentation";
+import { Jar, StageFigure } from "../components/DetailStages";
+import { LiveStage, StageNumber } from "../design/live";
 import {
   Action,
   ActionLink,
@@ -504,13 +506,7 @@ function CatalogueProduct({
       >
         {open && (
           <div className="v3-stack">
-            {product.imageUrl && (
-              <img
-                className="v3-shop-image"
-                src={product.imageUrl}
-                alt={product.title}
-              />
-            )}
+            <ProductStage product={product} variant={variant} currency={currency} />
             <div className="v3-form">
               <label>
                 Variant
@@ -789,6 +785,7 @@ function SupplyCheckout({
           </>
         ) : (
           <>
+            <SupplyTray items={items} currency={currency} />
             {items.map(item => (
               <Panel key={item.variantId}>
                 <Row
@@ -883,5 +880,78 @@ function SupplyCheckout({
         )}
       </div>
     </SheetShell>
+  );
+}
+
+/** A product as it really is: its photo (or a jar that shows how many of its options are in stock), the
+ *  chosen option's price, and the stock across its options. */
+function ProductStage({
+  product,
+  variant,
+  currency,
+}: {
+  product: Product;
+  variant?: Product["variants"][number];
+  currency: string;
+}) {
+  const stock = product.variants.reduce(
+    (sum, v) => sum + Math.max(0, v.inventoryCount),
+    0
+  );
+  const options = product.variants.length;
+  const inStock = product.variants.filter(v => v.inventoryCount > 0).length;
+  const price = variant ? money(variant.priceCents, currency) : "Unavailable";
+  return (
+    <LiveStage
+      className="iosm-detail-stage"
+      label={`${product.title}: ${price}, ${stock} in stock`}
+    >
+      <StageFigure
+        visual={
+          product.imageUrl ? (
+            <img className="iosm-detail-photo" src={product.imageUrl} alt="" />
+          ) : (
+            <Jar big seed={product.id} fill={options ? inStock / options : 0} />
+          )
+        }
+        over={product.category || "Supplies"}
+        value={price}
+        under={`${options} option${options === 1 ? "" : "s"}, ${stock} in stock`}
+      />
+    </LiveStage>
+  );
+}
+
+/** The cart as a tray of bottles, one for each line, with the running total. */
+function SupplyTray({ items, currency }: { items: Item[]; currency: string }) {
+  const count = items.reduce((n, item) => n + item.quantity, 0);
+  const subtotal = items.reduce((n, item) => n + item.price * item.quantity, 0);
+  return (
+    <LiveStage
+      className="iosm-detail-stage"
+      label={`${count} items in your cart, ${money(subtotal, currency)}`}
+    >
+      <span className="iosm-tray" aria-hidden="true">
+        {items.length ? (
+          items.slice(0, 8).map(item => (
+            <span
+              key={item.variantId}
+              className="iosm-bottle"
+              style={{ "--h": (item.productId * 47) % 360 } as CSSProperties}
+            >
+              <i />
+              <b>{item.quantity}</b>
+            </span>
+          ))
+        ) : (
+          <small>Your tray is empty</small>
+        )}
+      </span>
+      <StageNumber
+        over={`${count} item${count === 1 ? "" : "s"} in your cart`}
+        value={money(subtotal, currency)}
+        under="Before shipping and checkout fees"
+      />
+    </LiveStage>
   );
 }

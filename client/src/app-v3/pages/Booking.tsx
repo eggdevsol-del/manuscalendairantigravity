@@ -7,7 +7,7 @@ import {
   orderedProjectGroups,
 } from "../data/projectProgress";
 import { SittingCard } from "../components/SittingCard";
-import { SessionStage } from "../components/SessionStage";
+import { SessionStage, SittingNext } from "../components/SessionStage";
 import { ProjectHero } from "../components/ProjectHero";
 import { projectKey, projectSessions } from "../data/projectSessions";
 import { useState, useEffect, useRef } from "react";
@@ -291,7 +291,22 @@ export function BookingProject({
           ))}
         {session ? (
           <>
-            <SessionStage session={session} clientName={data.client?.name} />
+            <SessionStage
+              session={session}
+              clientName={data.client?.name}
+              next={
+                !client && (
+                  <SittingNext
+                    session={session}
+                    clientName={data.client?.name}
+                    onFinish={() => {
+                      setCollapsedSitting(session.id);
+                      setSessionAction("finish");
+                    }}
+                  />
+                )
+              }
+            />
             <div>
               <Status
                 tone={
@@ -440,7 +455,10 @@ export function BookingProject({
         </ActionLink>
         {!client && session && (
           <div className="simple-actions">
-            {availableSessionActions(session).map(action => (
+            {availableSessionActions(session)
+              // A started sitting finishes from its card, as "Finish and request".
+              .filter(a => a !== "finish" || session.status !== "confirmed")
+              .map(action => (
               <Action
                 key={action}
                 tone={

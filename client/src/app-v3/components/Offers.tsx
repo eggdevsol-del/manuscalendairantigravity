@@ -9,6 +9,9 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { Action, Feedback, Panel, Section } from "../design/primitives";
 import { money } from "@/features/workspace/bookingPresentation";
 import { OFFER_TERMS, type OfferRules, type OfferAudience as AudienceFilters } from "../../../../shared/offerRules";
+import { StageFigure, StageRing, Voucher } from "./DetailStages";
+import { LiveStage } from "../design/live";
+import { useAuth } from "@/_core/hooks/useAuth";
 import "./offers.css";
 const dateLabel = (value: string | null) =>
   value
@@ -205,6 +208,8 @@ function OfferEditor({
 }) {
   const [r, set] = useState(initial.rules);
   const [uploading, setUploading] = useState(false);
+  const { user } = useAuth();
+  const settings = trpc.artistSettings.get.useQuery();
   const change = <K extends keyof OfferRules>(key: K, value: OfferRules[K]) =>
     set({ ...r, [key]: value });
   const save = trpc.offers.save.useMutation({ onSuccess: onDone });
@@ -238,6 +243,11 @@ function OfferEditor({
         save.mutate({ id: initial.id, rules: r });
       }}
     >
+      <OfferVoucher
+        rules={r}
+        from={settings.data?.displayName || user?.name || "Your studio"}
+        foot="Preview of what clients receive"
+      />
       <label>
         Purpose
         <select
@@ -401,7 +411,6 @@ function OfferEditor({
           terms.
         </p>
       )}
-      <OfferCard rules={r} />
       <p className="v3-muted">{OFFER_TERMS}</p>
       {save.error && <p role="alert">{save.error.message}</p>}
       <div className="ivory-offer-actions">
@@ -415,6 +424,41 @@ function OfferEditor({
     </form>
   );
 }
+/** An offer as the voucher clients receive. It changes as the offer's rules change. */
+export function OfferVoucher({
+  rules,
+  from,
+  foot,
+}: {
+  rules: OfferRules;
+  from: string;
+  foot?: string;
+}) {
+  const value =
+    rules.valueType === "percentage"
+      ? `${rules.value || 0}% off`
+      : `${money(rules.value || 0, rules.currency).replace(/\.00$/, "")}${rules.kind === "discount" ? " off" : ""}`;
+  const valid = rules.expiresAt
+    ? `Until ${new Date(rules.expiresAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`
+    : rules.availableHours
+      ? `For ${rules.availableHours} hours after it's sent`
+      : rules.funding === "sale" && rules.validityYears
+        ? `Valid for ${rules.validityYears} years`
+        : "No end date";
+  const title =
+    rules.name || (rules.kind === "voucher" ? "Gift voucher" : "Your offer");
+  return (
+    <Voucher
+      label={`${title}: ${value}, ${valid.toLowerCase()}`}
+      from={from}
+      value={value}
+      title={title}
+      valid={valid}
+      foot={foot}
+    />
+  );
+}
+
 export function OfferAudience({
   id,
   onDone,
@@ -571,6 +615,24 @@ export function ClientOffers({ index }: { index?: number }) {
     <section className="v3-stack ivory-client-offers" aria-label="Your offers">
       {index === undefined && (
         <Feedback error={query.error} onRetry={() => query.refetch()} />
+      )}
+      {index === undefined && offers.length > 0 && (
+        <LiveStage
+          className="iosm-detail-stage"
+          label={`${offers.length} offer${offers.length === 1 ? "" : "s"} to use`}
+        >
+          <StageFigure
+            visual={
+              <StageRing
+                fraction={offers.length / Math.max(1, query.data?.offers.length || 0)}
+                label={offers.length}
+              />
+            }
+            over="Your offers and vouchers"
+            value={`${offers.length} to use`}
+            under="They apply when you book"
+          />
+        </LiveStage>
       )}
       {shown.map(o => (
         <OfferCard

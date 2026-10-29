@@ -1,5 +1,7 @@
 import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
+import { StageFigure } from "../components/DetailStages";
+import { LiveStage } from "../design/live";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Orb, startOfDay, useNow } from "../design/LockParts";
@@ -21,7 +23,6 @@ import {
 import {
   Action,
   ActionLink,
-  Avatar,
   Feedback,
   Panel,
   Row,
@@ -192,10 +193,12 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
       />
       {data?.client && (
         <>
-          <div className="v3-inline">
-            <Avatar name={data.client.name} src={data.client.avatar} />
-            <h2 className="v3-detail-title">{data.client.name}</h2>
-          </div>
+          <h2 className="v3-detail-title">{data.client.name}</h2>
+          <ClientStage
+            name={data.client.name || "Client"}
+            avatar={data.client.avatar}
+            sessions={data.sessions}
+          />
           {data.client.email && (
             <a className="v3-inline" href={`mailto:${data.client.email}`}>
               <Mail size={18} />
@@ -305,6 +308,65 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
         </>
       )}
     </div>
+  );
+}
+
+/** A client at a glance, as in the prototype: their photo in a ring that fills as their next sitting gets
+ *  closer, what they have spent with you, and when they are next in. */
+function ClientStage({
+  name,
+  avatar,
+  sessions,
+}: {
+  name: string;
+  avatar?: string | null;
+  sessions: { startTime: string | Date; status: string; paidCents: number }[];
+}) {
+  const now = useNow();
+  const today0 = startOfDay(now);
+  const spent = sessions.reduce((sum, s) => sum + (s.paidCents || 0), 0);
+  const next = sessions
+    .filter(
+      s =>
+        !["cancelled", "no-show", "completed"].includes(s.status) &&
+        new Date(s.startTime).getTime() >= today0
+    )
+    .sort((a, b) => +new Date(a.startTime) - +new Date(b.startTime))[0];
+  const days = next ? daysUntil(next.startTime, now) : undefined;
+  const done = sessions.filter(s => s.status === "completed").length;
+  const when =
+    days === undefined
+      ? "No sitting booked"
+      : days === 0
+        ? "In today"
+        : days === 1
+          ? "Next sitting tomorrow"
+          : `Next sitting in ${days} days`;
+  const spentText = money(spent).replace(/\.00$/, "");
+  return (
+    <LiveStage
+      className="iosm-detail-stage"
+      label={`${name}: ${spentText} spent with you. ${when}.`}
+    >
+      <StageFigure
+        visual={
+          <Orb
+            name={name}
+            src={avatar}
+            fill={days === undefined ? 0 : 1 - Math.min(1, days / 60)}
+            size={84}
+          />
+        }
+        over="Spent with you"
+        value={spentText}
+        under={when}
+      />
+      {done > 0 && (
+        <p className="iosm-stage-cap">
+          {done} sitting{done === 1 ? "" : "s"} done with you
+        </p>
+      )}
+    </LiveStage>
   );
 }
 

@@ -7,6 +7,17 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { useGoogleAuthReady } from "@/lib/google-auth";
 import { activateWaitingSWForPublicPage } from "@/lib/pwa";
+import { LiveStage } from "../design/live";
+import { StageFigure, StageRing } from "../components/DetailStages";
+
+const REQUEST_STEPS = [
+  "Your idea",
+  "Placement & timing",
+  "References",
+  "Placement photo",
+  "Your details",
+  "Review request",
+];
 import {
   Action,
   ActionLink,
@@ -477,19 +488,22 @@ function Intake({
             } else void send();
           }}
         >
-          <Status>
-            Step {step} of 6 ·{" "}
-            {
-              [
-                "Your idea",
-                "Placement & timing",
-                "References",
-                "Placement photo",
-                "Your details",
-                "Review request",
-              ][step - 1]
-            }
-          </Status>
+          <LiveStage
+            className="iosm-detail-stage"
+            label={`Step ${step} of ${REQUEST_STEPS.length} · ${REQUEST_STEPS[step - 1]}`}
+          >
+            <StageFigure
+              visual={
+                <StageRing
+                  fraction={step / REQUEST_STEPS.length}
+                  label={`${step}/${REQUEST_STEPS.length}`}
+                />
+              }
+              over={`Request to ${artistName}`}
+              value={REQUEST_STEPS[step - 1]}
+              under={`${REQUEST_STEPS.length} short steps`}
+            />
+          </LiveStage>
           <Feedback loading={loading} />
           <fieldset disabled={busy || loading} className="v3-form">
             {step === 1 && (

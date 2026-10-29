@@ -8,13 +8,14 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
 import {
   Action,
-  Avatar,
   Feedback,
   Panel,
-  Row,
   Section,
   Status,
 } from "../design/primitives";
+import { ProposalStage, SplitBar } from "../components/DetailStages";
+import { LiveStage, StageNumber } from "../design/live";
+import { ProjectArt } from "../design/LockParts";
 type Step = "review" | "payment" | "confirming";
 /** Refresh immediate reads and webhook-dependent views without treating Stripe's client callback as payment confirmation. */
 function usePaymentRefresh(confirming: boolean) {
@@ -168,16 +169,35 @@ export function SessionPlanCheckoutSheet({
         ) : (
           plan && (
             <>
-              <Row
-                title={plan.artist?.name || "Your artist"}
-                detail={
-                  plan.items.length +
-                  " session" +
-                  (plan.items.length === 1 ? "" : "s")
+              <ProposalStage
+                face={
+                  <span className="iosm-orb-face" style={{ width: 56, height: 56 }}>
+                    <ProjectArt
+                      src={plan.artist?.avatar}
+                      name={plan.artist?.name || "Your artist"}
+                    />
+                  </span>
                 }
-                icon={
-                  <Avatar name={plan.artist?.name} src={plan.artist?.avatar} />
-                }
+                who={plan.artist?.name || "Your artist"}
+                title={plan.projectName || "Your tattoo"}
+                summary={`${plan.items.length} sitting${plan.items.length === 1 ? "" : "s"} · ${money(plan.totalEstimateCents).replace(/\.00$/, "")}`}
+                sittings={[...plan.items]
+                  .sort((a, b) => a.sessionIndex - b.sessionIndex)
+                  .map(item => ({
+                    key: item.id,
+                    label: new Date(item.startsAt).toLocaleDateString("en-AU", {
+                      day: "numeric",
+                      month: "short",
+                    }),
+                    state: "confirmed" as const,
+                  }))}
+                depositLabel={`Deposit ${money(plan.depositTotalCents).replace(/\.00$/, "")}`}
+                laterLabel="On the days"
+                depositCents={plan.depositTotalCents}
+                laterCents={Math.max(
+                  0,
+                  plan.totalEstimateCents - plan.depositTotalCents - voucherCreditCents
+                )}
               />
               <Section title="Your sessions">
                 {plan.items.map(item => (
@@ -342,6 +362,26 @@ export function BalanceCheckoutSheet({
         ) : (
           query.data && (
             <>
+              <LiveStage
+                className="iosm-detail-stage"
+                label={`${money(query.data.clientTotalCents)} due today`}
+              >
+                <StageNumber
+                  over={`${projectName} · ${artistName}`}
+                  value={money(query.data.clientTotalCents)}
+                  under="Total today"
+                />
+                <SplitBar
+                  parts={[
+                    {
+                      label: "Your sitting",
+                      value: query.data.remainingBalanceCents,
+                      tone: "ok",
+                    },
+                    { label: "Card fee", value: query.data.platformFeeCents },
+                  ]}
+                />
+              </LiveStage>
               <Panel>
                 <dl className="v3-facts">
                   <div>

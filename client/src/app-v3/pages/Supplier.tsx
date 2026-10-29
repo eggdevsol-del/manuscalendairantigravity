@@ -25,6 +25,8 @@ import {
   Status,
   Tabs,
 } from "../design/primitives";
+import { LiveStage, StageNumber } from "../design/live";
+import { OrderTrack } from "../components/DetailStages";
 import { ShopifyCatalogue as ShopifySyncTier } from "./Integrations";
 export default function SupplierToday() {
   const profile = trpc.merchantAuth.getMerchantProfile.useQuery();
@@ -205,6 +207,28 @@ export function SupplierOrders() {
               </Action>
               <h2 className="v3-detail-title">Order #{order.id}</h2>
               <p className="v3-muted">{bookingDate(order.createdAt)}</p>
+              {order.status !== "cancelled" && (
+                <LiveStage
+                  className="iosm-detail-stage"
+                  label={`Order #${order.id}: ${statusLabel(order.status)}`}
+                >
+                  <OrderTrack
+                    steps={["Ordered", "Paid", "Shipped"]}
+                    reached={
+                      order.status === "fulfilled"
+                        ? 2
+                        : order.status === "paid"
+                          ? 1
+                          : 0
+                    }
+                  />
+                  <StageNumber
+                    over={order.buyerName || order.buyerEmail || "Customer"}
+                    value={money(order.totalAmountCents, order.currency)}
+                    under={`${order.items.reduce((n, i) => n + i.quantity, 0)} items`}
+                  />
+                </LiveStage>
+              )}
               <div>
                 <Status>{statusLabel(order.status)}</Status>
               </div>

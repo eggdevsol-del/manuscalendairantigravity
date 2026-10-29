@@ -92,3 +92,22 @@ describe("the day saved from Fill this day", () => {
     expect(savedDay(savedKeys("sam", 9))).toBeNull();
   });
 });
+
+describe("the proposal preview", () => {
+  it("fills in as the client, service and dates are chosen", () => {
+    render(<BookingComposer conversationId={9} onSuccess={() => {}} />);
+    expect(
+      screen.getByRole("img", {
+        name: "New project for Sam Rivers: Choose a service",
+      })
+    ).toBeTruthy();
+    fireEvent.click(screen.getByText("Day session"));
+    const stage = screen.getByRole("img", {
+      name: "Day session for Sam Rivers: 1 sitting × 8h · $1,600",
+    });
+    // The dates step shows each sitting's date and how the price splits.
+    expect(stage.querySelector(".iosm-sprog li")?.className).toBe("confirmed");
+    expect(stage.textContent).toContain("Deposit $400");
+    expect(stage.textContent).toContain("On the days");
+  });
+});

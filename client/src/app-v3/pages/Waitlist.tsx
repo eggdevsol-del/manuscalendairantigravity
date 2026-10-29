@@ -7,6 +7,8 @@ import { PAYMENT_TIERS, resolvePaymentTier, roundCents } from "@shared/fees";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { SessionPlanCheckoutSheet } from "./Checkout";
+import { LiveStage } from "../design/live";
+import { initials } from "../design/LockParts";
 import {
   Action,
   ActionLink,
@@ -90,6 +92,7 @@ export default function Waitlist() {
         onRetry={() => query.refetch()}
       />
       {error && <p role="alert">{error.message}</p>}
+      {artist && <WaitingRow rows={query.data || []} />}
       {query.data?.length === 0 && (
         <Panel>
           <p>
@@ -353,5 +356,37 @@ export default function Waitlist() {
         />
       )}
     </Screen>
+  );
+}
+
+/** Everyone ready to come in sooner, as a row of faces: who is waiting and who has an offer. */
+function WaitingRow({
+  rows,
+}: {
+  rows: { id: number; name: string | null; status: string; expired?: boolean }[];
+}) {
+  const ready = rows.filter(
+    r => ["waiting", "offered"].includes(r.status) && !r.expired
+  );
+  if (!ready.length) return null;
+  const offered = ready.filter(r => r.status === "offered").length;
+  return (
+    <LiveStage
+      className="iosm-detail-stage"
+      label={`${ready.length} ready to come in sooner${offered ? `, ${offered} with an offer` : ""}`}
+    >
+      <ul className="iosm-wl-row">
+        {ready.map(r => (
+          <li key={r.id}>
+            <span className="iosm-orb-face">{initials(r.name || "Client")}</span>
+            <b>{(r.name || "Client").split(" ")[0]}</b>
+            <small>{r.status === "offered" ? "Offer sent" : "Waiting"}</small>
+          </li>
+        ))}
+      </ul>
+      <p className="iosm-stage-cap">
+        Ready to come in sooner if a space opens up.
+      </p>
+    </LiveStage>
   );
 }

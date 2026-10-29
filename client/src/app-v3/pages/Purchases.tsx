@@ -12,6 +12,8 @@ import {
   Section,
   Status,
 } from "../design/primitives";
+import { LiveStage, StageNumber } from "../design/live";
+import { OrderTrack } from "../components/DetailStages";
 export default function Purchases() {
   const { user } = useAuth();
   const query = trpc.storefront.getPurchases.useQuery();
@@ -171,6 +173,28 @@ export function SupplyOrders() {
             </Action>
           }
         >
+          {(order.status === "pending" || order.status === "paid") && (
+            <LiveStage
+              className="iosm-detail-stage"
+              label={`Order #${order.id}: ${order.status === "pending" ? "awaiting payment confirmation" : order.shopifyDraftOrderId ? "with the supplier" : "paid"}`}
+            >
+              <OrderTrack
+                steps={["Ordered", "Paid", "With supplier"]}
+                reached={
+                  order.status === "pending"
+                    ? 0
+                    : order.shopifyDraftOrderId
+                      ? 2
+                      : 1
+                }
+              />
+              <StageNumber
+                over={`Order #${order.id}`}
+                value={money(order.totalCents, order.currency)}
+                under={`${order.items.reduce((n, item) => n + item.quantity, 0)} items from ${order.supplier?.name || "your supplier"}`}
+              />
+            </LiveStage>
+          )}
           <Panel>
             <h2>{order.supplier?.name || "Supplier"}</h2>
             <Status>

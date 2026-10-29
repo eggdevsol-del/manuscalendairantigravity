@@ -2653,3 +2653,224 @@ button.iosm-weekbar[aria-pressed="true"] small {
   font-size: 11px;
   opacity: 0.6;
 }
+
+/* ── Detail screens: live displays ─────────────────────────
+   Each detail opens with a stage that shows its subject the way it really is. */
+.iosm-sbar {
+  display: flex;
+  gap: 2px;
+  height: 40px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 10%);
+}
+.iosm-sbar i {
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  padding: 0 6px;
+  background: rgb(255 255 255 / 18%);
+  font-style: normal;
+}
+.iosm-sbar i.ok {
+  background: #34c759;
+}
+.iosm-sbar b {
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.iosm-sitem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 4px 6px;
+  min-width: 0;
+}
+.iosm-sitem > :first-child {
+  flex: none;
+}
+.iosm-sitem .iosm-stage-num {
+  justify-items: start;
+  text-align: left;
+  min-width: 0;
+}
+.iosm-sitem .iosm-stage-num b {
+  font-size: 28px;
+  overflow-wrap: anywhere;
+}
+.iosm-sring {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.iosm-sring svg {
+  position: absolute;
+  inset: 0;
+}
+.iosm-sring .bg,
+.iosm-sring .fg {
+  fill: none;
+  stroke-width: 6;
+}
+.iosm-sring .bg {
+  stroke: rgb(255 255 255 / 22%);
+}
+.iosm-sring .fg {
+  stroke: var(--wall-acc);
+  stroke-linecap: round;
+}
+.iosm-sring b {
+  position: relative;
+  font: 700 20px var(--iosm-rounded);
+}
+.iosm-jar {
+  position: relative;
+  width: 44px;
+  height: 58px;
+  border: 2px solid rgb(255 255 255 / 75%);
+  border-radius: 10px 10px 14px 14px;
+  background: color-mix(in srgb, hsl(var(--h) 60% 55%) 18%, transparent);
+  overflow: hidden;
+}
+.iosm-jar.big {
+  width: 72px;
+  height: 96px;
+  border-radius: 16px 16px 22px 22px;
+}
+.iosm-jar i {
+  position: absolute;
+  inset: auto 0 0;
+  background: hsl(var(--h) 60% 55%);
+  transition: height 0.15s;
+}
+.iosm-strack {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 12px 4px;
+  padding: 0;
+  list-style: none;
+}
+.iosm-strack::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 20%);
+}
+.iosm-strack li {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.iosm-strack i {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgb(255 255 255 / 35%);
+  border-radius: 50%;
+  background: var(--wall-deep);
+}
+.iosm-strack .on i {
+  border-color: #34c759;
+  background: #34c759;
+}
+.iosm-strack small {
+  font-size: 12px;
+  opacity: 0.85;
+}
+.iosm-stage-cap {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.85;
+}
+.iosm-detail-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  object-fit: cover;
+  box-shadow: 0 14px 30px -12px rgb(0 0 0 / 50%);
+}
+/* People waiting for a space, in a row of faces. */
+.iosm-wl-row {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iosm-wl-row li {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 64px;
+}
+.iosm-wl-row .iosm-orb-face {
+  width: 48px;
+  height: 48px;
+}
+.iosm-wl-row b {
+  font-size: 14px;
+}
+.iosm-wl-row small {
+  font-size: 11px;
+  opacity: 0.75;
+}
+/* The supplies tray: one bottle for each line in the cart. */
+.iosm-tray {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 70px;
+}
+.iosm-bottle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 64px;
+  border-radius: 8px 8px 12px 12px;
+  background: rgb(255 255 255 / 25%);
+  overflow: hidden;
+}
+.iosm-bottle i {
+  position: absolute;
+  inset: auto 0 0;
+  height: 65%;
+  background: hsl(var(--h) 70% 55%);
+}
+.iosm-bottle b {
+  position: relative;
+  font: 700 14px var(--iosm-rounded);
+}
+/* The live sitting card's next step: Client arrived, then Finish and request the balance. */
+.iosm-np-next {
+  display: grid;
+  gap: 8px;
+}
+.iosm-np-next .v3-action {
+  min-height: 52px;
+  font-size: 17px;
+}
+.iosm-np-next p {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.8;
+}
+.iosm-np-split,
+.iosm-np-next {
+  grid-column: 1 / -1;
+}

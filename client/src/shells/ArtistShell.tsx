@@ -32,6 +32,7 @@ function ArtistWorkspace() {
 }
 
 function ArrivalOverlay() {
+  const [path] = useLocation();
   const [dismissed, setDismissed] = React.useState<number | null>(null);
   const snoozeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   React.useEffect(
@@ -60,6 +61,12 @@ function ArrivalOverlay() {
   }
 
   const appointment = activeCheckIn.appointment;
+  // The sitting's own page asks the same question on its live card.
+  if (
+    appointment.conversationId &&
+    path === `/projects/${appointment.conversationId}`
+  )
+    return null;
 
   return (
     <ArrivalToast

@@ -14,6 +14,9 @@ import {
   SearchField,
   Status,
 } from "../design/primitives";
+import { money } from "@/features/workspace/bookingPresentation";
+import { LiveStage } from "../design/live";
+import { Jar, StageFigure } from "../components/DetailStages";
 
 type ProductDraft = {
   id?: number;
@@ -239,6 +242,11 @@ export default function Products() {
                 });
             }}
           >
+            <ProductStage
+              draft={draft}
+              currency={currency}
+              most={Math.max(1, ...(query.data || []).map(p => p.inventoryCount))}
+            />
             <fieldset disabled={busy}>
               {(
                 [
@@ -358,5 +366,63 @@ export default function Products() {
         )}
       </SheetShell>
     </Screen>
+  );
+}
+
+/** The product as artists will see it, changing as you edit: its photo or a jar of stock (full means as
+ *  much as your best-stocked product), or a jar for each option. */
+function ProductStage({
+  draft,
+  currency,
+  most,
+}: {
+  draft: ProductDraft;
+  currency: string;
+  most: number;
+}) {
+  const cents = (v: string) =>
+    Number.isFinite(Number(v)) ? Math.round(Number(v) * 100) : 0;
+  const count = (v: string) => Math.max(0, Math.floor(Number(v) || 0));
+  if (draft.variants?.length) {
+    const top = Math.max(1, ...draft.variants.map(v => count(v.stock)));
+    return (
+      <LiveStage
+        className="iosm-detail-stage"
+        label={`${draft.title || "Product"}: ${draft.variants.length} options`}
+      >
+        <ul className="iosm-wl-row">
+          {draft.variants.map(v => (
+            <li key={v.id}>
+              <Jar seed={v.id} fill={count(v.stock) / top} />
+              <b>{v.name}</b>
+              <small>
+                {count(v.stock)} left · {money(cents(v.price), currency)}
+              </small>
+            </li>
+          ))}
+        </ul>
+      </LiveStage>
+    );
+  }
+  const stock = count(draft.stock);
+  const price = cents(draft.price);
+  return (
+    <LiveStage
+      className="iosm-detail-stage"
+      label={`${draft.title || "New product"}: ${stock} in stock`}
+    >
+      <StageFigure
+        visual={
+          /^https?:\/\//.test(draft.imageUrl.trim()) ? (
+            <img className="iosm-detail-photo" src={draft.imageUrl.trim()} alt="" />
+          ) : (
+            <Jar big seed={draft.id || draft.title || "new"} fill={stock / Math.max(most, stock, 1)} />
+          )
+        }
+        over={draft.isActive ? "Published" : "Not published"}
+        value={draft.title || "New product"}
+        under={`${price ? money(price, currency) : "No price yet"} · ${stock} in stock`}
+      />
+    </LiveStage>
   );
 }

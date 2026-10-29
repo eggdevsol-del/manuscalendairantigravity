@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { LiveStage, StageNumber, TouchSlider } from "../design/live";
 import { MoneyRiver } from "../design/MoneyRiver";
+import { SplitBar } from "../components/DetailStages";
 import { initials, startOfDay, useNow } from "../design/LockParts";
 import { addDays } from "../design/calendarDays";
 import { isExternalEvent, moneyWeeks, sittingMoney } from "../design/landingData";
@@ -328,6 +329,38 @@ export function Money() {
               </>
             }
           >
+            <LiveStage
+              className="iosm-detail-stage"
+              label={`${money(Math.abs(entry.netCents ?? entry.amountCents), currency)} ${entry.type === "refund" ? "refunded" : "reached you"}`}
+            >
+              <StageNumber
+                over={[
+                  entry.clientName,
+                  statusLabel(entry.type),
+                  entry.createdAt ? bookingDate(entry.createdAt) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                value={money(Math.abs(entry.netCents ?? entry.amountCents), currency)}
+                under={entry.type === "refund" ? "refunded" : "reached you"}
+              />
+              {entry.type !== "refund" && (
+                <>
+                  <SplitBar
+                    parts={[
+                      { label: "You", value: entry.netCents ?? entry.amountCents, tone: "ok" },
+                      { label: "Tattoi", value: entry.artistFeeCents || 0 },
+                    ]}
+                  />
+                  <p className="iosm-stage-cap">
+                    Client paid {money(entry.amountCents + (entry.platformFeeCents || 0), currency)}
+                    {entry.platformFeeCents
+                      ? `, including a ${money(entry.platformFeeCents, currency)} card fee.`
+                      : "."}
+                  </p>
+                </>
+              )}
+            </LiveStage>
             <dl className="v3-facts">
               {entry.type === "refund" ? (
                 <div>

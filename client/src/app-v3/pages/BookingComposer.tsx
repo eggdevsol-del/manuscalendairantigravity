@@ -33,6 +33,8 @@ import {
   savedKeys,
 } from "../design/calendarDays";
 import { useSavedDays } from "../data/useSavedDays";
+import { ProposalStage } from "../components/DetailStages";
+import { ProjectArt } from "../design/LockParts";
 type DraftSession = {
   date: string;
   time: string;
@@ -469,6 +471,17 @@ export function BookingComposer({
           Finding eligible dates using this offer and your availability…
         </p>
       )}
+      <ProposalPreview
+        who={step === "client" && !clientId ? "Choose a client" : clientName}
+        avatar={
+          selectedClient?.avatar ||
+          (conversation.data?.otherUser as { avatar?: string | null } | undefined)
+            ?.avatar
+        }
+        service={service}
+        sessions={sessions}
+        dated={step === "details" || step === "review"}
+      />
       <Status>
         {
           {
@@ -930,5 +943,62 @@ export function BookingComposer({
         </>
       ) : null}
     </div>
+  );
+}
+
+const hoursLabel = (minutes: number) => {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return h && m ? `${h}h ${m}m` : h ? `${h}h` : `${m}m`;
+};
+const wholeMoney = (cents: number) => money(cents).replace(/\.00$/, "");
+
+/** The proposal the client will receive, filling in as you go: who, the service, each sitting's date once
+ *  the dates are set, and how the price splits between the deposit and the days. */
+function ProposalPreview({
+  who,
+  avatar,
+  service,
+  sessions,
+  dated,
+}: {
+  who: string;
+  avatar?: string | null;
+  service: string;
+  sessions: DraftSession[];
+  dated: boolean;
+}) {
+  const cents = (v: string) =>
+    Number.isFinite(Number(v)) ? Math.max(0, Math.round(Number(v) * 100)) : 0;
+  const total = sessions.reduce((sum, s) => sum + cents(s.price), 0);
+  const deposit = sessions.reduce((sum, s) => sum + cents(s.deposit), 0);
+  const count = sessions.length;
+  const summary = service
+    ? `${count} sitting${count === 1 ? "" : "s"} × ${hoursLabel(sessions[0].duration)} · ${total ? wholeMoney(total) : "no price yet"}`
+    : "Choose a service";
+  return (
+    <ProposalStage
+      face={
+        <span className="iosm-orb-face" style={{ width: 56, height: 56 }}>
+          <ProjectArt src={avatar} name={who} />
+        </span>
+      }
+      who={who}
+      title={service || "New project"}
+      summary={summary}
+      sittings={
+        service
+          ? sessions.map((s, i) => ({
+              key: i,
+              label: dated && s.date ? format(new Date(`${s.date}T12:00`), "d MMM") : "date",
+              state: dated && s.date ? "confirmed" : "todo",
+            }))
+          : []
+      }
+      depositLabel={`Deposit ${wholeMoney(deposit)}`}
+      laterLabel="On the days"
+      depositCents={deposit}
+      laterCents={Math.max(0, total - deposit)}
+    />
   );
 }
