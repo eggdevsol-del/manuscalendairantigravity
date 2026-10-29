@@ -72,6 +72,17 @@ export function hoursFor(schedule: any[], day: number) {
   return { open: true as const, start, end: close, breaks, kind: "work" as const };
 }
 
+/** Hours open for tattooing on a day, less breaks. On a day off: the longest tattooing day of the week. */
+export function chairHours(schedule: any[], day: number) {
+  const hours = (d: number) => {
+    const h = hoursFor(schedule, d);
+    return h.open ? (h.end - h.start - h.breaks) / 60 : 0;
+  };
+  const today = hours(day);
+  if (today > 0) return today;
+  return Math.max(0, ...Array.from({ length: 7 }, (_, i) => hours(day + i * 86400000)));
+}
+
 /** Free working minutes: opening hours less breaks and bookings. None on a day off. */
 export function freeMinutes(
   schedule: any[],

@@ -4,6 +4,10 @@ import {
   clientProjects,
   daysUntil,
   discoverArtists,
+  earnedSince,
+  ordersSince,
+  share,
+  soldBetween,
   healingDay,
   isExternalEvent,
   lowStock,
@@ -206,5 +210,32 @@ describe("discover artists", () => {
 
   it("leaves out artists without a public page", () => {
     expect(discoverArtists([card(1, "a", { artistSlug: null })])).toEqual([]);
+  });
+});
+
+describe("ring scales", () => {
+  it("measures a part against a whole, and is empty with nothing to measure against", () => {
+    expect(share(3, 4)).toBe(0.75);
+    expect(share(9, 4)).toBe(1);
+    expect(share(2, 0)).toBe(0);
+  });
+
+  it("adds up the last eight weeks of earnings", () => {
+    const daily = [
+      { date: "2026-09-08", netCents: 900 }, // before the window
+      { date: "2026-09-09", netCents: 100 },
+      { date: "2026-11-04", netCents: 50 },
+    ];
+    expect(earnedSince(daily, now)).toBe(150);
+  });
+
+  it("counts takings and orders inside a window", () => {
+    const orders = [
+      { id: 1, status: "paid", totalAmountCents: 1000, createdAt: day(3) },
+      { id: 2, status: "fulfilled", totalAmountCents: 500, createdAt: new Date(2026, 9, 1).toISOString() },
+      { id: 3, status: "cancelled", totalAmountCents: 700, createdAt: day(2) },
+    ];
+    expect(soldBetween(orders, now - 60 * 86400000, now - 30 * 86400000)).toBe(500);
+    expect(ordersSince(orders, now)).toBe(1);
   });
 });

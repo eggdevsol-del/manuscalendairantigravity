@@ -40,13 +40,15 @@ import {
   trimHours,
   useNow,
 } from "../design/LockParts";
-import { addDays, parseSchedule } from "../design/calendarDays";
+import { addDays, chairHours, parseSchedule } from "../design/calendarDays";
 import {
   bookedAhead,
   daysUntil,
+  earnedSince,
   isExternalEvent,
   moneyWeeks,
   nextSittingByClient,
+  share,
   sittingMoney,
 } from "../design/landingData";
 import { MoneyRiver } from "../design/MoneyRiver";
@@ -79,6 +81,11 @@ export default function LockHome() {
   const settings = trpc.artistSettings.get.useQuery();
   const leads = trpc.funnel.getLeads.useQuery(
     { status: "new", limit: 20, offset: 0 },
+    { refetchInterval: 30000 }
+  );
+  // Every recent request, to measure the new ones against the ones still open.
+  const allLeads = trpc.funnel.getLeads.useQuery(
+    { limit: 100, offset: 0 },
     { refetchInterval: 30000 }
   );
   const conversations = trpc.conversations.list.useQuery(undefined, {
@@ -184,8 +191,13 @@ export default function LockHome() {
       days: daysUntil(a.startTime, now),
     }));
 
+  const furthest = Math.max(0, ...people.map(p => p.days));
+
   // ── Requests & messages ─────────────────────────────────
   const newLeads = leads.data?.leads ?? [];
+  const openLeads = ((allLeads.data?.leads ?? []) as { status: string }[]).filter(l =>
+    ["new", "contacted", "qualified", "proposal_sent"].includes(l.status)
+  );
   const chats = [...(conversations.data ?? [])]
     .sort((a, b) => (b.unreadCount || 0) - (a.unreadCount || 0))
     .slice(0, 6);
@@ -232,21 +244,26 @@ export default function LockHome() {
           })}
         </p>
         <div className="iosm-widgets">
+          {/* Each ring measures against your own data: today's working hours, what you earned in the
+              last eight weeks, and the requests still open. */}
           <Widget
             href="/calendar"
-            value={hoursToday / 8}
+            value={share(hoursToday, chairHours(schedule, now))}
             label={`${Math.round(hoursToday)}h`}
             caption="in the chair"
           />
           <Widget
             href="/money"
-            value={Math.min(1, ahead / 4000000)}
+            value={share(ahead, Math.max(ahead, earnedSince(earnings.data?.daily ?? [], now)))}
             label={compactMoney(ahead)}
             caption="booked ahead"
           />
           <Widget
             href="/conversations"
-            value={Math.min(1, newLeads.length / 6)}
+            value={share(
+              openLeads.filter(l => l.status === "new").length,
+              openLeads.length
+            )}
             label={String(newLeads.length)}
             caption="new requests"
           />
@@ -493,7 +510,7 @@ export default function LockHome() {
                 <Orb
                   name={client?.name || sitting.clientName || "Client"}
                   src={client?.avatar}
-                  fill={1 - Math.min(1, days / MINI_DAYS)}
+                  fill={1 - share(days, furthest + 1)}
                   size={i ? 50 : 66}
                 />
                 <b>{(client?.name || sitting.clientName || "Client").split(" ")[0]}</b>

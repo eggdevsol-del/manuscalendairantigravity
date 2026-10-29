@@ -62,7 +62,7 @@ type Product = {
 };
 
 /** Products at or below the threshold. A product with variants is low when any variant is. */
-export function lowStock<T extends Product>(products: T[], threshold = 5) {
+export function lowStock<T extends Product>(products: T[], threshold: number) {
   return products.flatMap(p => {
     const variants = p.variants ?? [];
     const low = variants.length
@@ -309,4 +309,43 @@ export function discoverArtists<T extends FeedCard>(cards: T[]) {
         null,
     };
   });
+}
+
+// ── Ring scales ──────────────────────────────────────────
+// Each landing ring fills against a measure from the same data, never a fixed amount.
+
+/** How much of a whole a part is, from 0 to 1. Nothing to measure against gives an empty ring. */
+export function share(part: number, whole: number) {
+  return whole > 0 ? Math.max(0, Math.min(1, part / whole)) : 0;
+}
+
+/** Net earnings in the last `days` days, from the daily earnings. */
+export function earnedSince(
+  daily: { date: string; netCents: number }[],
+  now: number,
+  days = 56
+) {
+  const from = new Date(midnight(now) - days * DAY).toLocaleDateString("en-CA");
+  const today = new Date(now).toLocaleDateString("en-CA");
+  return daily
+    .filter(d => d.date >= from && d.date <= today)
+    .reduce((sum, d) => sum + (d.netCents || 0), 0);
+}
+
+/** Takings from paid and fulfilled orders placed between two times. */
+export function soldBetween(orders: Order[], from: number, to: number) {
+  return orders
+    .filter(o => {
+      const t = o.createdAt ? new Date(o.createdAt).getTime() : NaN;
+      return (o.status === "paid" || o.status === "fulfilled") && t > from && t <= to;
+    })
+    .reduce((sum, o) => sum + (o.totalAmountCents || 0), 0);
+}
+
+/** Paid and fulfilled orders placed in the last `days` days. */
+export function ordersSince(orders: Order[], now: number, days = 30) {
+  return orders.filter(o => {
+    const t = o.createdAt ? new Date(o.createdAt).getTime() : NaN;
+    return (o.status === "paid" || o.status === "fulfilled") && t > now - days * DAY;
+  }).length;
 }

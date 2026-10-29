@@ -5,6 +5,7 @@ import {
   dayColumn,
   duration,
   freeMinutes,
+  chairHours,
   hoursFor,
   parseSchedule,
   savedDayIn,
@@ -96,5 +97,27 @@ describe("calendar days", () => {
       expect(takeLocalSavedDays()).toEqual({ "client:a": "2026-11-05" });
       expect(takeLocalSavedDays()).toEqual({});
     });
+  });
+});
+
+describe("chair hours", () => {
+  // Wednesday 4 November 2026.
+  const wed = new Date(2026, 10, 4, 9).getTime();
+  const week = {
+    wednesday: { enabled: true, type: "work", start: "09:00", end: "17:00", breaks: [{ start: "12:00", end: "12:30" }] },
+    thursday: { enabled: true, type: "design", start: "09:00", end: "17:00" },
+    friday: { enabled: true, type: "work", start: "10:00", end: "20:00" },
+  };
+
+  it("measures today's tattooing hours less breaks", () => {
+    expect(chairHours(parseSchedule(week), wed)).toBe(7.5);
+  });
+
+  it("uses the week's longest tattooing day on a day off or a design day", () => {
+    expect(chairHours(parseSchedule(week), wed + 86400000)).toBe(10);
+  });
+
+  it("is zero with no tattooing days", () => {
+    expect(chairHours([], wed)).toBe(0);
   });
 });

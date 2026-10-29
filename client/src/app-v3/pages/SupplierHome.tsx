@@ -14,7 +14,14 @@ import { money } from "@/features/workspace/bookingPresentation";
 import { Avatar, Feedback } from "../design/primitives";
 import { messagePreview } from "../data/messagePresentation";
 import { Group, Note, Widget, compactMoney, relativeDay, useNow } from "../design/LockParts";
-import { lowStock, orderBelt, soldSince } from "../design/landingData";
+import {
+  lowStock,
+  orderBelt,
+  ordersSince,
+  share,
+  soldBetween,
+  soldSince,
+} from "../design/landingData";
 
 /** The supplier's landing page: the same lock screen, for a store. Rings for orders to pack, stock running
  *  low and the last 30 days of sales, then groups for packing, the order belt, low stock, messages and the
@@ -35,8 +42,14 @@ export default function SupplierHome() {
 
   const all = orders.data ?? [];
   const belt = orderBelt(all);
-  const low = lowStock(products.data ?? [], profile.data?.lowStockThreshold ?? 5);
+  // The store's own low-stock level; nothing counts as low until it loads.
+  const low = profile.data
+    ? lowStock(products.data ?? [], profile.data.lowStockThreshold)
+    : [];
   const sold = soldSince(all, now);
+  // Each ring measures against the store's own data: the last 30 days' orders, all products, and the
+  // 30 days before.
+  const soldBefore = soldBetween(all, now - 60 * 86400000, now - 30 * 86400000);
   const currency = profile.data?.country === "NZ" ? "NZD" : "AUD";
   const live = profile.data?.status === "active";
   const items = (o: (typeof all)[number]) => {
@@ -69,19 +82,22 @@ export default function SupplierHome() {
         <div className="iosm-widgets">
           <Widget
             href="/merchant/orders"
-            value={Math.min(1, belt.toPack.length / 5)}
+            value={share(
+              belt.toPack.length,
+              Math.max(belt.toPack.length, ordersSince(all, now))
+            )}
             label={String(belt.toPack.length)}
             caption="to pack"
           />
           <Widget
             href="/merchant/products"
-            value={Math.min(1, low.length / 5)}
+            value={share(low.length, (products.data ?? []).length)}
             label={String(low.length)}
             caption="running low"
           />
           <Widget
             href="/merchant/orders"
-            value={Math.min(1, sold / 500000)}
+            value={share(sold, Math.max(sold, soldBefore))}
             label={compactMoney(sold)}
             caption="sold, 30 days"
           />

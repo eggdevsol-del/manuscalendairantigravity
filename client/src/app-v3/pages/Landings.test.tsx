@@ -116,5 +116,15 @@ describe("supplier landing", () => {
     expect(within(belt).getByText("On the way · 1")).toBeTruthy();
     expect(screen.getByText("Round liners")).toBeTruthy();
     expect(screen.getByText("Not published yet")).toBeTruthy();
+    // Rings measure against the store's data: 1 of the month's 2 orders to pack, 1 of 2 products low,
+    // and sales against nothing in the 30 days before.
+    const ring = (caption: string) => {
+      const fg = screen.getByText(caption).parentElement?.querySelector(".fg");
+      const [part, whole] = (fg?.getAttribute("stroke-dasharray") || "0 1").split(" ").map(Number);
+      return Math.round((part / whole) * 100) / 100;
+    };
+    expect(ring("to pack")).toBe(0.5);
+    expect(ring("running low")).toBe(0.5);
+    expect(ring("sold, 30 days")).toBe(1);
   });
 });
