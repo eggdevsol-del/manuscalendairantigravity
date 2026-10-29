@@ -48,6 +48,7 @@ import {
   isExternalEvent,
   moneyWeeks,
   nextSittingByClient,
+  openRequests,
   share,
   sittingMoney,
 } from "../design/landingData";
@@ -195,9 +196,7 @@ export default function LockHome() {
 
   // ── Requests & messages ─────────────────────────────────
   const newLeads = leads.data?.leads ?? [];
-  const openLeads = ((allLeads.data?.leads ?? []) as { status: string }[]).filter(l =>
-    ["new", "contacted", "qualified", "proposal_sent"].includes(l.status)
-  );
+  const openLeads = openRequests((allLeads.data?.leads ?? []) as { status: string }[]);
   const chats = [...(conversations.data ?? [])]
     .sort((a, b) => (b.unreadCount || 0) - (a.unreadCount || 0))
     .slice(0, 6);

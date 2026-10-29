@@ -5,6 +5,7 @@ import {
   daysUntil,
   discoverArtists,
   earnedSince,
+  openRequests,
   ordersSince,
   share,
   soldBetween,
@@ -237,5 +238,18 @@ describe("ring scales", () => {
     ];
     expect(soldBetween(orders, now - 60 * 86400000, now - 30 * 86400000)).toBe(500);
     expect(ordersSince(orders, now)).toBe(1);
+  });
+});
+
+describe("open requests", () => {
+  it("keeps requests until the deposit is verified, lost or archived", () => {
+    const leads = [
+      "new", "viewed", "contacted", "qualifying", "proposal_sent", "proposal_accepted",
+      "deposit_requested", "deposit_pending", "deposit_verified", "scheduled", "completed", "lost", "archived",
+    ].map(status => ({ status }));
+    expect(openRequests(leads).map(l => l.status)).toEqual([
+      "new", "viewed", "contacted", "qualifying", "proposal_sent", "proposal_accepted",
+      "deposit_requested", "deposit_pending",
+    ]);
   });
 });

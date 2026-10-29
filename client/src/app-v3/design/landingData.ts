@@ -349,3 +349,9 @@ export function ordersSince(orders: Order[], now: number, days = 30) {
     return (o.status === "paid" || o.status === "fulfilled") && t > now - days * DAY;
   }).length;
 }
+
+/** Requests still in progress: everything until the deposit is verified, or the request is lost or archived. */
+export function openRequests<T extends { status: string }>(leads: T[]) {
+  const closed = ["deposit_verified", "scheduled", "completed", "lost", "archived"];
+  return leads.filter(l => !closed.includes(l.status));
+}
