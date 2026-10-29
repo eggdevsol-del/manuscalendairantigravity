@@ -915,21 +915,41 @@ select {
   outline: 1.5px dashed rgb(255 255 255 / 45%);
   outline-offset: -1.5px;
 }
+/* The art fills the whole card, as in the prototype: the project photo, or the wallpaper's colours with
+   the client's initials large and faint on the right. The text sits on top. */
 .iosm-sc-art {
-  flex: none;
-  width: 56px;
-  align-self: stretch;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: linear-gradient(160deg, var(--wall-acc), var(--wall-deep));
-  font: 700 17px var(--iosm-rounded);
+  place-items: center end;
+  padding-right: 18px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, var(--wall-acc), var(--wall-deep));
+  font: 800 56px var(--iosm-rounded);
+  letter-spacing: -1px;
+  color: rgb(255 255 255 / 30%);
 }
 .iosm-sc.short .iosm-sc-art {
-  width: 38px;
-  font-size: 13px;
+  padding-right: 12px;
+  font-size: 22px;
+}
+.iosm-sc::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgb(10 14 28 / 30%), rgb(10 14 28 / 0%) 70%);
+  pointer-events: none;
+}
+.iosm-sc.pending .iosm-sc-art {
+  opacity: 0.45;
 }
 .iosm-sc-copy {
+  position: relative;
+  z-index: 1;
+  padding: 2px 4px;
   min-width: 0;
   display: grid;
   align-content: start;
@@ -2001,25 +2021,11 @@ html:root .v3-avatar img {
 }
 .iosm-sc.photo .iosm-sc-art,
 .iosm-sc.photo.short .iosm-sc-art {
-  position: absolute;
-  inset: 0;
-  width: auto;
-  border-radius: inherit;
-  z-index: 0;
+  display: block;
+  padding: 0;
 }
 .iosm-sc.photo::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  border-radius: inherit;
   background: linear-gradient(90deg, rgb(10 14 28 / 72%), rgb(10 14 28 / 18%));
-  pointer-events: none;
-}
-.iosm-sc.photo .iosm-sc-copy {
-  position: relative;
-  z-index: 1;
-  padding: 2px 4px;
 }
 .iosm-sc.photo.live {
   box-shadow: inset 0 0 0 2px var(--wall-acc), 0 0 0 2px var(--wall-acc);
