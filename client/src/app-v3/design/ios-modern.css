@@ -3637,3 +3637,9 @@ button.iosm-weekbar[aria-pressed="true"] small {
   font-size: 15px;
   font-weight: 600;
 }
+/* Small jars sit on glass tinted by the wallpaper; a lighter fill keeps them readable on every wallpaper. */
+.iosm-ss-card-foot .iosm-jar i,
+.iosm-ss-thumbs .iosm-jar i,
+.iosm-ss-tile .iosm-jar i {
+  background: hsl(var(--h) 85% 74%);
+}

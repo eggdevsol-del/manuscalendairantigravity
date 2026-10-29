@@ -88,17 +88,36 @@ export function shelvesOf(products: StoreProduct[]) {
     .map(([title, list]) => ({ title, products: list }));
 }
 
+type OrderItem = {
+  supplierProductId: number;
+  variantId: number | null;
+  productTitle: string;
+  variantTitle: string | null;
+  quantity: number;
+};
 type PastOrder = {
   id: number;
   supplierId: number;
   status: string | null;
   createdAt: string | Date;
-  items: {
-    supplierProductId: number;
-    variantId: number | null;
-    quantity: number;
-  }[];
+  items: OrderItem[];
 };
+
+/** An ordered item in today's catalogue. A re-imported catalogue gives products new ids, so an item the ids
+ *  no longer find is matched by its product and option names. */
+export function matchOrderItem(
+  products: StoreProduct[],
+  item: Omit<OrderItem, "quantity">
+) {
+  const product =
+    products.find(p => p.id === item.supplierProductId) ??
+    products.find(p => p.title === item.productTitle.trim());
+  const variant =
+    product?.variants.find(v => v.id === item.variantId) ??
+    product?.variants.find(v => v.name === (item.variantTitle ?? "")) ??
+    (product?.variants.length === 1 ? product.variants[0] : undefined);
+  return product ? { product, variant } : null;
+}
 
 /** The latest paid order from this supplier, matched to today's catalogue: options still sold and in stock,
  *  at the quantity ordered last time and never more than the stock. */
@@ -112,10 +131,15 @@ export function fromLastOrder(
     .sort((a, b) => ms(b.createdAt) - ms(a.createdAt))[0];
   if (!order) return null;
   const lines = order.items.flatMap(item => {
-    const product = products.find(p => p.id === item.supplierProductId);
-    const variant = product?.variants.find(v => v.id === item.variantId);
-    return product && variant && variant.stock > 0
-      ? [{ product, variant, quantity: Math.min(item.quantity, variant.stock) }]
+    const found = matchOrderItem(products, item);
+    return found?.variant && found.variant.stock > 0
+      ? [
+          {
+            product: found.product,
+            variant: found.variant,
+            quantity: Math.min(item.quantity, found.variant.stock),
+          },
+        ]
       : [];
   });
   return lines.length ? { order, lines } : null;

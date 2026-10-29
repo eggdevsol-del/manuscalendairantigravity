@@ -76,6 +76,8 @@ describe("fromLastOrder", () => {
   const item = (supplierProductId: number, variantId: number, quantity: number) => ({
     supplierProductId,
     variantId,
+    productTitle: `Old ${supplierProductId}`,
+    variantTitle: null,
     quantity,
   });
   it("takes the latest paid order from this supplier, capped by today's stock", () => {
@@ -93,6 +95,28 @@ describe("fromLastOrder", () => {
     expect(result?.lines.map(l => [l.variant.id, l.quantity])).toEqual([
       [100, 5],
       [110, 3],
+    ]);
+  });
+  it("finds items by name once a re-import has changed the ids", () => {
+    const result = fromLastOrder(
+      [
+        {
+          id: 9,
+          supplierId: 7,
+          status: "paid",
+          createdAt: "2026-10-01T00:00:00Z",
+          items: [
+            { supplierProductId: 1, variantId: 2, productTitle: "Product 10", variantTitle: "Option 100", quantity: 2 },
+            { supplierProductId: 3, variantId: 4, productTitle: "Product 11", variantTitle: "Default Title", quantity: 1 },
+          ],
+        },
+      ],
+      7,
+      products
+    );
+    expect(result?.lines.map(l => [l.variant.id, l.quantity])).toEqual([
+      [100, 2],
+      [110, 1],
     ]);
   });
   it("is empty without a paid order", () => {

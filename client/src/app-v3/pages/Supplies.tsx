@@ -13,6 +13,7 @@ import {
   countsStock,
   freeDelivery,
   fromLastOrder,
+  matchOrderItem,
   type StoreProduct,
 } from "../design/supplyStore";
 import {
@@ -352,11 +353,9 @@ function Catalogue({ id }: { id: number }) {
     reordered.current = true;
     addAtLeast(
       order.items.flatMap(item => {
-        const variant = query.data
-          .find(p => p.id === item.supplierProductId)
-          ?.variants.find(v => v.id === item.variantId);
-        return variant && variant.inventoryCount > 0
-          ? [{ variantId: variant.id, quantity: item.quantity, stock: variant.inventoryCount }]
+        const variant = matchOrderItem(products, item)?.variant;
+        return variant && variant.stock > 0
+          ? [{ variantId: variant.id, quantity: item.quantity, stock: variant.stock }]
           : [];
       })
     );

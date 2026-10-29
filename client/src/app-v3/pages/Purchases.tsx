@@ -179,8 +179,11 @@ export function SupplyOrders() {
     { supplierId: order?.supplierId ?? 0 },
     { enabled: !!order && order.supplier?.isActive === 1 }
   );
-  const photo = (productId: number) =>
-    catalogue.data?.find(p => p.id === productId)?.imageUrl;
+  const photo = (productId: number, title: string) =>
+    (
+      catalogue.data?.find(p => p.id === productId) ??
+      catalogue.data?.find(p => p.title.trim() === title.trim())
+    )?.imageUrl;
   return (
     <Screen
       title="Supply orders"
@@ -228,7 +231,7 @@ export function SupplyOrders() {
               <li key={item.id}>
                 <span className="iosm-ss-tile">
                   <ProductArt
-                    imageUrl={photo(item.supplierProductId)}
+                    imageUrl={photo(item.supplierProductId, item.productTitle)}
                     seed={item.supplierProductId}
                     fill={1}
                   />
