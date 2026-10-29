@@ -35,12 +35,16 @@ describe("calendar days", () => {
       start: 600,
       end: 1080,
       breaks: 30,
+      kind: "work",
     });
     const keyed = parseSchedule({ wed: { day: "Wednesday", enabled: true, startTime: "09:00", endTime: "17:00" } });
     expect(hoursFor(keyed, day)).toMatchObject({ open: true, start: 540, end: 1020 });
     // The format production stores: keyed by day name, with no day field inside.
     const byName = parseSchedule('{"wednesday":{"enabled":true,"start":"09:00","end":"17:00","type":"work"}}');
     expect(hoursFor(byName, day)).toMatchObject({ open: true, start: 540, end: 1020 });
+    // Design and personal days are not tattooing availability.
+    const design = parseSchedule('{"wednesday":{"enabled":true,"start":"09:00","end":"17:00","type":"design"}}');
+    expect(hoursFor(design, day)).toMatchObject({ open: false, start: null, kind: "design" });
     // A day off has no hours, so nothing to fill.
     expect(hoursFor(schedule, addDays(day, 1))).toMatchObject({ open: false, start: null, end: null });
     expect(freeMinutes(schedule, addDays(day, 1), [])).toBe(0);

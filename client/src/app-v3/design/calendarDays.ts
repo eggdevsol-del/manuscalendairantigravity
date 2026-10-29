@@ -49,7 +49,8 @@ export function parseSchedule(value: unknown): any[] {
     : [];
 }
 
-/** Opening hours for a day, in minutes from midnight, from the artist's saved schedule. A day off has none. */
+/** Opening hours for a day, in minutes from midnight, from the artist's saved schedule. A day off has none,
+ *  and so do design and personal days: they are kept apart from tattooing availability. */
 export function hoursFor(schedule: any[], day: number) {
   const name = new Date(day).toLocaleDateString("en-US", { weekday: "long" });
   const row = schedule.find(
@@ -57,14 +58,18 @@ export function hoursFor(schedule: any[], day: number) {
   );
   const start = minutes(row?.start || row?.startTime);
   const close = minutes(row?.end || row?.endTime);
-  if (!row?.enabled || start === null || close === null || close <= start)
-    return { open: false as const, start: null, end: null, breaks: 0 };
+  const tattooing = !row?.type || row.type === "work";
+  // What the day is when it isn't open for tattooing: a design or personal day, or a day off.
+  const kind: "design" | "personal" | "off" =
+    row?.enabled && (row.type === "design" || row.type === "personal") ? row.type : "off";
+  if (!row?.enabled || !tattooing || start === null || close === null || close <= start)
+    return { open: false as const, start: null, end: null, breaks: 0, kind };
   const breaks = (row.breaks || []).reduce((sum: number, b: any) => {
     const a = minutes(b.start || b.startTime);
     const z = minutes(b.end || b.endTime);
     return a !== null && z !== null && z > a ? sum + z - a : sum;
   }, 0);
-  return { open: true as const, start, end: close, breaks };
+  return { open: true as const, start, end: close, breaks, kind: "work" as const };
 }
 
 /** Free working minutes: opening hours less breaks and bookings. None on a day off. */

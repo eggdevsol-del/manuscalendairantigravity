@@ -273,7 +273,7 @@ function useSettingValues(enabled: boolean) {
     ).length;
     const services = parseSchedule(s.services).length;
     const tier = resolvePaymentTier(plan.data?.tier ?? s.subscriptionTier);
-    values.hours = `${days} day${days === 1 ? "" : "s"} a week · ${services} service${services === 1 ? "" : "s"} · ${resolveDepositPercentage(tier, s.depositPercentage)}% deposit`;
+    values.hours = `${days} tattooing day${days === 1 ? "" : "s"} a week · ${services} service${services === 1 ? "" : "s"} · ${resolveDepositPercentage(tier, s.depositPercentage)}% deposit`;
     values.link = s.publicSlug
       ? `${window.location.host.replace(/^www\./, "")}/book/${s.publicSlug}${s.funnelEnabled === 0 ? " · paused" : ""}`
       : "Not set up yet";

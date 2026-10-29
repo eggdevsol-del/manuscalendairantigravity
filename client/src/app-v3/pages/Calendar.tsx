@@ -436,7 +436,8 @@ export function DayCard({
       0
     ) / 3600000;
   const free = freeMinutes(schedule, day, sittings);
-  const open = hoursFor(schedule, day).open;
+  const dayHours = hoursFor(schedule, day);
+  const open = dayHours.open;
   const column = sittings.length ? dayColumn(sittings, day, now) : null;
   const r = 13;
   const c = 2 * Math.PI * r;
@@ -462,7 +463,11 @@ export function DayCard({
               ? `${sittings.length} sitting${sittings.length === 1 ? "" : "s"} · ${duration(Math.round(hours * 60))} in the chair`
               : open
                 ? "Free"
-                : "Day off"}
+                : dayHours.kind === "design"
+                  ? "Design day"
+                  : dayHours.kind === "personal"
+                    ? "Personal day"
+                    : "Day off"}
           </em>
         </span>
         <svg

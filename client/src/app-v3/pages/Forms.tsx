@@ -199,6 +199,18 @@ function TemplateEditor({
   );
 }
 
+/** **Bold** text, the same way the signing screen shows it. */
+const bold = (line: string) =>
+  line
+    .split(/(\*\*[^*]+\*\*)/g)
+    .map((part, i) =>
+      part.startsWith("**") && part.endsWith("**") ? (
+        <strong key={i}>{part.slice(2, -2)}</strong>
+      ) : (
+        part
+      )
+    );
+
 /** The form on a client's phone, as they will see it before their sitting. Medical questions numbered
  *  "1. …" become yes/no questions, as the signing screen asks them. It follows the wording as you type. */
 function FormPhone({ type, text }: { type: "Medical" | "Consent"; text: string }) {
@@ -211,7 +223,7 @@ function FormPhone({ type, text }: { type: "Medical" | "Consent"; text: string }
           {lines.map((line, i) =>
             type === "Medical" && /^\d+\.\s/.test(line) ? (
               <span key={i} className="iosm-doc-q">
-                <span>{line}</span>
+                <span>{bold(line)}</span>
                 <span className="iosm-doc-yn">
                   <i>Yes</i>
                   <i>No</i>
@@ -219,7 +231,7 @@ function FormPhone({ type, text }: { type: "Medical" | "Consent"; text: string }
               </span>
             ) : (
               <span key={i} className="iosm-doc-p">
-                {line}
+                {bold(line)}
               </span>
             )
           )}
