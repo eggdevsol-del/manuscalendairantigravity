@@ -4,6 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
 import {
   Action,
+  ActionLink,
   Feedback,
   Panel,
   Row,
@@ -12,8 +13,9 @@ import {
   Section,
   Status,
 } from "../design/primitives";
-import { LiveStage, StageNumber } from "../design/live";
-import { OrderTrack } from "../components/DetailStages";
+import { LiveStage } from "../design/live";
+import { Jar, OrderTrack } from "../components/DetailStages";
+import { optionName } from "../components/SupplyStore";
 export default function Purchases() {
   const { user } = useAuth();
   const query = trpc.storefront.getPurchases.useQuery();
@@ -51,6 +53,25 @@ export default function Purchases() {
             </Action>
           }
         >
+          {(order.status === "paid" || order.status === "fulfilled") &&
+            order.fulfillmentMethod !== "digital" && (
+              <OrderStage
+                headline={
+                  order.status === "fulfilled"
+                    ? order.fulfillmentMethod === "pickup"
+                      ? "Ready"
+                      : "Sent"
+                    : "Paid"
+                }
+                detail={`Ordered ${new Date(order.createdAt).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })} · ${money(order.totalAmountCents, order.currency)} ${order.currency.toUpperCase()}`}
+                steps={[
+                  "Ordered",
+                  "Paid",
+                  order.fulfillmentMethod === "pickup" ? "Ready" : "Sent",
+                ]}
+                reached={order.status === "fulfilled" ? 2 : 1}
+              />
+            )}
           <Panel>
             <Status>{order.status}</Status>
             <p>
@@ -173,43 +194,61 @@ export function SupplyOrders() {
             </Action>
           }
         >
-          {(order.status === "pending" || order.status === "paid") && (
-            <LiveStage
-              className="iosm-detail-stage"
-              label={`Order #${order.id}: ${order.status === "pending" ? "awaiting payment confirmation" : order.shopifyDraftOrderId ? "with the supplier" : "paid"}`}
-            >
-              <OrderTrack
-                steps={["Ordered", "Paid", "With supplier"]}
-                reached={
-                  order.status === "pending"
-                    ? 0
+          <OrderStage
+            headline={
+              order.status === "pending"
+                ? "Confirming payment"
+                : order.status === "failed"
+                  ? "Payment failed"
+                  : order.status === "refunded"
+                    ? "Refunded"
                     : order.shopifyDraftOrderId
-                      ? 2
-                      : 1
-                }
-              />
-              <StageNumber
-                over={`Order #${order.id}`}
-                value={money(order.totalCents, order.currency)}
-                under={`${order.items.reduce((n, item) => n + item.quantity, 0)} items from ${order.supplier?.name || "your supplier"}`}
-              />
-            </LiveStage>
-          )}
-          <Panel>
-            <h2>{order.supplier?.name || "Supplier"}</h2>
-            <Status>
-              {order.status === "pending"
-                ? "Awaiting payment confirmation"
-                : order.status}
-            </Status>
+                      ? `With ${order.supplier?.name || "the supplier"}`
+                      : "Paid"
+            }
+            detail={`Ordered ${new Date(order.createdAt).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" })} · ${money(order.totalCents, order.currency)} ${order.currency.toUpperCase()}`}
+            steps={
+              order.status === "pending" || order.status === "paid"
+                ? ["Ordered", "Paid", "With supplier"]
+                : null
+            }
+            reached={
+              order.status === "pending" ? 0 : order.shopifyDraftOrderId ? 2 : 1
+            }
+          />
+          <ul className="iosm-ss-lines">
             {order.items.map(item => (
-              <Row
-                key={item.id}
-                title={`${item.quantity} × ${item.productTitle}`}
-                detail={item.variantTitle}
-              />
+              <li key={item.id}>
+                <span className="iosm-ss-tile">
+                  <Jar seed={item.supplierProductId} fill={1} />
+                  <em>×{item.quantity}</em>
+                </span>
+                <span className="iosm-ss-line-copy">
+                  <b>{item.productTitle}</b>
+                  {optionName(item.variantTitle) && (
+                    <small>{optionName(item.variantTitle)}</small>
+                  )}
+                  <em>
+                    {money(item.priceCents * item.quantity, order.currency)}
+                  </em>
+                </span>
+              </li>
             ))}
+          </ul>
+          <Panel>
             <dl className="v3-facts">
+              <div>
+                <dt>Products</dt>
+                <dd>{money(order.subtotalCents, order.currency)}</dd>
+              </div>
+              <div>
+                <dt>Delivery</dt>
+                <dd>{money(order.shippingCents, order.currency)}</dd>
+              </div>
+              <div>
+                <dt>Platform fee</dt>
+                <dd>{money(order.platformFeeCents, order.currency)}</dd>
+              </div>
               <div>
                 <dt>Order total</dt>
                 <dd>
@@ -226,6 +265,21 @@ export function SupplyOrders() {
               </p>
             )}
           </Panel>
+          {order.status === "paid" && (
+            <ActionLink
+              href={`/supplies?supplier=${order.supplierId}&reorder=${order.id}`}
+            >
+              Order these again
+            </ActionLink>
+          )}
+          {order.supplier?.contactEmail && (
+            <a
+              className="v3-action v3-action-secondary"
+              href={`mailto:${order.supplier.contactEmail}?subject=${encodeURIComponent(`Order #${order.id}`)}`}
+            >
+              Email {order.supplier.name}
+            </a>
+          )}
         </Section>
       ) : (
         <>
@@ -251,5 +305,26 @@ export function SupplyOrders() {
         </>
       )}
     </Screen>
+  );
+}
+
+/** Where an order is, in large type, with its steps when it is still moving. */
+function OrderStage({
+  headline,
+  detail,
+  steps,
+  reached,
+}: {
+  headline: string;
+  detail: string;
+  steps: string[] | null;
+  reached: number;
+}) {
+  return (
+    <LiveStage className="iosm-ss-track" label={`${headline}. ${detail}`}>
+      <b>{headline}</b>
+      <small>{detail}</small>
+      {steps && <OrderTrack steps={steps} reached={reached} />}
+    </LiveStage>
   );
 }

@@ -596,7 +596,11 @@ export default function LockHome() {
             }
             title={s.name}
             detail="Restock from this supplier"
-            href={`/supplies?supplier=${s.id}`}
+            href={
+              s.merchantId
+                ? `/shop/supplier-${s.merchantId}`
+                : `/supplies?supplier=${s.id}`
+            }
           />
         ))}
         {!suppliers.isLoading && !(suppliers.data ?? []).length && (

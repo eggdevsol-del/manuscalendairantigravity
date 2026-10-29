@@ -14,6 +14,17 @@ import {
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { bookingDate, money } from "@/features/workspace/bookingPresentation";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { ShoppingBag } from "lucide-react";
+import type { StoreProduct } from "../design/supplyStore";
+import {
+  ProductSheet,
+  StoreByline,
+  StoreShelves,
+  TrayPill,
+  WeekStage,
+  useChairWeek,
+} from "../components/SupplyStore";
 import {
   Action,
   ActionLink,
@@ -57,6 +68,136 @@ export function PublicStorefront() {
   );
 }
 function StoreContent({ store, slug }: { store: Store; slug: string }) {
+  if (slug.startsWith("supplier-")) return <SupplierShop store={store} slug={slug} />;
+  return <ArtistShop store={store} slug={slug} />;
+}
+/** A supplier's own store, laid out like the supplier catalogues: shelves, the product sheet and the tray. */
+function SupplierShop({ store, slug }: { store: Store; slug: string }) {
+  const cart = useCart();
+  const { user } = useAuth();
+  const week = useChairWeek();
+  const [selected, setSelected] = useState<StoreProduct | null>(null);
+  const currency = store.currency || "AUD";
+  // Products sold without options become one option with id 0, the cart's "base" line.
+  const products: StoreProduct[] = store.products.map(p => ({
+    id: p.id,
+    title: p.title.trim(),
+    category: null,
+    imageUrl: p.imageUrl,
+    variants: p.variants.length
+      ? [...p.variants]
+          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+          .map(v => ({
+            id: v.id,
+            name: v.name,
+            priceCents: v.priceCents,
+            stock: v.inventoryCount,
+          }))
+      : [{ id: 0, name: "", priceCents: p.priceCents, stock: p.inventoryCount }],
+  }));
+  const held = (productId: number, variantId: number) =>
+    cart.items.find(i => i.cartItemId === `${productId}-${variantId || "base"}`)
+      ?.quantity || 0;
+  const source = selected && store.products.find(p => p.id === selected.id);
+  return (
+    <Screen
+      publicView={!user}
+      title={store.artistName}
+      subtitle={
+        <StoreByline
+          name={store.artistName}
+          detail={`${products.length} products · Prices in ${currency}`}
+        />
+      }
+      back={user?.role === "artist" ? "/supplies" : undefined}
+      className="iosm-ss"
+      action={
+        <Action
+          tone="quiet"
+          aria-label={`Your tray, ${cart.totalItems} items`}
+          onClick={() => cart.setIsCartOpen(true)}
+        >
+          <ShoppingBag size={20} />
+          {cart.totalItems}
+        </Action>
+      }
+    >
+      {week && <WeekStage week={week} />}
+      <StoreShelves
+        products={products}
+        currency={currency}
+        storeName={store.artistName}
+        onOpen={setSelected}
+      />
+      <p className="v3-muted ivory-shop-fee-note">
+        Product prices exclude delivery and the platform fee. Both are shown in
+        your tray before payment.
+      </p>
+      <TrayPill
+        lines={cart.items.map(item => ({
+          key: item.cartItemId,
+          seed: item.productId,
+          imageUrl: item.imageUrl,
+        }))}
+        count={cart.totalItems}
+        subtotal={cart.subtotalCents}
+        currency={currency}
+        note="Before delivery and checkout fees"
+        onOpen={() => cart.setIsCartOpen(true)}
+      />
+      {selected && source && (
+        <ProductSheet
+          key={selected.id}
+          product={selected}
+          sub={[
+            store.artistName,
+            source.fulfillmentType === "both"
+              ? "Delivery or pickup"
+              : source.fulfillmentType === "digital"
+                ? "Digital delivery"
+                : source.fulfillmentType === "delivery"
+                  ? "Delivery"
+                  : "Pickup",
+          ].join(" · ")}
+          currency={currency}
+          limit={100}
+          about={
+            source.description && (
+              <DetailsSheet title={<> About this product </>}>
+                <p style={{ whiteSpace: "pre-wrap" }}>{source.description}</p>
+              </DetailsSheet>
+            )
+          }
+          inTray={variantId => held(source.id, variantId)}
+          onAdd={(variant, quantity) => {
+            const line = `${source.id}-${variant.id || "base"}`;
+            cart.addItem({
+              productId: source.id,
+              variantId: variant.id || undefined,
+              variantName: variant.id ? variant.name : undefined,
+              title: source.title,
+              priceCents: variant.priceCents,
+              shippingCents: source.shippingCents || 0,
+              imageUrl: source.imageUrl || null,
+              fulfillmentType: source.fulfillmentType,
+              maxInventory: Math.min(variant.stock, 100),
+              artistId: source.artistId,
+            });
+            if (quantity > 1) cart.updateQuantity(line, quantity - 1);
+          }}
+          onClose={() => setSelected(null)}
+        />
+      )}
+      <StorefrontCheckoutFAB
+        artistId={store.artistId}
+        artistSlug={slug}
+        currency={currency}
+        onClose={() => {}}
+      />
+    </Screen>
+  );
+}
+function ArtistShop({ store, slug }: { store: Store; slug: string }) {
   const [search, setSearch] = useState("");
   const cart = useCart();
   const [filter, setFilter] = useState<"All products" | "In stock">(
@@ -90,11 +231,7 @@ function StoreContent({ store, slug }: { store: Store; slug: string }) {
           label="Shop products"
         />
       }
-      back={
-        slug.startsWith("supplier-")
-          ? undefined
-          : `/${encodeURIComponent(slug)}`
-      }
+      back={`/${encodeURIComponent(slug)}`}
       action={
         <Action tone="secondary" onClick={() => cart.setIsCartOpen(true)}>
           Cart · {cart.totalItems}
