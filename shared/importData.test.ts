@@ -21,7 +21,35 @@ describe("import normalization", () => {
       ["2026-02-30", "10:00"],
       ["2026-09-09", "24:00"],
       ["2026-09-09", "0:30 PM"],
-      ["09-10-26", "10:00"],
+    ])
+      expect(() => importLocalTime(date, time)).toThrow();
+  });
+  it("converts the date and time formats calendar apps and spreadsheets export", () => {
+    const cases: [string, string, string][] = [
+      ["25/12/2026", "2:30 PM", "2026-12-25T14:30"],
+      ["25-12-2026", "14:30", "2026-12-25T14:30"],
+      ["25.12.26", "2.30pm", "2026-12-25T14:30"],
+      ["2026/12/25", "14:30:00", "2026-12-25T14:30"],
+      ["12/25/2026", "2pm", "2026-12-25T14:00"],
+      ["25 Dec 2026", "1430", "2026-12-25T14:30"],
+      ["Friday, 25th December 2026", "2:30 p.m.", "2026-12-25T14:30"],
+      ["Dec 25, 2026", "noon", "2026-12-25T12:00"],
+      ["25-Dec-26", "9am", "2026-12-25T09:00"],
+      ["46016", "0.6041666667", "2025-12-25T14:30"],
+      ["25/12/2026 2:30 PM", "", "2026-12-25T14:30"],
+      ["2026-12-25T14:30:00Z", "", "2026-12-25T14:30"],
+      ["", "25/12/2026 14:30", "2026-12-25T14:30"],
+      ["25/12/2026 9:00 AM", "2:30 PM", "2026-12-25T14:30"],
+    ];
+    for (const [date, time, want] of cases)
+      expect(importLocalTime(date, time), `${date} | ${time}`).toBe(want);
+  });
+  it("still rejects values that aren't dates", () => {
+    for (const [date, time] of [
+      ["soon", "10:00"],
+      ["25/12/2026", "later"],
+      ["31/02/2026", "10:00"],
+      ["", ""],
     ])
       expect(() => importLocalTime(date, time)).toThrow();
   });

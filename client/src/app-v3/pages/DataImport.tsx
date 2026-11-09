@@ -112,9 +112,9 @@ export default function DataImport() {
             name: ["client name", "full name", "name"],
             email: ["email", "email address"],
             phone: ["phone", "mobile", "phone number"],
-            date: ["date", "appointment date"],
-            startTime: ["start time", "time", "start"],
-            endTime: ["end time", "end"],
+            date: ["date", "appointment date", "start date", "date & time", "date and time", "datetime", "when", "appointment"],
+            startTime: ["start time", "time", "start", "starts", "starts at", "start date time", "from"],
+            endTime: ["end time", "end", "ends", "ends at", "finish", "to"],
             serviceName: ["service", "treatment", "service name"],
             price: ["price", "cost", "amount"],
           }[field];
@@ -227,9 +227,10 @@ export default function DataImport() {
           </fieldset>
         </form>
         <p className="v3-muted">
-          Each client needs an email or phone. Use YYYY-MM-DD or DD/MM/YYYY
-          dates and HH:mm or h:mm AM/PM times. Appointment imports use
-          Australia/Brisbane time.
+          Each client needs an email or phone. Dates and times are converted
+          automatically from most formats (25/12/2026, 2026-12-25, 25 Dec 2026,
+          2:30 PM, 14:30, or date and time in one column). Appointment imports
+          use Australia/Brisbane time.
         </p>
       </Section>
       {practice && <Action tone="secondary" onClick={()=>{setRows([{Name:"Casey Morgan",Email:"casey@example.test"},{Name:"Casey Morgan",Email:"casey@example.test"}]);setHeaders(["Name","Email"]);setMapping({name:"Name",email:"Email"});setFileName("clients.csv");setResults([]);}}>Choose client list</Action>}

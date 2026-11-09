@@ -6,6 +6,7 @@ import { getDb, withDatabaseTransaction } from "./core";
 import { generateRequiredForms } from "./appointmentService";
 import {
   importLocalTime,
+  IMPORT_DATE_ERRORS,
   normalEmail,
   normalPhone,
   type ImportInput,
@@ -262,9 +263,7 @@ export async function processImport(
         detail:
           e instanceof Error &&
           [
-            "Use YYYY-MM-DD or DD/MM/YYYY and HH:mm (optional AM/PM).",
-            "Invalid time.",
-            "Invalid calendar date.",
+            ...IMPORT_DATE_ERRORS,
             "End time must be after start time.",
           ].includes(e.message)
             ? e.message
