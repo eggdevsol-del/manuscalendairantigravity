@@ -12,7 +12,11 @@ import {
   Section,
   Status,
 } from "../design/primitives";
-import type { ImportInput, ImportResult, ImportRow } from "@shared/importData";
+import {
+  importedPayment,
+  type ImportInput,
+  type ImportResult,
+} from "@shared/importData";
 const fields = [
   "name",
   "email",
@@ -47,6 +51,17 @@ export default function DataImport() {
   const [fileName, setFileName] = useState(""),
     [calendarUrl, setCalendarUrl] = useState("");
   const settings = trpc.artistSettings.get.useQuery();
+  // Appointment options: deposits on future sittings, and what to do with overlapping bookings.
+  const [depositPercent, setDepositPercent] = useState<number | null>(null),
+    [depositsPaid, setDepositsPaid] = useState(true),
+    [saveDefaultDeposit, setSaveDefaultDeposit] = useState(false),
+    [replaceExisting, setReplaceExisting] = useState(false),
+    [notice, setNotice] = useState("");
+  const deposit =
+    depositPercent ??
+    (settings.data as { depositPercentage?: number } | undefined)
+      ?.depositPercentage ??
+    25;
   const utils = trpc.useUtils();
   const preview = trpc.dataImport.preview.useMutation({
     onSuccess: setResults,
@@ -54,6 +69,13 @@ export default function DataImport() {
   });
   const commit = trpc.dataImport.commit.useMutation({
     onSuccess: data => {
+      if (data.defaultDeposit)
+        setNotice(
+          data.defaultDeposit.saved
+            ? `${data.defaultDeposit.percent}% is now your standard deposit for new bookings.`
+            : `Your plan uses a fixed ${data.defaultDeposit.percent}% deposit for new bookings, so that didn’t change. The imported sittings use ${deposit}%.`
+        );
+      void utils.artistSettings.invalidate();
       setResults(previous =>
         previous.map(old => {
           const updated = data.rows.find(r => r.sourceRow === old.sourceRow);
@@ -112,8 +134,25 @@ export default function DataImport() {
             name: ["client name", "full name", "name"],
             email: ["email", "email address"],
             phone: ["phone", "mobile", "phone number"],
-            date: ["date", "appointment date", "start date", "date & time", "date and time", "datetime", "when", "appointment"],
-            startTime: ["start time", "time", "start", "starts", "starts at", "start date time", "from"],
+            date: [
+              "date",
+              "appointment date",
+              "start date",
+              "date & time",
+              "date and time",
+              "datetime",
+              "when",
+              "appointment",
+            ],
+            startTime: [
+              "start time",
+              "time",
+              "start",
+              "starts",
+              "starts at",
+              "start date time",
+              "from",
+            ],
             endTime: ["end time", "end", "ends", "ends at", "finish", "to"],
             serviceName: ["service", "treatment", "service name"],
             price: ["price", "cost", "amount"],
@@ -131,6 +170,14 @@ export default function DataImport() {
   const getPayload = (): ImportInput => ({
     mode,
     serviceMap,
+    ...(mode === "appointments"
+      ? {
+          depositPercent: deposit,
+          depositsPaid,
+          replaceExisting,
+          saveDefaultDeposit,
+        }
+      : {}),
     rows: rows.map((row, index) => {
       const text = (key: string) => (row[mapping[key]] || "").trim();
       const raw = text("price").replace(/[$,]/g, "");
@@ -153,6 +200,7 @@ export default function DataImport() {
   });
   const review = () => {
     setError("");
+    setNotice("");
     try {
       const p = getPayload();
       setPayload(p);
@@ -173,6 +221,25 @@ export default function DataImport() {
   const eligible = results.filter(r =>
     ["new", "matched", "failed"].includes(r.status)
   ).length;
+  const samplePrice =
+    rows
+      .map(r => Number((r[mapping.price] || "").replace(/[$,]/g, "")))
+      .find(n => Number.isFinite(n) && n > 0) ?? 1000;
+  const sample = importedPayment(
+    Math.round(samplePrice * 100),
+    false,
+    deposit,
+    depositsPaid
+  );
+  const money = (cents: number) =>
+    "$" + (cents / 100).toLocaleString("en-AU", { maximumFractionDigits: 2 });
+  const past = results.filter(
+    r => r.timing === "past" && r.status !== "duplicate"
+  ).length;
+  const future = results.filter(
+    r => r.timing === "future" && r.status !== "duplicate"
+  ).length;
+  const replacing = results.reduce((n, r) => n + (r.replaces || 0), 0);
   const serviceNames = Array.from(
     new Set(
       rows.map(r => (r[mapping.serviceName] || "").trim()).filter(Boolean)
@@ -184,10 +251,24 @@ export default function DataImport() {
       subtitle="Review matches and duplicates before adding anything."
       back="/settings"
     >
-      <ImportProgressSheet open={progressOpen} onClose={() => setProgressOpen(false)} kind="calendar"
-        title={mode === "appointments" ? "Bringing your sittings over" : "Bringing your clients over"}
-        task="Checking and importing records…" complete={commit.isSuccess} error={commit.error?.message}
-        detail={commit.isSuccess ? "Review the row results below, including any skipped or failed records." : "Please keep this page open until the import finishes."} />
+      <ImportProgressSheet
+        open={progressOpen}
+        onClose={() => setProgressOpen(false)}
+        kind="calendar"
+        title={
+          mode === "appointments"
+            ? "Bringing your sittings over"
+            : "Bringing your clients over"
+        }
+        task="Checking and importing records…"
+        complete={commit.isSuccess}
+        error={commit.error?.message}
+        detail={
+          commit.isSuccess
+            ? "Review the row results below, including any skipped or failed records."
+            : "Please keep this page open until the import finishes."
+        }
+      />
       <Feedback
         loading={settings.isLoading}
         error={settings.error}
@@ -233,7 +314,23 @@ export default function DataImport() {
           use Australia/Brisbane time.
         </p>
       </Section>
-      {practice && <Action tone="secondary" onClick={()=>{setRows([{Name:"Casey Morgan",Email:"casey@example.test"},{Name:"Casey Morgan",Email:"casey@example.test"}]);setHeaders(["Name","Email"]);setMapping({name:"Name",email:"Email"});setFileName("clients.csv");setResults([]);}}>Choose client list</Action>}
+      {practice && (
+        <Action
+          tone="secondary"
+          onClick={() => {
+            setRows([
+              { Name: "Casey Morgan", Email: "casey@example.test" },
+              { Name: "Casey Morgan", Email: "casey@example.test" },
+            ]);
+            setHeaders(["Name", "Email"]);
+            setMapping({ name: "Name", email: "Email" });
+            setFileName("clients.csv");
+            setResults([]);
+          }}
+        >
+          Choose client list
+        </Action>
+      )}
       {headers.length > 0 && (
         <Section title="Match your columns">
           <div className="v3-form">
@@ -294,7 +391,104 @@ export default function DataImport() {
                   ))}
                 </Section>
               )}
-              <Action disabled={!mapping.name || !rows.length} onClick={review} data-tour-description="Check mapped rows against existing records to preview matches, duplicates and conflicts. This review does not import records.">
+              {mode === "appointments" && (
+                <Section title="Payments and existing bookings">
+                  <div className="import-deposit" aria-live="polite">
+                    <p className="import-deposit-rule">
+                      <b>Past sittings</b>
+                      <span>Marked completed and paid in full.</span>
+                    </p>
+                    <div className="import-deposit-preview">
+                      <small>
+                        A {money(Math.round(samplePrice * 100))} sitting from
+                        your file
+                      </small>
+                      <div className="import-deposit-bar">
+                        <i style={{ width: `${deposit}%` }}>
+                          {deposit > 12 && <b>{deposit}%</b>}
+                        </i>
+                        <span>{100 - deposit > 12 && `${100 - deposit}%`}</span>
+                      </div>
+                      <p>
+                        <b>{money(Math.round(samplePrice * deposit))}</b>{" "}
+                        deposit {depositsPaid ? "already paid" : "to request"} ·{" "}
+                        <b>{money(sample.remainingBalanceCents)}</b> on the day
+                      </p>
+                    </div>
+                    <label className="import-deposit-slider">
+                      Deposit on upcoming sittings
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={deposit}
+                        aria-valuetext={`${deposit}% of each sitting's price`}
+                        onChange={e => {
+                          setDepositPercent(Number(e.target.value));
+                          invalidate();
+                        }}
+                      />
+                    </label>
+                    <label className="import-toggle">
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        checked={depositsPaid}
+                        onChange={e => {
+                          setDepositsPaid(e.target.checked);
+                          invalidate();
+                        }}
+                      />
+                      <span>
+                        <b>Clients have already paid these deposits</b>
+                        <small>
+                          Turn off to request them through Tattoi instead.
+                        </small>
+                      </span>
+                    </label>
+                    <label className="import-toggle">
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        checked={saveDefaultDeposit}
+                        onChange={e => setSaveDefaultDeposit(e.target.checked)}
+                      />
+                      <span>
+                        <b>Make {deposit}% my standard deposit</b>
+                        <small>
+                          Used for new bookings made in Tattoi, if your plan
+                          lets you choose.
+                        </small>
+                      </span>
+                    </label>
+                    <label className="import-toggle">
+                      <input
+                        type="checkbox"
+                        role="switch"
+                        checked={replaceExisting}
+                        onChange={e => {
+                          setReplaceExisting(e.target.checked);
+                          invalidate();
+                        }}
+                      />
+                      <span>
+                        <b>Replace overlapping bookings</b>
+                        <small>
+                          Bookings already in Tattoi that clash with an imported
+                          one are cancelled, and the imported one is used. Off:
+                          clashing rows are skipped.
+                        </small>
+                      </span>
+                    </label>
+                  </div>
+                </Section>
+              )}
+              <Action
+                disabled={!mapping.name || !rows.length}
+                onClick={review}
+                data-tour-description="Check mapped rows against existing records to preview matches, duplicates and conflicts. This review does not import records."
+              >
                 {preview.isPending
                   ? "Checking records…"
                   : "Review matches & duplicates"}
@@ -318,38 +512,52 @@ export default function DataImport() {
               }{" "}
               need attention
             </p>
+            {mode === "appointments" && past + future > 0 && (
+              <p>
+                {past} past {past === 1 ? "sitting" : "sittings"} paid in full ·{" "}
+                {future} upcoming with a {deposit}% deposit
+                {replacing > 0 &&
+                  ` · replaces ${replacing} existing ${replacing === 1 ? "booking" : "bookings"}`}
+              </p>
+            )}
             <p className="v3-muted">
               Duplicates are skipped. Existing profiles are not overwritten.
               Each row is checked again at import.
             </p>
-            <Action onClick={importReady} disabled={busy || eligible === 0} data-tour-description="Import the ready rows or retry failed rows from this preview. Duplicates, invalid rows and conflicts are excluded. Existing profiles are not overwritten, and each row is checked again before import.">
+            {notice && <p role="status">{notice}</p>}
+            <Action
+              onClick={importReady}
+              disabled={busy || eligible === 0}
+              data-tour-description="Import the ready rows or retry failed rows from this preview. Duplicates, invalid rows and conflicts are excluded. Existing profiles are not overwritten, and each row is checked again before import."
+            >
               {commit.isPending
                 ? "Importing…"
                 : `Import / retry ${eligible} ready rows`}
             </Action>
           </Panel>
           {results.map(r => (
-            <div key={r.index}
+            <div
+              key={r.index}
               data-tour-title={`Import row ${r.sourceRow || r.index + 2}: ${r.status}`}
               data-tour-description={`Read this row’s result: ${r.detail}. ${["new", "matched", "failed"].includes(r.status) ? "This row is eligible for import or retry; review it before importing." : r.status === "imported" ? "This row has already been imported and is not retried." : "This row is excluded from import. Correct invalid data or conflicts before reviewing again; duplicates are skipped."}`}
             >
-            <Row
-              title={r.name || "Missing name"}
-              detail={`Row ${r.sourceRow || r.index + 2}: ${r.detail}`}
-              trailing={
-                <Status
-                  tone={
-                    r.status === "imported"
-                      ? "success"
-                      : ["invalid", "conflict", "failed"].includes(r.status)
-                        ? "warning"
-                        : "neutral"
-                  }
-                >
-                  {r.status}
-                </Status>
-              }
-            />
+              <Row
+                title={r.name || "Missing name"}
+                detail={`Row ${r.sourceRow || r.index + 2}: ${r.detail}`}
+                trailing={
+                  <Status
+                    tone={
+                      r.status === "imported"
+                        ? "success"
+                        : ["invalid", "conflict", "failed"].includes(r.status)
+                          ? "warning"
+                          : "neutral"
+                    }
+                  >
+                    {r.status}
+                  </Status>
+                }
+              />
             </div>
           ))}
         </Section>

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   appointment: null as any,
   conflicts: [] as any[],
   insert: vi.fn(),
+  update: vi.fn(),
   forms: vi.fn(),
   transactions: vi.fn(),
 }));
@@ -32,6 +33,7 @@ vi.mock("./core", () => {
       }),
     }),
     insert: () => ({ values: mocks.insert }),
+    update: () => ({ set: (v: any) => ({ where: () => mocks.update(v) }) }),
   };
   return {
     getDb: async () => database,
@@ -132,8 +134,10 @@ describe("duplicate-aware imports", () => {
             price: 100.25,
           }),
         ],
+        depositsPaid: false,
       },
-      true
+      true,
+      new Date("2026-09-01T00:00:00Z")
     );
     expect(mocks.transactions).toHaveBeenCalledOnce();
     expect(mocks.forms).toHaveBeenCalledWith(42, expect.anything());
@@ -180,5 +184,101 @@ describe("duplicate-aware imports", () => {
       true
     );
     expect(result.map(r => r.status)).toEqual(["invalid", "imported"]);
+  });
+});
+
+describe("imported appointment payments", () => {
+  const now = new Date("2026-11-10T00:00:00Z");
+  const appt = (date: string, price = 2000) =>
+    row({ date, startTime: "10:00", endTime: "18:00", price });
+  it("marks sittings that have already happened as completed and paid in full", async () => {
+    await processImport(
+      "artist-a",
+      { mode: "appointments", serviceMap: {}, rows: [appt("2026-10-01")] },
+      true,
+      now
+    );
+    const values = mocks.insert.mock.calls.at(-1)![0];
+    expect(values).toMatchObject({
+      status: "completed",
+      paymentStatus: "fully_paid",
+      totalPaidAmountCents: 200000,
+      remainingBalanceCents: 0,
+    });
+    expect(mocks.forms).not.toHaveBeenCalled();
+  });
+  it("gives upcoming sittings the chosen deposit, paid or still to request", async () => {
+    await processImport(
+      "artist-a",
+      {
+        mode: "appointments",
+        serviceMap: {},
+        rows: [appt("2026-12-01")],
+        depositPercent: 30,
+      },
+      true,
+      now
+    );
+    expect(mocks.insert.mock.calls.at(-1)![0]).toMatchObject({
+      status: "confirmed",
+      paymentStatus: "deposit_paid",
+      depositAmount: 600,
+      totalPaidAmountCents: 60000,
+      remainingBalanceCents: 140000,
+    });
+    await processImport(
+      "artist-a",
+      {
+        mode: "appointments",
+        serviceMap: {},
+        rows: [appt("2026-12-02")],
+        depositPercent: 30,
+        depositsPaid: false,
+      },
+      true,
+      now
+    );
+    expect(mocks.insert.mock.calls.at(-1)![0]).toMatchObject({
+      paymentStatus: "pending_deposit",
+      depositAmount: 600,
+      totalPaidAmountCents: 0,
+      remainingBalanceCents: 200000,
+    });
+  });
+  it("skips clashing rows by default, and cancels the clashing bookings when replacing", async () => {
+    mocks.conflicts = [{ id: 7 }];
+    const skipped = await processImport(
+      "artist-a",
+      { mode: "appointments", serviceMap: {}, rows: [appt("2026-12-03")] },
+      false,
+      now
+    );
+    expect(skipped[0].status).toBe("conflict");
+    const preview = await processImport(
+      "artist-a",
+      {
+        mode: "appointments",
+        serviceMap: {},
+        rows: [appt("2026-12-03")],
+        replaceExisting: true,
+      },
+      false,
+      now
+    );
+    expect(preview[0]).toMatchObject({ status: "new", replaces: 1 });
+    expect(mocks.update).not.toHaveBeenCalled();
+    await processImport(
+      "artist-a",
+      {
+        mode: "appointments",
+        serviceMap: {},
+        rows: [appt("2026-12-03")],
+        replaceExisting: true,
+      },
+      true,
+      now
+    );
+    expect(mocks.update).toHaveBeenCalledWith({ status: "cancelled" });
+    expect(mocks.insert).toHaveBeenCalled();
   });
 });

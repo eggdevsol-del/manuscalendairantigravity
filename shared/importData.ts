@@ -14,9 +14,18 @@ export const importInputSchema = z.object({
   mode: z.enum(["clients", "appointments"]),
   rows: z.array(importRowSchema).min(1).max(500),
   serviceMap: z.record(z.string(), z.string()).default({}),
+  /** Deposit for future imported sittings, as a percentage of each sitting's price. */
+  depositPercent: z.number().int().min(0).max(100).optional(),
+  /** Whether clients already paid those deposits in the artist's previous system. */
+  depositsPaid: z.boolean().default(true),
+  /** Cancel existing bookings that overlap an imported one, instead of skipping the import. */
+  replaceExisting: z.boolean().default(false),
+  /** Make depositPercent the standard deposit for new bookings (plans that allow it). */
+  saveDefaultDeposit: z.boolean().default(false),
 });
 export type ImportRow = z.infer<typeof importRowSchema>;
-export type ImportInput = z.infer<typeof importInputSchema>;
+// Callers may omit the options; processImport applies their defaults.
+export type ImportInput = z.input<typeof importInputSchema>;
 export type ImportResult = {
   sourceRow?: number;
   index: number;
@@ -30,7 +39,74 @@ export type ImportResult = {
     | "imported"
     | "failed";
   detail: string;
+  /** Appointment imports: whether the sitting has already happened. */
+  timing?: "past" | "future";
+  priceCents?: number;
+  /** Existing bookings this import will cancel, or has cancelled. */
+  replaces?: number;
 };
+
+/**
+ * Payment state for an imported sitting. Sittings that have already ended were settled in the
+ * artist's previous system, so they arrive paid in full and completed. Future sittings carry a
+ * deposit of depositPercent of the price, already paid unless the artist says otherwise.
+ */
+export function importedPayment(
+  priceCents: number,
+  past: boolean,
+  depositPercent: number,
+  depositsPaid: boolean
+) {
+  if (past)
+    return {
+      status: "completed" as const,
+      paymentStatus: "fully_paid" as const,
+      depositAmount: Math.round(priceCents / 100),
+      depositPaid: 1,
+      clientPaid: 1,
+      amountPaid: Math.round(priceCents / 100),
+      totalPaidAmountCents: priceCents,
+      remainingBalanceCents: 0,
+    };
+  const deposit = Math.round((priceCents * depositPercent) / 100);
+  const paid = depositsPaid ? deposit : 0;
+  return {
+    status: "confirmed" as const,
+    paymentStatus:
+      paid >= priceCents && priceCents > 0
+        ? ("fully_paid" as const)
+        : paid > 0
+          ? ("deposit_paid" as const)
+          : ("pending_deposit" as const),
+    depositAmount: Math.round(deposit / 100),
+    depositPaid: paid > 0 ? 1 : 0,
+    clientPaid: 0,
+    amountPaid: Math.round(paid / 100),
+    totalPaidAmountCents: paid,
+    remainingBalanceCents: priceCents - paid,
+  };
+}
+
+const dollars = (cents: number) =>
+  "$" + (cents / 100).toLocaleString("en-AU", { maximumFractionDigits: 2 });
+/** One line describing what an imported sitting's payments will look like. */
+export function importedPaymentNote(
+  priceCents: number,
+  past: boolean,
+  depositPercent: number,
+  depositsPaid: boolean
+) {
+  if (past)
+    return priceCents
+      ? `Past sitting, marked paid in full (${dollars(priceCents)}).`
+      : "Past sitting, marked completed.";
+  if (!priceCents) return "Upcoming sitting, no price to take a deposit from.";
+  const p = importedPayment(priceCents, false, depositPercent, depositsPaid);
+  const dep = dollars(Math.round((priceCents * depositPercent) / 100));
+  return depositsPaid
+    ? `Upcoming: ${dep} deposit paid, ${dollars(p.remainingBalanceCents)} due on the day.`
+    : `Upcoming: ${dep} deposit to request, ${dollars(p.remainingBalanceCents)} due on the day.`;
+}
 export const normalEmail = (value: string) => value.trim().toLowerCase();
 export function normalPhone(value: string) {
   const n = value.replace(/[^\d+]/g, "");

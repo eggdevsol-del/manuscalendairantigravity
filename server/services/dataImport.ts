@@ -1,11 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, or, sql, lt, gt, ne } from "drizzle-orm";
+import { and, eq, or, sql, lt, gt, ne, inArray } from "drizzle-orm";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
 import { getDb, withDatabaseTransaction } from "./core";
 import { generateRequiredForms } from "./appointmentService";
 import {
   importLocalTime,
+  importedPayment,
+  importedPaymentNote,
+  importInputSchema,
   IMPORT_DATE_ERRORS,
   normalEmail,
   normalPhone,
@@ -17,9 +20,11 @@ const mysql = (value: string | Date) =>
   new Date(value).toISOString().slice(0, 19).replace("T", " ");
 export async function processImport(
   artistId: string,
-  input: ImportInput,
-  commit: boolean
+  raw: ImportInput,
+  commit: boolean,
+  now: Date = new Date()
 ): Promise<ImportResult[]> {
+  const input = importInputSchema.parse(raw);
   const database = await getDb();
   if (!database) throw new Error("Database unavailable");
   const settings = await database.query.artistSettings.findFirst({
@@ -34,6 +39,10 @@ export async function processImport(
   try {
     services = JSON.parse(settings?.services || "[]");
   } catch {}
+  // Future sittings default to the artist's standard deposit when the import doesn't set one.
+  const depositPercent =
+    input.depositPercent ?? settings?.depositPercentage ?? 25;
+  const nowSql = mysql(now);
   const intervals: { start: string; end: string }[] = [];
   const seen = new Set<string>();
   const result: ImportResult[] = [];
@@ -80,6 +89,25 @@ export async function processImport(
               );
         if (end <= start) throw new Error("End time must be after start time.");
       }
+      const priceCents = Math.round((row.price ?? mapped?.price ?? 0) * 100);
+      const past = input.mode === "appointments" && end <= nowSql;
+      const timing =
+        input.mode === "appointments"
+          ? {
+              timing: (past ? "past" : "future") as "past" | "future",
+              priceCents,
+            }
+          : {};
+      const payNote =
+        input.mode === "appointments"
+          ? " " +
+            importedPaymentNote(
+              priceCents,
+              past,
+              depositPercent,
+              input.depositsPaid
+            )
+          : "";
       const keys = [
         email && `email:${email}:${start}`,
         phone && `phone:${phone}:${start}`,
@@ -106,6 +134,7 @@ export async function processImport(
       const inspect = async (
         db: NonNullable<Awaited<ReturnType<typeof getDb>>>
       ): Promise<ImportResult> => {
+        let replaced: number[] = [];
         if (commit)
           await db
             .select({ id: schema.users.id })
@@ -166,9 +195,10 @@ export async function processImport(
                 ),
               })
             : null;
-          if (same)
+          if (same && !input.replaceExisting)
             return {
               ...base,
+              ...timing,
               status: "duplicate",
               detail: "This client/session already exists.",
             };
@@ -183,23 +213,43 @@ export async function processImport(
                 gt(schema.appointments.endTime, start)
               )
             )
-            .limit(1);
-          if (overlap.length)
+            .limit(input.replaceExisting ? 50 : 1);
+          if (overlap.length && !input.replaceExisting)
             return {
               ...base,
+              ...timing,
               status: "conflict",
               detail:
-                "Overlaps another appointment. Change the time before importing.",
+                "Overlaps another appointment. Turn on “Replace overlapping bookings” or change the time.",
             };
+          replaced = overlap.map(o => o.id);
         }
+        const replaceNote = replaced.length
+          ? ` Replaces ${replaced.length === 1 ? "an existing booking" : `${replaced.length} existing bookings`}.`
+          : "";
         if (!commit)
           return {
             ...base,
+            ...timing,
+            ...(replaced.length ? { replaces: replaced.length } : {}),
             status: existing ? "matched" : "new",
-            detail: existing
-              ? "Existing client account matched; profile will not be overwritten."
-              : "New client will be created.",
+            detail:
+              (existing
+                ? "Existing client account matched; profile will not be overwritten."
+                : "New client will be created.") +
+              payNote +
+              replaceNote,
           };
+        if (replaced.length)
+          await db
+            .update(schema.appointments)
+            .set({ status: "cancelled" })
+            .where(
+              and(
+                eq(schema.appointments.artistId, artistId),
+                inArray(schema.appointments.id, replaced)
+              )
+            );
         const clientId = existing?.id || `usr_imp_${randomUUID()}`;
         if (!existing)
           await db.insert(schema.users).values({
@@ -218,7 +268,13 @@ export async function processImport(
           conversationId = created.insertId;
         }
         if (input.mode === "appointments") {
-          const cents = Math.round((row.price ?? mapped?.price ?? 0) * 100);
+          const cents = priceCents;
+          const pay = importedPayment(
+            cents,
+            past,
+            depositPercent,
+            input.depositsPaid
+          );
           const [created] = await db.insert(schema.appointments).values({
             artistId,
             clientId,
@@ -229,18 +285,19 @@ export async function processImport(
             startTime: start,
             endTime: end,
             timeZone: getBusinessTimezone(),
-            status: "confirmed",
             price: Math.round(cents / 100),
             totalExpectedAmountCents: cents,
-            totalPaidAmountCents: 0,
-            remainingBalanceCents: cents,
+            ...pay,
           });
-          await generateRequiredForms(created.insertId, db);
+          // Consent forms only matter for sittings still to come.
+          if (!past) await generateRequiredForms(created.insertId, db);
         }
         return {
           ...base,
+          ...timing,
+          ...(replaced.length ? { replaces: replaced.length } : {}),
           status: "imported",
-          detail: "Imported successfully.",
+          detail: "Imported successfully." + payNote + replaceNote,
         };
       };
       const rowResult = commit

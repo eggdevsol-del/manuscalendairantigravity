@@ -3,6 +3,9 @@ import { z } from "zod";
 import { importInputSchema, importRowSchema } from "../../shared/importData";
 import { requireArtist } from "../services/access";
 import { processImport } from "../services/dataImport";
+import { effectivePaymentTier } from "../services/paymentEntitlements";
+import { PAYMENT_TIERS } from "../../shared/fees";
+import * as db from "../db";
 const counts = (rows: Awaited<ReturnType<typeof processImport>>) => ({
   success: rows.filter(r => r.status === "imported").length,
   skipped: rows.filter(r => r.status === "duplicate").length,
@@ -21,7 +24,32 @@ export const dataImportRouter = router({
     .input(importInputSchema)
     .mutation(async ({ ctx, input }) => {
       requireArtist(ctx.user);
-      return counts(await processImport(ctx.user.id, input, true));
+      const result = counts(await processImport(ctx.user.id, input, true));
+      // Optionally make the import's deposit the standard for new bookings. Plans with a fixed
+      // deposit keep theirs; the import itself still used the chosen percentage.
+      let defaultDeposit: { saved: boolean; percent: number } | undefined;
+      if (
+        input.mode === "appointments" &&
+        input.saveDefaultDeposit &&
+        input.depositPercent !== undefined
+      ) {
+        const settings = await db.getArtistSettings(ctx.user.id);
+        const tier = PAYMENT_TIERS[await effectivePaymentTier(settings)];
+        if (tier.depositCustomisable && input.depositPercent >= 5) {
+          await db.upsertArtistSettings({
+            userId: ctx.user.id,
+            depositPercentage: input.depositPercent,
+          } as any);
+          defaultDeposit = { saved: true, percent: input.depositPercent };
+        } else
+          defaultDeposit = {
+            saved: false,
+            percent: tier.depositCustomisable
+              ? (settings?.depositPercentage ?? tier.defaultDepositPercent)
+              : tier.defaultDepositPercent,
+          };
+      }
+      return { ...result, defaultDeposit };
     }),
   // Preserve older clients while applying the same validation and transaction safeguards.
   bulkImportClients: protectedProcedure
