@@ -1,5 +1,6 @@
 import { effectivePaymentTier } from "../services/paymentEntitlements";
 import { z } from "zod";
+import { isValidTimezone } from "../../shared/utils/timezone";
 import { TRPCError } from "@trpc/server";
 import { PAYMENT_TIERS } from "../../shared/fees";
 import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
@@ -43,6 +44,7 @@ export const artistSettingsRouter = router({
           bsb: null,
           accountNumber: null,
           businessCountry: "AU", // Safe fallback
+          timeZone: "Australia/Brisbane",
           depositAmount: null,
           depositPercentage: 25,
           rescheduleNoticePeriodHours: 72,
@@ -130,6 +132,11 @@ export const artistSettingsRouter = router({
         bsb: z.string().optional(),
         accountNumber: z.string().optional(),
         businessCountry: z.string().length(2).optional(),
+        timeZone: z
+          .string()
+          .max(64)
+          .refine(isValidTimezone, "Choose a valid time zone.")
+          .optional(),
         depositAmount: z.number().optional(),
         depositPercentage: z.number().int().min(5).max(100).optional(),
         autoSendDepositInfo: z.boolean().optional(),

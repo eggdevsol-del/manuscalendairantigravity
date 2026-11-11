@@ -24,6 +24,7 @@ import { artistProcedure, protectedProcedure, router } from "../_core/trpc";
 import { eventBus } from "../_core/eventBus";
 import * as db from "../db";
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
+import { artistTimezone } from "../services/artistTimezone";
 import { notificationOutbox } from "../../drizzle/schema";
 import { getBankDetailLabels } from "../../shared/utils/bankDetails";
 import { eq, sql, and, or, gte, lte, inArray, not } from "drizzle-orm";
@@ -188,7 +189,7 @@ export const appointmentsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const timezone = getBusinessTimezone();
+      const timezone = await artistTimezone(ctx.user.id);
       const startTimeUTC = localToUTC(input.startTime, timezone);
       const endTimeUTC = localToUTC(input.endTime, timezone);
 
@@ -243,7 +244,8 @@ export const appointmentsRouter = router({
       );
       if (conversation.clientId !== input.clientId)
         throw new TRPCError({ code: "FORBIDDEN" });
-      const timezone = input.timeZone || getBusinessTimezone();
+      const timezone =
+        input.timeZone || (await artistTimezone(conversation.artistId));
 
       // Convert local times to UTC
       const startTimeUTC = localToUTC(input.startTime, timezone);
@@ -963,7 +965,8 @@ export const appointmentsRouter = router({
         });
       }
 
-      const timezone = input.timeZone || getBusinessTimezone();
+      const timezone =
+        input.timeZone || (await artistTimezone(conversation.artistId));
 
       let createdCount = 0;
       const appointmentIds: number[] = [];
@@ -1523,60 +1526,64 @@ export const appointmentsRouter = router({
         : [];
       const timestamp = (value: string) => value.replace(" ", "T") + "Z";
       return {
-        appointments: await withProjectImages(selected.map(a => {
-          const financials = sittingFinancials(a);
-          const artist = artists.find(u => u.id === a.artistId);
-          const setting = settings.find(s => s.userId === a.artistId);
-          const request = requests.find(
-            r =>
-              r.appointmentId === a.id &&
-              (!r.expiresAt || new Date(timestamp(r.expiresAt)) > new Date())
-          );
-          return {
-            id: a.id,
-            sessionPlanId: a.sessionPlanId,
-            rescheduled: rescheduled.has(a.id),
-            startsAt: timestamp(a.startTime),
-            endsAt: timestamp(a.endTime),
-            timeZone: a.timeZone || "Australia/Brisbane",
-            durationMinutes: Math.round(
-              (+new Date(timestamp(a.endTime)) -
-                +new Date(timestamp(a.startTime))) /
-                60000
-            ),
-            status: a.status,
-            title: a.title,
-            projectName:
-              (a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null) ||
-              designProjectName(a.projectName),
-            sessionIndex: a.sessionIndex,
-            sessionTotal: a.sessionTotal,
-            serviceName: a.serviceName,
-            studioName: setting?.businessName || null,
-            artist: {
-              id: a.artistId,
-              name: setting?.displayName || artist?.name || "Artist",
-            },
-            amountPaidCents: financials.paidCents,
-            depositPaidCents: a.depositPaid ? (a.depositAmount || 0) * 100 : 0,
-            estimateCents: financials.estimateCents,
-            balanceDueCents: financials.remainingCents,
-            paymentStatus: a.paymentStatus,
-            paymentRequest: request
-              ? {
-                  id: request.id,
-                  amountCents: request.amountCents,
-                  status: request.status,
-                  token: request.token,
-                }
-              : null,
-            pendingFormCount: forms.filter(f => f.appointmentId === a.id)
-              .length,
-            completedAt: a.completedAt,
-            aftercareTemplateId: a.aftercareTemplateId,
-            conversationId: a.conversationId,
-          };
-        })),
+        appointments: await withProjectImages(
+          selected.map(a => {
+            const financials = sittingFinancials(a);
+            const artist = artists.find(u => u.id === a.artistId);
+            const setting = settings.find(s => s.userId === a.artistId);
+            const request = requests.find(
+              r =>
+                r.appointmentId === a.id &&
+                (!r.expiresAt || new Date(timestamp(r.expiresAt)) > new Date())
+            );
+            return {
+              id: a.id,
+              sessionPlanId: a.sessionPlanId,
+              rescheduled: rescheduled.has(a.id),
+              startsAt: timestamp(a.startTime),
+              endsAt: timestamp(a.endTime),
+              timeZone: a.timeZone || "Australia/Brisbane",
+              durationMinutes: Math.round(
+                (+new Date(timestamp(a.endTime)) -
+                  +new Date(timestamp(a.startTime))) /
+                  60000
+              ),
+              status: a.status,
+              title: a.title,
+              projectName:
+                (a.sessionPlanId ? savedNames.get(a.sessionPlanId) : null) ||
+                designProjectName(a.projectName),
+              sessionIndex: a.sessionIndex,
+              sessionTotal: a.sessionTotal,
+              serviceName: a.serviceName,
+              studioName: setting?.businessName || null,
+              artist: {
+                id: a.artistId,
+                name: setting?.displayName || artist?.name || "Artist",
+              },
+              amountPaidCents: financials.paidCents,
+              depositPaidCents: a.depositPaid
+                ? (a.depositAmount || 0) * 100
+                : 0,
+              estimateCents: financials.estimateCents,
+              balanceDueCents: financials.remainingCents,
+              paymentStatus: a.paymentStatus,
+              paymentRequest: request
+                ? {
+                    id: request.id,
+                    amountCents: request.amountCents,
+                    status: request.status,
+                    token: request.token,
+                  }
+                : null,
+              pendingFormCount: forms.filter(f => f.appointmentId === a.id)
+                .length,
+              completedAt: a.completedAt,
+              aftercareTemplateId: a.aftercareTemplateId,
+              conversationId: a.conversationId,
+            };
+          })
+        ),
         pendingRequests: leads.map(l => ({
           id: l.id,
           artistName:

@@ -239,6 +239,13 @@
       "when": 1793318400000,
       "tag": "0033_product_category",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1794355200000,
+      "tag": "0034_artist_timezone",
+      "breakpoints": true
     }
   ]
 }

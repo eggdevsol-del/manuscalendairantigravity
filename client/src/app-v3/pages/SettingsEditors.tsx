@@ -1,4 +1,9 @@
 import { useArtistSetup } from "@/features/onboarding/ArtistSetupContext";
+import {
+  BUSINESS_TIMEZONES,
+  DEFAULT_TIMEZONE,
+  isValidTimezone,
+} from "@shared/utils/timezone";
 import { NumericInput } from "@/components/ui/numeric-input";
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
@@ -280,6 +285,25 @@ export function BusinessEditor() {
     </Screen>
   );
 }
+const deviceZone = (() => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  } catch {
+    return "";
+  }
+})();
+/** Live display: the current time in a zone, so the right choice is obvious. */
+const timeIn = (zone: string) => {
+  try {
+    return new Date().toLocaleTimeString("en-AU", {
+      timeZone: zone,
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+};
 function BusinessForm({ initial }: { initial: any }) {
   const setup = useArtistSetup();
   const [form, setForm, clearDraft] = useSetupDraft(
@@ -289,6 +313,7 @@ function BusinessForm({ initial }: { initial: any }) {
       businessAddress: initial.businessAddress || "",
       businessEmail: initial.businessEmail || "",
       businessCountry: initial.businessCountry || "AU",
+      timeZone: initial.timeZone || DEFAULT_TIMEZONE,
       licenceNumber: initial.licenceNumber || "",
       rescheduleNoticePeriodHours: initial.rescheduleNoticePeriodHours ?? 72,
     },
@@ -369,6 +394,38 @@ function BusinessForm({ initial }: { initial: any }) {
                 </option>
               )}
             </select>
+          </label>
+          <label>
+            Time zone
+            <select
+              value={form.timeZone}
+              onChange={e => setForm({ ...form, timeZone: e.target.value })}
+            >
+              {BUSINESS_TIMEZONES.map(z => (
+                <option key={z.id} value={z.id}>
+                  {z.label}
+                </option>
+              ))}
+              {!BUSINESS_TIMEZONES.some(z => z.id === form.timeZone) && (
+                <option value={form.timeZone}>{form.timeZone}</option>
+              )}
+            </select>
+            <small>
+              It’s {timeIn(form.timeZone)} there now. New bookings, imports and
+              reminders use this zone.
+              {deviceZone !== form.timeZone && isValidTimezone(deviceZone) && (
+                <>
+                  {" "}
+                  <button
+                    type="button"
+                    className="v3-link"
+                    onClick={() => setForm({ ...form, timeZone: deviceZone })}
+                  >
+                    Use this device’s zone ({deviceZone})
+                  </button>
+                </>
+              )}
+            </small>
           </label>
         </div>
       </Section>

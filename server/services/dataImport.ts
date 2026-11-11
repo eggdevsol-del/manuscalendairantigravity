@@ -72,7 +72,7 @@ export async function processImport(
       let start = "",
         end = "";
       if (input.mode === "appointments") {
-        const timezone = getBusinessTimezone();
+        const timezone = getBusinessTimezone(settings?.timeZone);
         start = mysql(
           localToUTC(importLocalTime(row.date, row.startTime), timezone)
         );
@@ -284,7 +284,7 @@ export async function processImport(
               mapped?.name || row.serviceName || "Imported appointment",
             startTime: start,
             endTime: end,
-            timeZone: getBusinessTimezone(),
+            timeZone: getBusinessTimezone(settings?.timeZone),
             price: Math.round(cents / 100),
             totalExpectedAmountCents: cents,
             ...pay,

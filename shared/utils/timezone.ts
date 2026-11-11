@@ -74,15 +74,25 @@ export function formatLocalTime(
   return format(localDate, formatString);
 }
 
+export const DEFAULT_TIMEZONE = "Australia/Brisbane";
+/** Zones offered in Business details. Any valid IANA zone is accepted by the server. */
+export const BUSINESS_TIMEZONES: { id: string; label: string }[] = [
+  { id: "Australia/Brisbane", label: "Brisbane (Queensland)" },
+  { id: "Australia/Sydney", label: "Sydney, Canberra (NSW, ACT)" },
+  { id: "Australia/Melbourne", label: "Melbourne (Victoria)" },
+  { id: "Australia/Hobart", label: "Hobart (Tasmania)" },
+  { id: "Australia/Adelaide", label: "Adelaide (South Australia)" },
+  { id: "Australia/Darwin", label: "Darwin (Northern Territory)" },
+  { id: "Australia/Perth", label: "Perth (Western Australia)" },
+  { id: "Pacific/Auckland", label: "Auckland, Wellington (New Zealand)" },
+];
 /**
- * Get business timezone (from settings or default)
- * TODO: Fetch from artist settings when available
+ * The zone a business works in: the artist's saved zone when it is valid, otherwise the default.
+ * Pass the artist's `artistSettings.timeZone`.
  * @returns IANA timezone string
  */
-export function getBusinessTimezone(): string {
-  // Default to Australia/Brisbane
-  // In future, fetch from artist settings
-  return "Australia/Brisbane";
+export function getBusinessTimezone(preferred?: string | null): string {
+  return preferred && isValidTimezone(preferred) ? preferred : DEFAULT_TIMEZONE;
 }
 
 /**

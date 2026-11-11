@@ -190,3 +190,16 @@ describe("Timezone Utils - SSOT Compliance", () => {
     });
   });
 });
+
+describe("business timezone", () => {
+  it("uses the artist's saved zone, falling back to the default when missing or invalid", async () => {
+    const { getBusinessTimezone, localToUTC } = await import("./timezone");
+    expect(getBusinessTimezone("Australia/Perth")).toBe("Australia/Perth");
+    expect(getBusinessTimezone(null)).toBe("Australia/Brisbane");
+    expect(getBusinessTimezone("Mars/Olympus")).toBe("Australia/Brisbane");
+    // A 10am summer sitting is a different instant in Sydney (daylight saving) than in Brisbane.
+    expect(localToUTC("2026-12-01T10:00", "Australia/Sydney")).not.toBe(
+      localToUTC("2026-12-01T10:00", "Australia/Brisbane")
+    );
+  });
+});
