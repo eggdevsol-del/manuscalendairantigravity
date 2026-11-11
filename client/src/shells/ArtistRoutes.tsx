@@ -1,4 +1,5 @@
 import Products from "@/app-v3/pages/Products";
+import { PrivacyPolicy, TermsOfService } from "@/app-v3/pages/Legal";
 import Events from "@/app-v3/pages/Events";
 import { SupplierOrders as StoreOrders } from "@/app-v3/pages/Supplier";
 import Studio from "@/app-v3/pages/Studio";
@@ -60,6 +61,8 @@ export function ArtistRoutes() {
       <Route path="/supply-orders" component={SupplierOrderHistory} />
       <Route path="/calendar" component={Calendar} />
       <Route path="/settings" component={Settings} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfService} />
       <Route path="/artist-profile" component={ArtistProfileTab} />
       <Route path="/work-hours" component={WorkHours} />
       <Route path="/clients" component={Clients} />

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Screen, Section } from "../design/primitives";
 
 /**
@@ -18,8 +19,15 @@ function LegalPage({
   title: string;
   children: ReactNode;
 }) {
+  // Signed-in artists reach these from Settings; everyone else arrives by a public link.
+  const { user } = useAuth();
   return (
-    <Screen title={title} subtitle={`Last updated ${LEGAL_UPDATED}`} publicView>
+    <Screen
+      title={title}
+      subtitle={`Last updated ${LEGAL_UPDATED}`}
+      back={user?.role === "artist" ? "/settings" : undefined}
+      publicView={!user}
+    >
       {!LEGAL_REVIEWED && (
         <p role="note" className="legal-draft">
           Draft. This document is awaiting legal review and may change before

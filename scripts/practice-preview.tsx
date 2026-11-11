@@ -5,6 +5,9 @@ import {
   mutatePracticeControl,
 } from "../shared/practiceControls";
 import React, { useRef, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { observable } from "@trpc/server/observable";
+import { trpc } from "../client/src/lib/trpc";
 import { createRoot } from "react-dom/client";
 import { PracticeView } from "../client/src/features/practice/PracticeWorkspace";
 import {
@@ -17,6 +20,18 @@ import {
 import "../client/src/app-v3/design/system.css";
 import "../client/src/app-v3/design/ivory.css";
 import "../client/src/app-v3/design/simple-ivory.css";
+import "../client/src/app-v3/design/ios-modern.css";
+import { applyWallpaper } from "../client/src/app-v3/design/wallpaper";
+applyWallpaper();
+// The preview is offline: any server call a shared component makes (such as "who is signed in")
+// resolves to nothing, so screens render in their signed-out form.
+const offlineLink = () => () =>
+  observable<any>(observer => {
+    observer.next({ result: { data: null } });
+    observer.complete();
+  });
+const queryClient = new QueryClient();
+const trpcClient = trpc.createClient({ links: [offlineLink as any] });
 function Preview() {
   const storageKey = "tattoi:artist-practice-preview:v1";
   const [initial] = useState(() => {
@@ -105,4 +120,10 @@ function Preview() {
     </>
   );
 }
-createRoot(document.getElementById("root")!).render(<Preview />);
+createRoot(document.getElementById("root")!).render(
+  <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <Preview />
+    </QueryClientProvider>
+  </trpc.Provider>
+);
