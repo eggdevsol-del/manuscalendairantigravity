@@ -1,134 +1,173 @@
-import { effectivePaymentTier } from "./paymentEntitlements";
 /**
  * Balance Payment Reminder Service
  *
- * v2.3 §2: On the morning of an appointment, automatically
- * sends the client a secure payment link for the remaining balance.
+ * On the morning of a sitting, sends the client a secure payment link for the remaining balance by
+ * email, SMS and push (whichever are available for that client), then records that it was sent so a
+ * restart or second run never sends it twice.
  *
- * Called by:
- * - A scheduled cron job (runs daily at 7am local time)
- * - Or a server-side scheduled task on app startup
- *
- * Flow:
- * 1. Query appointments where: today's date, paymentStatus = "deposit_paid"
- * 2. For each, generate a balance payment link
- * 3. Send via push notification / SMS / email
- * 4. Appointment cannot be marked complete until balance is paid
+ * Called daily by the scheduler (see scheduler.ts).
  */
-
 import { getDb } from "./core";
-import { eq, and, sql } from "drizzle-orm";
+import { and, eq, gt, gte, lt, ne, or, isNull } from "drizzle-orm";
 import { appointments, artistSettings, users } from "../../drizzle/schema";
-import {
-  calculateTransactionFees,
-  resolvePaymentTier,
-  getAllowedPaymentMethods,
-} from "../domain/fees";
+import { createBalanceToken } from "./depositToken";
+import { sendEmail } from "./email";
+import { deliveryAvailability, sendOfferSms } from "./offerDelivery";
+import { sendPushNotification } from "./pushService";
+import { formatLocalTime } from "../../shared/utils/timezone";
 
 export interface BalanceReminderResult {
   bookingId: number;
   clientId: string;
   remainingBalanceCents: number;
   sent: boolean;
+  channels: string[];
   error?: string;
 }
 
+/** How far ahead of the run a sitting may start and still be reminded this morning. */
+const WINDOW_HOURS = 18;
+const mysql = (d: Date) => d.toISOString().slice(0, 19).replace("T", " ");
+const dollars = (cents: number) =>
+  "$" + (cents / 100).toLocaleString("en-AU", { minimumFractionDigits: 2 });
+
+/** The reminder wording, shared by every channel. */
+export function balanceReminderMessage(opts: {
+  clientName?: string | null;
+  artistName: string;
+  when: string;
+  remainingCents: number;
+  link: string;
+}) {
+  const hi = opts.clientName ? `Hi ${opts.clientName.split(" ")[0]}, ` : "";
+  return {
+    subject: `Your sitting with ${opts.artistName} is today`,
+    short: `${hi}your sitting with ${opts.artistName} is ${opts.when}. ${dollars(opts.remainingCents)} is due on the day. Pay securely: ${opts.link}`,
+    body: `${hi}your sitting with ${opts.artistName} is ${opts.when}.\n\nThe remaining balance is ${dollars(opts.remainingCents)}. You can pay it securely here before or at your sitting:\n${opts.link}\n\nIf you've already arranged payment with ${opts.artistName}, you can ignore this message.`,
+  };
+}
+
 /**
- * Find all appointments happening today that have unpaid balances
- * and send payment reminders to clients.
+ * Find sittings starting in the next WINDOW_HOURS that still have a balance owing and remind each
+ * client once. Times are stored in UTC, so the window is taken from the moment of the run rather
+ * than from a calendar date in the server's timezone.
  */
-export async function sendMorningBalanceReminders(): Promise<
-  BalanceReminderResult[]
-> {
+export async function sendMorningBalanceReminders(
+  now: Date = new Date()
+): Promise<BalanceReminderResult[]> {
   const db = await getDb();
   if (!db) {
     console.error("[BalanceReminder] Database connection failed");
     return [];
   }
-
-  // Find today's appointments with paymentStatus = deposit_paid
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
-
-  const todayStr = todayStart.toISOString().slice(0, 10); // YYYY-MM-DD
-
-  const unpaidBookings = await db.query.appointments.findMany({
+  const due = await db.query.appointments.findMany({
     where: and(
-      eq(appointments.paymentStatus, "deposit_paid" as any),
-      sql`DATE(${appointments.startTime}) = ${todayStr}`
+      eq(appointments.paymentStatus, "deposit_paid"),
+      eq(appointments.status, "confirmed"),
+      gte(appointments.startTime, mysql(now)),
+      lt(
+        appointments.startTime,
+        mysql(new Date(+now + WINDOW_HOURS * 3600_000))
+      ),
+      gt(appointments.remainingBalanceCents, 0),
+      or(isNull(appointments.reminderSent), ne(appointments.reminderSent, 1))
     ),
   });
-
+  const appUrl = (
+    process.env.APP_URL ||
+    process.env.VITE_APP_URL ||
+    "https://www.tattoi.app"
+  ).replace(/\/$/, "");
   const results: BalanceReminderResult[] = [];
 
-  for (const booking of unpaidBookings) {
+  for (const booking of due) {
+    const remaining = booking.remainingBalanceCents || 0;
+    const base = {
+      bookingId: booking.id,
+      clientId: booking.clientId,
+      remainingBalanceCents: remaining,
+    };
     try {
-      const remaining = booking.remainingBalanceCents || 0;
-      if (remaining <= 0) continue;
-
-      // Get artist settings for tier + Connect account
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(artistSettings.userId, booking.artistId),
+      const [client, artist, settings] = await Promise.all([
+        db.query.users.findFirst({ where: eq(users.id, booking.clientId) }),
+        db.query.users.findFirst({ where: eq(users.id, booking.artistId) }),
+        db.query.artistSettings.findFirst({
+          where: eq(artistSettings.userId, booking.artistId),
+        }),
+      ]);
+      if (!client) throw new Error("Client not found.");
+      const link = `${appUrl}/balance/${booking.id}?token=${createBalanceToken(booking.id)}`;
+      const message = balanceReminderMessage({
+        clientName: client.name,
+        artistName: settings?.businessName || artist?.name || "your artist",
+        when: `today at ${formatLocalTime(
+          new Date(booking.startTime.replace(" ", "T") + "Z").toISOString(),
+          booking.timeZone,
+          "h:mm a"
+        )}`,
+        remainingCents: remaining,
+        link,
       });
-      const artist = await db.query.users.findFirst({
-        where: eq(users.id, booking.artistId),
+
+      // Each channel is independent: one failing must not stop the others.
+      const channels: string[] = [];
+      const failures: string[] = [];
+      const attempt = async (name: string, send: () => Promise<unknown>) => {
+        try {
+          await send();
+          channels.push(name);
+        } catch (e) {
+          failures.push(
+            `${name}: ${e instanceof Error ? e.message : "failed"}`
+          );
+        }
+      };
+      if (client.email && process.env.RESEND_API_KEY && process.env.EMAIL_FROM)
+        await attempt("email", () =>
+          sendEmail(
+            { to: client.email!, subject: message.subject, body: message.body },
+            `balance-reminder-${booking.id}`
+          )
+        );
+      if (client.phone && deliveryAvailability().smsAvailable)
+        await attempt("sms", () => sendOfferSms(client.phone!, message.short));
+      await attempt("push", async () => {
+        const push = await sendPushNotification(client.id, {
+          title: message.subject,
+          body: `${dollars(remaining)} is due on the day. Tap to pay securely.`,
+          url: link,
+        });
+        if (!push.success) throw new Error("no device registered");
       });
 
-      const tier = await effectivePaymentTier(settings);
-      const fees = calculateTransactionFees(remaining, tier);
-      const paymentMethods = getAllowedPaymentMethods(tier, false);
-
-      // Generate balance payment token (secure, time-limited)
-      const { createBalanceToken } = await import("./depositToken");
-      const balanceToken = createBalanceToken(booking.id);
-
-      // TODO: Create the actual balance checkout session and send via:
-      // - Push notification (if app installed)
-      // - SMS (if phone number available)
-      // - Email (always)
-      //
-      // The checkout URL will be:
-      // createBalanceCheckoutSession({
-      //   bookingId: booking.id,
-      //   balanceAmountCents: remaining,
-      //   platformFeeCents: fees.stripeApplicationFeeCents,
-      //   clientTotalCents: fees.clientTotalCents,
-      //   clientEmail: client.email,
-      //   artistName: settings?.businessName || artist?.name || "Artist",
-      //   paymentMethods,
-      //   stripeConnectAccountId: settings?.stripeConnectAccountId,
-      //   tier,
-      //   balanceToken,
-      // });
-
+      if (channels.length)
+        await db
+          .update(appointments)
+          .set({ reminderSent: 1 })
+          .where(eq(appointments.id, booking.id));
+      // Never log recipients, links or message bodies.
       console.log(
-        `[BalanceReminder] Booking ${booking.id}: ${remaining}c remaining, ` +
-          `client: ${booking.clientId}, tier: ${tier}, ` +
-          `methods: ${paymentMethods.join(",")}`
+        `[BalanceReminder] Booking ${booking.id}: ${channels.length ? "sent via " + channels.join(", ") : "not sent"}`
       );
-
       results.push({
-        bookingId: booking.id,
-        clientId: booking.clientId,
-        remainingBalanceCents: remaining,
-        sent: true,
+        ...base,
+        sent: channels.length > 0,
+        channels,
+        ...(channels.length
+          ? {}
+          : { error: failures.join("; ") || "No way to reach this client." }),
       });
-    } catch (error: any) {
+    } catch (error) {
       results.push({
-        bookingId: booking.id,
-        clientId: booking.clientId,
-        remainingBalanceCents: booking.remainingBalanceCents || 0,
+        ...base,
         sent: false,
-        error: error.message,
+        channels: [],
+        error: error instanceof Error ? error.message : "failed",
       });
     }
   }
-
   console.log(
-    `[BalanceReminder] Processed ${results.length} bookings, ` +
-      `${results.filter(r => r.sent).length} reminders sent`
+    `[BalanceReminder] Processed ${results.length} bookings, ${results.filter(r => r.sent).length} reminders sent`
   );
   return results;
 }
