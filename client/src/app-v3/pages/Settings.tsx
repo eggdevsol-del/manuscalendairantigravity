@@ -1,7 +1,8 @@
 import { usePractice } from "@/features/practice/PracticeContext";
 import { useState } from "react";
 import { useLocation, useSearch, Redirect } from "wouter";
-import { Briefcase,
+import {
+  Briefcase,
   Bell,
   UserRound,
   MapPin,
@@ -81,9 +82,11 @@ export default function Settings() {
         },
         {
           title: "Notifications",
-          detail: values.alerts ?? (artist
-            ? "Device alerts and saved message templates"
-            : "Device alerts for updates and messages"),
+          detail:
+            values.alerts ??
+            (artist
+              ? "Device alerts and saved message templates"
+              : "Device alerts for updates and messages"),
           icon: Bell,
           href: settingsPath + "?section=notifications",
         },
@@ -102,7 +105,9 @@ export default function Settings() {
               },
               {
                 title: "Business details",
-                detail: values.business ?? "Location, contact information and licence",
+                detail:
+                  values.business ??
+                  "Location, contact information and licence",
                 icon: MapPin,
                 href: settingsPath + "?section=business",
               },
@@ -120,7 +125,8 @@ export default function Settings() {
               },
               {
                 title: "Travel & guest spots",
-                detail: values.travel ?? "Dates, destinations and nearby clients",
+                detail:
+                  values.travel ?? "Dates, destinations and nearby clients",
                 icon: Plane,
                 href: settingsPath + "?section=travel",
               },
@@ -173,10 +179,22 @@ export default function Settings() {
       title: "Help & account controls",
       items: [
         {
-          title: "Delete account",
-          detail: "Account and data removal",
+          title: "Your data and account",
+          detail: "Download your data or delete your account",
           icon: ShieldCheck,
           href: settingsPath + "?section=danger-zone",
+        },
+        {
+          title: "Privacy Policy",
+          detail: "What we collect and your choices",
+          icon: HelpCircle,
+          href: "/privacy",
+        },
+        {
+          title: "Terms of Service",
+          detail: "Fees, deposits and cancellations",
+          icon: HelpCircle,
+          href: "/terms",
         },
       ],
     },
@@ -246,13 +264,23 @@ export default function Settings() {
 function useSettingValues(enabled: boolean) {
   const settings = trpc.artistSettings.get.useQuery(undefined, { enabled });
   const plan = trpc.billing.subscriptionStatus.useQuery(undefined, { enabled });
-  const stripe = trpc.artistSettings.getStripeConnectStatus.useQuery(undefined, {
-    enabled,
-  });
+  const stripe = trpc.artistSettings.getStripeConnectStatus.useQuery(
+    undefined,
+    {
+      enabled,
+    }
+  );
   const studio = trpc.studios.getCurrentStudio.useQuery(undefined, { enabled });
   const values: Partial<
     Record<
-      "alerts" | "business" | "hours" | "link" | "travel" | "payouts" | "plan" | "studio",
+      | "alerts"
+      | "business"
+      | "hours"
+      | "link"
+      | "travel"
+      | "payouts"
+      | "plan"
+      | "studio",
       string
     >
   > = {};
@@ -278,7 +306,9 @@ function useSettingValues(enabled: boolean) {
       ? `${window.location.host.replace(/^www\./, "")}/book/${s.publicSlug}${s.funnelEnabled === 0 ? " · paused" : ""}`
       : "Not set up yet";
     const trips = (parseSchedule(s.travelDates) as any[])
-      .filter(t => t?.endDate && t.endDate >= new Date().toLocaleDateString("en-CA"))
+      .filter(
+        t => t?.endDate && t.endDate >= new Date().toLocaleDateString("en-CA")
+      )
       .sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
     values.travel = trips[0]
       ? `${trips[0].location || "Next trip"} from ${new Date(`${trips[0].startDate}T12:00`).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}${trips.length > 1 ? ` · ${trips.length - 1} more` : ""}`

@@ -7,6 +7,7 @@ import { getSessionCookieOptions } from "../_core/cookies";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { assertAccountBillingClosed } from "../services/accountBilling";
+import { exportAccountData } from "../services/dataExport";
 
 export const authRouter = router({
   ...coreAuthRouter._def.procedures,
@@ -181,6 +182,10 @@ export const authRouter = router({
 
       return enrichedArtists;
     }),
+  /** A copy of everything the signed-in person's account holds, for download. */
+  exportData: protectedProcedure.mutation(({ ctx }) =>
+    exportAccountData(ctx.user.id)
+  ),
   deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
     const database = await db.getDb();
     if (!database) {

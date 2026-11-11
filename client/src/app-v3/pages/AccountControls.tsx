@@ -30,13 +30,46 @@ export function AccountRemoval() {
       window.location.assign("/login");
     },
   });
+  const exportData = trpc.auth.exportData.useMutation({
+    onSuccess: data => {
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
+      );
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `tattoi-data-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+  });
   return (
     <Screen
-      title="Delete your account"
+      title="Your data and account"
       back={user?.role === "merchant" ? "/account-settings" : "/settings"}
     >
       <Panel>
-        <h2>This cannot be undone</h2>
+        <h2>Download your data</h2>
+        <p>
+          A file with your profile, business details, bookings, conversations
+          and messages. Passwords and bank details are never included.
+        </p>
+        <Action
+          tone="secondary"
+          disabled={exportData.isPending}
+          onClick={() =>
+            practice
+              ? practice.simulate("Data download preview")
+              : exportData.mutate()
+          }
+        >
+          {exportData.isPending ? "Preparing your file…" : "Download my data"}
+        </Action>
+        {exportData.error && <p role="alert">{exportData.error.message}</p>}
+        {exportData.isSuccess && <p role="status">Your file has downloaded.</p>}
+      </Panel>
+      <Panel>
+        <h2>Delete your account</h2>
+        <p>This cannot be undone.</p>
         <p>
           Deleting your account removes your Tattoi profile and access to its
           bookings and conversations. Export any records you need before

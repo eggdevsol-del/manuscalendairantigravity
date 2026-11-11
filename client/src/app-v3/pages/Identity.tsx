@@ -1,4 +1,5 @@
 import { useId, useState, type ReactNode } from "react";
+import { LegalConsent } from "./Legal";
 import { Link, Redirect, useSearch } from "wouter";
 import { Eye, EyeOff } from "lucide-react";
 import { trpc } from "@/lib/trpc";
@@ -114,8 +115,22 @@ export function Login() {
   const ready = useGoogleAuthReady();
   const busy = login.isPending || google.isPending;
   const error = login.error?.message || google.error?.message || googleError;
-  if (session.loading || !session.isSessionChecked) return <p role="status">Checking your session…</p>;
-  if (session.user) return <Redirect to={session.user.role === "master_dev" ? "/dev" : session.user.role === "client" ? "/bookings" : session.user.role === "merchant" ? "/merchant" : "/dashboard"} />;
+  if (session.loading || !session.isSessionChecked)
+    return <p role="status">Checking your session…</p>;
+  if (session.user)
+    return (
+      <Redirect
+        to={
+          session.user.role === "master_dev"
+            ? "/dev"
+            : session.user.role === "client"
+              ? "/bookings"
+              : session.user.role === "merchant"
+                ? "/merchant"
+                : "/dashboard"
+        }
+      />
+    );
   return (
     <IdentityLayout
       title="Welcome back"
@@ -340,6 +355,16 @@ function SignupForm({ role }: { role: "client" | "artist" | "supplier" }) {
             value={password}
             onChange={setPassword}
           />
+          <label className="legal-consent">
+            <input
+              type="checkbox"
+              required
+              aria-label="I agree to the Terms of Service and Privacy Policy"
+            />
+            <span>
+              <LegalConsent />
+            </span>
+          </label>
           {error && <p role="alert">{error}</p>}
           <Action type="submit">
             {busy ? "Creating account…" : "Create account"}

@@ -8,6 +8,7 @@ import { BottomNavProvider } from "@/contexts/BottomNavContext";
 
 import NotFound from "@/pages/NotFound";
 import { Route, Switch, useLocation } from "wouter";
+import { PrivacyPolicy, TermsOfService } from "@/app-v3/pages/Legal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -251,6 +252,8 @@ function Router() {
         <Route path="/" component={Login} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
         <Route path="/set-password" component={SetPassword} />
         <Route path="/forgot-password" component={PasswordRecovery} />
         <Route path="/auth/magic" component={MagicLink} />
