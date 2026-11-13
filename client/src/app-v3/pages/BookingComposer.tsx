@@ -27,13 +27,13 @@ import {
   Section,
   Status,
 } from "../design/primitives";
-import {
-  hoursFor,
-  parseSchedule,
-  savedKeys,
-} from "../design/calendarDays";
+import { hoursFor, parseSchedule, savedKeys } from "../design/calendarDays";
 import { useSavedDays } from "../data/useSavedDays";
 import { ProposalStage } from "../components/DetailStages";
+import {
+  OutsideHoursConfirm,
+  useOutsideHours,
+} from "../components/OutsideHoursConfirm";
 import { ProjectArt } from "../design/LockParts";
 type DraftSession = {
   date: string;
@@ -127,6 +127,19 @@ export function BookingComposer({
     conversation.data?.otherUser?.name || selectedClient?.name || "Client";
   const clientId = conversation.data?.clientId || client;
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const hours = useOutsideHours(
+    sessions.map((s, i) => {
+      const start = new Date(`${s.date}T${s.time}`);
+      return {
+        start,
+        end: new Date(+start + s.duration * 60000),
+        sessionIndex: i + 1,
+      };
+    }),
+    settings.data?.workSchedule,
+    zone
+  );
+  const [hoursAttention, setHoursAttention] = useState(0);
   // A day saved for this client from "Fill this day" on the calendar is offered when choosing dates.
   const heldKeys = savedKeys(clientId || null, conversationId || null);
   const savedDays = useSavedDays();
@@ -369,6 +382,13 @@ export function BookingComposer({
       setStep("details");
       return;
     }
+    if (hours.pending.length) {
+      setError(
+        "Confirm each sitting outside your business hours, or change its time."
+      );
+      setHoursAttention(n => n + 1);
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -393,6 +413,7 @@ export function BookingComposer({
           timeZone: zone,
           autoScheduled,
         },
+        confirmedOutsideHours: hours.confirmed,
       });
       await Promise.all([
         utils.messages.list.invalidate({ conversationId: target }),
@@ -403,11 +424,14 @@ export function BookingComposer({
       void savedDays.forget(heldKeys);
       onSuccess(target);
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : "Couldn’t send the proposal. Try again."
-      );
+      // Hours changed since this screen loaded them: ask for the same per-sitting confirmation.
+      if (hours.refuse(e)) setHoursAttention(n => n + 1);
+      else
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Couldn’t send the proposal. Try again."
+        );
     } finally {
       setBusy(false);
     }
@@ -475,8 +499,11 @@ export function BookingComposer({
         who={clientId ? clientName : null}
         avatar={
           selectedClient?.avatar ||
-          (conversation.data?.otherUser as { avatar?: string | null } | undefined)
-            ?.avatar
+          (
+            conversation.data?.otherUser as
+              | { avatar?: string | null }
+              | undefined
+          )?.avatar
         }
         service={service}
         sessions={sessions}
@@ -494,9 +521,7 @@ export function BookingComposer({
         }
       </Status>
       {held && (step === "frequency" || step === "details") && (
-        <div
-          className={`iosm-held${sessions[0].date === held ? " on" : ""}`}
-        >
+        <div className={`iosm-held${sessions[0].date === held ? " on" : ""}`}>
           <span className="iosm-held-d">
             <small>{format(new Date(`${held}T12:00`), "EEE")}</small>
             <b>{format(new Date(`${held}T12:00`), "d")}</b>
@@ -519,7 +544,11 @@ export function BookingComposer({
               <Check />
             </span>
           ) : (
-            <button type="button" className="iosm-held-use" onClick={applyHeldDay}>
+            <button
+              type="button"
+              className="iosm-held-use"
+              onClick={applyHeldDay}
+            >
               Use
             </button>
           )}
@@ -631,7 +660,11 @@ export function BookingComposer({
             {service} · {sessions.length} sitting
             {sessions.length === 1 ? "" : "s"}
           </p>
-          {offer && <p className="v3-muted">Select a verified schedule to find your dates.</p>}
+          {offer && (
+            <p className="v3-muted">
+              Select a verified schedule to find your dates.
+            </p>
+          )}
           {offer && checkingFrequencies && (
             <p role="status">Checking which schedules fit this offer…</p>
           )}
@@ -817,7 +850,8 @@ export function BookingComposer({
             ))}
             <small>
               Times in {zone.replaceAll("_", " ")}. Availability is checked when
-              the proposal is sent and again before confirmation. Proposed dates are not reserved until the deposit is confirmed.
+              the proposal is sent and again before confirmation. Proposed dates
+              are not reserved until the deposit is confirmed.
             </small>
             {fixedDeposit && (
               <small id="booking-deposit-policy">
@@ -929,6 +963,19 @@ export function BookingComposer({
             applicable fee and terms at checkout. Their booking is confirmed
             after payment.
           </p>
+          <OutsideHoursConfirm
+            issues={hours.issues}
+            confirmed={hours.confirmed}
+            onToggle={key => {
+              setError("");
+              hours.toggle(key);
+            }}
+            onChangeTime={() => {
+              setError("");
+              setStep("details");
+            }}
+            attention={hoursAttention}
+          />
           {error && <p role="alert">{error}</p>}
           <Action disabled={busy} onClick={send}>
             {busy ? "Sending proposal…" : "Send proposal"}
@@ -980,7 +1027,11 @@ function ProposalPreview({
     <ProposalStage
       face={
         <span className="iosm-orb-face" style={{ width: 56, height: 56 }}>
-          {who ? <ProjectArt src={avatar} name={who} /> : <User aria-hidden="true" />}
+          {who ? (
+            <ProjectArt src={avatar} name={who} />
+          ) : (
+            <User aria-hidden="true" />
+          )}
         </span>
       }
       who={who || "Choose a client"}
@@ -990,7 +1041,10 @@ function ProposalPreview({
         service
           ? sessions.map((s, i) => ({
               key: i,
-              label: dated && s.date ? format(new Date(`${s.date}T12:00`), "d MMM") : "date",
+              label:
+                dated && s.date
+                  ? format(new Date(`${s.date}T12:00`), "d MMM")
+                  : "date",
               state: dated && s.date ? "confirmed" : "todo",
             }))
           : []

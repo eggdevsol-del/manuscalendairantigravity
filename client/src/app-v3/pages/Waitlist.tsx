@@ -17,6 +17,10 @@ import {
   Screen,
   Status,
 } from "../design/primitives";
+import {
+  OutsideHoursConfirm,
+  useOutsideHours,
+} from "../components/OutsideHoursConfirm";
 export default function Waitlist() {
   const { user } = useAuth();
   const artist = user?.role === "artist" || user?.role === "admin";
@@ -43,8 +47,13 @@ export default function Waitlist() {
   });
   const offer = trpc.waitlist.offer.useMutation({
     onSuccess: () => {
-      setOffering(null);
+      startOffer(null);
       void query.refetch();
+    },
+    onError: e => {
+      const asked = hours.refuse(e);
+      setAsked(asked);
+      if (asked) setHoursAttention(n => n + 1);
     },
   });
   const accept = trpc.waitlist.accept.useMutation({
@@ -71,11 +80,35 @@ export default function Waitlist() {
     const id = Number(linked.current.get("offer"));
     if (!id || !query.data?.some(row => row.id === id)) return;
     setDraft(d => ({ ...d, startsAt: linked.current.get("start") || "" }));
-    setOffering(id);
+    startOffer(id);
     linked.current = new URLSearchParams();
   }, [query.data]);
-  const error = offer.error || accept.error || leave.error;
+  // An outside-hours refusal the offer sheet can ask about is answered there, not shown as a failure.
+  const [asked, setAsked] = useState(false);
+  const offerError = offer.error && !asked ? offer.error : null;
+  const error = offerError || accept.error || leave.error;
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const offered = new Date(draft.startsAt);
+  const hours = useOutsideHours(
+    offering !== null && draft.startsAt
+      ? [
+          {
+            start: offered,
+            end: new Date(+offered + Number(draft.duration) * 60000),
+          },
+        ]
+      : [],
+    settings.data?.workSchedule,
+    zone
+  );
+  const [hoursAttention, setHoursAttention] = useState(0);
+  const [held, setHeld] = useState(false);
+  // Each offer is asked about its own sitting: an answer given for one never carries to the next.
+  const startOffer = (id: number | null) => {
+    hours.reset();
+    setHeld(false);
+    setOffering(id);
+  };
   return (
     <Screen
       title={artist ? "Cancellation waitlist" : "Earlier appointments"}
@@ -155,7 +188,7 @@ export default function Waitlist() {
                       expiry: "24",
                     });
                     offer.reset();
-                    setOffering(row.id);
+                    startOffer(row.id);
                   }}
                 >
                   Offer a time
@@ -215,7 +248,14 @@ export default function Waitlist() {
             className="v3-form"
             onSubmit={e => {
               e.preventDefault();
+              if (hours.pending.length) {
+                setHeld(true);
+                setHoursAttention(n => n + 1);
+                return;
+              }
               offer.mutate({
+                confirmedOutsideHours: hours.confirmed,
+                timeZone: zone,
                 id: offering,
                 startsAt: new Date(draft.startsAt).toISOString(),
                 durationMinutes: Number(draft.duration),
@@ -303,7 +343,19 @@ export default function Waitlist() {
                 error={settings.error}
                 onRetry={() => settings.refetch()}
               />
-              {offer.error && <p role="alert">{offer.error.message}</p>}
+              <OutsideHoursConfirm
+                issues={hours.issues}
+                confirmed={hours.confirmed}
+                onToggle={hours.toggle}
+                attention={hoursAttention}
+              />
+              {held && hours.pending.length > 0 && (
+                <p role="alert">
+                  Confirm this sitting outside your business hours, or change
+                  the time.
+                </p>
+              )}
+              {offerError && <p role="alert">{offerError.message}</p>}
               <Action type="submit">
                 {offer.isPending ? "Sending…" : "Send offer"}
               </Action>
@@ -363,7 +415,12 @@ export default function Waitlist() {
 function WaitingRow({
   rows,
 }: {
-  rows: { id: number; name: string | null; status: string; expired?: boolean }[];
+  rows: {
+    id: number;
+    name: string | null;
+    status: string;
+    expired?: boolean;
+  }[];
 }) {
   const ready = rows.filter(
     r => ["waiting", "offered"].includes(r.status) && !r.expired
@@ -378,7 +435,9 @@ function WaitingRow({
       <ul className="iosm-wl-row">
         {ready.map(r => (
           <li key={r.id}>
-            <span className="iosm-orb-face">{initials(r.name || "Client")}</span>
+            <span className="iosm-orb-face">
+              {initials(r.name || "Client")}
+            </span>
             <b>{(r.name || "Client").split(" ")[0]}</b>
             <small>{r.status === "offered" ? "Offer sent" : "Waiting"}</small>
           </li>

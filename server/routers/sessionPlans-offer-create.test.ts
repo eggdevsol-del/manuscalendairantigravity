@@ -1,11 +1,13 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as s from "../../drizzle/schema";
+import { OutsideHoursError } from "../../shared/businessHours";
 const m = vi.hoisted(() => ({
   database: {} as any,
   setOffer: vi.fn(),
   access: vi.fn(),
   conflict: false,
+  settings: {} as any,
 }));
 vi.mock("../db", () => ({ getDb: async () => m.database }));
 vi.mock("../services/offerCheckout", () => ({
@@ -34,16 +36,20 @@ const sessions = [
 beforeEach(() => {
   vi.clearAllMocks();
   m.conflict = false;
+  m.settings = { subscriptionTier: "free" };
   m.access.mockResolvedValue({ clientId: "client", artistId: "artist" });
 });
 describe("offer-backed artist proposal", () => {
-  it.each([false, true])("checks occupied dates before writing the proposal (conflict=%s)", async conflict => {
+  const propose = async (
+    conflict: boolean,
+    confirmedOutsideHours?: string[]
+  ) => {
     m.conflict = conflict;
     const writes: any[] = [];
     const tx: any = {
       query: {
         artistSettings: {
-          findFirst: async () => ({ subscriptionTier: "free" }),
+          findFirst: async () => m.settings,
         },
         sessionPlans: {
           findMany: async () => [],
@@ -75,6 +81,7 @@ describe("offer-backed artist proposal", () => {
         offerId: 7,
         sessions,
         scheduling: { frequency: "weekly", timeZone: "Australia/Brisbane" },
+        confirmedOutsideHours,
       });
     if (conflict) {
       await expect(operation).rejects.toThrow("conflicts with an existing booking");
@@ -96,6 +103,45 @@ describe("offer-backed artist proposal", () => {
       offerId: 7,
       totalEstimateCents: 8500,
       depositTotalCents: 2125,
+    });
+  };
+  it.each([false, true])(
+    "checks occupied dates before writing the proposal (conflict=%s)",
+    conflict => propose(conflict)
+  );
+  describe("outside business hours", () => {
+    // The sitting is Monday 10:00–11:00 am in Brisbane; the artist only works Tuesdays.
+    const key = "2027-02-01T00:00:00.000Z/2027-02-01T01:00:00.000Z";
+    beforeEach(() => {
+      m.settings = {
+        subscriptionTier: "free",
+        // Hours belong to the artist's zone even when the proposal names another.
+        timeZone: "Australia/Brisbane",
+        workSchedule: JSON.stringify({
+          tuesday: { enabled: true, start: "09:00", end: "17:00" },
+        }),
+      };
+    });
+    it("refuses an unconfirmed sitting and names it", async () => {
+      const error = await propose(false).catch(e => e);
+      expect(error).toMatchObject({ code: "PRECONDITION_FAILED" });
+      expect(error.cause).toBeInstanceOf(OutsideHoursError);
+      expect(error.cause.issues).toMatchObject([
+        { key, reason: "closed", day: "Monday", sessionIndex: 1 },
+      ]);
+      expect(m.setOffer).not.toHaveBeenCalled();
+    });
+    it("is not satisfied by a confirmation for a different time", async () => {
+      await expect(
+        propose(false, ["2027-02-08T00:00:00.000Z/2027-02-08T01:00:00.000Z"])
+      ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+      expect(m.setOffer).not.toHaveBeenCalled();
+    });
+    it("sends the proposal once the sitting is confirmed", () =>
+      propose(false, [key]));
+    it("does not ask when hours were never set up", async () => {
+      m.settings.workSchedule = "{}";
+      await propose(false);
     });
   });
   it("refuses a mismatched client before applying an offer", async () => {

@@ -6,6 +6,11 @@ import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { instant, money } from "@/features/workspace/bookingPresentation";
 import { Action, Panel } from "../design/primitives";
+import {
+  OutsideHoursConfirm,
+  useOutsideHours,
+} from "../components/OutsideHoursConfirm";
+import { outsideHoursKey } from "@shared/businessHours";
 interface Session {
   id: number;
   startsAt: string;
@@ -72,10 +77,26 @@ export function SessionActions({
   const cancelAll = trpc.appointments.cancelProjectSessions.useMutation();
   const request = trpc.dashboard.requestPayment.useMutation();
   const [all, setAll] = useState(false);
+  const settings = trpc.artistSettings.get.useQuery(undefined, {
+    enabled: mode === "reschedule",
+  });
+  const length = +instant(s.endsAt) - +instant(s.startsAt);
+  const chosen = fromZonedTime(`${date}T${time}`, s.timeZone);
+  const hours = useOutsideHours(
+    mode === "reschedule" &&
+      Number.isFinite(+chosen) &&
+      +chosen !== +instant(s.startsAt)
+      ? [{ start: chosen, end: new Date(+chosen + length) }]
+      : [],
+    settings.data?.workSchedule,
+    s.timeZone
+  );
+  const [hoursAttention, setHoursAttention] = useState(0);
   const actions = availableSessionActions(s);
   const canFinish = s.status === "completed" || actions.includes("no-show");
   const open = (next: typeof mode) => {
     setError("");
+    hours.reset();
     setAll(false);
     setDate(formatInTimeZone(instant(s.startsAt), s.timeZone, "yyyy-MM-dd"));
     setTime(formatInTimeZone(instant(s.startsAt), s.timeZone, "HH:mm"));
@@ -105,15 +126,20 @@ export function SessionActions({
           throw new Error("Choose a valid future time.");
         if (+start === +instant(s.startsAt))
           throw new Error("Choose a different date or time to reschedule.");
-        const end = new Date(
-          +start + (+instant(s.endsAt) - +instant(s.startsAt))
-        );
+        const end = new Date(+start + length);
+        if (hours.pending.some(i => i.key === outsideHoursKey(start, end))) {
+          setHoursAttention(n => n + 1);
+          throw new Error(
+            "Confirm this sitting outside your business hours, or change the time."
+          );
+        }
         const result = await reschedule.mutateAsync({
           appointmentId: s.id,
           newStartTime: start.toISOString(),
           newEndTime: end.toISOString(),
           allowOutsideOfferDates,
           requestApproval: !!rescheduleTerms,
+          confirmedOutsideHours: hours.confirmed,
         });
         if (result.requiresApproval && "terms" in result) {
           setRescheduleTerms(result.terms);
@@ -143,9 +169,15 @@ export function SessionActions({
       onChange();
       onClose?.();
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Couldn’t save this change. Try again."
-      );
+      // Hours changed since this sheet loaded them: ask for the same confirmation.
+      if (mode === "reschedule" && hours.refuse(e))
+        setHoursAttention(n => n + 1);
+      else
+        setError(
+          e instanceof Error
+            ? e.message
+            : "Couldn’t save this change. Try again."
+        );
     } finally {
       setBusy(false);
     }
@@ -296,6 +328,16 @@ export function SessionActions({
                   </p>
                 </Panel>
               )}
+              <OutsideHoursConfirm
+                issues={hours.issues}
+                confirmed={hours.confirmed}
+                onToggle={key => {
+                  setError("");
+                  hours.toggle(key);
+                }}
+                onChangeTime={() => dateInput.current?.focus()}
+                attention={hoursAttention}
+              />
               <small>
                 {s.timeZone.replaceAll("_", " ")}. The session duration and
                 existing payments stay the same.

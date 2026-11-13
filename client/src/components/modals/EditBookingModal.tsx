@@ -1,9 +1,13 @@
 import { NumericInput } from "@/components/ui/numeric-input";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format } from "date-fns";
 import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { Action, Tabs } from "@/app-v3/design/primitives";
+import {
+  OutsideHoursConfirm,
+  useOutsideHours,
+} from "@/app-v3/components/OutsideHoursConfirm";
 
 interface EditBookingModalProps {
   isOpen: boolean;
@@ -80,6 +84,29 @@ function BookingEditor({
   } catch {
     invalidServices = true;
   }
+  // Only the artist can read their own hours; for anyone else the server names a sitting outside them.
+  const own = trpc.artistSettings.get.useQuery(undefined, {
+    enabled: tab === "Reschedule",
+    retry: false,
+  });
+  const dateInput = useRef<HTMLInputElement>(null);
+  const moved = new Date(`${date}T${time}`);
+  const length =
+    (appointment.endTime
+      ? new Date(appointment.endTime).getTime()
+      : new Date(appointment.startTime).getTime() + 3600000) -
+    new Date(appointment.startTime).getTime();
+  const hours = useOutsideHours(
+    tab === "Reschedule" && +moved !== new Date(appointment.startTime).getTime()
+      ? [{ start: moved, end: new Date(+moved + length) }]
+      : [],
+    own.data && (own.data as any).userId === appointment.artistId
+      ? own.data.workSchedule
+      : undefined,
+    // The server judges a move in the appointment's own zone.
+    appointment.timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
+  const [hoursAttention, setHoursAttention] = useState(0);
   const updateProfile = trpc.clientProfile.updateClientProfile.useMutation();
   const update = trpc.appointments.update.useMutation();
   const batch = trpc.appointments.batchUpdateClientPrices.useMutation();
@@ -163,10 +190,17 @@ function BookingEditor({
           durationMs <= 0
         )
           throw new Error("Choose a valid date and time.");
+        if (hours.pending.length) {
+          setHoursAttention(n => n + 1);
+          throw new Error(
+            "Confirm this sitting outside your business hours, or change the time."
+          );
+        }
         await update.mutateAsync({
           id: appointment.id,
           startTime: start.toISOString(),
           endTime: new Date(start.getTime() + durationMs).toISOString(),
+          confirmedOutsideHours: hours.confirmed,
         });
       }
       void utils.appointments.invalidate();
@@ -175,11 +209,14 @@ function BookingEditor({
       void utils.feed.invalidate();
       onSuccess();
     } catch (cause) {
-      setError(
-        cause instanceof Error
-          ? cause.message
-          : "Couldn’t save. Please try again."
-      );
+      if (tab === "Reschedule" && hours.refuse(cause))
+        setHoursAttention(n => n + 1);
+      else
+        setError(
+          cause instanceof Error
+            ? cause.message
+            : "Couldn’t save. Please try again."
+        );
     } finally {
       setBusy(false);
     }
@@ -313,6 +350,7 @@ function BookingEditor({
               <label>
                 Date
                 <input
+                  ref={dateInput}
                   type="date"
                   required
                   value={date}
@@ -332,6 +370,16 @@ function BookingEditor({
                 The session duration stays the same. Times use this device’s
                 local timezone.
               </p>
+              <OutsideHoursConfirm
+                issues={hours.issues}
+                confirmed={hours.confirmed}
+                onToggle={key => {
+                  setError("");
+                  hours.toggle(key);
+                }}
+                onChangeTime={() => dateInput.current?.focus()}
+                attention={hoursAttention}
+              />
             </>
           )}
           {error && <p role="alert">{error}</p>}

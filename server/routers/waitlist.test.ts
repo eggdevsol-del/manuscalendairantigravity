@@ -108,3 +108,57 @@ describe("waitlist acceptance", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 });
+describe("waitlist offer outside business hours", () => {
+  // Thursday 2099-09-10, 10:00–11:00 am in Brisbane; the artist closes at 10:30 am.
+  const offer = {
+    id: 1,
+    startsAt: "2099-09-10T00:00:00.000Z",
+    durationMinutes: 60,
+    estimateCents: 20000,
+    depositCents: 5000,
+    expiresInHours: 24,
+  };
+  const key = "2099-09-10T00:00:00.000Z/2099-09-10T01:00:00.000Z";
+  beforeEach(() => {
+    mocks.entry.status = "waiting";
+    Object.assign(mocks.settings, {
+      timeZone: "Australia/Brisbane",
+      workSchedule: JSON.stringify({
+        thursday: { enabled: true, start: "09:00", end: "10:30" },
+      }),
+    });
+  });
+  it("refuses an unconfirmed offer and says by how much it runs over", async () => {
+    const error = await caller("artist-a", "artist")
+      .offer(offer)
+      .catch(e => e);
+    expect(error).toMatchObject({ code: "PRECONDITION_FAILED" });
+    expect(error.cause.issues).toMatchObject([
+      { key, reason: "hours", minutesAfter: 30 },
+    ]);
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+  it("sends the offer once that time is confirmed, and only that time", async () => {
+    await expect(
+      caller("artist-a", "artist").offer({
+        ...offer,
+        durationMinutes: 90,
+        confirmedOutsideHours: [key],
+      })
+    ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
+    expect(
+      await caller("artist-a", "artist").offer({
+        ...offer,
+        confirmedOutsideHours: [key],
+      })
+    ).toEqual({ offered: true });
+  });
+  it("sends an offer inside hours without asking", async () => {
+    expect(
+      await caller("artist-a", "artist").offer({
+        ...offer,
+        durationMinutes: 30,
+      })
+    ).toEqual({ offered: true });
+  });
+});

@@ -1,3 +1,7 @@
+import {
+  confirmedOutsideHoursInput,
+  requireHoursConfirmed,
+} from "../services/businessHoursGuard";
 import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { PAYMENT_TIERS, roundCents } from "../../shared/fees";
 import { effectivePaymentTier } from "../services/paymentEntitlements";
@@ -119,6 +123,9 @@ export const waitlistRouter = router({
         estimateCents: z.number().int().min(100).max(10000000),
         depositCents: z.number().int().min(100),
         expiresInHours: z.number().int().min(1).max(72),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
+        /** The zone the offer was entered in; business hours are judged there. */
+        timeZone: z.string().max(64).optional(),
       })
     )
     .mutation(({ ctx, input }) =>
@@ -169,6 +176,12 @@ export const waitlistRouter = router({
             message:
               "Choose a future time and a deposit no greater than the estimate.",
           });
+        requireHoursConfirmed(
+          settings,
+          [{ start, end }],
+          input.confirmedOutsideHours,
+          input.timeZone
+        );
         const overlaps = await db
           .select({ id: schema.appointments.id })
           .from(schema.appointments)

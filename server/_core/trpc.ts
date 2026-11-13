@@ -4,6 +4,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context";
 
+import { OutsideHoursError } from "../../shared/businessHours";
 import { sysLogger, createLog } from "../services/systemLogService";
 
 const t = initTRPC.context<TrpcContext>().create({
@@ -16,7 +17,10 @@ const t = initTRPC.context<TrpcContext>().create({
         error.code === "INTERNAL_SERVER_ERROR"
           ? "Something couldn’t be saved or loaded. Please try again."
           : shape.message,
-      data: safeData,
+      data:
+        error.cause instanceof OutsideHoursError
+          ? { ...safeData, outsideHours: error.cause.issues }
+          : safeData,
     };
   },
 });

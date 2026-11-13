@@ -5,10 +5,6 @@ import { withDatabaseTransaction } from "./core";
 import * as bookings from "./appointmentService";
 import { sittingFinancials } from "./sittingFinancials";
 import { revisedBookingPrice } from "../domain/paymentState";
-import {
-  parseWorkSchedule,
-  validateAppointmentForWorkHours,
-} from "./booking.service";
 import { createMessage } from "./conversationService";
 import { RESCHEDULE_HOLD_HOURS } from "../../shared/reschedule";
 const mysql = (d: Date) => d.toISOString().slice(0, 19).replace("T", " ");
@@ -255,16 +251,7 @@ export async function resolveReschedule(
       const start = utc(r.startsAt),
         end = utc(r.endsAt);
       if (start <= now) fail("The proposed sitting time has passed.");
-      const settings = await tx.query.artistSettings.findFirst({
-        where: eq(s.artistSettings.userId, r.artistId),
-      });
-      const hours = validateAppointmentForWorkHours(
-        start,
-        (+end - +start) / 60000,
-        parseWorkSchedule(settings?.workSchedule),
-        terms.timeZone
-      );
-      if (!hours.valid) fail(hours.reason || "This time is unavailable.");
+      // Business hours were settled with the artist when they proposed this time; the client is not asked.
       if (await bookings.checkAppointmentOverlap(r.artistId, start, end, b.id))
         fail("This time is no longer available.");
       // Release this hold inside the transaction so the shared overlap check permits the move.

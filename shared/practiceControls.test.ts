@@ -6,6 +6,7 @@ import {
   practiceSessions,
   PRACTICE_REFERENCE,
 } from "./practiceControls";
+import { outsideHoursFromError } from "./businessHours";
 import { conversationMedia } from "../client/src/app-v3/data/messagePresentation";
 afterEach(() => vi.useRealTimers());
 describe("production controls connected to private practice state", () => {
@@ -81,25 +82,48 @@ describe("production controls connected to private practice state", () => {
       "2026-10-06T23:00:00.000Z",
     ]);
   });
-  it("rejects a proposed sitting outside work hours without changing state", () => {
+  it("asks for a confirmation before proposing a sitting outside work hours", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-04T00:00:00Z"));
     const s = seedPractice();
     const before = structuredClone(s);
+    const proposal = {
+      serviceName: "Full day",
+      sessions: [
+        {
+          startsAt: "2026-10-05T12:00:00Z",
+          durationMinutes: 480,
+          estimateCents: 100000,
+          depositCents: 25000,
+        },
+      ],
+    };
+    let refusal: any;
+    try {
+      mutatePracticeControl(s, "sessionPlans.create", proposal);
+    } catch (e) {
+      refusal = e;
+    }
+    const issues = outsideHoursFromError(refusal)!;
+    expect(issues).toMatchObject([
+      { reason: "hours", minutesAfter: 780, sessionIndex: 1 },
+    ]);
+    expect(s).toEqual(before);
     expect(() =>
       mutatePracticeControl(s, "sessionPlans.create", {
-        serviceName: "Full day",
-        sessions: [
-          {
-            startsAt: "2026-10-05T12:00:00Z",
-            durationMinutes: 480,
-            estimateCents: 100000,
-            depositCents: 25000,
-          },
+        ...proposal,
+        confirmedOutsideHours: [
+          "2026-10-06T12:00:00.000Z/2026-10-06T20:00:00.000Z",
         ],
       })
-    ).toThrow("closing");
+    ).toThrow("outside your business hours");
     expect(s).toEqual(before);
+    const result = mutatePracticeControl(s, "sessionPlans.create", {
+      ...proposal,
+      confirmedOutsideHours: [issues[0].key],
+    });
+    expect(result.state.booking.status).toBe("proposal sent");
+    expect(result.state.booking.dates).toEqual(["2026-10-05"]);
   });
   it("creates a structured proposal using the real booking payload", () => {
     vi.useFakeTimers();

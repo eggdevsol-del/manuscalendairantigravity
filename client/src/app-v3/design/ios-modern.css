@@ -3883,3 +3883,101 @@ button.iosm-weekbar[aria-pressed="true"] small {
   flex: none;
   accent-color: #34c759;
 }
+
+/* Outside business hours: each sitting past the artist's hours is named and confirmed on its own. */
+.iosm-hours-confirm {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 22px;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  color: #ffffff;
+  text-align: left;
+}
+/* Focus arrives from a held-back submit, often after a tap, so :focus-visible alone would not show. */
+.iosm-hours-confirm:focus {
+  outline: 2px solid var(--wall-acc);
+  outline-offset: 2px;
+}
+.iosm-hours-confirm h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 600 17px/1.3 var(--iosm-rounded);
+}
+.iosm-hours-confirm h3 svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--wall-acc-soft);
+}
+.iosm-hours-confirm p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgb(255 255 255 / 78%);
+}
+.iosm-hours-confirm ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iosm-hours-confirm li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgb(255 255 255 / 10%);
+}
+.iosm-hours-confirm li > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.iosm-hours-confirm li strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.iosm-hours-confirm li span {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--wall-acc-soft);
+}
+.iosm-hours-confirm li button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wall-deep);
+  font: 600 14px/1 var(--iosm-rounded);
+  cursor: pointer;
+}
+.iosm-hours-confirm li button[aria-pressed="true"] {
+  background: rgb(52 199 89 / 28%);
+  color: #ffffff;
+}
+.iosm-hours-confirm li button svg {
+  width: 16px;
+  height: 16px;
+}
+.iosm-hours-confirm-status:empty {
+  display: none;
+}
+@media (max-width: 380px) {
+  .iosm-hours-confirm li {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

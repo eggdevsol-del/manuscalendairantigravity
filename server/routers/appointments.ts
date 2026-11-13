@@ -1,9 +1,9 @@
+import {
+  confirmedOutsideHoursInput,
+  requireHoursConfirmed,
+} from "../services/businessHoursGuard";
 import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
 import { proposeReschedule } from "../services/rescheduleApproval";
-import {
-  parseWorkSchedule,
-  validateAppointmentForWorkHours,
-} from "../services/booking.service";
 import { offerEligibility, offerRulesSchema } from "../../shared/offerRules";
 import { offersEnabled } from "../services/offerAvailability";
 import {
@@ -229,6 +229,7 @@ export const appointmentsRouter = router({
         serviceName: z.string().optional(),
         price: z.number().optional(),
         depositAmount: z.number().optional(),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -309,6 +310,13 @@ export const appointmentsRouter = router({
       }
       // -------------------------
 
+      requireHoursConfirmed(
+        artistSettings,
+        [{ start: startTimeUTC, end: endTimeUTC }],
+        input.confirmedOutsideHours,
+        timezone
+      );
+
       // Check for overlap using UTC times
       const isOverlapping = await db.checkAppointmentOverlap(
         input.artistId,
@@ -384,6 +392,7 @@ export const appointmentsRouter = router({
         clientPaid: z.union([z.boolean(), z.number()]).optional(),
         amountPaid: z.number().optional(),
         paymentMethod: z.enum(["stripe", "paypal", "bank", "cash"]).optional(),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -421,7 +430,7 @@ export const appointmentsRouter = router({
               "Contact your artist to change booking or payment details.",
           });
       }
-      const { id, ...updates } = input;
+      const { id, confirmedOutsideHours, ...updates } = input;
 
       // Convert times if provided
       const processedUpdates: any = { ...updates };
@@ -429,11 +438,22 @@ export const appointmentsRouter = router({
         const timezone =
           updates.timeZone || appointment.timeZone || getBusinessTimezone();
 
-        if (updates.startTime) {
-          processedUpdates.startTime = localToUTC(updates.startTime, timezone);
-        }
-        if (updates.endTime) {
-          processedUpdates.endTime = localToUTC(updates.endTime, timezone);
+        // A string that names its own offset is already an instant; reading it as wall-clock time
+        // in the appointment's zone would move it by the server's own offset.
+        const toUTC = (value: string) =>
+          /(?:[zZ]|[+-]\d\d:?\d\d)$/.test(value.trim())
+            ? new Date(value).toISOString()
+            : localToUTC(value, timezone);
+        try {
+          if (updates.startTime)
+            processedUpdates.startTime = toUTC(updates.startTime);
+          if (updates.endTime)
+            processedUpdates.endTime = toUTC(updates.endTime);
+        } catch {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Choose a valid appointment interval.",
+          });
         }
         if (updates.timeZone) {
           processedUpdates.timeZone = timezone;
@@ -450,6 +470,18 @@ export const appointmentsRouter = router({
             code: "BAD_REQUEST",
             message: "Choose a valid appointment interval.",
           });
+        // Personal reminders are not sittings; only a real move needs hours confirmed.
+        if (
+          appointment.clientId !== appointment.artistId &&
+          (+start !== +new Date(appointment.startTime) ||
+            +end !== +new Date(appointment.endTime))
+        )
+          requireHoursConfirmed(
+            await db.getArtistSettings(appointment.artistId),
+            [{ start, end }],
+            confirmedOutsideHours,
+            updates.timeZone || appointment.timeZone
+          );
         if (
           await db.checkAppointmentOverlap(appointment.artistId, start, end, id)
         )
@@ -473,6 +505,7 @@ export const appointmentsRouter = router({
         newEndTime: z.string(), // ISO string
         allowOutsideOfferDates: z.boolean().default(false),
         requestApproval: z.boolean().default(false),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -540,14 +573,13 @@ export const appointmentsRouter = router({
           });
         const settings = await db.getArtistSettings(current.artistId);
         const timeZone = current.timeZone || getBusinessTimezone();
-        const hours = validateAppointmentForWorkHours(
-          start,
-          (+end - +start) / 60000,
-          parseWorkSchedule(settings?.workSchedule),
+        // The artist confirms here, before any client approval request is sent for this time.
+        requireHoursConfirmed(
+          settings,
+          [{ start, end, sessionIndex: current.sessionIndex || undefined }],
+          input.confirmedOutsideHours,
           timeZone
         );
-        if (!hours.valid)
-          throw new TRPCError({ code: "BAD_REQUEST", message: hours.reason });
         let overridden = false;
         if (current.sessionPlanId) {
           const application = await tx.query.offerApplications.findFirst({
@@ -934,6 +966,7 @@ export const appointmentsRouter = router({
       z.object({
         conversationId: z.number(),
         timeZone: z.string().optional(), // Optional timezone for all appointments
+        confirmedOutsideHours: confirmedOutsideHoursInput,
         appointments: z.array(
           z.object({
             startTime: z.date(), // Keep as Date for now (findProjectAvailability returns Dates)
@@ -967,6 +1000,18 @@ export const appointmentsRouter = router({
 
       const timezone =
         input.timeZone || (await artistTimezone(conversation.artistId));
+
+      // A client accepting dates their artist proposed is never asked; the artist booking directly is.
+      if (ctx.user.id === conversation.artistId)
+        requireHoursConfirmed(
+          await db.getArtistSettings(conversation.artistId),
+          input.appointments.map(appt => ({
+            start: appt.startTime,
+            end: appt.endTime,
+          })),
+          input.confirmedOutsideHours,
+          timezone
+        );
 
       let createdCount = 0;
       const appointmentIds: number[] = [];

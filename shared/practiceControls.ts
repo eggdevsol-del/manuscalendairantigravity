@@ -19,9 +19,9 @@ import {
 import {
   calculateProjectDates,
   parseWorkSchedule,
-  validateAppointmentForWorkHours,
 } from "./bookingAvailability";
 import { PRACTICE_CHAPTERS } from "./practice";
+import { OutsideHoursError, unconfirmedOutsideHours } from "./businessHours";
 /** Adapter for real artist controls. All operations terminate in the private practice record. */
 import { z } from "zod";
 import {
@@ -33,6 +33,10 @@ import {
 import { type PracticeState } from "./practice";
 import { PRACTICE_REFERENCE } from "./practiceMedia";
 export { PRACTICE_REFERENCE } from "./practiceMedia";
+const confirmedKeys = (raw: any): string[] =>
+  Array.isArray(raw?.confirmedOutsideHours)
+    ? raw.confirmedOutsideHours.filter((k: unknown) => typeof k === "string")
+    : [];
 const splitCents = (total: number, count: number, index: number) =>
   Math.floor(total / count) + (index < total % count ? 1 : 0);
 export const CONTROL_QUERIES = [
@@ -631,18 +635,21 @@ export function mutatePracticeControl(
           }
         }, "Invalid practice time zone")
         .parse(raw.scheduling?.timeZone ?? "Australia/Brisbane");
+      // Same rule as the real app: a sitting outside hours books only once that sitting is confirmed.
+      const outside = unconfirmedOutsideHours(
+        b.settings?.workSchedule ?? defaultSettings.workSchedule,
+        timeZone,
+        v.sessions.map((a, i) => ({
+          start: a.startsAt,
+          end: new Date(+new Date(a.startsAt) + a.durationMinutes * 60000),
+          sessionIndex: i + 1,
+        })),
+        confirmedKeys(raw)
+      );
+      if (outside.length) throw new OutsideHoursError(outside);
       b.timeZone = timeZone;
       for (let i = 0; i < v.sessions.length; i++) {
         const a = v.sessions[i];
-        const hours = validateAppointmentForWorkHours(
-          new Date(a.startsAt),
-          a.durationMinutes,
-          parseWorkSchedule(
-            b.settings?.workSchedule ?? defaultSettings.workSchedule
-          ),
-          timeZone
-        );
-        if (!hours.valid) throw new Error(hours.reason);
         if (a.depositCents > a.estimateCents)
           throw new Error("Deposit cannot exceed estimate.");
         if (+new Date(a.startsAt) <= Date.now())
@@ -805,16 +812,14 @@ export function mutatePracticeControl(
         a => a.id === (raw.appointmentId ?? raw.id)
       );
       if (!selected) throw new Error("Practice sitting not found.");
-      const hours = validateAppointmentForWorkHours(
-        start,
-        selected.durationMinutes,
-        parseWorkSchedule(
-          b.settings?.workSchedule ?? defaultSettings.workSchedule
-        ),
-        selected.timeZone
-      );
-      if (!hours.valid) throw new Error(hours.reason);
       const end = +start + selected.durationMinutes * 60000;
+      const outside = unconfirmedOutsideHours(
+        b.settings?.workSchedule ?? defaultSettings.workSchedule,
+        selected.timeZone,
+        [{ start, end: new Date(end), sessionIndex: selected.sessionIndex }],
+        confirmedKeys(raw)
+      );
+      if (outside.length) throw new OutsideHoursError(outside);
       if (
         sessions.some(
           a =>

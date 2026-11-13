@@ -1,4 +1,8 @@
 import { withDatabaseTransaction } from "../services/core";
+import {
+  confirmedOutsideHoursInput,
+  requireHoursConfirmed,
+} from "../services/businessHoursGuard";
 import { requireConversationAccess } from "../services/access";
 import { messages } from "../../drizzle/schema";
 import { declineLegacyProposal } from "../services/declineLegacyProposal";
@@ -96,6 +100,7 @@ export const messagesRouter = router({
           .default("text"),
         metadata: z.string().optional(),
         consultationId: z.number().optional(),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
       })
     )
     .mutation(async ({ input, ctx }) =>
@@ -134,6 +139,23 @@ export const messagesRouter = router({
             metaObj.dates.length > 0
           ) {
             // --- BEGIN VALIDATION ---
+            // An artist proposing dates is booking them; a client asking for dates is not.
+            if (ctx.user.id === conversation.artistId)
+              requireHoursConfirmed(
+                await db.getArtistSettings(conversation.artistId),
+                metaObj.dates.map((dateStr: string, i: number) => {
+                  const start = new Date(dateStr);
+                  return {
+                    start,
+                    end: new Date(
+                      +start + (metaObj.serviceDuration || 60) * 60000
+                    ),
+                    sessionIndex: i + 1,
+                  };
+                }),
+                input.confirmedOutsideHours,
+                typeof metaObj.timeZone === "string" ? metaObj.timeZone : null
+              );
             const searchStart = new Date();
             searchStart.setHours(0, 0, 0, 0);
 

@@ -1,3 +1,7 @@
+import {
+  confirmedOutsideHoursInput,
+  requireHoursConfirmed,
+} from "../services/businessHoursGuard";
 import { requireConversationAccess } from "../services/access";
 import { offerRulesSchema } from "../../shared/offerRules";
 import { requireOffersEnabled } from "../services/offerAvailability";
@@ -284,6 +288,7 @@ export const bookingRouter = router({
       z.object({
         conversationId: z.number(),
         timeZone: z.string().default("UTC"), // Add timezone input
+        confirmedOutsideHours: confirmedOutsideHoursInput,
         appointments: z.array(
           z.object({
             startTime: z.date(),
@@ -315,32 +320,16 @@ export const bookingRouter = router({
             "Conversation is missing required artist or client references",
         });
 
-      // Validate Work Hours
-      const artistSettings = await db.getArtistSettings(conversation.artistId);
-      if (artistSettings) {
-        const workSchedule = BookingService.parseWorkSchedule(
-          artistSettings.workSchedule
-        );
-
-        for (const appt of input.appointments) {
-          const durationMs = appt.endTime.getTime() - appt.startTime.getTime();
-          const durationMinutes = Math.floor(durationMs / 60000);
-
-          const validation = BookingService.validateAppointmentForWorkHours(
-            appt.startTime,
-            durationMinutes,
-            workSchedule,
-            input.timeZone
-          );
-
-          if (!validation.valid) {
-            throw new TRPCError({
-              code: "PRECONDITION_FAILED",
-              message: `Invalid booking time: ${validation.reason}`,
-            });
-          }
-        }
-      }
+      // Sittings outside the artist's hours need the artist's confirmation.
+      requireHoursConfirmed(
+        await db.getArtistSettings(conversation.artistId),
+        input.appointments.map(appt => ({
+          start: appt.startTime,
+          end: appt.endTime,
+        })),
+        input.confirmedOutsideHours,
+        input.timeZone
+      );
 
       // Check for collisions
       const rawAppointments = await db.getArtistCalendar(conversation.artistId);

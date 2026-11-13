@@ -1,3 +1,4 @@
+import { OutsideHoursError } from "../../shared/businessHours";
 import {
   CONTROL_QUERIES,
   CONTROL_MUTATIONS,
@@ -92,6 +93,8 @@ export const practiceRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: e instanceof Error ? e.message : "Invalid practice action",
+            // Keeps the per-sitting detail so practice asks for the same confirmation.
+            cause: e instanceof OutsideHoursError ? e : undefined,
           });
         }
         await db.execute(
@@ -152,6 +155,8 @@ export const practiceRouter = router({
           throw new TRPCError({
             code: "BAD_REQUEST",
             message: e instanceof Error ? e.message : "Invalid practice action",
+            // Keeps the per-sitting detail so practice asks for the same confirmation.
+            cause: e instanceof OutsideHoursError ? e : undefined,
           });
         }
         await db.execute(

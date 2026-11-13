@@ -1,4 +1,8 @@
 import { artistCanAcceptPayments } from "../services/artistPaymentReadiness";
+import {
+  confirmedOutsideHoursInput,
+  requireHoursConfirmed,
+} from "../services/businessHoursGuard";
 import { hasRescheduleHold } from "../services/rescheduleHolds";
 import { offersEnabled } from "../services/offerAvailability";
 import { fulfillSessionPlan } from "../services/sessionPlanFulfillment";
@@ -95,6 +99,7 @@ export const sessionPlansRouter = router({
           )
           .min(1)
           .max(52),
+        confirmedOutsideHours: confirmedOutsideHoursInput,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -186,6 +191,19 @@ export const sessionPlansRouter = router({
             message:
               "Sessions must not overlap; deposits cannot exceed the estimate.",
           });
+
+        requireHoursConfirmed(
+          settings,
+          sorted.map(session => ({
+            start: session.startsAt,
+            end: new Date(
+              +new Date(session.startsAt) + session.durationMinutes * 60000
+            ),
+            sessionIndex: session.sessionIndex,
+          })),
+          input.confirmedOutsideHours,
+          input.scheduling?.timeZone
+        );
 
         // Match confirmation's artist lock: every proposal is checked against confirmed work.
         await dbRef.select({ id: schema.users.id }).from(schema.users)
