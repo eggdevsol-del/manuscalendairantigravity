@@ -1,5 +1,16 @@
-import { eq, or } from "drizzle-orm";
-import { users, InsertUser, artistSettings } from "../../drizzle/schema";
+import { and, eq, inArray, isNotNull, or, sql, type SQL } from "drizzle-orm";
+import {
+  users,
+  InsertUser,
+  artistSettings,
+  appointments,
+  consultations,
+  conversations,
+  leads,
+  messages,
+  sessionPlans,
+  studioMembers,
+} from "../../drizzle/schema";
 import { getDb } from "./core";
 import { ENV } from "../_core/env";
 
@@ -93,12 +104,12 @@ export async function getArtists() {
     return [];
   }
 
-  // Join users with their artistSettings for enriched discovery data
+  // Join users with their artistSettings for enriched discovery data.
+  // Every signed-in user can read this list: public fields only, never contact details.
   const result = await db
     .select({
       id: users.id,
       name: users.name,
-      email: users.email,
       avatar: users.avatar,
       bio: users.bio,
       instagramUsername: users.instagramUsername,
@@ -120,6 +131,172 @@ export async function getArtists() {
   return result;
 }
 
+// Ids given to client records an artist adds by hand or imports. Sign-up
+// never produces these, so they mark a record as artist-made.
+const ARTIST_MADE_ID = /^(client_|usr_imp_)/;
+
+/**
+ * Which of these people the artist really works with.
+ *
+ * `related` needs evidence the artist could not have produced alone:
+ * - the client wrote in their conversation, sent a request or consultation
+ *   from their own account, accepted a session plan, or paid by card; or
+ * - the artist made the client record (added or imported it) and theirs was
+ *   its first conversation.
+ * A conversation row, an appointment the artist booked or a plan still
+ * waiting on the client is not enough: the artist can create all of those
+ * for any account. Only people with the client role are ever related.
+ *
+ * `unclaimed`: the artist-made records nobody has signed in to yet. Only
+ * these may be edited by the artist.
+ */
+export async function getClientRelationships(
+  database: any,
+  artistId: string,
+  clientIds: (string | null | undefined)[]
+) {
+  const related = new Set<string>();
+  const unclaimed = new Set<string>();
+  const requested = Array.from(
+    new Set(clientIds.filter((id): id is string => !!id && id !== artistId))
+  );
+  if (requested.length === 0) return { related, unclaimed };
+
+  const people: {
+    id: string;
+    loginMethod: string | null;
+    signedIn: number | string | boolean | null;
+  }[] = await database
+    .selectDistinct({
+      id: users.id,
+      loginMethod: users.loginMethod,
+      signedIn: sql<number>`(${users.password} is not null or ${users.clerkId} is not null or ${users.googleSub} is not null)`,
+    })
+    .from(users)
+    .where(and(inArray(users.id, requested), eq(users.role, "client")));
+  const ids = people.map(p => p.id);
+  if (ids.length === 0) return { related, unclaimed };
+
+  const clientsIn = (
+    table: any,
+    extra?: SQL
+  ): Promise<{ clientId: string | null }[]> =>
+    database
+      .selectDistinct({ clientId: table.clientId })
+      .from(table)
+      .where(
+        and(eq(table.artistId, artistId), inArray(table.clientId, ids), extra)
+      );
+
+  const [requestedWork, consulted, accepted, paid, threads] =
+    await Promise.all([
+      // leads.clientId and consultations.clientId are only filled in from the
+      // client's own signed-in session.
+      clientsIn(leads),
+      clientsIn(consultations),
+      clientsIn(sessionPlans, inArray(sessionPlans.status, ["accepted", "refunded"])),
+      clientsIn(
+        appointments,
+        or(
+          isNotNull(appointments.depositPaymentId),
+          isNotNull(appointments.balancePaymentId)
+        )
+      ),
+      // Every artist's conversation with these people: this artist's threads,
+      // and who had the first one with each record.
+      database
+        .selectDistinct({
+          id: conversations.id,
+          artistId: conversations.artistId,
+          clientId: conversations.clientId,
+        })
+        .from(conversations)
+        .where(inArray(conversations.clientId, ids)) as Promise<
+        { id: number; artistId: string; clientId: string | null }[]
+      >,
+    ]);
+  for (const row of [...requestedWork, ...consulted, ...accepted, ...paid]) {
+    if (row.clientId) related.add(row.clientId);
+  }
+
+  const mine = threads.filter(t => t.artistId === artistId && t.clientId);
+  if (mine.length > 0) {
+    const wrote: { conversationId: number; senderId: string }[] =
+      await database
+        .selectDistinct({
+          conversationId: messages.conversationId,
+          senderId: messages.senderId,
+        })
+        .from(messages)
+        .where(
+          and(
+            inArray(
+              messages.conversationId,
+              mine.map(t => t.id)
+            ),
+            inArray(
+              messages.senderId,
+              Array.from(new Set(mine.map(t => t.clientId as string)))
+            )
+          )
+        );
+    for (const row of wrote) {
+      const inOwnThread = mine.some(
+        t => t.id === row.conversationId && t.clientId === row.senderId
+      );
+      if (inOwnThread) related.add(row.senderId);
+    }
+  }
+
+  const firstThread = new Map<string, { id: number; artistId: string }>();
+  for (const t of threads) {
+    if (!t.clientId) continue;
+    const first = firstThread.get(t.clientId);
+    if (!first || t.id < first.id) firstThread.set(t.clientId, t);
+  }
+  for (const person of people) {
+    if (!ARTIST_MADE_ID.test(person.id)) continue;
+    if (firstThread.get(person.id)?.artistId !== artistId) continue;
+    related.add(person.id);
+    const neverSignedIn =
+      !Number(person.signedIn) &&
+      (person.loginMethod === null || person.loginMethod === "imported");
+    if (neverSignedIn) unclaimed.add(person.id);
+  }
+  return { related, unclaimed };
+}
+
+export async function hasClientRelationship(
+  database: any,
+  artistId: string,
+  clientId: string
+) {
+  const { related } = await getClientRelationships(database, artistId, [
+    clientId,
+  ]);
+  return related.has(clientId);
+}
+
+/**
+ * True when both people are active members of the same studio. A pending
+ * invite does not count: the inviter chooses who that is.
+ */
+export async function shareStudio(database: any, a: string, b: string) {
+  const rows: { studioId: string; userId: string }[] = await database
+    .selectDistinct({
+      studioId: studioMembers.studioId,
+      userId: studioMembers.userId,
+    })
+    .from(studioMembers)
+    .where(
+      and(
+        inArray(studioMembers.userId, [a, b]),
+        eq(studioMembers.status, "active")
+      )
+    );
+  const mine = new Set(rows.filter(r => r.userId === a).map(r => r.studioId));
+  return rows.some(r => r.userId === b && mine.has(r.studioId));
+}
 
 export async function updateUserProfile(
   userId: string,

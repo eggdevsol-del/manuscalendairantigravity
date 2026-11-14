@@ -43,6 +43,17 @@ The following environment variables are automatically configured via `render.yam
 - `JWT_SECRET` - Auto-generated secure value
 - `OAUTH_BASE_URL` - Pre-configured
 
+##### Proxies in front of the app (`TRUST_PROXY_HOPS`)
+
+Sign-in, booking-request and other rate limits are counted per visitor address. The app reads that address from the `X-Forwarded-For` header, trusting only the number of proxies set in `TRUST_PROXY_HOPS`.
+
+- **Default: `1`** (also used when the variable is unset or blank). This fits a single platform edge proxy in front of the app, which is how Railway's edge works.
+- **Raise it by one for each proxy you add in front**, for example `2` when a CDN sits in front of Railway's edge.
+- If it is too low, every visitor appears to come from the extra proxy and they all share one rate limit. If it is too high, a caller can write their own address into the header and avoid the limits.
+- `0` trusts no proxy and should only be used when the app is reached directly.
+
+After changing it, check from two different networks that a rate-limited action (such as repeated failed sign-ins) is limited separately for each.
+
 #### 4. Database Setup
 
 After deployment, the database will be automatically created. The migrations will run on first startup.

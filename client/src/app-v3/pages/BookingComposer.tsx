@@ -583,7 +583,9 @@ export function BookingComposer({
           {clients.data
             ?.filter((c): c is NonNullable<typeof c> => !!c)
             .filter(c =>
-              `${c.name} ${c.email}`
+              [c.name, c.email]
+                .filter(Boolean)
+                .join(" ")
                 .toLowerCase()
                 .includes(search.toLowerCase())
             )

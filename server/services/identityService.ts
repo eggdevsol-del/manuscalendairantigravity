@@ -77,6 +77,35 @@ export async function resolveIdentity(
   }
 }
 
+export type CounterpartIdentity = Pick<
+  Identity,
+  "id" | "type" | "name" | "firstName" | "lastName" | "avatar" | "role"
+> & { email?: string; phone?: string; unclaimed?: boolean };
+
+/**
+ * What the other person in a conversation may see of someone. Contact details
+ * are added only when the caller has established the viewer is entitled to them;
+ * sign-in details and birthday never leave the server this way.
+ */
+export function toCounterpartIdentity(
+  identity: Identity,
+  contact: { email?: boolean; phone?: boolean; unclaimed?: boolean } = {}
+): CounterpartIdentity {
+  return {
+    id: identity.id,
+    type: identity.type,
+    name: identity.name,
+    firstName: identity.firstName,
+    lastName: identity.lastName,
+    avatar: identity.avatar,
+    role: identity.role,
+    ...(contact.email && identity.email ? { email: identity.email } : {}),
+    ...(contact.phone && identity.phone ? { phone: identity.phone } : {}),
+    // A client record the viewing artist made that nobody has signed in to.
+    ...(contact.unclaimed ? { unclaimed: true } : {}),
+  };
+}
+
 /**
  * Attempts to find a user by email, and if not found, returns any matching lead.
  */

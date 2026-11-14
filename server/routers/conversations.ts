@@ -1,23 +1,49 @@
 import { requireConversationAccess } from "../services/access";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
 import { getDb } from "../services/core";
 import * as schema from "../../drizzle/schema";
 import { eq, and, or, inArray, desc } from "drizzle-orm";
 import * as pushService from "../services/pushService";
+import {
+  getClientRelationships,
+  shareStudio,
+} from "../services/userService";
+import { toCounterpartIdentity } from "../services/identityService";
+
+const isArtistRole = (role: string) => role === "artist" || role === "admin";
 
 export const conversationsRouter = router({
   list: protectedProcedure.query(async ({ ctx }) => {
     const convos = await db.getConversationsForUser(ctx.user.id, ctx.user.role);
+    const artistViewer = isArtistRole(ctx.user.role);
+    const database = artistViewer ? await getDb() : null;
+    const relationships = database
+      ? await getClientRelationships(
+          database,
+          ctx.user.id,
+          convos.map(c => c.clientId)
+        )
+      : null;
 
     // Fetch user details for each conversation
     const enriched = await Promise.all(
       convos.map(async conv => {
         const otherUserId =
-          (((ctx.user.role === "artist" || ctx.user.role === "admin") ? conv.clientId : conv.artistId) || "") as string;
-        const otherUser = await db.resolveIdentity(otherUserId, "user");
+          ((artistViewer ? conv.clientId : conv.artistId) || "") as string;
+        const identity = await db.resolveIdentity(otherUserId, "user");
+        // An artist sees a client's email and phone only once they really
+        // work together.
+        const otherUser = identity
+          ? toCounterpartIdentity(identity, {
+              email: !!relationships?.related.has(otherUserId),
+              phone: !!relationships?.related.has(otherUserId),
+              unclaimed: !!relationships?.unclaimed.has(otherUserId),
+            })
+          : undefined;
 
         if (ctx.user.role === "client" && otherUser) {
           const settings = await db.getArtistSettings(otherUserId);
@@ -54,16 +80,41 @@ export const conversationsRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       if((ctx.user.role === "client" && ctx.user.id !== input.clientId) || (["artist","admin"].includes(ctx.user.role) && ctx.user.id !== input.artistId) || !["client","artist","admin"].includes(ctx.user.role)) throw new TRPCError({code:"FORBIDDEN",message:"You must be a participant in the conversation."});
-      let conversation = await db.getConversation(
+      const existing = await db.getConversation(
         input.artistId,
         input.clientId
       );
+      if (existing) return existing;
 
-      if (!conversation) {
-        conversation = await db.createConversation(input);
+      const notAllowed = new TRPCError({
+        code: "FORBIDDEN",
+        message: "You can't start a conversation with this person.",
+      });
+      if (input.artistId === input.clientId) throw notAllowed;
+
+      if (ctx.user.role === "client") {
+        // A client may write to any real artist.
+        const artist = await db.getUser(input.artistId);
+        if (!artist || !isArtistRole(artist.role)) throw notAllowed;
+      } else {
+        // An artist may only open a conversation with someone they already
+        // work with; otherwise any user id would become a "client" of theirs.
+        const database = await getDb();
+        if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const target = await db.getUser(input.clientId);
+        if (!target) throw notAllowed;
+        const { related } = await getClientRelationships(
+          database,
+          ctx.user.id,
+          [target.id]
+        );
+        const allowed =
+          (target.role === "client" && related.has(target.id)) ||
+          (await shareStudio(database, ctx.user.id, target.id));
+        if (!allowed) throw notAllowed;
       }
 
-      return conversation;
+      return db.createConversation(input);
     }),
   getById: protectedProcedure
     .input(z.number())
@@ -93,7 +144,19 @@ export const conversationsRouter = router({
         ((ctx.user.id === conversation.artistId
           ? conversation.clientId
           : conversation.artistId) || "") as string;
-      const otherUser = await db.resolveIdentity(otherUserId, "user");
+      const identity = await db.resolveIdentity(otherUserId, "user");
+      const database =
+        ctx.user.id === conversation.artistId ? await getDb() : null;
+      const relationships = database
+        ? await getClientRelationships(database, ctx.user.id, [otherUserId])
+        : null;
+      const otherUser = identity
+        ? toCounterpartIdentity(identity, {
+            email: !!relationships?.related.has(otherUserId),
+            phone: !!relationships?.related.has(otherUserId),
+            unclaimed: !!relationships?.unclaimed.has(otherUserId),
+          })
+        : undefined;
 
       if (ctx.user.id === conversation.clientId && otherUser) {
         const settings = await db.getArtistSettings(otherUserId);
@@ -290,11 +353,31 @@ export const conversationsRouter = router({
       const clientsWithLeads = new Set(allLeads.map(l => l.clientId).filter(Boolean));
 
       const now = new Date().toISOString();
+      // Contact and personal details only for people the artist really works with.
+      const { related } = await getClientRelationships(
+        database,
+        ctx.user.id,
+        clientIds
+      );
 
       const clientsData = await Promise.all(
         clientIds.map(async clientId => {
-          const user = await db.getUser(clientId);
-          if (!user) return null;
+          const found = await db.getUser(clientId);
+          if (!found) return null;
+          // Someone who is only a conversation row shows as a name and
+          // picture until they write, book or pay.
+          const profileAvailable = related.has(clientId);
+          const user = profileAvailable
+            ? found
+            : {
+                ...found,
+                email: null,
+                phone: null,
+                gender: null,
+                birthday: null,
+                city: null,
+                country: null,
+              };
 
           // Apply direct demographic filters (location, birthday) safely
           if (input?.location) {
@@ -356,6 +439,7 @@ export const conversationsRouter = router({
             hasUpcoming,
             hasLead: clientsWithLeads.has(clientId),
             hasPushSubscription,
+            profileAvailable,
           };
         })
       );
@@ -364,30 +448,67 @@ export const conversationsRouter = router({
     }),
 
   bulkMessageClients: protectedProcedure
-    .input(z.object({
-      clientIds: z.array(z.string()),
-      messageContent: z.string().min(1)
-    }))
+    .input(
+      z.object({
+        clientIds: z.array(z.string()).max(1000),
+        messageContent: z.string().trim().min(1).max(5000),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Only artists can bulk message clients" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Only artists can bulk message clients",
+        });
       }
 
       const database = await getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
+      // Real clients of this artist only: a conversation row alone is
+      // something the artist can create, so it does not make someone a
+      // recipient.
+      const requested = Array.from(new Set(input.clientIds));
+      const { related } = await getClientRelationships(
+        database,
+        ctx.user.id,
+        requested
+      );
+      const recipients = requested.filter(id => related.has(id));
+
+      // A broadcast is a promotion. Someone who unsubscribed from promotions,
+      // or has every promotion channel switched off, does not get one. A row
+      // with both channels off is all an unsubscribe leaves behind, so that
+      // is what counts; no row at all means they never said no.
+      const preferences: { userId: string; sms: number; push: number }[] =
+        recipients.length > 0
+          ? await database
+              .select({
+                userId: schema.offerPreferences.userId,
+                sms: schema.offerPreferences.sms,
+                push: schema.offerPreferences.push,
+              })
+              .from(schema.offerPreferences)
+              .where(inArray(schema.offerPreferences.userId, recipients))
+          : [];
+      const promotionsOff = new Set(
+        preferences.filter(p => !p.sms && !p.push).map(p => p.userId)
+      );
+
       let successfullySent = 0;
+      let optedOut = 0;
 
-      for (const clientId of input.clientIds) {
-        // Find or create conversation dynamically natively
-        let conversation: any = await db.getConversation(ctx.user.id, clientId);
-        if (!conversation) {
-          conversation = await db.createConversation({
-            artistId: ctx.user.id,
-            clientId: clientId
-          });
+      for (const clientId of recipients) {
+        if (promotionsOff.has(clientId)) {
+          optedOut++;
+          continue;
         }
-
+        // Already confirmed as this artist's client above (a lead,
+        // consultation or plan can come before any chat), so a missing chat
+        // is opened rather than the client silently skipped.
+        const conversation =
+          (await db.getConversation(ctx.user.id, clientId)) ??
+          (await db.createConversation({ artistId: ctx.user.id, clientId }));
         if (!conversation) continue;
 
         // Push actual message payload to the conversation thread directly
@@ -395,13 +516,22 @@ export const conversationsRouter = router({
           conversationId: conversation.id,
           senderId: ctx.user.id,
           content: input.messageContent,
-          messageType: "text"
+          messageType: "text",
         });
 
         successfullySent++;
       }
 
-      return { success: true, count: successfullySent };
+      return {
+        success: true,
+        count: successfullySent,
+        /** Selected people who were not messaged, for any reason. */
+        skipped: requested.length - successfullySent,
+        /** Of those, the ones with promotions switched off. */
+        optedOut,
+        /** Of those, the ones who are not this artist's clients. */
+        notClients: requested.length - recipients.length,
+      };
     }),
 
   createClient: protectedProcedure
@@ -423,28 +553,35 @@ export const conversationsRouter = router({
       const database = await getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      // Check if client exists by email (if provided)
-      let existingUser = null;
-      if (input.email) {
-        const results = await database
-          .select()
-          .from(schema.users)
-          .where(eq(schema.users.email, input.email))
-          .limit(1);
-        existingUser = results[0];
-      }
+      // An email the artist types proves nothing about the account behind
+      // it, so an existing account is only reused when it is already this
+      // artist's client.
+      const matches: { id: string }[] = input.email
+        ? await database
+            .select({ id: schema.users.id })
+            .from(schema.users)
+            .where(eq(schema.users.email, input.email))
+            .limit(20)
+        : [];
+      const { related } = await getClientRelationships(
+        database,
+        ctx.user.id,
+        matches.map(m => m.id)
+      );
+      const known = matches.find(m => related.has(m.id));
 
       let clientId: string;
 
-      if (existingUser) {
-        clientId = existingUser.id;
+      if (known) {
+        clientId = known.id;
       } else {
-        // Create new user
-        clientId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        clientId = `client_${Date.now()}_${randomBytes(6).toString("hex")}`;
         await db.createUser({
           id: clientId,
           name: input.name,
-          email: input.email,
+          // Sign-in finds accounts by email, so a second record must not
+          // carry an email that already belongs to someone.
+          email: matches.length > 0 ? null : input.email,
           phone: input.phone,
           role: "client",
           hasCompletedOnboarding: 1 as any, // TinyInt fix?
@@ -463,23 +600,17 @@ export const conversationsRouter = router({
       return conversation;
     }),
 
-  deleteAllClientsForArtist: protectedProcedure
-    .mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Only artists can delete their clients list",
-        });
-      }
+  deleteAllClientsForArtist: protectedProcedure.mutation(async ({ ctx }) => {
+    if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Only artists can delete their clients list",
+      });
+    }
 
-      const database = await getDb();
-      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-
-      // Severing the artist's conversations effectively empties their client roster.
-      // Simultaneously wiping appointments tied to them ensures total wiped state for the feature.
-      await database.delete(schema.conversations).where(eq(schema.conversations.artistId, ctx.user.id));
-      await database.delete(schema.appointments).where(eq(schema.appointments.artistId, ctx.user.id));
-
-      return { success: true };
-    }),
+    // Removes the artist's own unpaid bookings and conversations. It refuses
+    // while sittings are coming up or money is involved, and never touches
+    // client accounts, paid bookings or signed forms.
+    return db.deleteAllClientsForArtist(ctx.user.id);
+  }),
 });

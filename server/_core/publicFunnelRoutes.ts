@@ -9,6 +9,15 @@ import { Express } from "express";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
+import {
+  calendarDateInTimeZone,
+  isAdult,
+  parseDateOfBirth,
+  UNDERAGE_MESSAGE,
+} from "../../shared/age";
+
+const CONSENT_MESSAGE =
+  "Please agree to the Terms of Service and Privacy Policy to send your request.";
 
 // Helper to format date for MySQL
 function formatDateForMySQL(date: Date): string {
@@ -104,17 +113,17 @@ export function registerPublicFunnelRoutes(app: Express) {
         styleOptions = settings.styleOptions
           ? JSON.parse(settings.styleOptions)
           : [
-            "realism",
-            "traditional",
-            "neo-traditional",
-            "japanese",
-            "blackwork",
-            "dotwork",
-            "watercolor",
-            "geometric",
-            "minimalist",
-            "other",
-          ];
+              "realism",
+              "traditional",
+              "neo-traditional",
+              "japanese",
+              "blackwork",
+              "dotwork",
+              "watercolor",
+              "geometric",
+              "minimalist",
+              "other",
+            ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing styleOptions:`,
@@ -138,19 +147,19 @@ export function registerPublicFunnelRoutes(app: Express) {
         placementOptions = settings.placementOptions
           ? JSON.parse(settings.placementOptions)
           : [
-            "full-sleeve",
-            "half-sleeve",
-            "forearm",
-            "upper-arm",
-            "back-piece",
-            "chest",
-            "ribs",
-            "thigh",
-            "calf",
-            "hand",
-            "neck",
-            "other",
-          ];
+              "full-sleeve",
+              "half-sleeve",
+              "forearm",
+              "upper-arm",
+              "back-piece",
+              "chest",
+              "ribs",
+              "thigh",
+              "calf",
+              "hand",
+              "neck",
+              "other",
+            ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing placementOptions:`,
@@ -176,13 +185,13 @@ export function registerPublicFunnelRoutes(app: Express) {
         budgetRanges = settings.budgetRanges
           ? JSON.parse(settings.budgetRanges)
           : [
-            { label: "Under $500", min: 0, max: 500 },
-            { label: "$500-$1,000", min: 500, max: 1000 },
-            { label: "$1,000-$2,500", min: 1000, max: 2500 },
-            { label: "$2,500-$5,000", min: 2500, max: 5000 },
-            { label: "$5,000-$10,000", min: 5000, max: 10000 },
-            { label: "$10,000+", min: 10000, max: null },
-          ];
+              { label: "Under $500", min: 0, max: 500 },
+              { label: "$500-$1,000", min: 500, max: 1000 },
+              { label: "$1,000-$2,500", min: 1000, max: 2500 },
+              { label: "$2,500-$5,000", min: 2500, max: 5000 },
+              { label: "$5,000-$10,000", min: 5000, max: 10000 },
+              { label: "$10,000+", min: 10000, max: null },
+            ];
       } catch (parseError) {
         console.error(
           `[PublicFunnel] GET /api/public/artist/${slug} - Error parsing budgetRanges:`,
@@ -207,14 +216,62 @@ export function registerPublicFunnelRoutes(app: Express) {
         // Ensure there's always something to show, using PROJECT_TYPES as fallback
         if (!services || services.length === 0) {
           services = [
-            { id: "full-sleeve", name: "Full Sleeve", price: 0, duration: 0, sittings: 1 },
-            { id: "half-sleeve", name: "Half Sleeve", price: 0, duration: 0, sittings: 1 },
-            { id: "back-piece", name: "Back Piece", price: 0, duration: 0, sittings: 1 },
-            { id: "chest-piece", name: "Chest Piece", price: 0, duration: 0, sittings: 1 },
-            { id: "cover-up", name: "Cover Up", price: 0, duration: 0, sittings: 1 },
-            { id: "small-piece", name: "Small Piece", price: 0, duration: 0, sittings: 1 },
-            { id: "touch-up", name: "Touch Up", price: 0, duration: 0, sittings: 1 },
-            { id: "custom", name: "Custom Project", price: 0, duration: 0, sittings: 1 },
+            {
+              id: "full-sleeve",
+              name: "Full Sleeve",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "half-sleeve",
+              name: "Half Sleeve",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "back-piece",
+              name: "Back Piece",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "chest-piece",
+              name: "Chest Piece",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "cover-up",
+              name: "Cover Up",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "small-piece",
+              name: "Small Piece",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "touch-up",
+              name: "Touch Up",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
+            {
+              id: "custom",
+              name: "Custom Project",
+              price: 0,
+              duration: 0,
+              sittings: 1,
+            },
           ];
         }
       } catch (parseError) {
@@ -223,14 +280,62 @@ export function registerPublicFunnelRoutes(app: Express) {
           parseError
         );
         services = [
-          { id: "full-sleeve", name: "Full Sleeve", price: 0, duration: 0, sittings: 1 },
-          { id: "half-sleeve", name: "Half Sleeve", price: 0, duration: 0, sittings: 1 },
-          { id: "back-piece", name: "Back Piece", price: 0, duration: 0, sittings: 1 },
-          { id: "chest-piece", name: "Chest Piece", price: 0, duration: 0, sittings: 1 },
-          { id: "cover-up", name: "Cover Up", price: 0, duration: 0, sittings: 1 },
-          { id: "small-piece", name: "Small Piece", price: 0, duration: 0, sittings: 1 },
-          { id: "touch-up", name: "Touch Up", price: 0, duration: 0, sittings: 1 },
-          { id: "custom", name: "Custom Project", price: 0, duration: 0, sittings: 1 },
+          {
+            id: "full-sleeve",
+            name: "Full Sleeve",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "half-sleeve",
+            name: "Half Sleeve",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "back-piece",
+            name: "Back Piece",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "chest-piece",
+            name: "Chest Piece",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "cover-up",
+            name: "Cover Up",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "small-piece",
+            name: "Small Piece",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "touch-up",
+            name: "Touch Up",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
+          {
+            id: "custom",
+            name: "Custom Project",
+            price: 0,
+            duration: 0,
+            sittings: 1,
+          },
         ];
       }
 
@@ -238,11 +343,16 @@ export function registerPublicFunnelRoutes(app: Express) {
         id: artist.id,
         slug: settings.publicSlug,
         displayName:
-          settings.displayName || (artist as any).displayName || (artist as any).username || artist.name || "Artist",
+          settings.displayName ||
+          (artist as any).displayName ||
+          (artist as any).username ||
+          artist.name ||
+          "Artist",
         tagline: settings.funnelWelcomeMessage || null,
         theme: settings.funnelTheme || "light",
         bannerUrl: settings.funnelBannerUrl || null,
-        profileImageUrl: (artist as any).profileImage || (artist as any).avatar || null,
+        profileImageUrl:
+          (artist as any).profileImage || (artist as any).avatar || null,
         coverImageUrl: null,
         styleOptions,
         placementOptions,
@@ -281,21 +391,18 @@ export function registerPublicFunnelRoutes(app: Express) {
   /**
    * POST /api/public/funnel/submit
    * Submit funnel data and create lead
+   *
+   * Unauthenticated: the caller has not proved they own the email they typed.
+   * So this never reads, creates, changes or links a users row (the lead keeps
+   * the typed details and stays unlinked until the person signs in), never
+   * edits a lead from an earlier submission, and never logs or returns
+   * personal details.
    */
   app.post("/api/public/funnel/submit", async (req, res) => {
-    const startTime = Date.now();
-
-    console.log(
-      `[PublicFunnel] POST /api/public/funnel/submit - Request started`
-    );
-    console.log(
-      `[PublicFunnel] POST /api/public/funnel/submit - Body:`,
-      JSON.stringify(req.body, null, 2)
-    );
-
+    let loggedArtistId = "unknown";
     try {
+      const body = req.body && typeof req.body === "object" ? req.body : {};
       const {
-        artistId,
         sessionId,
         intent,
         contact,
@@ -303,36 +410,69 @@ export function registerPublicFunnelRoutes(app: Express) {
         bodyPlacement,
         budget,
         availability,
-      } = req.body;
+      } = body;
+      const artistId: unknown = body.artistId;
 
-      if (!artistId || !sessionId) {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - Error: Missing required fields (artistId=${artistId}, sessionId=${sessionId})`
-        );
+      if (
+        typeof artistId !== "string" ||
+        !artistId ||
+        artistId.length > 64 ||
+        typeof sessionId !== "string" ||
+        !sessionId ||
+        sessionId.length > 64
+      ) {
         return res.status(400).json({ error: "Missing required fields" });
       }
+      if (body.acceptedTerms !== true) {
+        return res.status(400).json({ error: CONSENT_MESSAGE });
+      }
+      const born = parseDateOfBirth(contact?.birthdate);
+      if (!born) {
+        return res.status(400).json({ error: UNDERAGE_MESSAGE });
+      }
+      const text = (value: unknown, max: number) =>
+        typeof value === "string" && value.trim()
+          ? value.trim().slice(0, max)
+          : null;
+      const email = text(contact?.email, 320)?.toLowerCase() ?? null;
+      const firstName = text(contact?.firstName, 100);
+      const lastName = text(contact?.lastName, 100);
+      const clientName =
+        firstName && lastName
+          ? `${firstName} ${lastName}`
+          : (text(contact?.name, 255) ?? "");
+      const phone = text(contact?.phone, 20);
+      const birthdate = `${born.year}-${String(born.month).padStart(2, "0")}-${String(born.day).padStart(2, "0")}`;
 
-      console.log(
-        `[PublicFunnel] POST /api/public/funnel/submit - Connecting to database...`
-      );
       const db = await getDb();
       if (!db) {
         console.error(
-          `[PublicFunnel] POST /api/public/funnel/submit - Error: Database connection failed`
+          `[PublicFunnel] POST /api/public/funnel/submit - Database connection failed`
         );
         return res.status(500).json({ error: "Database connection failed" });
       }
-      console.log(
-        `[PublicFunnel] POST /api/public/funnel/submit - Database connected`
-      );
+
+      // Requests can only be sent to a real artist, checked before any write.
+      const artist = await db.query.users.findFirst({
+        where: eq(schema.users.id, artistId),
+      });
+      if (!artist || !["artist", "admin"].includes(artist.role)) {
+        return res.status(400).json({
+          error: "This artist is not available for booking requests.",
+        });
+      }
+      loggedArtistId = artist.id;
+      const settings = await db.query.artistSettings.findFirst({
+        where: eq(schema.artistSettings.userId, artist.id),
+      });
+      if (!isAdult(birthdate, calendarDateInTimeZone(settings?.timeZone))) {
+        return res.status(400).json({ error: UNDERAGE_MESSAGE });
+      }
 
       const now = new Date();
       const nowFormatted = formatDateForMySQL(now);
 
       // Create or update funnel session
-      console.log(
-        `[PublicFunnel] POST /api/public/funnel/submit - Checking for existing session: ${sessionId}`
-      );
       const existingSession = await db.query.funnelSessions.findFirst({
         where: eq(schema.funnelSessions.id, sessionId),
       });
@@ -347,9 +487,10 @@ export function registerPublicFunnelRoutes(app: Express) {
       });
 
       if (existingSession) {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - Updating existing session`
-        );
+        // A session id belongs to the artist it was started for.
+        if (existingSession.artistId !== artistId) {
+          return res.status(400).json({ error: "Missing required fields" });
+        }
         await db
           .update(schema.funnelSessions)
           .set({
@@ -361,9 +502,6 @@ export function registerPublicFunnelRoutes(app: Express) {
           })
           .where(eq(schema.funnelSessions.id, sessionId));
       } else {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - Creating new session`
-        );
         await db.insert(schema.funnelSessions).values({
           id: sessionId,
           artistId,
@@ -375,145 +513,33 @@ export function registerPublicFunnelRoutes(app: Express) {
           createdAt: nowFormatted,
         });
       }
-      console.log(
-        `[PublicFunnel] POST /api/public/funnel/submit - Session saved`
-      );
-
-      // Build client name from first/last name or use provided name
-      const clientName =
-        contact?.firstName && contact?.lastName
-          ? `${contact.firstName} ${contact.lastName}`.trim()
-          : contact?.name || "";
-
-      // Create client user if not exists
-      let clientUserId: string | null = null;
-      let conversationId: number | null = null;
-
-      if (clientName && contact?.email) {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - Checking for existing client user: ${contact.email}`
-        );
-
-        // Check for existing user with this email
-        const existingUser = await db.query.users.findFirst({
-          where: eq(schema.users.email, contact.email.toLowerCase()),
-        });
-
-        if (existingUser) {
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Found existing user: ${existingUser.id}`
-          );
-          clientUserId = existingUser.id;
-
-          // Update user with new info if provided
-          const updateData: any = {};
-          if (clientName) updateData.name = clientName;
-          if (contact.phone) updateData.phone = contact.phone;
-          if (contact.birthdate) updateData.birthday = contact.birthdate;
-          if (contact.city) updateData.city = contact.city;
-          if (contact.country) updateData.country = contact.country;
-
-          if (Object.keys(updateData).length > 0) {
-            await db
-              .update(schema.users)
-              .set(updateData)
-              .where(eq(schema.users.id, existingUser.id));
-          }
-        } else {
-          // Create new client user
-          const newUserId = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Creating new client user: ${newUserId}`
-          );
-
-          await db.insert(schema.users).values({
-            id: newUserId,
-            name: clientName,
-            email: contact.email.toLowerCase(),
-            phone: contact.phone || null,
-            birthday: contact.birthdate || null,
-            city: contact.city || null,
-            country: contact.country || null,
-            role: "client",
-            loginMethod: "funnel",
-            hasCompletedOnboarding: 0,
-            createdAt: nowFormatted,
-            lastSignedIn: nowFormatted,
-          });
-
-          clientUserId = newUserId;
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Created new client user: ${clientUserId}`
-          );
-        }
-
-        // Create or get conversation between artist and client
-        if (clientUserId) {
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Checking for existing conversation`
-          );
-
-          const existingConversation = await db.query.conversations.findFirst({
-            where: and(
-              eq(schema.conversations.artistId, artistId),
-              eq(schema.conversations.clientId, clientUserId)
-            ),
-          });
-
-          if (existingConversation) {
-            console.log(
-              `[PublicFunnel] POST /api/public/funnel/submit - Found existing conversation: ${existingConversation.id}`
-            );
-            conversationId = existingConversation.id;
-          } else {
-            console.log(
-              `[PublicFunnel] POST /api/public/funnel/submit - Creating new conversation`
-            );
-            const [newConversation] = await db
-              .insert(schema.conversations)
-              .values({
-                artistId,
-                clientId: clientUserId,
-                lastMessageAt: nowFormatted,
-                createdAt: nowFormatted,
-              });
-
-            conversationId = newConversation.insertId;
-            console.log(
-              `[PublicFunnel] POST /api/public/funnel/submit - Created new conversation: ${conversationId}`
-            );
-          }
-        }
-      }
 
       // Create lead if contact info provided
       let leadId: number | null = null;
 
-      if (clientName && contact?.email) {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - Creating/updating lead for: ${contact.email}`
-        );
-
+      if (clientName && email) {
         // Combine reference images and body placement images
         const allReferenceImages = [...(style?.referenceImages || [])];
         const bodyPlacementImagesArray = bodyPlacement?.placementImages || [];
 
-        // Check for existing lead
+        // Only a resend of this same session may update a lead. Matching on
+        // the typed email alone would let a stranger replace someone's request.
         const existingLead = await db.query.leads.findFirst({
           where: and(
             eq(schema.leads.artistId, artistId),
-            eq(schema.leads.clientEmail, contact.email.toLowerCase())
+            eq(schema.leads.clientEmail, email),
+            eq(schema.leads.funnelSessionId, sessionId)
           ),
         });
 
         // Build lead data with expanded contact fields
         const leadData = {
           clientName,
-          clientEmail: contact.email.toLowerCase(),
-          clientPhone: contact.phone || null,
-          clientFirstName: contact.firstName || null,
-          clientLastName: contact.lastName || null,
-          clientBirthdate: contact.birthdate || null,
+          clientEmail: email,
+          clientPhone: phone,
+          clientFirstName: firstName,
+          clientLastName: lastName,
+          clientBirthdate: birthdate,
           projectType: intent?.projectType || null,
           projectDescription: intent?.projectDescription || null,
           stylePreferences: style?.stylePreferences
@@ -543,9 +569,6 @@ export function registerPublicFunnelRoutes(app: Express) {
         };
 
         if (existingLead) {
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Updating existing lead: ${existingLead.id}`
-          );
           await db
             .update(schema.leads)
             .set(leadData)
@@ -553,9 +576,6 @@ export function registerPublicFunnelRoutes(app: Express) {
 
           leadId = existingLead.id;
         } else {
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Creating new lead`
-          );
           const [newLead] = await db.insert(schema.leads).values({
             artistId,
             source: "funnel",
@@ -565,53 +585,28 @@ export function registerPublicFunnelRoutes(app: Express) {
           });
 
           leadId = newLead.insertId;
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Created new lead: ${leadId}`
-          );
-
-          // Link conversation to lead if we created one
-          if (conversationId && leadId) {
-            console.log(
-              `[PublicFunnel] POST /api/public/funnel/submit - Linking conversation ${conversationId} to lead ${leadId}`
-            );
-            await db
-              .update(schema.leads)
-              .set({ conversationId })
-              .where(eq(schema.leads.id, leadId));
-          }
         }
 
         // Update funnel session with lead ID
         if (leadId) {
-          console.log(
-            `[PublicFunnel] POST /api/public/funnel/submit - Linking session to lead: ${leadId}`
-          );
           await db
             .update(schema.funnelSessions)
             .set({ leadId })
             .where(eq(schema.funnelSessions.id, sessionId));
         }
-      } else {
-        console.log(
-          `[PublicFunnel] POST /api/public/funnel/submit - No contact info provided, skipping lead creation`
-        );
       }
 
-      const duration = Date.now() - startTime;
       console.log(
-        `[PublicFunnel] POST /api/public/funnel/submit - Success (${duration}ms), leadId=${leadId}`
+        `[PublicFunnel] POST /api/public/funnel/submit - Saved artistId=${loggedArtistId} leadId=${leadId}`
       );
 
-      res.json({ success: true, leadId, clientUserId, conversationId });
+      // Same shape whether or not the email already had an account.
+      res.json({ success: true, leadId });
     } catch (error) {
-      const duration = Date.now() - startTime;
+      // Database errors can carry the submitted values, so only the error
+      // class and code are logged.
       console.error(
-        `[PublicFunnel] POST /api/public/funnel/submit - Unhandled error (${duration}ms):`,
-        error
-      );
-      console.error(
-        `[PublicFunnel] Error stack:`,
-        error instanceof Error ? error.stack : "No stack trace"
+        `[PublicFunnel] POST /api/public/funnel/submit - Failed artistId=${loggedArtistId} error=${error instanceof Error ? error.name : "unknown"} code=${String((error as { code?: unknown } | null)?.code ?? "none")}`
       );
       res.status(500).json({ error: "Failed to submit funnel" });
     }

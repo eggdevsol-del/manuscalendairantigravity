@@ -32,7 +32,6 @@ import { pushRouter } from "./push";
 import { paymentMethodSettingsRouter } from "./paymentMethodSettings";
 import { formsRouter } from "./forms";
 import { studiosRouter } from "./studios";
-import { invitationsRouter } from "./invitations";
 import { billingRouter } from "./billing";
 import { dataImportRouter } from "./dataImport";
 import { placesRouter } from "./places";
@@ -83,7 +82,6 @@ export const appRouter = router({
   paymentMethodSettings: paymentMethodSettingsRouter,
   forms: formsRouter,
   studios: studiosRouter,
-  invitations: invitationsRouter,
   billing: billingRouter,
   dataImport: dataImportRouter,
   places: placesRouter,

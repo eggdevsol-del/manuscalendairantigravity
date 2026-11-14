@@ -718,10 +718,45 @@ export const appointmentsRouter = router({
         });
       }
 
+      const database = await db.getDb();
+      if (!database)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      // One row of the caller's own with this client is all that is asked.
+      const mine = { columns: { artistId: true }, limit: 1 } as const;
+      const [clientConversations, clientAppointments] = await Promise.all([
+        database.query.conversations.findMany({
+          ...mine,
+          where: and(
+            eq(schema.conversations.clientId, input.clientId),
+            eq(schema.conversations.artistId, ctx.user.id)
+          ),
+        }),
+        database.query.appointments.findMany({
+          ...mine,
+          where: and(
+            eq(schema.appointments.clientId, input.clientId),
+            eq(schema.appointments.artistId, ctx.user.id)
+          ),
+        }),
+      ]);
+      const isMine = (row: { artistId: string }) =>
+        row.artistId === ctx.user.id;
+      if (!clientConversations.some(isMine) && !clientAppointments.some(isMine))
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "This is not your client.",
+        });
+
+      // Only the caller's own link to the client is removed. The client's
+      // account, paid bookings and signed forms are never the artist's to
+      // delete (see deleteAppointmentsForClient).
       return db.deleteAppointmentsForClient(
         ctx.user.id,
         input.clientId,
-        input.deleteProfile
+        !!input.deleteProfile
       );
     }),
 
@@ -733,15 +768,7 @@ export const appointmentsRouter = router({
       });
     }
 
-    const database = await db.getDb();
-    if (!database) {
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-    }
-
-    await database
-      .delete(schema.appointments)
-      .where(eq(schema.appointments.artistId, ctx.user.id));
-    return { success: true };
+    return db.deleteAllAppointmentsForArtist(ctx.user.id);
   }),
 
   resolveMysteryAppointments: protectedProcedure
@@ -780,10 +807,23 @@ export const appointmentsRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      await requireConversationAccess(
+        await db.getDb(),
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
       // Get all pending appointments for this conversation
       const pendingAppointments = await db.getPendingAppointmentsByConversation(
         input.conversationId
       );
+
+      // confirmAppointments confirms the whole conversation, so every pending row must be the caller's.
+      if (pendingAppointments?.some(a => a.artistId !== ctx.user.id))
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not your appointments",
+        });
 
       if (!pendingAppointments || pendingAppointments.length === 0) {
         throw new TRPCError({
@@ -811,12 +851,12 @@ export const appointmentsRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      const conversation = await db.getConversationById(input.conversationId);
-      if (!conversation)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Conversation not found",
-        });
+      const conversation = await requireConversationAccess(
+        await db.getDb(),
+        input.conversationId,
+        ctx.user.id,
+        true
+      );
 
       const artistSettings = await db.getArtistSettings(conversation.artistId);
       if (!artistSettings)
@@ -974,8 +1014,8 @@ export const appointmentsRouter = router({
             title: z.string(),
             description: z.string().optional(),
             serviceName: z.string(),
-            price: z.number(),
-            depositAmount: z.number().optional(),
+            price: z.number().min(0),
+            depositAmount: z.number().min(0).optional(),
           })
         ),
       })
@@ -988,30 +1028,34 @@ export const appointmentsRouter = router({
           message: "Conversation not found",
         });
 
-      if (
-        ctx.user.id !== conversation.artistId &&
-        ctx.user.id !== conversation.clientId
-      ) {
+      // Only the artist books sittings here: the price and deposit are theirs
+      // to set. A client accepts a proposal instead, whose sittings the artist
+      // already created when sending it.
+      if (ctx.user.id !== conversation.artistId) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Not authorized to book for this conversation",
+          message:
+            "Only the artist can book sittings in this conversation. Accept your artist's proposal or ask them to confirm the dates.",
         });
       }
+      if (!conversation.clientId)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This conversation has no client to book sittings for.",
+        });
 
       const timezone =
         input.timeZone || (await artistTimezone(conversation.artistId));
 
-      // A client accepting dates their artist proposed is never asked; the artist booking directly is.
-      if (ctx.user.id === conversation.artistId)
-        requireHoursConfirmed(
-          await db.getArtistSettings(conversation.artistId),
-          input.appointments.map(appt => ({
-            start: appt.startTime,
-            end: appt.endTime,
-          })),
-          input.confirmedOutsideHours,
-          timezone
-        );
+      requireHoursConfirmed(
+        await db.getArtistSettings(conversation.artistId),
+        input.appointments.map(appt => ({
+          start: appt.startTime,
+          end: appt.endTime,
+        })),
+        input.confirmedOutsideHours,
+        timezone
+      );
 
       let createdCount = 0;
       const appointmentIds: number[] = [];
@@ -1117,28 +1161,56 @@ export const appointmentsRouter = router({
         });
       }
 
-      if (
-        message.messageType !== "appointment_request" &&
-        !message.content.includes("project_proposal")
-      ) {
-        // Fallback check if it's a proposal
-      }
+      await requireConversationAccess(
+        await db.getDb(),
+        message.conversationId,
+        ctx.user.id,
+        true
+      );
 
       // Parse metadata
       let metadata: any = {};
       try {
         metadata = message.metadata ? JSON.parse(message.metadata) : {};
       } catch (e) {}
+      if (!metadata || typeof metadata !== "object") metadata = {};
+
+      // Only the artist's own proposal can be revoked, never a client's message.
+      if (
+        message.senderId !== ctx.user.id ||
+        (message.messageType !== "appointment_request" &&
+          metadata.type !== "project_proposal")
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This message is not a proposal you sent.",
+        });
+      }
 
       const singleApptId = metadata.appointmentId || metadata.id;
-      const appointmentIds: number[] = Array.isArray(metadata.appointmentIds)
+      const appointmentIds: unknown[] = Array.isArray(metadata.appointmentIds)
         ? metadata.appointmentIds
         : singleApptId
           ? [singleApptId]
           : [];
 
+      let cancelledCount = 0;
       if (appointmentIds.length > 0) {
-        for (const appId of appointmentIds) {
+        for (const rawId of appointmentIds) {
+          // Older messages may hold ids as strings.
+          const appId = Number(rawId);
+          // Message metadata is not trusted: only the caller's own sittings in this conversation are cancelled.
+          const appointment =
+            Number.isInteger(appId) && appId > 0
+              ? await db.getAppointment(appId)
+              : null;
+          if (
+            !appointment ||
+            appointment.artistId !== ctx.user.id ||
+            appointment.conversationId !== message.conversationId
+          )
+            continue;
+
           // Cancel the appointment
           await db.updateAppointment(
             appId,
@@ -1153,6 +1225,7 @@ export const appointmentsRouter = router({
             performedBy: ctx.user.id,
             newValue: JSON.stringify({ messageId: input.messageId }),
           });
+          cancelledCount++;
         }
       } else {
         console.warn(
@@ -1174,7 +1247,7 @@ export const appointmentsRouter = router({
         messageType: "system",
       });
 
-      return { success: true };
+      return { success: true, cancelledCount };
     }),
 
   getProposalForAppointment: protectedProcedure

@@ -90,6 +90,7 @@ export const artistSettingsRouter = router({
     .query(async ({ input }) => {
       const settings = await db.getArtistSettings(input.artistId);
       if (!settings) return null;
+      // Any signed-in user can call this: no bank details here.
       return {
         businessName: settings.businessName,
         displayName: settings.displayName,
@@ -98,8 +99,6 @@ export const artistSettingsRouter = router({
         depositPercentage: settings.depositPercentage ?? 25,
         rescheduleNoticePeriodHours: settings.rescheduleNoticePeriodHours ?? 72,
         services: settings.services,
-        bsb: settings.bsb,
-        accountNumber: settings.accountNumber,
         businessCountry: settings.businessCountry,
         autoSendDepositInfo: settings.autoSendDepositInfo,
         travelDates: settings.travelDates,
@@ -115,10 +114,12 @@ export const artistSettingsRouter = router({
           eventCount: events.length,
           message: "Calendar connected successfully!",
         };
-      } catch (error: any) {
+      } catch {
+        // Never echo fetch details: they describe what the server can reach.
         return {
           success: false,
-          message: error.message || "Failed to reach Calendar URL",
+          message:
+            "We couldn't read a calendar at that address. Check the link and try again.",
         };
       }
     }),

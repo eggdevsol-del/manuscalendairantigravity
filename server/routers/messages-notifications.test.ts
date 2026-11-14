@@ -35,6 +35,21 @@ for (const sender of ["artist", "client"])
       }),
     },
   ]) {
+    // System messages are the artist's; a client cannot send one at all.
+    if (sender === "client" && message.messageType === "system") {
+      it("refuses a system message from the client and queues nothing", async () => {
+        await expect(
+          messagesRouter
+            .createCaller({
+              user: { id: sender, role: sender, name: "Person" },
+            } as any)
+            .send({ conversationId: 9, ...message } as any)
+        ).rejects.toMatchObject({ code: "FORBIDDEN" });
+        expect(m.create).not.toHaveBeenCalled();
+        expect(m.insert).not.toHaveBeenCalled();
+      });
+      continue;
+    }
     it(`queues ${message.messageType} to the other participant when ${sender} sends`, async () => {
       await messagesRouter
         .createCaller({

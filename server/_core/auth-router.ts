@@ -422,7 +422,8 @@ export const authRouter = router({
     }),
 
   /**
-   * Check if email exists (for funnel clients)
+   * Lets a sign-up screen choose between "sign in" and "create password".
+   * Answers with two booleans only: nothing about the account holder.
    */
   checkEmailExists: publicProcedure
     .input(
@@ -431,20 +432,11 @@ export const authRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { email } = input;
-      const user = await getUserByEmail(email);
-
-      if (!user) {
-        return { exists: false, isFunnelClient: false, name: null };
-      }
-
-      // Check if this is a funnel client (has no password set)
-      const isFunnelClient = !user.password;
-
+      const user = await getUserByEmail(input.email);
       return {
-        exists: true,
-        isFunnelClient,
-        name: user.name,
+        exists: !!user,
+        // An account nobody has set a password on yet
+        isFunnelClient: !!user && !user.password,
       };
     }),
 

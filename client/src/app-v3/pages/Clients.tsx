@@ -2,6 +2,11 @@ import { SittingCard } from "../components/SittingCard";
 import { SittingSummary } from "../components/SittingSummary";
 import { StageFigure } from "../components/DetailStages";
 import { LiveStage } from "../design/live";
+import {
+  CLIENT_DETAILS_PENDING,
+  CLIENT_NOTES_PENDING,
+  isForbidden,
+} from "../design/ClientNotes";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Orb, startOfDay, useNow } from "../design/LockParts";
@@ -52,7 +57,9 @@ export default function Clients() {
   const people = (query.data || [])
     .filter((c): c is NonNullable<typeof c> => !!c)
     .filter(c =>
-      `${c.name} ${c.email} ${c.phone}`
+      [c.name, c.email, c.phone]
+        .filter(Boolean)
+        .join(" ")
         .toLowerCase()
         .includes(search.trim().toLowerCase())
     );
@@ -171,8 +178,22 @@ export default function Clients() {
     </Screen>
   );
 }
-function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
-  const query = trpc.projects.clientWorkspace.useQuery({ clientId: id });
+export function ClientDetail({
+  id,
+  onClose,
+}: {
+  id: string;
+  onClose: () => void;
+}) {
+  // The client list (already loaded by this screen) says whether this person's details are open to the artist.
+  const listed = trpc.conversations.getClients
+    .useQuery()
+    .data?.find(c => c?.id === id);
+  const query = trpc.projects.clientWorkspace.useQuery(
+    { clientId: id },
+    { retry: (count, error) => !isForbidden(error) && count < 2 }
+  );
+  const notConnected = isForbidden(query.error);
   const [tab, setTab] = useState<"Bookings" | "Forms" | "Notes">("Bookings");
   const [note, setNote] = useState("");
   const add = trpc.clientProfile.addClientNote.useMutation({
@@ -182,31 +203,50 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
     },
   });
   const data = query.data;
+  // Either answer may hold the details back: the client list, or the workspace itself when it says so.
+  const limited =
+    listed?.profileAvailable === false ||
+    (data as { profileAvailable?: boolean } | undefined)?.profileAvailable ===
+      false;
   return (
     <div className="v3-stack">
       <Action tone="quiet" onClick={onClose}>
         Back to all clients
       </Action>
-      <Feedback
-        loading={query.isLoading}
-        error={query.error}
-        onRetry={() => query.refetch()}
-      />
+      {notConnected ? (
+        <Panel>
+          <h2 className="v3-detail-title">
+            {listed?.name || "Not your client yet"}
+          </h2>
+          <p className="v3-muted">
+            This person isn’t one of your clients yet, so there is nothing to
+            show here. They appear in your list once they send you a request or
+            a message.
+          </p>
+        </Panel>
+      ) : (
+        <Feedback
+          loading={query.isLoading}
+          error={query.error}
+          onRetry={() => query.refetch()}
+        />
+      )}
       {data?.client && (
         <>
           <h2 className="v3-detail-title">{data.client.name}</h2>
+          {limited && <p className="v3-muted">{CLIENT_DETAILS_PENDING}</p>}
           <ClientStage
             name={data.client.name || "Client"}
             avatar={data.client.avatar}
             sessions={data.sessions}
           />
-          {data.client.email && (
+          {!limited && data.client.email && (
             <a className="v3-inline" href={`mailto:${data.client.email}`}>
               <Mail size={18} />
               {data.client.email}
             </a>
           )}
-          {data.client.phone && (
+          {!limited && data.client.phone && (
             <a className="v3-inline" href={`tel:${data.client.phone}`}>
               <Phone size={18} />
               {data.client.phone}
@@ -272,30 +312,38 @@ function ClientDetail({ id, onClose }: { id: string; onClose: () => void }) {
               ))}
             </Section>
           )}
+          {tab === "Notes" && limited && (
+            <p className="v3-muted">{CLIENT_NOTES_PENDING}</p>
+          )}
           {tab === "Notes" && (
             <>
-              <form
-                className="v3-form"
-                onSubmit={e => {
-                  e.preventDefault();
-                  add.mutate({ clientId: id, note: note.trim() });
-                }}
-              >
-                <label>
-                  Private artist note
-                  <textarea
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                    required
-                    placeholder="Useful details for the next session"
-                  />
-                </label>
-                <small>Only visible in your artist account.</small>
-                {add.error && <p role="alert">{add.error.message}</p>}
-                <Action type="submit" disabled={!note.trim() || add.isPending}>
-                  {add.isPending ? "Saving…" : "Save note"}
-                </Action>
-              </form>
+              {!limited && (
+                <form
+                  className="v3-form"
+                  onSubmit={e => {
+                    e.preventDefault();
+                    add.mutate({ clientId: id, note: note.trim() });
+                  }}
+                >
+                  <label>
+                    Private artist note
+                    <textarea
+                      value={note}
+                      onChange={e => setNote(e.target.value)}
+                      required
+                      placeholder="Useful details for the next session"
+                    />
+                  </label>
+                  <small>Only visible in your artist account.</small>
+                  {add.error && <p role="alert">{add.error.message}</p>}
+                  <Action
+                    type="submit"
+                    disabled={!note.trim() || add.isPending}
+                  >
+                    {add.isPending ? "Saving…" : "Save note"}
+                  </Action>
+                </form>
+              )}
               {data.notes.map(n => (
                 <Panel key={n.id}>
                   <p style={{ whiteSpace: "pre-wrap" }}>{n.note}</p>
@@ -410,13 +458,20 @@ function ClientCircles({
   const most = Math.max(1, ...people.map(p => p.tlv || 0));
   const groups = [
     ["This week", people.filter(p => (next.get(p.id) ?? 999) <= 7)],
-    ["This month", people.filter(p => { const d = next.get(p.id); return d !== undefined && d > 7 && d <= 31; })],
+    [
+      "This month",
+      people.filter(p => {
+        const d = next.get(p.id);
+        return d !== undefined && d > 7 && d <= 31;
+      }),
+    ],
     ["Later", people.filter(p => (next.get(p.id) ?? -1) > 31)],
     ["Not booked yet", people.filter(p => !next.has(p.id))],
   ] as const;
   const note = (p: (typeof people)[number]) => {
     const d = next.get(p.id);
-    if (d !== undefined) return d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
+    if (d !== undefined)
+      return d === 0 ? "Today" : d === 1 ? "Tomorrow" : `in ${d} days`;
     if (p.hasLead) return "Sent a request";
     return p.tlv ? `${money(Math.round(p.tlv * 100))} spent` : "New";
   };

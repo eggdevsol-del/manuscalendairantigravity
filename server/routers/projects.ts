@@ -15,6 +15,7 @@ import { and, eq, inArray, or, asc, desc } from "drizzle-orm";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../services/core";
 import { requireConversationAccess, requireArtist } from "../services/access";
+import { hasClientRelationship } from "../services/userService";
 import * as schema from "../../drizzle/schema";
 
 export const projectsRouter = router({
@@ -38,6 +39,13 @@ export const projectsRouter = router({
           code: "FORBIDDEN",
           message: "This client is not in your client list.",
         });
+      // A conversation row alone is not proof the client engaged with this
+      // artist, so contact details need the same relationship as the profile.
+      const profileAvailable = await hasClientRelationship(
+        db,
+        ctx.user.id,
+        input.clientId
+      );
       const [people, sessions, notes, forms] = await Promise.all([
         db
           .select({
@@ -99,7 +107,11 @@ export const projectsRouter = router({
           ),
       ]);
       return {
-        client: people[0],
+        client:
+          people[0] && !profileAvailable
+            ? { ...people[0], email: null, phone: null, birthday: null }
+            : people[0],
+        profileAvailable,
         conversationId: relationships[0].id,
         sessions: sessions.map(
           ({

@@ -6,7 +6,7 @@ import { authRouter as coreAuthRouter } from "../_core/auth-router";
 import { getSessionCookieOptions } from "../_core/cookies";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
-import { assertAccountBillingClosed } from "../services/accountBilling";
+import { deleteAccount } from "../services/accountDeletion";
 import { exportAccountData } from "../services/dataExport";
 
 export const authRouter = router({
@@ -186,20 +186,12 @@ export const authRouter = router({
   exportData: protectedProcedure.mutation(({ ctx }) =>
     exportAccountData(ctx.user.id)
   ),
+  /**
+   * Anonymises the account and removes what is purely the person's own; bookings, consent forms
+   * and payment records stay for the other party. Refuses with every reason when something is open.
+   */
   deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
-    const database = await db.getDb();
-    if (!database) {
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-    }
-
-    await assertAccountBillingClosed(ctx.user.id);
-
-    // Explicit deletions if cascaded foreign keys aren't strictly enforced in Drizzle.
-    const { eq } = await import("drizzle-orm");
-    const schema = await import("../../drizzle/schema");
-
-    // Clear session cookies via empty response logic handles by client-side logout
-    await database.delete(schema.users).where(eq(schema.users.id, ctx.user.id));
+    await deleteAccount(ctx.user.id);
     ctx.res.clearCookie(COOKIE_NAME, {
       ...getSessionCookieOptions(ctx.req),
       maxAge: -1,

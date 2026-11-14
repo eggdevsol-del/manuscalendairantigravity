@@ -71,13 +71,19 @@ export function AccountRemoval() {
         <h2>Delete your account</h2>
         <p>This cannot be undone.</p>
         <p>
-          Deleting your account removes your Tattoi profile and access to its
-          bookings and conversations. Export any records you need before
-          continuing.
+          Deleting your account removes your profile, sign-in and personal
+          details, and you lose access to your bookings and conversations.
+          Export any records you need before continuing.
         </p>
         <p>
-          Resolve any active subscriptions, orders and payments first. Account
-          deletion does not issue a Stripe refund.
+          The people you booked with keep their copy of past bookings and
+          messages, shown as from a deleted user. Signed consent forms and
+          payment records are kept as health and tax law requires.
+        </p>
+        <p>
+          Finish or cancel upcoming sittings, outstanding payments, payouts,
+          orders and subscriptions first. We will tell you if anything is still
+          open. Account deletion does not issue a Stripe refund.
         </p>
       </Panel>
       <form
@@ -96,7 +102,11 @@ export function AccountRemoval() {
             onChange={e => setConfirm(e.target.value)}
           />
         </label>
-        {remove.error && <p role="alert">{remove.error.message}</p>}
+        {remove.error && (
+          <p role="alert" style={{ whiteSpace: "pre-line" }}>
+            {remove.error.message}
+          </p>
+        )}
         <Action
           tone="danger"
           type="submit"

@@ -7,6 +7,8 @@ import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { useGoogleAuthReady } from "@/lib/google-auth";
 import { activateWaitingSWForPublicPage } from "@/lib/pwa";
+import { isAdult, UNDERAGE_MESSAGE } from "@shared/age";
+import { LegalConsent } from "./Legal";
 import { LiveStage } from "../design/live";
 import { StageFigure, StageRing } from "../components/DetailStages";
 
@@ -223,6 +225,7 @@ function Intake({
     size: "",
     timeframe: "",
   });
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [requestId] = useState(() => crypto.randomUUID());
   const utils = trpc.useUtils();
   const [service, setService] = useState("");
@@ -340,14 +343,17 @@ function Intake({
           conversationId: saved.conversationId,
         });
       } else {
+        if (!isAdult(draft.birthdate)) throw new Error(UNDERAGE_MESSAGE);
         const result = await submit.mutateAsync({
           ...draft,
+          acceptedTerms,
           requestId,
           firstName: draft.firstName.trim(),
           lastName: draft.lastName.trim(),
           email: draft.email.trim().toLowerCase(),
           phone: draft.phone.trim(),
-          gender: draft.gender as "male" | "female" | "other",
+          gender:
+            (draft.gender as "male" | "female" | "other" | "") || undefined,
           artistSlug: slug,
           description: [
             draft.description.trim(),
@@ -481,6 +487,10 @@ function Intake({
                 setError(
                   "Choose at least one style, including ‘Not sure’ if you need guidance."
                 );
+                return;
+              }
+              if (step === 5 && !user && !isAdult(draft.birthdate)) {
+                setError(UNDERAGE_MESSAGE);
                 return;
               }
               setError("");
@@ -682,23 +692,26 @@ function Intake({
                       required
                       type="date"
                       autoComplete="bday"
+                      aria-describedby="v3-booking-age"
                       value={draft.birthdate}
                       onChange={e =>
                         setDraft({ ...draft, birthdate: e.target.value })
                       }
                     />
                   </label>
+                  <small id="v3-booking-age" className="v3-muted">
+                    Tattoo bookings are for people aged 18 or over.
+                  </small>
                   <label>
-                    Gender
+                    Gender (optional)
                     <select
-                      aria-label="Gender"
-                      required
+                      aria-label="Gender (optional)"
                       value={draft.gender}
                       onChange={e =>
                         setDraft({ ...draft, gender: e.target.value })
                       }
                     >
-                      <option value="">Choose</option>
+                      <option value="">Prefer not to say</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                       <option value="other">Other</option>
@@ -739,6 +752,28 @@ function Intake({
               </Section>
             )}
           </fieldset>
+          {step === 6 && !user && (
+            <>
+              <p className="v3-muted">
+                Tattoi collects your contact details, date of birth, idea and
+                photos to pass your request to {artistName} and to confirm you
+                are 18 or over.
+              </p>
+              <label className="legal-consent">
+                <input
+                  type="checkbox"
+                  required
+                  disabled={busy}
+                  checked={acceptedTerms}
+                  onChange={e => setAcceptedTerms(e.target.checked)}
+                  aria-label="I agree to the Terms of Service and Privacy Policy"
+                />
+                <span>
+                  <LegalConsent />
+                </span>
+              </label>
+            </>
+          )}
           {error && <p role="alert">{error}</p>}
           <Action type="submit" disabled={busy || loading}>
             {busy

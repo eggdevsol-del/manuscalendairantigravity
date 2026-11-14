@@ -119,7 +119,13 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
   const bulkMessageMutation = trpc.conversations.bulkMessageClients.useMutation({
     onSuccess: (data) => {
-      toast.success(`Broadcasting... generated ${data.count} independent conversations.`);
+      const sent = `Message sent to ${data.count} client${data.count === 1 ? "" : "s"}.`;
+      const optedOut = data.optedOut > 0 ? ` ${data.optedOut} ha${data.optedOut === 1 ? "s" : "ve"} promotions switched off.` : "";
+      const notClients = data.notClients > 0 ? ` ${data.notClients} could not be messaged because they are not your client${data.notClients === 1 ? "" : "s"} yet.` : "";
+      const failed = data.skipped - data.optedOut - data.notClients;
+      const notSent = failed > 0 ? ` ${failed} could not be sent. Please try those again.` : "";
+      if (data.count > 0) toast.success(sent + optedOut + notClients + notSent);
+      else toast.error("No one was messaged." + optedOut + notClients + notSent);
       setShowBulkMessage(false);
       setBulkMessage("");
       setSelectedClients(new Set());
@@ -138,14 +144,28 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
 
   const deleteBookingsMutation =
     trpc.appointments.deleteAllForClient.useMutation({
-      onSuccess: () => {
-        toast.success(deleteMode === "profile" ? "Client and all bookings permanently deleted" : "All bookings deleted for client");
+      onSuccess: (data) => {
+        const deleted = `${data.deletedAppointments} unpaid booking${data.deletedAppointments === 1 ? "" : "s"} deleted.`;
+        const kept = data.keptAppointments > 0
+          ? ` ${data.keptAppointments} booking${data.keptAppointments === 1 ? " was" : "s were"} kept because ${data.keptAppointments === 1 ? "it is" : "they are"} still coming up or ${data.keptAppointments === 1 ? "has" : "have"} payments or signed forms.`
+          : "";
+        const upcoming = data.upcomingSittings > 0
+          ? ` Cancel the ${data.upcomingSittings === 1 ? "upcoming sitting" : `${data.upcomingSittings} upcoming sittings`} first if you want ${data.upcomingSittings === 1 ? "it" : "them"} gone, so the client is told.`
+          : "";
+        const deposit = data.depositOnRecord
+          ? " A deposit with this client is in progress or on record."
+          : "";
+        if (deleteMode === "profile" && !data.clientRemoved)
+          toast.warning(`${deleted}${kept}${upcoming}${deposit} This client stays in your list because those records have to be kept.`);
+        else if (deleteMode === "profile")
+          toast.success(`Client removed from your list. ${deleted}`);
+        else toast.success(deleted + kept + upcoming);
         setClientToDelete(null);
         setDeleteMode("appointments");
         refetch(); // Ensure UI client list syncs the deletion of the profile
       },
       onError: error => {
-        toast.error("Failed to delete bookings: " + error.message);
+        toast.error(error.message || "Nothing was deleted. Please try again.");
       },
     });
 
@@ -416,7 +436,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                         e.stopPropagation();
                         handleDeleteClick({ id: client.id, name: client.name });
                       }}
-                      title="Delete all bookings"
+                      title="Delete bookings or remove client"
                     >
                       <Trash className="w-4 h-4" />
                     </Button>
@@ -425,7 +445,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                     <div className="mt-4 p-4 bg-destructive/5 border border-destructive/20 rounded-md space-y-4 lg:ml-[60px]">
                       <h4 className="font-semibold text-destructive flex items-center">
                         <Trash className="w-4 h-4 mr-2" />
-                        Wipe Client Data
+                        Delete Bookings or Remove Client
                       </h4>
 
                       <div className="space-y-3">
@@ -438,8 +458,8 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                             className="mt-1"
                           />
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-foreground">Appointments Only</p>
-                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Deletes all historical and future bookings, but keeps the client's profile and chat history intact.</p>
+                            <p className="text-sm font-semibold text-foreground">Unpaid Bookings Only</p>
+                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Deletes this client's past and cancelled bookings with you that have no payment. Upcoming sittings (cancel those first), paid bookings, deposits in progress, open payment requests and signed forms are always kept, and so is the chat.</p>
                           </div>
                         </label>
 
@@ -452,8 +472,8 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
                             className="mt-1"
                           />
                           <div className="flex-1">
-                            <p className="text-sm font-semibold text-destructive">Delete Client & Appointments</p>
-                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Permanently wipes their entire profile, chat history, and all associated bookings from your database.</p>
+                            <p className="text-sm font-semibold text-destructive">Remove Client From My List</p>
+                            <p className="text-xs text-muted-foreground mt-1 leading-snug">Also permanently deletes your chat, notes and requests with them. Their own Tattoi account is not deleted; only they can do that. If they have upcoming sittings, paid bookings, a deposit or signed forms with you, those are kept and the client stays in your list.</p>
                           </div>
                         </label>
                       </div>
@@ -535,7 +555,7 @@ export function ClientSettings({ onBack }: ClientSettingsProps) {
         isOpen={showBulkMessage}
         onClose={() => setShowBulkMessage(false)}
         title={`Message ${selectedClients.size} Clients`}
-        description="This will send an individual direct message to each selected profile simulating 1-to-1 conversation organically."
+        description="Each selected client gets this as a message in their own chat with you. Clients who have promotions switched off, and people who are not your clients yet, are skipped."
         className="max-w-md"
         overlayName="Bulk Message"
         overlayId="clients.bulk_message"

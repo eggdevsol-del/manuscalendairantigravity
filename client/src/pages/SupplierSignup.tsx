@@ -116,7 +116,7 @@ export default function SupplierSignup() {
                 "Looks like you've already been in touch with your artist. Let's set up your password."
               );
               setLocation(
-                `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
+                `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`
               );
             } else if (result.exists) {
               toast.error(
@@ -213,7 +213,7 @@ export default function SupplierSignup() {
               "Looks like you've already been in touch with your artist. Let's set up your password."
             );
             setLocation(
-              `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(result.name || name)}`
+              `/set-password?email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`
             );
             setIsLoading(false);
           } else if (result.exists) {

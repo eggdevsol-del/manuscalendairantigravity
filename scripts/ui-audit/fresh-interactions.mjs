@@ -934,10 +934,10 @@ for (const [test, width, height, role, path] of cases) {
         throw Error("Saved link not updated");
     }
     if (test.startsWith("public-")) {
-      const dialog = page.getByRole("dialog");
-      await dialog
-        .getByRole("button", { name: "Send booking request", exact: true })
-        .waitFor();
+      // The request is six short steps: the idea, three optional ones, the
+      // client's details, then a review with the consent box.
+      const next = () =>
+        page.getByRole("button", { name: "Continue", exact: true }).click();
       if (await page.getByLabel("Create password", { exact: true }).count())
         throw Error("Password shown before submitting the request");
       await page
@@ -946,6 +946,7 @@ for (const [test, width, height, role, path] of cases) {
       await page
         .getByRole("checkbox", { name: "Fine Line", exact: true })
         .check();
+      for (let step = 1; step <= 4; step++) await next();
       await page.getByLabel("First name", { exact: true }).fill("Mia");
       await page.getByLabel("Last name", { exact: true }).fill("Chen");
       await page
@@ -955,15 +956,29 @@ for (const [test, width, height, role, path] of cases) {
       await page
         .getByLabel("Date of birth", { exact: true })
         .fill("1995-01-01");
-      await page.getByLabel("Gender", { exact: true }).selectOption("female");
+      // Gender is optional and left unanswered.
+      await next();
+      const send = page.getByRole("button", {
+        name: "Send booking request",
+        exact: true,
+      });
+      // The consent box is required: without it nothing is sent.
+      await send.click();
+      if (mutations.includes("funnel.submitPublicBooking"))
+        throw Error("Request sent without consent");
       await page
-        .getByRole("button", { name: "Send booking request", exact: true })
-        .click();
+        .getByRole("checkbox", {
+          name: "I agree to the Terms of Service and Privacy Policy",
+          exact: true,
+        })
+        .check();
+      await send.click();
       if (test === "public-error") {
         await page
           .getByRole("alert")
           .filter({ hasText: "Fixture save failed" })
           .waitFor();
+        await page.getByRole("button", { name: "Back", exact: true }).click();
         if (
           (await page.getByLabel("Email", { exact: true }).inputValue()) !==
           "fixture@example.invalid"

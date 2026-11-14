@@ -18,22 +18,32 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
 
     const utils = trpc.useUtils();
 
+    // The server refuses while sittings are coming up or money is involved, and says why.
+    const showRefusal = (error: { message: string }) => {
+        toast.error(error.message || "Nothing was deleted. Please try again.", { duration: 12000, style: { whiteSpace: "pre-line" } });
+    };
+    const keptNote = (kept: number) =>
+        kept > 0 ? ` ${kept} with signed forms, deposits or records ${kept === 1 ? "was" : "were"} kept.` : "";
+
     const wipeAppointments = trpc.appointments.deleteAllForArtist.useMutation({
-        onSuccess: () => {
-            toast.success("All appointments have been permanently deleted.");
+        onSuccess: (data) => {
+            toast.success(`${data.deletedAppointments} unpaid appointment${data.deletedAppointments === 1 ? "" : "s"} permanently deleted.${keptNote(data.keptAppointments)}`);
             utils.appointments.invalidate();
             setActiveAction(null);
             setConfirmText("");
-        }
+        },
+        onError: showRefusal
     });
 
     const wipeClients = trpc.conversations.deleteAllClientsForArtist.useMutation({
-        onSuccess: () => {
-            toast.success("All clients have been permanently deleted.");
+        onSuccess: (data) => {
+            toast.success(`${data.removedClients} client${data.removedClients === 1 ? "" : "s"} removed from your list and ${data.deletedAppointments} unpaid appointment${data.deletedAppointments === 1 ? "" : "s"} deleted.${keptNote(data.keptAppointments)}${data.keptClients > 0 ? ` ${data.keptClients} client${data.keptClients === 1 ? " stays" : "s stay"} in your list because of those records.` : ""}`);
             utils.conversations.invalidate();
+            utils.appointments.invalidate();
             setActiveAction(null);
             setConfirmText("");
-        }
+        },
+        onError: showRefusal
     });
 
     const deleteAccount = trpc.auth.deleteAccount.useMutation({
@@ -81,8 +91,8 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                         <div className="p-4 bg-secondary/50 border border-border rounded-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
-                                    <h3 className="text-foreground font-semibold text-sm">Delete All Appointments</h3>
-                                    <p className="text-xs text-muted-foreground mt-0.5">Wipes your calendar. Clients remain.</p>
+                                    <h3 className="text-foreground font-semibold text-sm">Delete Unpaid Appointments</h3>
+                                    <p className="text-xs text-muted-foreground mt-0.5">Deletes your unpaid appointments. Clients remain. Not available while you have upcoming sittings, open payment requests, deposits in progress or paid bookings. Sittings with signed forms are always kept.</p>
                                 </div>
                                 <button
                                     onClick={() => { setActiveAction("appointments"); setConfirmText(""); }}
@@ -93,7 +103,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                             </div>
                             {activeAction === "appointments" && (
                                 <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
-                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm wiping all appointments.</p>
+                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm deleting your unpaid appointments.</p>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -118,8 +128,8 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                         <div className="p-4 bg-secondary/50 border border-border rounded-md">
                             <div className="flex items-center justify-between mb-2">
                                 <div>
-                                    <h3 className="text-foreground font-semibold text-sm">Delete All Clients</h3>
-                                    <p className="text-xs text-muted-foreground mt-0.5">Removes all client profiles and their appointments.</p>
+                                    <h3 className="text-foreground font-semibold text-sm">Remove All Clients</h3>
+                                    <p className="text-xs text-muted-foreground mt-0.5">Removes clients from your list with your chats, notes and unpaid appointments. Their own Tattoi accounts are not deleted. Not available while you have upcoming sittings, open payment requests, deposits in progress or paid bookings. Signed forms are always kept.</p>
                                 </div>
                                 <button
                                     onClick={() => { setActiveAction("clients"); setConfirmText(""); }}
@@ -130,7 +140,7 @@ export function DangerZoneSettings({ onBack }: DangerZoneSettingsProps) {
                             </div>
                             {activeAction === "clients" && (
                                 <div className="mt-4 pt-4 border-t border-border animate-in fade-in slide-in-from-top-2">
-                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm wiping all clients.</p>
+                                    <p className="text-xs text-muted-foreground mb-2">Type <strong>DELETE</strong> below to confirm removing your clients.</p>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"

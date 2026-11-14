@@ -1,6 +1,17 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+
+async function requireOwnedButton(userId: string, id: number) {
+  const buttons = await db.getQuickActionButtons(userId);
+  if (!buttons.some(button => button.id === id)) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Quick action not found.",
+    });
+  }
+}
 
 export const quickActionsRouter = router({
   list: artistProcedure.query(async ({ ctx }) => {
@@ -41,13 +52,15 @@ export const quickActionsRouter = router({
         enabled: z.boolean().optional(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { id, enabled, ...rest } = input;
+      await requireOwnedButton(ctx.user.id, id);
       const updates: any = { ...rest };
       if (enabled !== undefined) updates.enabled = enabled ? 1 : 0;
       return db.updateQuickActionButton(id, updates);
     }),
-  delete: artistProcedure.input(z.number()).mutation(async ({ input }) => {
+  delete: artistProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
+    await requireOwnedButton(ctx.user.id, input);
     return db.deleteQuickActionButton(input);
   }),
 });

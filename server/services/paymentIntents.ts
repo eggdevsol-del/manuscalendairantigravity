@@ -15,8 +15,10 @@
 
 import { stripe } from "./stripe";
 import type Stripe from "stripe";
+import { formatCheckoutSittingIds } from "./proposalConfirmation";
 
 // ── Deposit PaymentIntent ────────────────────────────────────────────────────
+
 export async function createDepositPaymentIntent(opts: {
   leadId: number;
   sessionPlanId?: number;
@@ -29,6 +31,8 @@ export async function createDepositPaymentIntent(opts: {
   artistName: string;
   depositToken: string;
   messageId?: number;
+  /** The sittings this deposit is priced on; the webhook confirms only these. */
+  appointmentIds?: number[];
   stripeConnectAccountId?: string | null;
   tier: string;
 }): Promise<{ clientSecret: string; paymentIntentId: string }> {
@@ -45,6 +49,7 @@ export async function createDepositPaymentIntent(opts: {
       sessionPlanId: opts.sessionPlanId ? String(opts.sessionPlanId) : "",
       leadId: String(opts.leadId),
       messageId: opts.messageId ? String(opts.messageId) : "",
+      appointmentIds: formatCheckoutSittingIds(opts.appointmentIds),
       platformFeeCents: String(opts.platformFeeCents),
       artistFeeCents: String(opts.artistFeeCents),
       baseAmountCents: String(opts.depositAmountCents),

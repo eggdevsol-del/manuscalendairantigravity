@@ -4,6 +4,7 @@ import { protectedProcedure, router } from "../_core/trpc";
 import { messageTags } from "../../drizzle/schema";
 import { and, eq } from "drizzle-orm";
 import * as db from "../db";
+import { requireConversationAccess } from "../services/access";
 
 export const messageTagsRouter = router({
   // Toggle a tag on/off for a message (idempotent)
@@ -18,6 +19,16 @@ export const messageTagsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      await requireConversationAccess(
+        database,
+        input.conversationId,
+        ctx.user.id
+      );
+      const message = await db.getMessageById(input.messageId);
+      if (!message || message.conversationId !== input.conversationId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Message not found" });
+      }
 
       // Check if tag already exists
       const existing = await database.query.messageTags.findFirst({

@@ -48,7 +48,10 @@ it("holds an artist's proposed dates outside hours until each is confirmed", asy
   await send("artist", [key]);
   expect(m.appointment).toHaveBeenCalledOnce();
 });
-it("does not ask a client who requests dates", async () => {
-  await send("client");
-  expect(m.appointment).toHaveBeenCalledOnce();
+it("refuses a client who sends a proposal, and holds no dates", async () => {
+  await expect(send("client")).rejects.toMatchObject({ code: "FORBIDDEN" });
+  await expect(send("client", [key])).rejects.toMatchObject({
+    code: "FORBIDDEN",
+  });
+  expect(m.appointment).not.toHaveBeenCalled();
 });

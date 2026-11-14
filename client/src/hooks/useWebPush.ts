@@ -198,11 +198,8 @@ export function useWebPush() {
   }, [practice, status, publicKeyQuery, subscribeMutation]);
 
   const sendTestPush = useCallback(
-    async (options?: {
-      title?: string;
-      body?: string;
-      targetUserId?: string;
-    }) => {
+    // The server only ever pushes a test to the caller's own devices.
+    async (options?: { title?: string; body?: string }) => {
       if (practice) {
         practice.simulate("Test push notification");
         return { success: true };
@@ -211,7 +208,6 @@ export function useWebPush() {
         const result = await testPushMutation.mutateAsync({
           title: options?.title,
           body: options?.body,
-          targetUserId: options?.targetUserId,
         });
         if (result.success) {
           const sentCount =
@@ -236,7 +232,7 @@ export function useWebPush() {
             result.results?.length === 0
           ) {
             // Should be covered by "No subscriptions found" check in backend, but just in case
-            toast.info("No active subscriptions found for this user.");
+            toast.info("No active subscriptions found on your devices.");
           }
         } else {
           toast.error("Failed to send test push: " + result.message);

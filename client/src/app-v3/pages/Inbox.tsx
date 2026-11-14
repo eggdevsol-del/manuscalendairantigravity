@@ -111,13 +111,19 @@ export default function Inbox() {
           </div>
           <Feedback
             loading={query.isLoading || requests.isLoading}
-            error={query.error || requests.error || create.error}
+            error={query.error || requests.error}
             onRetry={() => {
-              create.reset();
               void query.refetch();
               void requests.refetch();
             }}
           />
+          {create.error && (
+            <p className="v3-muted" role="status">
+              {create.error.data?.code === "FORBIDDEN"
+                ? "This conversation can’t be opened yet. It opens once they have sent you a request or a message from their own account."
+                : "Couldn’t open that conversation. Please try again."}
+            </p>
+          )}
           {isArtist &&
             (tab === "All" || tab === "Enquiries") &&
             !search &&
@@ -194,7 +200,9 @@ export default function Inbox() {
                 empty={
                   search
                     ? "No conversations match your search."
-                    : tab === "Unread" ? "No unread messages." : "Your conversations will appear here."
+                    : tab === "Unread"
+                      ? "No unread messages."
+                      : "Your conversations will appear here."
                 }
               />
             )}

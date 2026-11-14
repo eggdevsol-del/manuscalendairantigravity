@@ -20,7 +20,7 @@ import {
 } from "../_core/trpc";
 import { getDb } from "../db";
 import * as schema from "../../drizzle/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import {
   deriveTagLabels,
   calculatePriorityScore,
@@ -31,6 +31,134 @@ import {
 // Helper to format date for MySQL
 function formatDateForMySQL(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
+type Database = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+
+// A proposal can be paid for until it is confirmed, declined or revoked.
+const PAYABLE_PROPOSAL_STATUSES = [
+  "pending",
+  "accepted",
+  "remittance_uploaded",
+];
+
+/**
+ * The deposit an artist's proposal asks for. The sittings the server created
+ * when the proposal was sent are the base; the artist's own figure can only
+ * raise it (sittings hold whole dollars, so their sum can fall short).
+ */
+async function proposalDeposit(
+  db: Database,
+  conversation: { id: number; artistId: string },
+  message: { metadata: string | null }
+) {
+  let meta: Record<string, any> = {};
+  try {
+    const parsed = JSON.parse(message.metadata || "{}");
+    if (parsed && typeof parsed === "object") meta = parsed;
+  } catch {
+    /* ignore parse errors */
+  }
+  const listedIds: number[] = Array.isArray(meta.appointmentIds)
+    ? meta.appointmentIds.filter((id: unknown) => Number.isInteger(id))
+    : [];
+  const sittings = listedIds.length
+    ? (
+        await db.query.appointments.findMany({
+          where: and(
+            inArray(schema.appointments.id, listedIds),
+            eq(schema.appointments.conversationId, conversation.id),
+            eq(schema.appointments.artistId, conversation.artistId)
+          ),
+        })
+      ).filter(sitting => sitting.status !== "cancelled")
+    : [];
+  const sittingsCents = sittings.reduce(
+    (sum, sitting) =>
+      sum + Math.round(Number(sitting.depositAmount || 0) * 100),
+    0
+  );
+  // metadata.depositAmount is stored in DOLLARS by handleConfirmBooking
+  const stated = Number(meta.depositAmount);
+  const statedCents =
+    Number.isFinite(stated) && stated > 0 ? Math.round(stated * 100) : 0;
+  const status = typeof meta.status === "string" ? meta.status : "";
+  return {
+    status,
+    // A proposal whose sittings have all been cancelled is no longer open.
+    payable:
+      PAYABLE_PROPOSAL_STATUSES.includes(status) &&
+      (listedIds.length === 0 || sittings.length > 0),
+    sittingIds: sittings.map(sitting => sitting.id),
+    cents: Math.max(sittingsCents, statedCents),
+  };
+}
+
+function pendingSittings(db: Database, conversationId: number) {
+  return db.query.appointments.findMany({
+    where: and(
+      eq(schema.appointments.conversationId, conversationId),
+      eq(schema.appointments.status, "pending")
+    ),
+  });
+}
+
+/**
+ * A paid deposit confirms every pending sitting in the conversation and marks
+ * the given proposal confirmed, so the amount on the lead must cover both. The
+ * token only names the lead; this is what ties the charge to what it confirms.
+ */
+async function assertDepositCoversBooking(
+  db: Database,
+  lead: { conversationId: number | null; depositAmount: number | null },
+  messageId?: number
+): Promise<number[]> {
+  const mismatch = new Error(
+    "Payment message does not belong to this booking."
+  );
+  if (!lead.conversationId) {
+    if (messageId) throw mismatch;
+    return [];
+  }
+  let proposalSittingIds: number[] | null = null;
+  const conversation = await db.query.conversations.findFirst({
+    where: eq(schema.conversations.id, lead.conversationId),
+  });
+  if (!conversation) throw mismatch;
+  const outOfDate = new Error(
+    "This deposit link is out of date. Open the proposal in your chat to pay."
+  );
+  const paying = lead.depositAmount || 0;
+  if (messageId) {
+    const message = await db.query.messages.findFirst({
+      where: eq(schema.messages.id, messageId),
+    });
+    if (
+      !message ||
+      message.conversationId !== conversation.id ||
+      message.senderId !== conversation.artistId ||
+      message.messageType !== "appointment_request"
+    )
+      throw mismatch;
+    const proposal = await proposalDeposit(db, conversation, message);
+    // An already confirmed proposal stays confirmed (a rescheduled sitting's
+    // deposit); a declined or revoked one must not be brought back by paying.
+    if (
+      proposal.status !== "confirmed" &&
+      (!proposal.payable || paying < proposal.cents)
+    )
+      throw outOfDate;
+    proposalSittingIds = proposal.sittingIds;
+  }
+  const pending = await pendingSittings(db, conversation.id);
+  const owedCents = pending.reduce(
+    (sum, sitting) =>
+      sum + Math.round(Number(sitting.depositAmount || 0) * 100),
+    0
+  );
+  if (paying < owedCents) throw outOfDate;
+  // The sittings this payment is priced on; the webhook confirms only these.
+  return proposalSittingIds ?? pending.map(sitting => sitting.id);
 }
 
 export const funnelRouter = router({
@@ -225,17 +353,13 @@ export const funnelRouter = router({
         throw new Error("Your artist needs to finish payment setup.");
       if (lead.depositVerifiedAt)
         throw new Error("This deposit has already been paid.");
-      if (input.messageId) {
-        const message = await db.query.messages.findFirst({
-          where: eq(schema.messages.id, input.messageId),
-        });
-        if (
-          !message ||
-          !lead.conversationId ||
-          message.conversationId !== lead.conversationId
-        )
-          throw new Error("Payment message does not belong to this booking.");
-      }
+      const sittingIds = await assertDepositCoversBooking(
+        db,
+        lead,
+        input.messageId
+      );
+      const { checkoutSittingKey } =
+        await import("../services/proposalConfirmation");
       const checkoutResult = await createDepositPaymentIntent({
         leadId: lead.id,
         depositAmountCents: fees.baseAmountCents,
@@ -252,7 +376,8 @@ export const funnelRouter = router({
         messageId: input.messageId,
         stripeConnectAccountId: artistSettingsRow?.stripeConnectAccountId,
         tier,
-        idempotencyKey: `lead-${lead.id}-deposit-${fees.clientTotalCents}`,
+        appointmentIds: sittingIds,
+        idempotencyKey: `lead-${lead.id}-deposit-${fees.clientTotalCents}-${checkoutSittingKey(sittingIds)}`,
       });
 
       return {
@@ -719,6 +844,81 @@ export const funnelRouter = router({
         throw new Error("Not authorized");
       }
 
+      // Both ids come from the client, so each must belong to this
+      // conversation before any deposit figure is read from it.
+      const proposalMsg = input.messageId
+        ? await db.query.messages.findFirst({
+            where: eq(schema.messages.id, input.messageId),
+          })
+        : undefined;
+      if (
+        input.messageId &&
+        (!proposalMsg ||
+          proposalMsg.conversationId !== conversation.id ||
+          proposalMsg.senderId !== conversation.artistId ||
+          proposalMsg.messageType !== "appointment_request")
+      ) {
+        throw new Error("Not authorized");
+      }
+      const proposal = proposalMsg
+        ? await proposalDeposit(db, conversation, proposalMsg)
+        : null;
+      const sitting = input.appointmentId
+        ? await db.query.appointments.findFirst({
+            where: eq(schema.appointments.id, input.appointmentId),
+          })
+        : undefined;
+      if (
+        input.appointmentId &&
+        (!sitting ||
+          sitting.artistId !== conversation.artistId ||
+          sitting.clientId !== ctx.user.id ||
+          sitting.conversationId !== conversation.id)
+      ) {
+        throw new Error("Not authorized");
+      }
+
+      // An open proposal is always paid in full; the sitting id sent with it
+      // never changes the amount. A single sitting is charged on its own only
+      // when the artist moved it and it is waiting for a new deposit.
+      const payingProposal = proposal?.payable ? proposal : null;
+      if (!payingProposal && proposalMsg && !sitting)
+        throw new Error("This proposal is no longer awaiting a deposit.");
+      if (!payingProposal && sitting) {
+        const awaitingDeposit =
+          sitting.status === "pending" &&
+          !sitting.depositPaid &&
+          sitting.paymentStatus === "pending_deposit" &&
+          Number(sitting.depositAmount) > 0 &&
+          (!proposal || proposal.sittingIds.includes(sitting.id)) &&
+          !!(await db.query.appointmentLogs.findFirst({
+            where: and(
+              eq(schema.appointmentLogs.appointmentId, sitting.id),
+              eq(schema.appointmentLogs.action, "rescheduled"),
+              eq(schema.appointmentLogs.performedBy, conversation.artistId)
+            ),
+          }));
+        if (!awaitingDeposit)
+          throw new Error("This sitting is not awaiting a deposit.");
+      }
+
+      // Paying confirms every pending sitting in the conversation, so none
+      // may be left outside what this deposit is priced on.
+      const coveredIds = payingProposal
+        ? payingProposal.sittingIds
+        : sitting
+          ? [sitting.id]
+          : [];
+      const uncovered = (await pendingSittings(db, conversation.id)).some(
+        row => !coveredIds.includes(row.id)
+      );
+      if (uncovered)
+        throw new Error(
+          proposalMsg || sitting
+            ? "You have other dates on hold with this artist. Ask them to withdraw the proposals you are not taking, then pay again."
+            : "Open the proposal you are paying for, then try again."
+        );
+
       // Get the lead from the conversation
       let lead = undefined;
 
@@ -769,37 +969,15 @@ export const funnelRouter = router({
         lead = getNewLead;
       }
 
-      // Derive deposit amount from: appointment record (reschedule) → proposal metadata → percentage engine → flat fallback
+      // Derive deposit amount from: open proposal → rescheduled sitting → percentage engine → flat fallback
       {
         let depositCents: number | null = null;
 
-        // Priority 0: For rescheduled appointments, use the per-sitting deposit stored on the appointment record
-        if (input.appointmentId) {
-          const appt = await db.query.appointments.findFirst({
-            where: eq(schema.appointments.id, input.appointmentId),
-          });
-          if (appt?.depositAmount && Number(appt.depositAmount) > 0) {
-            // appointmentService allocates per-sitting deposit in dollars
-            depositCents = Math.round(Number(appt.depositAmount) * 100);
-          }
-        }
-
-        // Priority 1: Read from the proposal message metadata (full project deposit)
-        if (!depositCents && input.messageId) {
-          const proposalMsg = await db.query.messages.findFirst({
-            where: eq(schema.messages.id, input.messageId),
-          });
-          if (proposalMsg?.metadata) {
-            try {
-              const meta = JSON.parse(proposalMsg.metadata as string);
-              if (meta.depositAmount && Number(meta.depositAmount) > 0) {
-                // metadata.depositAmount is stored in DOLLARS by handleConfirmBooking
-                depositCents = Math.round(Number(meta.depositAmount) * 100);
-              }
-            } catch {
-              /* ignore parse errors */
-            }
-          }
+        if (payingProposal) {
+          depositCents = payingProposal.cents || null;
+        } else if (sitting) {
+          // appointmentService allocates per-sitting deposit in dollars
+          depositCents = Math.round(Number(sitting.depositAmount) * 100);
         }
 
         // Priority 2: Percentage-based calculation from fee engine
@@ -937,277 +1115,6 @@ export const funnelRouter = router({
         budgetRanges: settings.budgetRanges
           ? JSON.parse(settings.budgetRanges)
           : [],
-      };
-    }),
-
-  /**
-   * Submit funnel data (create or update lead)
-   * PUBLIC - no auth required
-   */
-  submitFunnel: publicProcedure
-    .input(
-      z.object({
-        artistSlug: z.string(),
-        sessionId: z.string(),
-        stepData: z.object({
-          intent: z
-            .object({
-              projectType: z.string().optional(),
-              projectDescription: z.string().optional(),
-            })
-            .optional(),
-          contact: z
-            .object({
-              name: z.string(),
-              email: z.string().email(),
-              phone: z.string().optional(),
-            })
-            .optional(),
-          style: z
-            .object({
-              stylePreferences: z.array(z.string()).optional(),
-              referenceImages: z.array(z.string()).optional(),
-            })
-            .optional(),
-          budget: z
-            .object({
-              placement: z.string().optional(),
-              estimatedSize: z.string().optional(),
-              budgetMin: z.number().optional(),
-              budgetMax: z.number().nullable().optional(),
-              budgetLabel: z.string().optional(),
-            })
-            .optional(),
-          availability: z
-            .object({
-              preferredTimeframe: z.string().optional(),
-              preferredMonths: z.array(z.string()).optional(),
-              urgency: z.enum(["flexible", "moderate", "urgent"]).optional(),
-            })
-            .optional(),
-        }),
-        currentStep: z.number(),
-        isComplete: z.boolean(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database connection failed");
-
-      const now = new Date();
-      const nowFormatted = formatDateForMySQL(now);
-
-      // Get artist by slug
-      const settings = await db.query.artistSettings.findFirst({
-        where: eq(
-          schema.artistSettings.publicSlug,
-          input.artistSlug.toLowerCase()
-        ),
-      });
-
-      if (!settings) {
-        throw new Error("Artist not found");
-      }
-
-      const artistId = settings.userId;
-
-      // Check for existing funnel submission by session
-      let existingSubmission = await db.query.funnelSessions.findFirst({
-        where: eq(schema.funnelSessions.id, input.sessionId),
-      });
-
-      // Flatten step data for storage
-      const flatData = {
-        projectType: input.stepData.intent?.projectType,
-        projectDescription: input.stepData.intent?.projectDescription,
-        name: input.stepData.contact?.name,
-        email: input.stepData.contact?.email,
-        phone: input.stepData.contact?.phone,
-        stylePreferences: input.stepData.style?.stylePreferences,
-        referenceImages: input.stepData.style?.referenceImages,
-        placement: input.stepData.budget?.placement,
-        estimatedSize: input.stepData.budget?.estimatedSize,
-        budgetMin: input.stepData.budget?.budgetMin ?? undefined,
-        budgetMax: input.stepData.budget?.budgetMax ?? undefined,
-        budgetLabel: input.stepData.budget?.budgetLabel,
-        preferredTimeframe: input.stepData.availability?.preferredTimeframe,
-        preferredMonths: input.stepData.availability?.preferredMonths,
-        urgency: input.stepData.availability?.urgency,
-      };
-
-      // Calculate derived values
-      const derivedTags = deriveTagLabels(flatData);
-      const priorityScore = calculatePriorityScore({
-        ...flatData,
-        createdAt: now,
-      });
-      const priorityTier = getPriorityTier(priorityScore);
-      const estimatedValue = estimateLeadValue(flatData);
-
-      if (existingSubmission) {
-        // Update existing submission
-        await db
-          .update(schema.funnelSessions)
-          .set({
-            stepData: JSON.stringify(input.stepData),
-            currentStep: String(input.currentStep),
-            completed: input.isComplete ? 1 : 0,
-            completedAt: input.isComplete ? nowFormatted : null,
-            lastActivityAt: nowFormatted,
-          })
-          .where(eq(schema.funnelSessions.id, existingSubmission.id));
-      } else {
-        // Create new submission
-        await db.insert(schema.funnelSessions).values({
-          id: input.sessionId,
-          artistId,
-          stepData: JSON.stringify(input.stepData),
-          currentStep: String(input.currentStep),
-          completed: input.isComplete ? 1 : 0,
-          startedAt: nowFormatted,
-          completedAt: input.isComplete ? nowFormatted : null,
-          createdAt: nowFormatted,
-        });
-        existingSubmission = { id: input.sessionId } as any;
-      }
-
-      // If complete, create or update lead
-      let leadId: number | null = null;
-
-      if (input.isComplete && flatData.name && flatData.email) {
-        // Check if lead already exists for this email + artist
-        const existingLead = await db.query.leads.findFirst({
-          where: and(
-            eq(schema.leads.artistId, artistId),
-            eq(schema.leads.clientEmail, flatData.email.toLowerCase())
-          ),
-        });
-
-        if (existingLead) {
-          // Update existing lead
-          await db
-            .update(schema.leads)
-            .set({
-              clientName: flatData.name,
-              clientPhone: flatData.phone || null,
-              projectType: flatData.projectType || null,
-              projectDescription: flatData.projectDescription || null,
-              stylePreferences: flatData.stylePreferences
-                ? JSON.stringify(flatData.stylePreferences)
-                : null,
-              referenceImages: flatData.referenceImages
-                ? JSON.stringify(flatData.referenceImages)
-                : null,
-              placement: flatData.placement || null,
-              estimatedSize: flatData.estimatedSize || null,
-              budgetMin: flatData.budgetMin || null,
-              budgetMax: flatData.budgetMax || null,
-              preferredTimeframe: flatData.preferredTimeframe || null,
-              preferredMonths: flatData.preferredMonths
-                ? JSON.stringify(flatData.preferredMonths)
-                : null,
-              urgency: flatData.urgency || "flexible",
-              derivedTags: JSON.stringify(derivedTags),
-              priorityScore,
-              priorityTier,
-              estimatedValue,
-              funnelSessionId: existingSubmission!.id,
-              updatedAt: nowFormatted,
-            })
-            .where(eq(schema.leads.id, existingLead.id));
-
-          leadId = existingLead.id;
-        } else {
-          // Create new lead
-          const [newLead] = await db.insert(schema.leads).values({
-            artistId,
-            source: "funnel",
-            sourceDetails: `/start/${input.artistSlug}`,
-            status: "new",
-            clientName: flatData.name,
-            clientEmail: flatData.email.toLowerCase(),
-            clientPhone: flatData.phone || null,
-            projectType: flatData.projectType || null,
-            projectDescription: flatData.projectDescription || null,
-            stylePreferences: flatData.stylePreferences
-              ? JSON.stringify(flatData.stylePreferences)
-              : null,
-            referenceImages: flatData.referenceImages
-              ? JSON.stringify(flatData.referenceImages)
-              : null,
-            placement: flatData.placement || null,
-            estimatedSize: flatData.estimatedSize || null,
-            budgetMin: flatData.budgetMin || null,
-            budgetMax: flatData.budgetMax || null,
-            preferredTimeframe: flatData.preferredTimeframe || null,
-            preferredMonths: flatData.preferredMonths
-              ? JSON.stringify(flatData.preferredMonths)
-              : null,
-            urgency: flatData.urgency || "flexible",
-            derivedTags: JSON.stringify(derivedTags),
-            priorityScore,
-            priorityTier,
-            estimatedValue,
-            funnelSessionId: existingSubmission!.id,
-            createdAt: nowFormatted,
-            updatedAt: nowFormatted,
-          });
-
-          leadId = newLead.insertId;
-
-          // Create a consultation record linked to the lead
-          const [consultation] = await db.insert(schema.consultations).values({
-            artistId,
-            clientId: null,
-            leadId,
-            subject: flatData.projectType || "New Consultation",
-            description: flatData.projectDescription || "",
-            status: "pending",
-            createdAt: nowFormatted,
-            updatedAt: nowFormatted,
-          });
-
-          // Create a conversation for the lead
-          const [conversation] = await db.insert(schema.conversations).values({
-            artistId,
-            clientId: null,
-            leadId,
-            pinnedConsultationId: consultation.insertId,
-            createdAt: nowFormatted,
-          });
-
-          // Create initial message with funnel summary
-          const summaryMessage = `New consultation request via booking link:
-
-**Project:** ${flatData.projectType || "Not specified"}
-**Description:** ${flatData.projectDescription || "Not provided"}
-**Placement:** ${flatData.placement || "Not specified"}
-**Size:** ${flatData.estimatedSize || "Not specified"}
-**Budget:** ${flatData.budgetLabel || "Not specified"}
-**Timeframe:** ${flatData.preferredTimeframe || "Flexible"}
-**Urgency:** ${flatData.urgency || "Flexible"}
-
-**Contact:**
-- Name: ${flatData.name}
-- Email: ${flatData.email}
-- Phone: ${flatData.phone || "Not provided"}`;
-
-          await db.insert(schema.messages).values({
-            conversationId: conversation.insertId,
-            senderId: artistId, // Use artistId as a workaround if field is not null
-            messageType: "system",
-            content: summaryMessage,
-            createdAt: nowFormatted,
-          });
-        }
-      }
-
-      return {
-        success: true,
-        leadId,
-        derivedTags,
-        priorityScore,
-        priorityTier,
       };
     }),
 
@@ -1573,7 +1480,9 @@ export const funnelRouter = router({
               .max(20, "Enter a phone number of at most 20 characters.")
           ),
         email: z.string().trim().email().max(320),
+        // Both are enforced in the handler so every caller gets the plain message.
         birthdate: z.string().optional(),
+        acceptedTerms: z.boolean().optional(),
         gender: z.enum(["male", "female", "other"]).optional(),
         // Booking details
         description: z.string().min(10),
@@ -1587,6 +1496,16 @@ export const funnelRouter = router({
     )
     .mutation(async ({ input }) =>
       withDatabaseTransaction(async db => {
+        const { calendarDateInTimeZone, isAdult, UNDERAGE_MESSAGE } =
+          await import("../../shared/age");
+        const { TRPCError } = await import("@trpc/server");
+        if (input.acceptedTerms !== true)
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Please agree to the Terms of Service and Privacy Policy to send your request.",
+          });
+        const birthdate = input.birthdate?.trim();
         const jwt = (await import("jsonwebtoken")).default;
         const JWT_SECRET = getAuthSecret();
 
@@ -1600,6 +1519,12 @@ export const funnelRouter = router({
         if (!settings) {
           throw new Error("Artist not found");
         }
+        // "Today" is the date at the artist's studio, not the server's.
+        if (!isAdult(birthdate, calendarDateInTimeZone(settings.timeZone)))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: UNDERAGE_MESSAGE,
+          });
         const artistId = settings.userId;
         const [artist] = await db
           .select({ id: schema.users.id, role: schema.users.role })
@@ -1677,13 +1602,15 @@ export const funnelRouter = router({
           source: "funnel",
           sourceDetails,
           status: "new",
-          clientId: existingUser?.id || null,
+          // Typing an email proves nothing: the lead, consultation and
+          // conversation stay unlinked until auth.claimLead checks the password.
+          clientId: null,
           clientName: fullName,
           clientFirstName: input.firstName,
           clientLastName: input.lastName,
           clientEmail: input.email.toLowerCase(),
           clientPhone: input.phone,
-          clientBirthdate: input.birthdate || null,
+          clientBirthdate: birthdate || null,
           clientGender: input.gender || null,
           projectType: "Tattoo Consultation",
           projectDescription: input.description,
@@ -1711,7 +1638,7 @@ export const funnelRouter = router({
         // 5. Create consultation
         const [consultation] = await db.insert(schema.consultations).values({
           artistId,
-          clientId: existingUser?.id || null,
+          clientId: null,
           leadId,
           subject: `Booking request from ${fullName}`,
           description: input.description,
@@ -1723,7 +1650,7 @@ export const funnelRouter = router({
         // 6. Create conversation
         const [conversation] = await db.insert(schema.conversations).values({
           artistId,
-          clientId: existingUser?.id || null,
+          clientId: null,
           leadId,
           pinnedConsultationId: consultation.insertId,
           createdAt: nowFormatted,
@@ -1747,7 +1674,7 @@ export const funnelRouter = router({
         const summaryText = `New booking request from ${fullName}\n\n${input.description}\nStyle: ${input.styles.join(", ")}\nPlacement: ${input.placement || "To discuss"}\nSize: ${input.size || "To discuss"}\nTimeframe: ${input.timeframe || "Flexible"}`;
         await db.insert(schema.messages).values({
           conversationId,
-          senderId: existingUser?.id || artistId,
+          senderId: artistId,
           messageType: "system",
           content: summaryText,
           createdAt: nowFormatted,
@@ -1759,7 +1686,7 @@ export const funnelRouter = router({
           if (images?.length)
             await db.insert(schema.messages).values({
               conversationId,
-              senderId: existingUser?.id || artistId,
+              senderId: artistId,
               messageType: "system",
               content: JSON.stringify({ type, images, label }),
               createdAt: nowFormatted,

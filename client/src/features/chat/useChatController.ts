@@ -224,9 +224,6 @@ export function useChatController(conversationId: number) {
     setScrollIntent,
   ]);
 
-  const redeemPromotionMutation = trpc.promotions.redeemPromotion.useMutation();
-  const redeemMutationMutateAsync = redeemPromotionMutation.mutateAsync;
-
   const handleClientAcceptProposal = useCallback(
     (
       message: any,
@@ -247,9 +244,10 @@ export function useChatController(conversationId: number) {
         return;
       }
 
-      // We still update the metadata on the server (for discount tracking),
-      // but NOT the status! Status remains "pending" until deposit paid.
-      const dbMetadata = JSON.stringify({
+      // Nothing is sent to the server here: a client cannot change the artist's
+      // proposal, and offers are applied at checkout where the total is verified.
+      // The stored status stays "pending" until the deposit is paid.
+      const shownMetadata = JSON.stringify({
         ...metadata,
         discountApplied: !!appliedPromotion,
         discountAmount: appliedPromotion?.discountAmount,
@@ -264,32 +262,15 @@ export function useChatController(conversationId: number) {
           : undefined,
       });
 
-      updateMetadataMutation.mutate({
-        messageId: message?.id || selectedProposal?.message?.id,
-        metadata: dbMetadata,
-      });
-
       // LOCALLY update the state to "accepted" so the UI immediately shows the deposit flow.
       // If the user exits before paying, it reverts to "pending" next load.
       const localMetadata = JSON.stringify({
-        ...JSON.parse(dbMetadata),
+        ...JSON.parse(shownMetadata),
         status: "accepted",
       });
 
       // No longer calling bookProjectMutation because pending appointments are already created on send!
       // We will only confirm the appointments when the artist verifies the uploaded receipt.
-
-      if (appliedPromotion && metadata?.appointmentIds?.[0]) {
-        try {
-          redeemPromotionMutation.mutateAsync({
-            promotionId: appliedPromotion.id,
-            appointmentId: metadata.appointmentIds[0],
-            originalAmount: (metadata.price || 0) * 100,
-          });
-        } catch (error) {
-          console.error("Failed to redeem:", error);
-        }
-      }
 
       setScrollIntent("AUTO_FOLLOW");
       scrollToBottom("smooth");
@@ -304,9 +285,7 @@ export function useChatController(conversationId: number) {
       conversationId,
       selectedProposal?.message?.id,
       bookProjectMutation.mutate,
-      updateMetadataMutation.mutate,
       sendMessageMutation.mutate,
-      redeemMutationMutateAsync,
       scrollToBottom,
       setScrollIntent,
       setSelectedProposal,

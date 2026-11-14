@@ -189,7 +189,6 @@ The companion practice-action-inventory.json retains the full source baseline fo
 | forms | `getTemplates`, `updateTemplates`, `getPendingForms`, `signForm`, `getProcedureLogs` |
 | funnel | `checkSlugAvailability`, `getDepositInfo`, `createDepositCheckout`, `getBalanceInfo`, `createBalanceCheckout`, `confirmBalance`, `confirmDeposit`, `generateDepositLink`, `getClientDepositLink`, `getArtistBySlug`, `submitFunnel`, `getLead`, `getLeads`, `updateLeadStatus`, `updateFunnelSettings`, `getFunnelSettings`, `uploadPublicImage`, `submitPublicBooking`, `getPaymentRequestInfo`, `createPaymentRequestCheckout` |
 | instagram | `verifyUsername`, `startImport`, `getImportStatus`, `getLatestImport`, `getVideoUrl`, `stopImport` |
-| invitations | `generateInvite`, `acceptInvite` |
 | masterDev | `login`, `overview`, `people`, `person`, `savePerson`, `setAccountEnabled`, `suppliers`, `saveSupplier`, `setSupplierVisible` |
 | merchantAuth | `detectCountry`, `validateAbn`, `validateNzbn`, `getMerchantProfile`, `id`, `userId`, `businessName`, `country`, `abn`, `nzbn`, `contactName`, `phone`, `address`, `integrationType`, `shopifyDomain`, `status`, `verified`, `claimed`, `lowStockThreshold`, `setStorePublished`, `updateProfile`, `getDashboardStats`, `register`, `claimStorefront`, `connectStripe`, `country`, `getMerchantStripeStatus`, `simulateShopifyImport`, `getSyncStatus`, `saveShopifyCredentials`, `triggerShopifySync` |
 | messageTags | `toggle`, `list`, `bulkRemove` |

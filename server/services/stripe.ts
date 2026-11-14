@@ -12,6 +12,14 @@ import { notificationOutbox } from "../../drizzle/schema";
 import { settledBalance } from "../domain/paymentState";
 import { processWebhookOnce } from "./webhookProcessing";
 import { fulfillSessionPlan } from "./sessionPlanFulfillment";
+import {
+  depositLeadUpdate,
+  depositLedgerMetadata,
+  formatCheckoutSittingIds,
+  paidDepositCents,
+  parseCheckoutSittingIds,
+  settleDepositPayment,
+} from "./proposalConfirmation";
 import Stripe from "stripe";
 import { getDb } from "./core";
 import { eq, and } from "drizzle-orm";
@@ -217,6 +225,8 @@ export async function createDepositCheckoutSession(opts: {
   artistName: string;
   depositToken: string;
   messageId?: number;
+  /** Sittings this deposit is priced on; the webhook confirms only these. */
+  appointmentIds?: number[];
   stripeConnectAccountId?: string | null;
   tier: string;
   successUrl?: string;
@@ -251,6 +261,7 @@ export async function createDepositCheckoutSession(opts: {
       leadId: String(opts.leadId),
       depositToken: opts.depositToken,
       messageId: opts.messageId ? String(opts.messageId) : "",
+      appointmentIds: formatCheckoutSittingIds(opts.appointmentIds),
       platformFeeCents: String(opts.platformFeeCents),
       artistFeeCents: String(opts.artistFeeCents),
       baseAmountCents: String(opts.depositAmountCents),
@@ -648,66 +659,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 .toISOString()
                 .slice(0, 19)
                 .replace("T", " ");
-              const nowDate = new Date();
-              await db
-                .update(leads)
-                .set({
-                  depositMethod: "stripe",
-                  depositClaimedAt: now,
-                  depositVerifiedAt: now,
-                  stripeCheckoutSessionId: session.id,
-                  status: "deposit_verified" as any,
-                  updatedAt: now,
-                })
-                .where(eq(leads.id, leadId));
 
-              // Update proposal message status to confirmed automatically
-              if (messageId) {
-                const message = await db.query.messages.findFirst({
-                  where: eq(messages.id, messageId),
-                });
-
-                if (message && message.metadata) {
-                  try {
-                    const meta =
-                      typeof message.metadata === "string"
-                        ? JSON.parse(message.metadata)
-                        : message.metadata;
-
-                    meta.status = "confirmed";
-
-                    await db
-                      .update(messages)
-                      .set({ metadata: JSON.stringify(meta) })
-                      .where(eq(messages.id, messageId));
-
-                    console.log(
-                      `[Stripe] Proposal message ${messageId} confirmed for Lead ${leadId}`
-                    );
-                  } catch (e) {
-                    console.error(
-                      `[Stripe] Failed to update message ${messageId} metadata`,
-                      e
-                    );
-                  }
-                }
-              }
-
-              // Confirm all pending appointments for this conversation
-              const { confirmAppointments } =
-                await import("./appointmentService");
-              try {
-                if (lead.conversationId) {
-                  await confirmAppointments(lead.conversationId);
-                  console.log(
-                    `[Stripe] Confirmed appointments for conversation ${lead.conversationId}`
-                  );
-                }
-              } catch (e) {
-                throw e;
-              }
-
-              // ── Ledger Write (§12) ──
               const platformFeeCents = session.metadata.platformFeeCents
                 ? parseInt(session.metadata.platformFeeCents, 10)
                 : 0;
@@ -720,6 +672,40 @@ export async function handleStripeWebhook(req: Request, res: Response) {
               const connectAccountId =
                 session.metadata.stripeConnectAccountId || null;
 
+              // Confirm only the sittings of the proposal that was paid, and
+              // only if the amount covers them. A payment that does not match
+              // is kept for review, never retried.
+              const settlement = await settleDepositPayment(db, {
+                lead,
+                messageId,
+                paidCents: paidDepositCents({
+                  baseAmountCents,
+                  platformFeeCents,
+                  amountCollectedCents: session.amount_total,
+                }),
+                checkoutSittingIds: parseCheckoutSittingIds(
+                  session.metadata.appointmentIds
+                ),
+                checkoutCreatedAt: session.created,
+                logPrefix: "[Stripe]",
+              });
+              const needsReview = settlement.action === "review";
+
+              // Held for review: the money is recorded as claimed, the
+              // deposit is not verified and the lead waits as deposit_pending.
+              const leadUpdate = depositLeadUpdate({
+                lead,
+                settlement,
+                paymentId: session.id,
+                now,
+              });
+              if (leadUpdate)
+                await db
+                  .update(leads)
+                  .set(leadUpdate)
+                  .where(eq(leads.id, leadId));
+
+              // ── Ledger Write (§12) ──
               await db.insert(paymentLedger).values({
                 bookingId: null, // Deposit is on lead, not yet booked
                 artistId: lead.artistId,
@@ -733,8 +719,15 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 stripeConnectAccountId: connectAccountId,
                 tier: (session.metadata.tier as any) || "free",
                 paymentMethod: "card", // Deposits are always card
+                metadata: depositLedgerMetadata(leadId, settlement),
               });
 
+              if (needsReview) {
+                console.error(
+                  `[Stripe] Deposit for Lead ${leadId} (Session: ${session.id}) recorded for review, nothing confirmed`
+                );
+                break;
+              }
               console.log(
                 `[Stripe] Deposit verified for Lead ${leadId} (Session: ${session.id}), Ledger entry written`
               );
@@ -1242,55 +1235,7 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 .toISOString()
                 .slice(0, 19)
                 .replace("T", " ");
-              const nowDate = new Date();
-              await db
-                .update(leads)
-                .set({
-                  depositMethod: "stripe",
-                  depositClaimedAt: now,
-                  depositVerifiedAt: now,
-                  stripeCheckoutSessionId: pi.id,
-                  status: "deposit_verified" as any,
-                  updatedAt: now,
-                })
-                .where(eq(leads.id, leadId));
 
-              if (messageId) {
-                const message = await db.query.messages.findFirst({
-                  where: eq(messages.id, messageId),
-                });
-                if (message && message.metadata) {
-                  try {
-                    const meta =
-                      typeof message.metadata === "string"
-                        ? JSON.parse(message.metadata)
-                        : message.metadata;
-                    meta.status = "confirmed";
-                    await db
-                      .update(messages)
-                      .set({ metadata: JSON.stringify(meta) })
-                      .where(eq(messages.id, messageId));
-                  } catch (e) {
-                    console.error(
-                      `[Stripe PI] Failed to update message ${messageId}`,
-                      e
-                    );
-                  }
-                }
-              }
-
-              // Confirm appointments
-              const { confirmAppointments } =
-                await import("./appointmentService");
-              try {
-                if (lead.conversationId) {
-                  await confirmAppointments(lead.conversationId);
-                }
-              } catch (e) {
-                throw e;
-              }
-
-              // Ledger write
               const platformFeeCents = piMeta.platformFeeCents
                 ? parseInt(piMeta.platformFeeCents, 10)
                 : 0;
@@ -1302,6 +1247,40 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 : lead.depositAmount || 0;
               const connectAccountId = piMeta.stripeConnectAccountId || null;
 
+              // Confirm only the sittings of the proposal that was paid, and
+              // only if the amount covers them. A payment that does not match
+              // is kept for review, never retried.
+              const settlement = await settleDepositPayment(db, {
+                lead,
+                messageId,
+                paidCents: paidDepositCents({
+                  baseAmountCents,
+                  platformFeeCents,
+                  amountCollectedCents: pi.amount_received,
+                }),
+                checkoutSittingIds: parseCheckoutSittingIds(
+                  piMeta.appointmentIds
+                ),
+                checkoutCreatedAt: pi.created,
+                logPrefix: "[Stripe PI]",
+              });
+              const needsReview = settlement.action === "review";
+
+              // Held for review: the money is recorded as claimed, the
+              // deposit is not verified and the lead waits as deposit_pending.
+              const leadUpdate = depositLeadUpdate({
+                lead,
+                settlement,
+                paymentId: pi.id,
+                now,
+              });
+              if (leadUpdate)
+                await db
+                  .update(leads)
+                  .set(leadUpdate)
+                  .where(eq(leads.id, leadId));
+
+              // Ledger write
               await db.insert(paymentLedger).values({
                 bookingId: null,
                 artistId: lead.artistId,
@@ -1314,8 +1293,15 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 stripeConnectAccountId: connectAccountId,
                 tier: (piMeta.tier as any) || "free",
                 paymentMethod: "card",
+                metadata: depositLedgerMetadata(leadId, settlement),
               });
 
+              if (needsReview) {
+                console.error(
+                  `[Stripe PI] Deposit for Lead ${leadId} (${pi.id}) recorded for review, nothing confirmed`
+                );
+                break;
+              }
               console.log(`[Stripe PI] Deposit verified for Lead ${leadId}`);
             }
             break;

@@ -281,7 +281,10 @@ export default function Consultations() {
               <SelectContent>
                 {artists.map(artist => (
                   <SelectItem key={artist.id} value={artist.id}>
-                    {artist.name || artist.email}
+                    {artist.displayName ||
+                      artist.businessName ||
+                      artist.name ||
+                      "Artist"}
                     {artist.instagramUsername &&
                       ` (@${artist.instagramUsername})`}
                   </SelectItem>

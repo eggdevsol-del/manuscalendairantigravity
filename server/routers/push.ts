@@ -78,16 +78,16 @@ export const pushRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // A test push only ever goes to the caller's own devices.
+      if (input.targetUserId && input.targetUserId !== ctx.user.id) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Test notifications can only be sent to your own devices.",
+        });
+      }
       try {
-        // Allow admin and artist to target other users
-        const targetId =
-          (ctx.user.role === "admin" || ctx.user.role === "artist") &&
-          input.targetUserId
-            ? input.targetUserId
-            : ctx.user.id;
-
         const result = await pushService.sendTestPush(
-          targetId,
+          ctx.user.id,
           input.title,
           input.body
         );

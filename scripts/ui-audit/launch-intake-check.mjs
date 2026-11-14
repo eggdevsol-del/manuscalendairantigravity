@@ -78,7 +78,13 @@ for (let step = 1; step <= 5; step++) {
     await page.getByLabel("Email", { exact: true }).fill("mia@example.test");
     await page.getByLabel("Phone", { exact: true }).fill("0400000000");
     await page.getByLabel("Date of birth").fill("1995-02-03");
-    await page.getByLabel("Gender", { exact: true }).selectOption("female");
+    // Gender is optional: leave it unanswered.
+    if (
+      (await page
+        .getByLabel("Gender (optional)", { exact: true })
+        .getAttribute("required")) !== null
+    )
+      throw Error("Gender is still required");
   }
   await page.screenshot({ path: `${out}/client-intake-step-${step}.png` });
   await page.getByRole("button", { name: "Continue", exact: true }).click();
@@ -86,11 +92,19 @@ for (let step = 1; step <= 5; step++) {
 await page.getByText("Review your request", { exact: true }).waitFor();
 await page.screenshot({ path: `${out}/client-intake-review.png` });
 await page
+  .getByRole("checkbox", {
+    name: "I agree to the Terms of Service and Privacy Policy",
+    exact: true,
+  })
+  .check();
+await page
   .getByRole("button", { name: "Send booking request", exact: true })
   .click();
 await page.getByLabel("Create password", { exact: true }).waitFor();
 if (!JSON.stringify(submittedInput).includes("Within 3 months"))
   throw Error("Timeframe lost in submission");
+if (!JSON.stringify(submittedInput).includes('"acceptedTerms":true'))
+  throw Error("Consent not sent with the request");
 if (errors.length) throw Error(errors.join(";"));
 await page.screenshot({ path: `${out}/client-intake-sent.png` });
 console.log(

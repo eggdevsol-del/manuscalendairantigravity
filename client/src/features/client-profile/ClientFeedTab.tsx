@@ -578,13 +578,12 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
       const name      = (artist.name          || "").toLowerCase();
       const dispName  = (artist.displayName   || "").toLowerCase();
       const bizName   = (artist.businessName  || "").toLowerCase();
-      const email     = (artist.email         || "").toLowerCase();
       const q         = searchQuery.trim().toLowerCase();
 
       const matchesFilter = activeFilter === "All" || keywords.includes(activeFilter.toLowerCase());
       const matchesSearch = !q ||
         name.includes(q) || dispName.includes(q) ||
-        bizName.includes(q) || email.includes(q) || keywords.includes(q);
+        bizName.includes(q) || keywords.includes(q);
 
       return matchesFilter && matchesSearch;
     });

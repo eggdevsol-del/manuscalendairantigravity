@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { artistProcedure, publicProcedure, router } from "../_core/trpc";
 import * as db from "../db";
@@ -32,7 +33,11 @@ export const policiesRouter = router({
         ...dbInput,
       } as any);
     }),
-  delete: artistProcedure.input(z.number()).mutation(async ({ input }) => {
+  delete: artistProcedure.input(z.number()).mutation(async ({ ctx, input }) => {
+    const owned = await db.getPolicies(ctx.user.id);
+    if (!owned.some(policy => policy.id === input)) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Policy not found." });
+    }
     return db.deletePolicy(input);
   }),
 });

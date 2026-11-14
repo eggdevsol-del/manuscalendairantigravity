@@ -155,35 +155,9 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
         preparation: "Sent before appointment with preparation info",
     };
 
-    // Client selection state for push test
-    const [pushDialog, setPushDialog] = useState<{
-        isOpen: boolean;
-        template: any | null;
-    }>({
-        isOpen: false,
-        template: null,
-    });
-
-    const { data: clients } = trpc.conversations.getClients.useQuery(undefined, {
-        enabled: !!user && (user.role === "artist" || user.role === "admin"),
-    });
-
-    const handleTestClick = (template: any) => {
-        setPushDialog({ isOpen: true, template });
-    };
-
-    const handleSendPushToClient = async (clientId: string) => {
-        if (!pushDialog.template) return;
-
-        await sendTestPush({
-            targetUserId: clientId,
-            title: pushDialog.template.title,
-            body: pushDialog.template.content,
-        });
-
-        // Don't close immediately if you want to send to multiple, but typically we close
-        // setPushDialog({ isOpen: false, template: null });
-    };
+    // A template preview only ever goes to the artist's own devices.
+    const handleTestClick = (template: any) =>
+      sendTestPush({ title: template.title, body: template.content });
 
     // ── Automation Settings ──
     const { data: artistSettings } = trpc.artistSettings.get.useQuery(undefined, {
@@ -458,7 +432,8 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                                                 onClick={() => handleTestClick(template)}
                                                 disabled={isTesting}
                                                 className="tap-target h-10 w-10 text-primary hover:bg-secondary/50 rounded-none rounded-l-lg border-r border-border"
-                                                title="Send Test Push"
+                                                title="Send a test to my own devices"
+                        aria-label="Send a test of this notification to my own devices"
                                             >
                                                 <Send className="w-4 h-4" />
                                             </Button>
@@ -612,61 +587,6 @@ export function NotificationSettings({ onBack }: NotificationSettingsProps) {
                             }
                         />
                     </div>
-                </div>
-            </ModalShell>
-
-            {/* Push Target Selection Dialog */}
-            <ModalShell
-                isOpen={pushDialog.isOpen}
-                onClose={() => setPushDialog({ isOpen: false, template: null })}
-                title="Send Test Push"
-                description="Select a client to send this notification to"
-                className="max-w-md max-h-[80dvh] overflow-y-auto"
-                overlayName="Push Target Selection"
-                overlayId="notifications.push_target"
-            >
-                <div className="py-4 space-y-2">
-                    <Button
-                        variant="outline"
-                        className="w-full justify-start font-normal h-auto py-3 bg-secondary/50 border-border hover:bg-secondary/50"
-                        onClick={() => handleSendPushToClient(user?.id || "")}
-                    >
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="font-medium text-foreground">Myself (Artist)</span>
-                            <span className="text-xs text-muted-foreground">
-                                Test on this device
-                            </span>
-                        </div>
-                    </Button>
-
-                    <div className="h-px bg-secondary/50 my-4" />
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 px-1">
-                        My Clients
-                    </p>
-
-                    {!clients?.length ? (
-                        <p className="text-sm text-muted-foreground px-1">No clients found.</p>
-                    ) : (
-                        <div className="space-y-2">
-                            {clients.map(client => client && (
-                                <Button
-                                    key={client.id}
-                                    variant="ghost"
-                                    className="w-full justify-start h-auto py-3 px-4 bg-secondary/50 hover:bg-secondary/50 border border-transparent hover:border-border transition-all"
-                                    onClick={() => handleSendPushToClient(client.id)}
-                                >
-                                    <div className="flex-1 text-left">
-                                        <div className="flex items-center justify-between">
-                                            <div className="font-medium text-foreground">{client.name}</div>
-                                        </div>
-                                        <div className="text-xs text-muted-foreground mt-0.5">
-                                            {client.email}
-                                        </div>
-                                    </div>
-                                </Button>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </ModalShell>
         </div >

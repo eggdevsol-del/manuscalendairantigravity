@@ -1,9 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { and, eq, or, sql, lt, gt, ne, inArray } from "drizzle-orm";
 import { z } from "zod";
 import * as schema from "../../drizzle/schema";
 import { getDb, withDatabaseTransaction } from "./core";
 import { generateRequiredForms } from "./appointmentService";
+import { getClientRelationships } from "./userService";
 import {
   importLocalTime,
   importedPayment,
@@ -18,6 +19,13 @@ import {
 import { localToUTC, getBusinessTimezone } from "../../shared/utils/timezone";
 const mysql = (value: string | Date) =>
   new Date(value).toISOString().slice(0, 19).replace("T", " ");
+/**
+ * Id of the artist's note that keeps an imported email the client record
+ * itself could not carry. One per artist and address, so it doubles as the
+ * key for finding that record on a later import.
+ */
+export const importedEmailNoteId = (artistId: string, email: string) =>
+  `imp_email_${createHash("sha256").update(`${artistId}\n${email}`).digest("hex")}`;
 export async function processImport(
   artistId: string,
   raw: ImportInput,
@@ -152,25 +160,69 @@ export async function processImport(
               ]
             : []),
         ];
+        // Email is not unique across accounts, so look at every match.
         const candidates = await db
-          .select({ id: schema.users.id, role: schema.users.role })
+          .select({ id: schema.users.id, email: schema.users.email })
           .from(schema.users)
           .where(or(...conditions))
-          .limit(3);
-        if (candidates.length > 1)
+          .limit(20);
+        // Typing someone's email or phone into a file is not a relationship.
+        // Only a record this artist already works with is reused; any other
+        // match is treated exactly like a stranger, so the result never says
+        // whether an account exists.
+        const { related } = await getClientRelationships(
+          db,
+          artistId,
+          candidates.map(c => c.id)
+        );
+        const known = candidates.filter(c => related.has(c.id));
+        if (known.length > 1)
           return {
             ...base,
             status: "conflict",
             detail:
-              "Email and phone match multiple accounts. Resolve the contact before importing.",
+              "Email and phone match more than one of your clients. Resolve the contact before importing.",
           };
-        const existing = candidates[0];
-        if (existing && existing.role !== "client")
-          return {
-            ...base,
-            status: "conflict",
-            detail: "This contact cannot be imported as a client.",
-          };
+        let existing: { id: string } | undefined = known[0];
+        // Sign-in, password reset and claiming a record all find a person by
+        // users.email, so a new record must not repeat an address any other
+        // record holds: a full account or another artist's unclaimed client.
+        // The address is kept in this artist's own note on the new record
+        // instead, under an id built from artist + email. That id is how a
+        // later import finds the same person again, whatever name or phone
+        // the row has by then.
+        //
+        // Known limit: the artist can still tell the two cases apart, because
+        // the record's email field is empty when the address was already
+        // held. That is no more than auth.checkEmailExists tells anyone.
+        const emailTaken =
+          !!email &&
+          !existing &&
+          candidates.some(c => normalEmail(c.email || "") === email);
+        const emailNoteId = emailTaken
+          ? importedEmailNoteId(artistId, email)
+          : null;
+        let moveNote = false;
+        if (emailNoteId) {
+          const [note] = await db
+            .select({ clientId: schema.clientNotes.clientId })
+            .from(schema.clientNotes)
+            .where(
+              and(
+                eq(schema.clientNotes.id, emailNoteId),
+                eq(schema.clientNotes.artistId, artistId)
+              )
+            )
+            .limit(1);
+          if (note) {
+            const mine = await getClientRelationships(db, artistId, [
+              note.clientId,
+            ]);
+            if (mine.related.has(note.clientId))
+              existing = { id: note.clientId };
+            else moveNote = true;
+          }
+        }
         const conversation = existing
           ? await db.query.conversations.findFirst({
               where: and(
@@ -235,7 +287,7 @@ export async function processImport(
             status: existing ? "matched" : "new",
             detail:
               (existing
-                ? "Existing client account matched; profile will not be overwritten."
+                ? "Already one of your clients; their profile will not be overwritten."
                 : "New client will be created.") +
               payNote +
               replaceNote,
@@ -255,11 +307,28 @@ export async function processImport(
           await db.insert(schema.users).values({
             id: clientId,
             name: row.name,
-            email: email || null,
+            email: emailTaken ? null : email || null,
             phone: phone || null,
             role: "client",
             loginMethod: "imported",
           });
+        if (!existing && emailNoteId) {
+          const note = `Email from import: ${email}`;
+          if (moveNote)
+            await db
+              .update(schema.clientNotes)
+              .set({ clientId, note })
+              .where(
+                and(
+                  eq(schema.clientNotes.id, emailNoteId),
+                  eq(schema.clientNotes.artistId, artistId)
+                )
+              );
+          else
+            await db
+              .insert(schema.clientNotes)
+              .values({ id: emailNoteId, artistId, clientId, note });
+        }
         let conversationId = conversation?.id;
         if (!conversationId) {
           const [created] = await db

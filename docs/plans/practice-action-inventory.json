@@ -1398,24 +1398,6 @@
       "coverage": "isolated-mock-adapter"
     },
     {
-      "source": "server/routers/invitations.ts",
-      "line": 10,
-      "router": "invitations",
-      "action": "generateInvite",
-      "procedure": "protectedProcedure",
-      "kind": "mutation",
-      "coverage": "not-in-current-artist-screen-graph"
-    },
-    {
-      "source": "server/routers/invitations.ts",
-      "line": 58,
-      "router": "invitations",
-      "action": "acceptInvite",
-      "procedure": "protectedProcedure",
-      "kind": "mutation",
-      "coverage": "not-in-current-artist-screen-graph"
-    },
-    {
       "source": "server/routers/masterDev.ts",
       "line": 77,
       "router": "masterDev",
@@ -4504,17 +4486,6 @@
         }
       ],
       "coverage": "isolated-mock-adapter"
-    },
-    {
-      "id": "promotions.redeemPromotion",
-      "locations": [
-        {
-          "source": "client/src/features/chat/useChatController.ts",
-          "line": 227,
-          "kind": "mutation"
-        }
-      ],
-      "coverage": "client-counterpart-simulated-in-workflow"
     },
     {
       "id": "policies.getByType",

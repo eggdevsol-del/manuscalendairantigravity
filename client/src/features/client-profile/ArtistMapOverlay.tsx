@@ -8,7 +8,7 @@ import { TourHelp } from "@/components/tooltip-tour/TourHelp";
  * - "Search this area" re-filters by map bounds
  * - Tap backdrop closes artist popup
  * - Artist card sits above bottom nav (pb-[77px] safe area)
- * - Search filters by name, displayName, businessName, email, keywords
+ * - Search filters by name, displayName, businessName, keywords
  * - Legend + My Artists vs Discovery pin colours
  */
 
@@ -235,7 +235,6 @@ export function ArtistMapOverlay({
       const name = (artist.name || "").toLowerCase();
       const dispName = (artist.displayName || "").toLowerCase();
       const bizName = (artist.businessName || "").toLowerCase();
-      const email = (artist.email || "").toLowerCase();
       const q = searchText.trim().toLowerCase();
 
       const matchesSearch =
@@ -243,7 +242,6 @@ export function ArtistMapOverlay({
         name.includes(q) ||
         dispName.includes(q) ||
         bizName.includes(q) ||
-        email.includes(q) ||
         keywords.includes(q);
 
       const matchesStyle =

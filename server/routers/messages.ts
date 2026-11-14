@@ -14,6 +14,80 @@ import * as db from "../db";
 import { notificationOutbox, appointments } from "../../drizzle/schema";
 import { and, eq, gt, ne } from "drizzle-orm";
 
+const CLIENT_MESSAGE_TYPES = ["text", "image"];
+// A proposal is open until it is confirmed, declined or revoked.
+const OPEN_PROPOSAL_STATUSES = ["pending", "accepted", "remittance_uploaded"];
+
+function parseMetadata(raw: string | null | undefined): Record<string, any> {
+  try {
+    const parsed = JSON.parse(raw || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+// The only metadata a client may attach to a message of their own: a
+// confirmation of dates the artist proposed. The service name and price are
+// copied from the artist's proposal, never from the client, because the artist
+// books from this message.
+async function clientMessageMetadata(
+  raw: string | undefined,
+  conversationId: number,
+  artistId: string
+) {
+  if (raw === undefined) return undefined;
+  const meta = parseMetadata(raw);
+  const forbidden = new TRPCError({
+    code: "FORBIDDEN",
+    message: "This message cannot carry that information.",
+  });
+  if (
+    meta.type !== "project_client_confirmation" ||
+    !Number.isInteger(meta.originalMessageId) ||
+    !Array.isArray(meta.confirmedDates) ||
+    meta.confirmedDates.length === 0 ||
+    // The artist books one sitting per confirmed date.
+    new Set(meta.confirmedDates).size !== meta.confirmedDates.length
+  )
+    throw forbidden;
+  const original = await db.getMessageById(meta.originalMessageId);
+  if (
+    !original ||
+    original.conversationId !== conversationId ||
+    original.senderId !== artistId ||
+    original.messageType !== "appointment_request"
+  )
+    throw forbidden;
+  const proposal = parseMetadata(original.metadata);
+  if (!OPEN_PROPOSAL_STATUSES.includes(proposal.status)) throw forbidden;
+  const offered: unknown[] = [
+    ...(Array.isArray(proposal.dates) ? proposal.dates : []),
+    ...(Array.isArray(proposal.proposedDates) ? proposal.proposedDates : []),
+  ];
+  if (!meta.confirmedDates.every((date: unknown) => offered.includes(date)))
+    throw forbidden;
+  return JSON.stringify({
+    type: "project_client_confirmation",
+    confirmedDates: meta.confirmedDates,
+    originalMessageId: original.id,
+    serviceName: proposal.serviceName,
+    price: proposal.price,
+  });
+}
+
+// Uploaded receipts are stored by our own upload endpoint; anything else
+// (javascript:, data:) must not reach the artist's "tap to view" link.
+function isReceiptUrl(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.length <= 2048 &&
+    (/^https?:\/\//i.test(value) || /^\/(?!\/)/.test(value))
+  );
+}
+
 export const messagesRouter = router({
   references: protectedProcedure
     .input(z.object({ conversationId: z.number().int().positive() }))
@@ -125,6 +199,22 @@ export const messagesRouter = router({
           });
         }
 
+        // Proposals create appointments with a price and deposit, and system
+        // types render as payment or confirmation cards, so only the artist
+        // may send them. A client sends plain text and images.
+        if (ctx.user.id !== conversation.artistId) {
+          if (!CLIENT_MESSAGE_TYPES.includes(input.messageType))
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Only the artist can send this kind of message.",
+            });
+          input.metadata = await clientMessageMetadata(
+            input.metadata,
+            input.conversationId,
+            conversation.artistId
+          );
+        }
+
         // Handle project proposals: Inject pending appointments immediately
         if (input.messageType === "appointment_request") {
           let metaObj: any = null;
@@ -139,23 +229,22 @@ export const messagesRouter = router({
             metaObj.dates.length > 0
           ) {
             // --- BEGIN VALIDATION ---
-            // An artist proposing dates is booking them; a client asking for dates is not.
-            if (ctx.user.id === conversation.artistId)
-              requireHoursConfirmed(
-                await db.getArtistSettings(conversation.artistId),
-                metaObj.dates.map((dateStr: string, i: number) => {
-                  const start = new Date(dateStr);
-                  return {
-                    start,
-                    end: new Date(
-                      +start + (metaObj.serviceDuration || 60) * 60000
-                    ),
-                    sessionIndex: i + 1,
-                  };
-                }),
-                input.confirmedOutsideHours,
-                typeof metaObj.timeZone === "string" ? metaObj.timeZone : null
-              );
+            // Only the artist reaches this branch, and proposing dates books them.
+            requireHoursConfirmed(
+              await db.getArtistSettings(conversation.artistId),
+              metaObj.dates.map((dateStr: string, i: number) => {
+                const start = new Date(dateStr);
+                return {
+                  start,
+                  end: new Date(
+                    +start + (metaObj.serviceDuration || 60) * 60000
+                  ),
+                  sessionIndex: i + 1,
+                };
+              }),
+              input.confirmedOutsideHours,
+              typeof metaObj.timeZone === "string" ? metaObj.timeZone : null
+            );
             const searchStart = new Date();
             searchStart.setHours(0, 0, 0, 0);
 
@@ -413,8 +502,74 @@ export const messagesRouter = router({
         });
       }
 
-      // Update the message metadata
-      await db.updateMessageMetadata(input.messageId, input.metadata);
+      if (conversation.artistId === ctx.user.id) {
+        await db.updateMessageMetadata(input.messageId, input.metadata);
+        return { success: true };
+      }
+
+      if (message.senderId === ctx.user.id) {
+        // A client's own message can only be re-confirmed as the date
+        // confirmation it already is; plain text never becomes a card.
+        if (
+          parseMetadata(message.metadata).type !== "project_client_confirmation"
+        )
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Not authorized to update this message",
+          });
+        const own = await clientMessageMetadata(
+          input.metadata,
+          message.conversationId,
+          conversation.artistId
+        );
+        await db.updateMessageMetadata(input.messageId, own!);
+        return { success: true };
+      }
+
+      // A client looking at the artist's proposal. The client UI sends the
+      // whole metadata object back, so nothing in it is trusted: the stored
+      // proposal is kept as is, and the one change a client may make is to
+      // attach a bank transfer receipt while the proposal awaits its deposit.
+      if (
+        message.senderId !== conversation.artistId ||
+        message.messageType !== "appointment_request"
+      )
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to update this message",
+        });
+      const requested = parseMetadata(input.metadata);
+      if (requested.status !== "remittance_uploaded") return { success: true };
+      if (!isReceiptUrl(requested.receiptUrl))
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "A receipt cannot be added to this proposal.",
+        });
+      // The row is locked so a deposit confirmed at the same moment (card
+      // payment or the artist) is seen here and never put back to unpaid.
+      await withDatabaseTransaction(async tx => {
+        const [locked] = await tx
+          .select({ metadata: messages.metadata })
+          .from(messages)
+          .where(eq(messages.id, input.messageId))
+          .for("update");
+        const current = parseMetadata(locked?.metadata);
+        if (!locked || !OPEN_PROPOSAL_STATUSES.includes(current.status))
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "A receipt cannot be added to this proposal.",
+          });
+        await tx
+          .update(messages)
+          .set({
+            metadata: JSON.stringify({
+              ...current,
+              status: "remittance_uploaded",
+              receiptUrl: requested.receiptUrl,
+            }),
+          })
+          .where(eq(messages.id, input.messageId));
+      });
 
       return { success: true };
     }),

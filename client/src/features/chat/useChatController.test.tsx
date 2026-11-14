@@ -30,11 +30,6 @@ vi.mock("@/lib/trpc", () => ({
     consultations: {
       list: { useQuery: vi.fn() },
     },
-    promotions: {
-      redeemPromotion: {
-        useMutation: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
-      },
-    },
     appointments: {
       deleteProposal: {
         useMutation: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
@@ -189,5 +184,53 @@ describe("useChatController", () => {
         messageType: "text",
       })
     );
+  });
+
+  it("accepting a proposal shows the deposit step without writing to the server", () => {
+    const updateMetadata = vi.fn();
+    const send = vi.fn();
+    (trpc.messages.updateMetadata.useMutation as any).mockReturnValue({
+      mutate: updateMetadata,
+    });
+    (trpc.messages.send.useMutation as any).mockReturnValue({ mutate: send });
+    (useAuth as any).mockReturnValue({
+      user: { id: "client-1", role: "client" },
+      loading: false,
+    });
+    const { result } = renderHook(() => useChatController(1));
+    const message = { id: 7, conversationId: 1 };
+    const metadata = {
+      type: "project_proposal",
+      status: "pending",
+      dates: ["2026-12-01T10:00:00.000Z"],
+      price: 400,
+      appointmentIds: [31],
+    };
+    act(() => result.current.handleViewProposal(message, metadata));
+    act(() =>
+      result.current.handleClientAcceptProposal(message, {
+        id: 5,
+        discountAmount: 50,
+        finalAmount: 350,
+      })
+    );
+
+    // A client cannot change the artist's proposal, and the old redeem call
+    // always failed: neither is attempted (the promotions router is not mocked).
+    expect(updateMetadata).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+    // What the client sees is unchanged.
+    expect(result.current.selectedProposal).toEqual({
+      message,
+      metadata: {
+        ...metadata,
+        status: "accepted",
+        discountApplied: true,
+        discountAmount: 50,
+        finalAmount: 350,
+        promotionName: "Promotion",
+        appliedPromotion: { id: 5, discountAmount: 50, finalAmount: 350 },
+      },
+    });
   });
 });

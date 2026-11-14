@@ -14,6 +14,10 @@ import {
 } from "../../drizzle/schema";
 import { eq, desc, and, gte } from "drizzle-orm";
 import { z } from "zod";
+import {
+  getClientRelationships,
+  hasClientRelationship,
+} from "../services/userService";
 
 async function requireProfileTarget(
   user: { id: string; role: string },
@@ -26,13 +30,9 @@ async function requireProfileTarget(
   }
   const database = await db.getDb();
   if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-  const relation = await database.query.conversations.findFirst({
-    where: and(
-      eq(conversations.artistId, user.id),
-      eq(conversations.clientId, targetId)
-    ),
-  });
-  if (!relation)
+  // A conversation row alone proves nothing, and only clients have a client
+  // profile: see getClientRelationships.
+  if (!(await hasClientRelationship(database, user.id, targetId)))
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "This client is not connected to your account.",
@@ -441,7 +441,7 @@ export const clientProfileRouter = router({
     .input(
       z.object({
         clientId: z.string(),
-        name: z.string().min(1),
+        name: z.string().trim().min(1),
         phone: z.string().optional().or(z.literal("")),
       })
     )
@@ -456,28 +456,42 @@ export const clientProfileRouter = router({
       const database = await db.getDb();
       if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-      // Verify relationship
-      const { conversations } = await import("../../drizzle/schema");
-      const conv = await database.query.conversations.findFirst({
-        where: and(
-          eq(conversations.artistId, ctx.user.id),
-          eq(conversations.clientId, input.clientId)
-        ),
-      });
-
-      if (!conv && ctx.user.role !== "admin") {
+      const { related, unclaimed } = await getClientRelationships(
+        database,
+        ctx.user.id,
+        [input.clientId]
+      );
+      if (!related.has(input.clientId)) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You don't have permission to modify this client.",
         });
       }
 
+      const name = input.name.trim();
+      // Phone left out means "leave it alone"; an empty string clears it.
+      const phone =
+        input.phone === undefined ? undefined : input.phone.trim() || null;
+
+      // Once a client has signed in, the account is theirs: an artist must
+      // not rename it or move the number their booking texts go to.
+      if (!unclaimed.has(input.clientId)) {
+        const current = await db.getUser(input.clientId);
+        const unchanged =
+          !!current &&
+          (current.name || "").trim() === name &&
+          (phone === undefined || (current.phone || null) === phone);
+        if (unchanged) return { success: true };
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message:
+            "This client has their own account, so only they can change their name and phone number.",
+        });
+      }
+
       await database
         .update(users)
-        .set({
-          name: input.name,
-          phone: input.phone || null,
-        })
+        .set({ name, ...(phone === undefined ? {} : { phone }) })
         .where(eq(users.id, input.clientId));
 
       return { success: true };
