@@ -54,6 +54,8 @@
     -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Approximate only: sorts artists by distance when the client picks that option. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Lets the web view's file chooser find the system camera app (see above). No permission involved. -->
     <queries>

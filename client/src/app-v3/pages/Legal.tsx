@@ -82,6 +82,10 @@ export function PrivacyPolicy() {
             <b>Device information:</b> push notification tokens, app version and
             error reports, used to deliver notifications and fix faults.
           </li>
+          <li>
+            <b>Approximate location:</b> only if you choose to sort artists by
+            distance and allow it. It is used for that search and not stored.
+          </li>
         </ul>
       </Section>
       <Section title="How we use it">

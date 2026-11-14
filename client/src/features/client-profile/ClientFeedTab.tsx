@@ -543,7 +543,9 @@ export function ClientFeedTab({ conversations, setIsShopExpanded }: ClientFeedTa
         (error) => {
           toast.error("Location access denied. Distance sorting disabled.");
           setSortBy("all");
-        }
+        },
+        // Approximate is enough to sort by distance, and all the apps ask for.
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
       );
     }
   }, [sortBy, coords]);
