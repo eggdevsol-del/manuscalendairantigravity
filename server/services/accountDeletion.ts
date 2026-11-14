@@ -172,7 +172,7 @@ const plural = (n: number, one: string, many: string) =>
  * unpaidBalances counts a client's pending payment request with no expiry until the artist cancels it.
  */
 export function deletionBlockers(summary: DeletionSummary): DeletionBlocker[] {
-  // TODO(human): decide which of these should block deletion and which should auto-cancel
+  // Every open commitment blocks deletion; nothing is cancelled on the person's behalf.
   const artist = summary.role === "artist";
   const blockers: DeletionBlocker[] = [];
   if (summary.upcomingConfirmedSittings > 0)
