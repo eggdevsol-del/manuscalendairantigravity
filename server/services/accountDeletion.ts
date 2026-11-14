@@ -57,6 +57,8 @@
  * | dashboard_settings, funnel_sessions, payment_method_settings, instagram_imports,                  |
  * | artist_practice_sessions, offer_preferences, offer_sms_challenges, studio_members                 |
  * |                            | DELETE: purely the person's own                                        |
+ * | user_blocks                | DELETE: their own blocks, and blocks against an account now unusable   |
+ * | user_reports               | KEEP: safety evidence; its user links are SET NULL                     |
  */
 import { and, eq, gt, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import type { MySqlTable } from "drizzle-orm/mysql-core";
@@ -72,6 +74,7 @@ type Database = MySql2Database<typeof schema>;
 
 /** The table above in a form the tests can hold the schema and the code to. */
 export const KEPT_TABLES: MySqlTable[] = [
+  schema.userReports,
   schema.appointments,
   schema.appointmentLogs,
   schema.consentForms,
@@ -135,6 +138,7 @@ export const DELETED_TABLES: MySqlTable[] = [
   schema.instagramImports,
   schema.artistPracticeSessions,
   schema.offerPreferences,
+  schema.userBlocks,
   schema.offerSmsChallenges,
   schema.studioMembers,
 ];
@@ -441,6 +445,9 @@ async function erase(db: Database, user: { id: string; role: string }) {
     .delete(s.quickActionButtons)
     .where(eq(s.quickActionButtons.userId, id));
   await db.delete(s.offerPreferences).where(eq(s.offerPreferences.userId, id));
+  await db
+    .delete(s.userBlocks)
+    .where(or(eq(s.userBlocks.blockerId, id), eq(s.userBlocks.blockedId, id)));
   await db
     .delete(s.offerSmsChallenges)
     .where(eq(s.offerSmsChallenges.userId, id));

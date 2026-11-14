@@ -15,6 +15,9 @@ import {
 } from "../../../../shared/projectSchedule";
 import { nextProjectSitting } from "../data/projectProgress";
 import { DetailsSheet } from "../components/DetailsSheet";
+import { ReportDialog, type ReportTarget } from "../components/ReportDialog";
+import "../components/report-dialog.css";
+import { MESSAGING_BLOCKED } from "@shared/safety";
 import { EditBookingModal } from "@/components/modals/EditBookingModal";
 import { ConversationContext } from "../design/ConversationContext";
 import { ClientPromotion } from "../components/ClientPromotion";
@@ -28,6 +31,8 @@ import {
   ArrowLeft,
   MoreHorizontal,
   Gift,
+  Flag,
+  Ban,
 } from "lucide-react";
 import { useChatController } from "@/features/chat/useChatController";
 import { BookingWizardContent } from "@/features/booking/BookingWizardContent";
@@ -188,7 +193,29 @@ export function Thread({
       setLoadingEdit(false);
     }
   }
-  const hasConversationActions = c.isArtist;
+  // Everyone can report and block; the booking tools above them are the artist's.
+  const hasConversationActions = !!c.conversation;
+  const safety = trpc.safety.conversationStatus.useQuery(
+    { conversationId: id },
+    { enabled: id > 0 && !!c.user }
+  );
+  const blockedByMe = !!safety.data?.blockedByMe;
+  const messagingBlocked = !!safety.data?.messagingBlocked;
+  // What the open report sheet is about: the whole conversation or one message.
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  // Messages from someone you blocked are folded away until you ask to see them.
+  const [showBlocked, setShowBlocked] = useState(false);
+  const [confirmBlock, setConfirmBlock] = useState(false);
+  const afterBlockChange = () => {
+    setConfirmBlock(false);
+    setContextOpen(false);
+    void safety.refetch();
+  };
+  const block = trpc.safety.block.useMutation({ onSuccess: afterBlockChange });
+  const unblock = trpc.safety.unblock.useMutation({
+    onSuccess: afterBlockChange,
+  });
+  const sendError = c.sendMessageMutation.error;
   const sharedMedia = conversationMedia(c.messages || []);
   const file = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
@@ -228,7 +255,12 @@ export function Thread({
             <button
               className="v3-icon-button"
               aria-label="Conversation tools"
-              onClick={() => setContextOpen(true)}
+              onClick={() => {
+                setConfirmBlock(false);
+                block.reset();
+                unblock.reset();
+                setContextOpen(true);
+              }}
             >
               <MoreHorizontal />
             </button>
@@ -317,6 +349,10 @@ export function Thread({
                   ? message.content
                   : messageText(message.content);
               let body;
+              // Words and photos the person wrote themselves, as opposed to
+              // booking and payment cards. Only these can be reported one by
+              // one, and only these are folded away after a block.
+              let written = false;
               if (metadata.type === "reschedule_request")
                 body = (
                   <RescheduleRequestCard
@@ -382,7 +418,8 @@ export function Thread({
                     </ActionLink>
                   </Panel>
                 );
-              else if (urls.length)
+              else if (urls.length) {
+                written = true;
                 body = (
                   <div className="v3-message-images">
                     {urls.map((url, i) => (
@@ -401,10 +438,11 @@ export function Thread({
                     ))}
                   </div>
                 );
-              else if (
+              } else if (
                 message.messageType === "image" &&
                 /^https?:\/\//i.test(message.content)
-              )
+              ) {
+                written = true;
                 body = (
                   <a href={message.content} target="_blank" rel="noreferrer">
                     <img
@@ -415,17 +453,33 @@ export function Thread({
                     />
                   </a>
                 );
-              else if (
+              } else if (
                 message.messageType === "balance_paid" ||
                 message.messageType === "session_plan_accepted"
               )
                 body = <Status tone="success">{text}</Status>;
-              else
+              else {
+                written = message.messageType !== "system";
                 body = (
                   <p className="v3-message-text">
                     {message.messageType === "image"
                       ? "This image is unavailable."
                       : text}
+                  </p>
+                );
+              }
+              const theirs = written && !own;
+              if (theirs && blockedByMe && !showBlocked)
+                body = (
+                  <p className="v3-message-text v3-message-hidden">
+                    Hidden because you blocked {c.otherUserName}.{" "}
+                    <button
+                      type="button"
+                      className="v3-message-report"
+                      onClick={() => setShowBlocked(true)}
+                    >
+                      Show messages
+                    </button>
                   </p>
                 );
               return (
@@ -437,6 +491,21 @@ export function Thread({
                   <div>{body}</div>
                   <time>
                     {message.createdAt && bookingDate(message.createdAt)}
+                    {theirs && message.id > 0 && (
+                      <>
+                        {" · "}
+                        <button
+                          type="button"
+                          className="v3-message-report"
+                          aria-label="Report this message"
+                          onClick={() =>
+                            setReportTarget({ messageId: message.id })
+                          }
+                        >
+                          Report
+                        </button>
+                      </>
+                    )}
                     {own && message.id > 0 && (
                       <span
                         aria-label={
@@ -475,7 +544,7 @@ export function Thread({
             type="button"
             className="v3-icon-button"
             aria-label="Attach photo"
-            disabled={c.uploadingImage}
+            disabled={c.uploadingImage || messagingBlocked}
             onClick={() => file.current?.click()}
           >
             <ImagePlus />
@@ -487,22 +556,43 @@ export function Thread({
             id={`message-${id}`}
             value={c.messageText}
             onChange={e => c.setMessageText(e.target.value)}
-            placeholder="Write a message…"
+            placeholder={
+              messagingBlocked ? "Messaging is off" : "Write a message…"
+            }
             rows={1}
+            disabled={messagingBlocked}
+            aria-describedby={
+              messagingBlocked ? `message-blocked-${id}` : undefined
+            }
           />
           <Action
             type="submit"
             aria-label="Send message"
-            disabled={!c.messageText.trim() || c.sendMessageMutation.isPending}
+            disabled={
+              messagingBlocked ||
+              !c.messageText.trim() ||
+              c.sendMessageMutation.isPending
+            }
           >
             <Send />
           </Action>
         </form>
-        {c.sendMessageMutation.error && (
+        {messagingBlocked && (
+          <p id={`message-blocked-${id}`} role="status" className="v3-muted">
+            {blockedByMe
+              ? `You blocked ${c.otherUserName}. Unblock them from the menu above to send messages.`
+              : MESSAGING_BLOCKED}{" "}
+            Existing bookings and payments are kept. New booking proposals and
+            replies can’t be sent while messaging is off.
+          </p>
+        )}
+        {sendError && !messagingBlocked && (
           <p role="alert">
-            {c.sendMessageMutation.variables?.messageType === "image"
-              ? "Couldn’t send the photo. Attach it again to retry."
-              : "Couldn’t send. Your message is still here—try again."}
+            {sendError.message === MESSAGING_BLOCKED
+              ? MESSAGING_BLOCKED
+              : c.sendMessageMutation.variables?.messageType === "image"
+                ? "Couldn’t send the photo. Attach it again to retry."
+                : "Couldn’t send. Your message is still here—try again."}
           </p>
         )}
         <SheetShell
@@ -614,52 +704,147 @@ export function Thread({
       <SheetShell
         isOpen={contextOpen && hasConversationActions}
         onClose={() => setContextOpen(false)}
-        title="Conversation tools"
+        title={
+          confirmBlock ? `Block ${c.otherUserName}?` : "Conversation tools"
+        }
       >
-        {c.isArtist && (
+        {confirmBlock ? (
           <div className="v3-stack">
-            {activeOffer && (
-              <Action
-                tone="quiet"
-                onClick={() => {
-                  if (activeOffer.status === "discussing")
-                    bookWithOffer(activeOffer);
-                  else if (activeOffer.planId) {
-                    setContextOpen(false);
-                    setOfferCheckout(activeOffer.planId);
-                  }
-                }}
-              >
-                {activeOffer.status === "discussing" ? "Book with" : "Review"}{" "}
-                {activeOffer.rules.name}
-              </Action>
+            <p>
+              You and {c.otherUserName} won’t be able to message each other or
+              send each other new booking proposals, and you won’t get
+              notifications from them. Their messages and photos here are hidden
+              from you. They are not told that you blocked them.
+            </p>
+            <p>
+              Blocking does not cancel or hide existing bookings, payments or
+              this conversation. To cancel a booking, do that from the booking
+              itself.
+            </p>
+            {block.error && (
+              <p role="alert">
+                {block.error.message ||
+                  "We couldn’t block this person. Please try again."}
+              </p>
             )}
             <Action
-              tone="secondary"
-              onClick={() => {
-                setContextOpen(false);
-                c.setSelectedProposal(null);
-                setBookingOffer(null);
-                setBooking(true);
-              }}
+              tone="danger"
+              disabled={block.isPending || !c.otherUserId}
+              onClick={() =>
+                c.otherUserId && block.mutate({ userId: c.otherUserId })
+              }
             >
-              <CalendarDays />
-              Book in
+              {block.isPending ? "Blocking…" : `Block ${c.otherUserName}`}
             </Action>
+            <Action tone="quiet" onClick={() => setConfirmBlock(false)}>
+              Go back
+            </Action>
+          </div>
+        ) : (
+          <div className="v3-stack">
+            {c.isArtist && (
+              <>
+                {activeOffer && (
+                  <Action
+                    tone="quiet"
+                    disabled={
+                      messagingBlocked && activeOffer.status === "discussing"
+                    }
+                    onClick={() => {
+                      if (activeOffer.status === "discussing")
+                        bookWithOffer(activeOffer);
+                      else if (activeOffer.planId) {
+                        setContextOpen(false);
+                        setOfferCheckout(activeOffer.planId);
+                      }
+                    }}
+                  >
+                    {activeOffer.status === "discussing"
+                      ? "Book with"
+                      : "Review"}{" "}
+                    {activeOffer.rules.name}
+                  </Action>
+                )}
+                <Action
+                  tone="secondary"
+                  disabled={messagingBlocked}
+                  onClick={() => {
+                    setContextOpen(false);
+                    c.setSelectedProposal(null);
+                    setBookingOffer(null);
+                    setBooking(true);
+                  }}
+                >
+                  <CalendarDays />
+                  Book in
+                </Action>
+                <Action
+                  tone="secondary"
+                  disabled={!c.conversation?.clientId || messagingBlocked}
+                  onClick={() => {
+                    setContextOpen(false);
+                    setPromoOpen(true);
+                  }}
+                >
+                  <Gift />
+                  Create promo
+                </Action>
+                {messagingBlocked && (
+                  <p className="v3-muted" role="note">
+                    {blockedByMe
+                      ? `Unblock ${c.otherUserName} to book them in or send a promo.`
+                      : "Booking in and promos are off because messaging is off with this person."}{" "}
+                    Existing bookings are kept.
+                  </p>
+                )}
+              </>
+            )}
             <Action
-              tone="secondary"
-              disabled={!c.conversation?.clientId}
+              tone="quiet"
               onClick={() => {
                 setContextOpen(false);
-                setPromoOpen(true);
+                setReportTarget({ conversationId: id });
               }}
             >
-              <Gift />
-              Create promo
+              <Flag />
+              Report
             </Action>
+            {blockedByMe ? (
+              <Action
+                tone="quiet"
+                disabled={unblock.isPending || !c.otherUserId}
+                onClick={() =>
+                  c.otherUserId && unblock.mutate({ userId: c.otherUserId })
+                }
+              >
+                <Ban />
+                {unblock.isPending ? "Unblocking…" : "Unblock"}
+              </Action>
+            ) : (
+              <Action
+                tone="quiet"
+                disabled={!c.otherUserId}
+                onClick={() => setConfirmBlock(true)}
+              >
+                <Ban />
+                Block
+              </Action>
+            )}
+            {unblock.error && (
+              <p role="alert">
+                {unblock.error.message ||
+                  "We couldn’t unblock this person. Please try again."}
+              </p>
+            )}
           </div>
         )}
       </SheetShell>
+      <ReportDialog
+        open={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        target={reportTarget || { conversationId: id }}
+        subject={reportTarget?.messageId ? "this message" : c.otherUserName}
+      />
       <SheetShell
         isOpen={!!offerSheet}
         onClose={() => setOfferSheet(null)}

@@ -15,6 +15,7 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:exported="true">
 
             <intent-filter>
@@ -35,9 +36,32 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
-
+    <!--
+        Permissions: only what the app itself uses.
+        - INTERNET: the web view and API calls.
+        - POST_NOTIFICATIONS: push notification prompt on Android 13+ (OneSignal).
+        Not declared on purpose:
+        - CAMERA: for <input type="file" capture>, Capacitor's file chooser
+          (BridgeWebChromeClient) hands off to the system camera app. That needs
+          no permission as long as the app does not declare CAMERA (declaring it
+          would force a runtime prompt), but it does need the <queries> block
+          below: without it, package visibility (Android 11+) hides the camera
+          app from resolveActivity() and Capacitor silently falls back to the
+          plain file picker.
+        - Location, microphone, storage, contacts: not used.
+        Libraries (OneSignal, Firebase Messaging) merge in the few they need
+        themselves (WAKE_LOCK, ACCESS_NETWORK_STATE, boot/badge receivers).
+    -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Lets the web view's file chooser find the system camera app (see above). No permission involved. -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
+    </queries>
 </manifest>

@@ -9,6 +9,7 @@ import { useGoogleAuthReady } from "@/lib/google-auth";
 import { activateWaitingSWForPublicPage } from "@/lib/pwa";
 import { isAdult, UNDERAGE_MESSAGE } from "@shared/age";
 import { LegalConsent } from "./Legal";
+import { ReportDialog } from "../components/ReportDialog";
 import { LiveStage } from "../design/live";
 import { StageFigure, StageRing } from "../components/DetailStages";
 
@@ -75,6 +76,8 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
     activateWaitingSWForPublicPage();
   }, []);
   const artist = profile.data;
+  const { user: viewer } = useAuth();
+  const [reporting, setReporting] = useState(false);
   return (
     <Screen
       publicView
@@ -192,6 +195,22 @@ export default function PublicArtist({ hub = false }: { hub?: boolean }) {
             open={open && artist.bookingEnabled !== false}
             onClose={() => setOpen(false)}
           />
+          {viewer && viewer.id !== artist.id && (
+            <>
+              <Action tone="quiet" onClick={() => setReporting(true)}>
+                Report this profile
+              </Action>
+              <ReportDialog
+                open={reporting}
+                onClose={() => setReporting(false)}
+                target={{
+                  reportedUserId: artist.id,
+                  artistSlug: artist.slug || params?.slug || undefined,
+                }}
+                subject="this profile"
+              />
+            </>
+          )}
         </>
       )}
     </Screen>

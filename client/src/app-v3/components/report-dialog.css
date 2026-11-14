@@ -1,0 +1,28 @@
+/* The small in-line controls on a message: report it, or show messages folded away after a block. */
+.v3-message-report {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  /* A comfortable touch target without changing the line height. */
+  position: relative;
+}
+.v3-message-report::after {
+  content: "";
+  position: absolute;
+  inset: -12px -8px;
+}
+.v3-message-report:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.v3-message-hidden {
+  font-style: italic;
+  opacity: 0.8;
+}

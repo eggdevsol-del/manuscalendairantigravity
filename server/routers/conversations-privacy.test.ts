@@ -16,6 +16,9 @@ const mocks = vi.hoisted(() => ({
   database: vi.fn(),
   push: vi.fn(),
 }));
+vi.mock("../services/safety", () => ({
+  messagingBlocked: async () => false,
+}));
 vi.mock("../db", () => ({
   getConversation: mocks.getConversation,
   createConversation: mocks.createConversation,

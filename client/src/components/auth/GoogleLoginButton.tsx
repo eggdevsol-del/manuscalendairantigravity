@@ -6,6 +6,7 @@
  */
 import { useGoogleLogin } from "@react-oauth/google";
 import { Button } from "@/components/ui";
+import { isNativeApp } from "@/lib/platform";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
@@ -34,7 +35,16 @@ interface GoogleLoginButtonProps {
   disabled?: boolean;
 }
 
-export function GoogleLoginButton({
+/**
+ * Google's popup sign-in cannot run inside the native app's web view, so the
+ * native app offers email sign-in only and this renders nothing there.
+ */
+export function GoogleLoginButton(props: GoogleLoginButtonProps) {
+  if (isNativeApp()) return null;
+  return <GoogleWebLoginButton {...props} />;
+}
+
+function GoogleWebLoginButton({
   onSuccess,
   onError,
   disabled,

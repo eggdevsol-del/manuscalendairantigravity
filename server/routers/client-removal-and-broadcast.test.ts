@@ -20,6 +20,9 @@ const database = {
   delete: m.rawDelete,
   insert: () => ({ values: vi.fn() }),
 };
+vi.mock("../services/safety", () => ({
+  messagingBlocked: async () => false,
+}));
 vi.mock("../db", () => ({
   getDb: async () => database,
   getConversationById: async () => m.conversation,

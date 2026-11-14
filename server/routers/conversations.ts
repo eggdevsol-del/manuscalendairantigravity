@@ -8,11 +8,9 @@ import { getDb } from "../services/core";
 import * as schema from "../../drizzle/schema";
 import { eq, and, or, inArray, desc } from "drizzle-orm";
 import * as pushService from "../services/pushService";
-import {
-  getClientRelationships,
-  shareStudio,
-} from "../services/userService";
+import { getClientRelationships, shareStudio } from "../services/userService";
 import { toCounterpartIdentity } from "../services/identityService";
+import { messagingBlocked } from "../services/safety";
 
 const isArtistRole = (role: string) => role === "artist" || role === "admin";
 
@@ -32,8 +30,8 @@ export const conversationsRouter = router({
     // Fetch user details for each conversation
     const enriched = await Promise.all(
       convos.map(async conv => {
-        const otherUserId =
-          ((artistViewer ? conv.clientId : conv.artistId) || "") as string;
+        const otherUserId = ((artistViewer ? conv.clientId : conv.artistId) ||
+          "") as string;
         const identity = await db.resolveIdentity(otherUserId, "user");
         // An artist sees a client's email and phone only once they really
         // work together.
@@ -52,7 +50,8 @@ export const conversationsRouter = router({
           }
           // Expose funnel banner, slug, and keywords for client profile cards
           (otherUser as any).publicSlug = settings?.publicSlug || null;
-          (otherUser as any).funnelBannerUrl = settings?.funnelBannerUrl || null;
+          (otherUser as any).funnelBannerUrl =
+            settings?.funnelBannerUrl || null;
           (otherUser as any).keywords = settings?.keywords || null;
         }
 
@@ -79,11 +78,17 @@ export const conversationsRouter = router({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if((ctx.user.role === "client" && ctx.user.id !== input.clientId) || (["artist","admin"].includes(ctx.user.role) && ctx.user.id !== input.artistId) || !["client","artist","admin"].includes(ctx.user.role)) throw new TRPCError({code:"FORBIDDEN",message:"You must be a participant in the conversation."});
-      const existing = await db.getConversation(
-        input.artistId,
-        input.clientId
-      );
+      if (
+        (ctx.user.role === "client" && ctx.user.id !== input.clientId) ||
+        (["artist", "admin"].includes(ctx.user.role) &&
+          ctx.user.id !== input.artistId) ||
+        !["client", "artist", "admin"].includes(ctx.user.role)
+      )
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You must be a participant in the conversation.",
+        });
+      const existing = await db.getConversation(input.artistId, input.clientId);
       if (existing) return existing;
 
       const notAllowed = new TRPCError({
@@ -140,10 +145,9 @@ export const conversationsRouter = router({
       }
 
       // Get the other user's details
-      const otherUserId =
-        ((ctx.user.id === conversation.artistId
-          ? conversation.clientId
-          : conversation.artistId) || "") as string;
+      const otherUserId = ((ctx.user.id === conversation.artistId
+        ? conversation.clientId
+        : conversation.artistId) || "") as string;
       const identity = await db.resolveIdentity(otherUserId, "user");
       const database =
         ctx.user.id === conversation.artistId ? await getDb() : null;
@@ -171,12 +175,26 @@ export const conversationsRouter = router({
       };
     }),
   markAsRead: protectedProcedure
-    .input(z.union([z.number(), z.object({ conversationId: z.number().int().positive(), messageIds: z.array(z.number().int().positive()).min(1).max(100) })]))
+    .input(
+      z.union([
+        z.number(),
+        z.object({
+          conversationId: z.number().int().positive(),
+          messageIds: z.array(z.number().int().positive()).min(1).max(100),
+        }),
+      ])
+    )
     .mutation(async ({ input, ctx }) => {
-      const conversationId = typeof input === "number" ? input : input.conversationId;
-      const database=await getDb();if(!database)throw new TRPCError({code:"INTERNAL_SERVER_ERROR"});
-      await requireConversationAccess(database,conversationId,ctx.user.id);
-      await db.markMessagesAsRead(conversationId, ctx.user.id, typeof input === "number" ? undefined : input.messageIds);
+      const conversationId =
+        typeof input === "number" ? input : input.conversationId;
+      const database = await getDb();
+      if (!database) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      await requireConversationAccess(database, conversationId, ctx.user.id);
+      await db.markMessagesAsRead(
+        conversationId,
+        ctx.user.id,
+        typeof input === "number" ? undefined : input.messageIds
+      );
       if (ctx.user.role === "artist" || ctx.user.role === "admin") {
         await db.markConsultationAsViewed(conversationId);
       }
@@ -308,14 +326,18 @@ export const conversationsRouter = router({
    * Used by promotions feature to send promotions to specific clients
    */
   getClients: protectedProcedure
-    .input(z.object({
-      location: z.string().optional(),
-      minTlv: z.number().optional(),
-      maxTlv: z.number().optional(),
-      birthMonth: z.number().optional(), // 1-12
-      minSittings: z.number().optional(),
-      maxSittings: z.number().optional(),
-    }).optional())
+    .input(
+      z
+        .object({
+          location: z.string().optional(),
+          minTlv: z.number().optional(),
+          maxTlv: z.number().optional(),
+          birthMonth: z.number().optional(), // 1-12
+          minSittings: z.number().optional(),
+          maxSittings: z.number().optional(),
+        })
+        .optional()
+    )
     .query(async ({ ctx, input }) => {
       if (ctx.user.role !== "artist" && ctx.user.role !== "admin") {
         throw new TRPCError({
@@ -339,7 +361,7 @@ export const conversationsRouter = router({
         where: and(
           eq(schema.appointments.artistId, ctx.user.id),
           inArray(schema.appointments.clientId, clientIds)
-        )
+        ),
       });
 
       // Batch-fetch leads for all clients (for hasLead detection)
@@ -350,7 +372,9 @@ export const conversationsRouter = router({
         ),
         columns: { clientId: true },
       });
-      const clientsWithLeads = new Set(allLeads.map(l => l.clientId).filter(Boolean));
+      const clientsWithLeads = new Set(
+        allLeads.map(l => l.clientId).filter(Boolean)
+      );
 
       const now = new Date().toISOString();
       // Contact and personal details only for people the artist really works with.
@@ -381,8 +405,14 @@ export const conversationsRouter = router({
 
           // Apply direct demographic filters (location, birthday) safely
           if (input?.location) {
-            const cityMatch = user.city ? user.city.toLowerCase().includes(input.location.toLowerCase()) : false;
-            const countryMatch = user.country ? user.country.toLowerCase().includes(input.location.toLowerCase()) : false;
+            const cityMatch = user.city
+              ? user.city.toLowerCase().includes(input.location.toLowerCase())
+              : false;
+            const countryMatch = user.country
+              ? user.country
+                  .toLowerCase()
+                  .includes(input.location.toLowerCase())
+              : false;
             if (!cityMatch && !countryMatch) return null;
           }
           if (input?.birthMonth && user.birthday) {
@@ -390,7 +420,9 @@ export const conversationsRouter = router({
             if (bMonth !== input.birthMonth) return null;
           }
 
-          const clientAppts = allAppointments.filter(a => a.clientId === clientId);
+          const clientAppts = allAppointments.filter(
+            a => a.clientId === clientId
+          );
 
           let tlv = 0;
           let sittings = 0;
@@ -417,8 +449,10 @@ export const conversationsRouter = router({
 
           if (input?.minTlv !== undefined && tlv < input.minTlv) return null;
           if (input?.maxTlv !== undefined && tlv > input.maxTlv) return null;
-          if (input?.minSittings !== undefined && sittings < input.minSittings) return null;
-          if (input?.maxSittings !== undefined && sittings > input.maxSittings) return null;
+          if (input?.minSittings !== undefined && sittings < input.minSittings)
+            return null;
+          if (input?.maxSittings !== undefined && sittings > input.maxSittings)
+            return null;
 
           // Use pushService to check subscription status (SSOT)
           const hasPushSubscription =
@@ -503,6 +537,8 @@ export const conversationsRouter = router({
           optedOut++;
           continue;
         }
+        // A block in either direction stops broadcasts as well as direct messages.
+        if (await messagingBlocked(database, ctx.user.id, clientId)) continue;
         // Already confirmed as this artist's client above (a lead,
         // consultation or plan can come before any chat), so a missing chat
         // is opened rather than the client silently skipped.

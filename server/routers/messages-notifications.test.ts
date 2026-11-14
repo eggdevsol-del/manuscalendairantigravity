@@ -11,6 +11,9 @@ vi.mock("../services/core", () => ({
     return fn();
   },
 }));
+vi.mock("../services/safety", () => ({
+  messagingBlocked: async () => false,
+}));
 vi.mock("../db", () => ({
   getConversationById: async () => ({ artistId: "artist", clientId: "client" }),
   createMessage: m.create,

@@ -1,4 +1,5 @@
 import { telemetryRoute, telemetryFrames } from "./telemetryPrivacy";
+import { apiUrl } from "../const";
 /**
  * Error Reporter — fire-and-forget error logging to server.
  *
@@ -32,7 +33,7 @@ export async function reportError(
 
   try {
     // Raw fetch — NOT tRPC client. tRPC itself may be the thing that broke.
-    await fetch("/api/trpc/errorLog.log", {
+    await fetch(apiUrl("/api/trpc/errorLog.log"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

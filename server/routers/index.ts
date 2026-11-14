@@ -47,6 +47,7 @@ import { instagramRouter } from "./instagram";
 import { supplierOrdersRouter } from "./supplierOrders";
 import { sessionPlansRouter } from "./sessionPlans";
 import { aftercareRouter } from "./aftercare";
+import { safetyRouter } from "./safety";
 
 export const appRouter = router({
   practice: practiceRouter,
@@ -96,6 +97,7 @@ export const appRouter = router({
   supplierOrders: supplierOrdersRouter,
   sessionPlans: sessionPlansRouter,
   aftercare: aftercareRouter,
+  safety: safetyRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -9,7 +9,7 @@ import { Screen, Section } from "../design/primitives";
  * the text; until then each page says it is a draft.
  */
 export const LEGAL_REVIEWED = false;
-export const LEGAL_UPDATED = "11 November 2026";
+export const LEGAL_UPDATED = "14 November 2026";
 const CONTACT = "privacy@tattoi.app";
 
 function LegalPage({
@@ -228,6 +228,37 @@ export function TermsOfService() {
           anything other than genuine bookings and orders, upload content you
           don’t have the right to use, or interfere with the service. We may
           suspend accounts that do.
+        </p>
+      </Section>
+      <Section title="Safety, reporting and blocking">
+        <p>
+          We do not tolerate objectionable content or abusive behaviour. That
+          includes harassment, threats, hate speech, sexual or explicit content
+          sent without consent, anything involving a person under 18, scams and
+          fraud, whether in messages, photos, profiles or portfolios.
+        </p>
+        <ul>
+          <li>
+            <b>Report:</b> you can report a person or conversation from the menu
+            at the top of any message thread, report a single message or photo
+            from the “Report” link beneath it, and report an artist’s public
+            profile from that profile.
+          </li>
+          <li>
+            <b>Block:</b> you can block anyone you are messaging from the same
+            menu. They can no longer message you, and their messages and photos
+            are hidden from you. Blocking does not cancel existing bookings or
+            payments.
+          </li>
+          <li>
+            <b>What we do:</b> we review every report within 24 hours. We remove
+            content that breaks these terms and suspend or remove the accounts
+            responsible.
+          </li>
+        </ul>
+        <p>
+          You can also contact us about content or behaviour at{" "}
+          <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
         </p>
       </Section>
       <Section title="Your content">

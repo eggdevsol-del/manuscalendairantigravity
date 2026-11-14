@@ -4,6 +4,8 @@ import {
   requireHoursConfirmed,
 } from "../services/businessHoursGuard";
 import { requireConversationAccess } from "../services/access";
+import { messagingBlocked } from "../services/safety";
+import { MESSAGING_BLOCKED } from "../../shared/safety";
 import { messages } from "../../drizzle/schema";
 import { declineLegacyProposal } from "../services/declineLegacyProposal";
 import { TRPCError } from "@trpc/server";
@@ -197,6 +199,23 @@ export const messagesRouter = router({
             code: "FORBIDDEN",
             message: "Not authorized to send messages in this conversation",
           });
+        }
+
+        // Either person may have blocked the other; the reply is the same both
+        // ways. Refusing here also means nothing below queues a push, email or
+        // SMS from a blocked sender. Bookings and payments are not affected.
+        const otherPartyId =
+          conversation.artistId === ctx.user.id
+            ? conversation.clientId
+            : conversation.artistId;
+        if (otherPartyId) {
+          const blockDb = await db.getDb();
+          if (!blockDb) throw new Error("Database connection failed");
+          if (await messagingBlocked(blockDb, ctx.user.id, otherPartyId))
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: MESSAGING_BLOCKED,
+            });
         }
 
         // Proposals create appointments with a price and deposit, and system
@@ -705,8 +724,15 @@ export const messagesRouter = router({
         }),
       });
 
-      // Push notification via outbox
+      // Push notification via outbox. The payment record above is kept either
+      // way, but a blocked sender must not reach the other person's phone. If
+      // the block cannot be checked, nothing is queued.
       try {
+        if (
+          conversation.clientId &&
+          (await messagingBlocked(dbInst, ctx.user.id, conversation.clientId))
+        )
+          return { success: true };
         await dbInst.insert(notificationOutbox).values({
           eventType: "balance.requested",
           payloadJson: JSON.stringify({
@@ -808,8 +834,15 @@ export const messagesRouter = router({
         }),
       });
 
-      // Push notification via outbox
+      // Push notification via outbox. The payment record above is kept either
+      // way, but a blocked sender must not reach the other person's phone. If
+      // the block cannot be checked, nothing is queued.
       try {
+        if (
+          conversation.clientId &&
+          (await messagingBlocked(dbInst, ctx.user.id, conversation.clientId))
+        )
+          return { success: true };
         await dbInst.insert(notificationOutbox).values({
           eventType: "additional.requested",
           payloadJson: JSON.stringify({

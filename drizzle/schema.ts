@@ -3092,3 +3092,66 @@ export const savedDays = mysqlTable(
   },
   t => [primaryKey({ columns: [t.artistId, t.clientKey] })]
 );
+
+// ── Safety: reporting and blocking ──
+
+/** A report of objectionable content or behaviour. The user columns are set to null rather than
+ *  cascaded, and the conversation and message ids carry no foreign key, so a report survives the
+ *  removal of whatever it points at. */
+export const userReports = mysqlTable(
+  "user_reports",
+  {
+    id: int().primaryKey().autoincrement(),
+    reporterId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
+    reportedUserId: varchar({ length: 64 }).references(() => users.id, {
+      onDelete: "set null",
+    }),
+    conversationId: int(),
+    messageId: int(),
+    artistSlug: varchar({ length: 100 }),
+    reason: mysqlEnum([
+      "harassment",
+      "sexual_content",
+      "hate",
+      "scam",
+      "underage",
+      "other",
+    ]).notNull(),
+    details: text(),
+    status: mysqlEnum(["open", "reviewed", "actioned"])
+      .notNull()
+      .default("open"),
+    createdAt: timestamp({ mode: "string" })
+      .notNull()
+      .default(sql`(now())`),
+  },
+  t => [
+    index("user_reports_reporter").on(t.reporterId, t.createdAt),
+    index("user_reports_status").on(t.status, t.createdAt),
+  ]
+);
+
+export type InsertUserReport = InferInsertModel<typeof userReports>;
+export type SelectUserReport = InferSelectModel<typeof userReports>;
+
+/** One person stopping another from messaging them. Bookings and payments are never touched. */
+export const userBlocks = mysqlTable(
+  "user_blocks",
+  {
+    blockerId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    blockedId: varchar({ length: 64 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp({ mode: "string" })
+      .notNull()
+      .default(sql`(now())`),
+  },
+  t => [
+    primaryKey({ columns: [t.blockerId, t.blockedId] }),
+    index("user_blocks_blocked").on(t.blockedId),
+  ]
+);

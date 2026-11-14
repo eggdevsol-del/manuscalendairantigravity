@@ -11,6 +11,7 @@ import {
   money,
 } from "@/features/workspace/bookingPresentation";
 import { SubscriptionCheckoutSheet } from "./SubscriptionCheckout";
+import { isNativeApp } from "@/lib/platform";
 import {
   Action,
   ActionLink,
@@ -35,8 +36,17 @@ function StudioWorkspace() {
   const { user } = useAuth();
   const search = useSearch();
   const [, go] = useLocation();
+  // The native app never sells or manages the studio subscription: it shows
+  // the membership status only, with no price and no billing controls.
+  const native = isNativeApp();
   const view = new URLSearchParams(search).get("view");
-  const tab = view === "Team" || view === "Billing" ? view : "Schedule";
+  const billingTab = native ? "Membership" : "Billing";
+  const tab =
+    view === "Team"
+      ? "Team"
+      : view === "Billing" || view === "Membership"
+        ? billingTab
+        : "Schedule";
   const utils = trpc.useUtils();
   const studio = trpc.studios.getCurrentStudio.useQuery(undefined, {
     refetchInterval: 15000,
@@ -70,7 +80,9 @@ function StudioWorkspace() {
     { studioId: current?.id || "", ...dates },
     { enabled: !!current }
   );
-  const offer = trpc.billing.studioOffer.useQuery();
+  const offer = trpc.billing.studioOffer.useQuery(undefined, {
+    enabled: !native,
+  });
   const refresh = () => {
     void studio.refetch();
     void utils.studios.invalidate();
@@ -124,7 +136,7 @@ function StudioWorkspace() {
         current && (
           <Tabs
             label="Studio sections"
-            items={["Schedule", "Team", "Billing"] as const}
+            items={["Schedule", "Team", billingTab] as const}
             value={tab}
             onChange={next => go(`/studio?view=${next}`)}
           />
@@ -144,9 +156,10 @@ function StudioWorkspace() {
         <Section title="Make room for your team">
           <Panel>
             <p>
-              Create your studio workspace, then activate its monthly plan to
-              invite artists. Your artist account, clients and personal history
-              stay with you.
+              {native
+                ? "Create your studio workspace."
+                : "Create your studio workspace, then activate its monthly plan to invite artists."}{" "}
+              Your artist account, clients and personal history stay with you.
             </p>
             <form
               className="v3-form"
@@ -398,7 +411,9 @@ function StudioWorkspace() {
                     </p>
                     {!active && (
                       <p role="status">
-                        Activate Studio billing before inviting your team.
+                        {native
+                          ? "Inviting your team isn’t available on your current plan."
+                          : "Activate Studio billing before inviting your team."}
                       </p>
                     )}
                     <form
@@ -458,6 +473,27 @@ function StudioWorkspace() {
                 leave. Removing a member ends their access to this studio.
               </p>
             </>
+          )}
+          {tab === "Membership" && (
+            <Section title="Membership">
+              <Panel>
+                <Status tone={active ? "success" : "warning"}>
+                  {active ? "Active" : "Not active"}
+                </Status>
+                <p>
+                  {active
+                    ? "Studio membership covers up to 10 active artists, including the owner."
+                    : "Team features aren’t available on your current plan."}
+                </p>
+                <Action
+                  tone="quiet"
+                  disabled={studio.isFetching}
+                  onClick={() => studio.refetch()}
+                >
+                  Refresh status
+                </Action>
+              </Panel>
+            </Section>
           )}
           {tab === "Billing" && (
             <Section title="Studio membership">
@@ -570,7 +606,7 @@ function StudioWorkspace() {
           </div>
         </SheetShell>
       )}
-      {secret && (
+      {secret && !native && (
         <SubscriptionCheckoutSheet
           clientSecret={secret}
           name="Studio"
@@ -619,9 +655,9 @@ function Invitations() {
             }
           />
           <p>
-            Joining an active Studio includes Pro benefits. Any separate Pro
-            renewal will be cancelled; already-paid time remains available if
-            you leave.
+            {isNativeApp()
+              ? "Joining changes your plan to the studio’s plan."
+              : "Joining an active Studio includes Pro benefits. Any separate Pro renewal will be cancelled; already-paid time remains available if you leave."}
           </p>
           <div className="v3-inline">
             <Action

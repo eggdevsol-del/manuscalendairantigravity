@@ -1,14 +1,101 @@
 apply plugin: 'com.android.application'
 
+// ---------------------------------------------------------------------------
+// Version: single source of truth is the "version" field of ../../package.json
+// versionName = that string. versionCode is derived from it so it can only go
+// up when the version goes up (see README-APP-ID.md, "Version code rule"):
+//   versionCode = major * 1_000_000 + minor * 10_000 + patch * 10 + build
+// "build" (0-9, default 0) comes from -PtattoiBuildNumber=N or the
+// TATTOI_ANDROID_BUILD_NUMBER environment variable and exists only so the same
+// version can be uploaded to Play again after a rejected or broken upload.
+// ---------------------------------------------------------------------------
+def packageJson = new groovy.json.JsonSlurper().parse(file('../../package.json'))
+def appVersionName = packageJson.version as String
+// Strict x.y.z only (no "-beta.1" style suffix), the same rule as
+// scripts/native-version.mjs, so Android and iOS reject the same inputs.
+def versionMatch = appVersionName =~ /^(\d+)\.(\d+)\.(\d+)$/
+if (!versionMatch.matches()) {
+    throw new GradleException("package.json version '${appVersionName}' is not exactly major.minor.patch (digits only, no suffix)")
+}
+def (vMajor, vMinor, vPatch) = [versionMatch.group(1), versionMatch.group(2), versionMatch.group(3)].collect { it as int }
+def buildNumberRaw = project.findProperty('tattoiBuildNumber') ?: System.getenv('TATTOI_ANDROID_BUILD_NUMBER') ?: '0'
+if (!(buildNumberRaw ==~ /\d/)) {
+    throw new GradleException("Android build number must be a single digit 0-9, got '${buildNumberRaw}'")
+}
+if (vMajor > 2000 || vMinor > 99 || vPatch > 999) {
+    throw new GradleException("Version ${appVersionName} does not fit the versionCode rule (major <= 2000, minor <= 99, patch <= 999). Change the rule in android/app/build.gradle so it still only increases.")
+}
+def appVersionCode = vMajor * 1000000 + vMinor * 10000 + vPatch * 10 + (buildNumberRaw as int)
+
+// ---------------------------------------------------------------------------
+// Release signing: read from the untracked android/keystore.properties, or from
+// environment variables. Never commit a keystore or passwords.
+//   keystore.properties keys: storeFile, storePassword, keyAlias, keyPassword
+//   environment:  TATTOI_ANDROID_KEYSTORE_FILE, TATTOI_ANDROID_KEYSTORE_PASSWORD,
+//                 TATTOI_ANDROID_KEY_ALIAS, TATTOI_ANDROID_KEY_PASSWORD
+// A relative storeFile is resolved against the android/ directory.
+// Three cases:
+//   - nothing configured: release builds are left UNSIGNED, with a notice.
+//   - all four values set and the keystore file exists: release is signed.
+//   - anything in between (a value missing, or storeFile pointing at a file
+//     that does not exist): any build that includes a release task FAILS, so
+//     a typo cannot quietly produce an unsigned bundle.
+// Debug builds and Gradle sync are never affected.
+// ---------------------------------------------------------------------------
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+def signingValue = { String propName, String envName ->
+    def value = keystoreProps.getProperty(propName) ?: System.getenv(envName)
+    value?.trim() ? value.trim() : null
+}
+def signingValues = [
+    'storeFile / TATTOI_ANDROID_KEYSTORE_FILE'        : signingValue('storeFile', 'TATTOI_ANDROID_KEYSTORE_FILE'),
+    'storePassword / TATTOI_ANDROID_KEYSTORE_PASSWORD': signingValue('storePassword', 'TATTOI_ANDROID_KEYSTORE_PASSWORD'),
+    'keyAlias / TATTOI_ANDROID_KEY_ALIAS'             : signingValue('keyAlias', 'TATTOI_ANDROID_KEY_ALIAS'),
+    'keyPassword / TATTOI_ANDROID_KEY_PASSWORD'       : signingValue('keyPassword', 'TATTOI_ANDROID_KEY_PASSWORD'),
+]
+def releaseStoreFile = signingValues['storeFile / TATTOI_ANDROID_KEYSTORE_FILE']
+def releaseStorePassword = signingValues['storePassword / TATTOI_ANDROID_KEYSTORE_PASSWORD']
+def releaseKeyAlias = signingValues['keyAlias / TATTOI_ANDROID_KEY_ALIAS']
+def releaseKeyPassword = signingValues['keyPassword / TATTOI_ANDROID_KEY_PASSWORD']
+def missingSigningValues = signingValues.findAll { it.value == null }.keySet()
+def signingConfigured = missingSigningValues.size() < signingValues.size()
+String signingProblem = null
+if (signingConfigured && !missingSigningValues.isEmpty()) {
+    signingProblem = "release signing is only partly configured, missing: ${missingSigningValues.join(', ')}"
+} else if (signingConfigured && !rootProject.file(releaseStoreFile).isFile()) {
+    signingProblem = "release keystore file not found: ${rootProject.file(releaseStoreFile)}"
+}
+def hasReleaseSigning = signingConfigured && signingProblem == null
+// Checked once the task graph is known, so only builds that really contain a
+// release task of this module (assembleRelease, bundleRelease, build, ...) are
+// stopped or warned; debug builds and IDE sync stay quiet.
+gradle.taskGraph.whenReady { graph ->
+    def buildsRelease = graph.allTasks.any { it.project == project && it.name.contains('Release') }
+    if (!buildsRelease) {
+        return
+    }
+    if (signingProblem != null) {
+        throw new GradleException("Tattoi: ${signingProblem}. Fix android/keystore.properties or the TATTOI_ANDROID_* environment variables, or remove them all to build unsigned (see android/README-APP-ID.md).")
+    }
+    if (!hasReleaseSigning) {
+        logger.warn("Tattoi: no release keystore configured, this release build is UNSIGNED and cannot be uploaded to Google Play (see android/README-APP-ID.md).")
+    }
+}
+
 android {
-    namespace = "com.manus.toi"
+    // The app id lives in ../variables.gradle (ext.appId). See README-APP-ID.md.
+    namespace = rootProject.ext.appId
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.manus.toi"
+        applicationId rootProject.ext.appId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +103,23 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
@@ -40,10 +140,9 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    
-    // Firebase SDK
-    implementation platform('com.google.firebase:firebase-bom:34.9.0')
-    implementation 'com.google.firebase:firebase-analytics'
+    // No Firebase dependency is declared here on purpose: nothing in the app uses
+    // Firebase Analytics, and push goes through the OneSignal SDK (added by
+    // capacitor.build.gradle), which brings in firebase-messaging itself.
 }
 
 apply from: 'capacitor.build.gradle'

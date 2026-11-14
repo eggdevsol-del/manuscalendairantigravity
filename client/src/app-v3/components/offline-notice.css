@@ -1,0 +1,52 @@
+.v3-offline {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  padding: 10px 10px 10px 18px;
+  border: 1px solid var(--v3-line);
+  border-radius: var(--v3-radius);
+  /* The glass surface token is nearly transparent: sit on the wallpaper base
+     colour and blur what is behind so the white text stays readable. */
+  background:
+    linear-gradient(var(--v3-surface), var(--v3-surface)),
+    rgba(var(--wall-base-rgb, 44, 42, 94), 0.82);
+  -webkit-backdrop-filter: var(--glass-blur, blur(24px));
+  backdrop-filter: var(--glass-blur, blur(24px));
+  color: var(--v3-ink);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.28);
+}
+.v3-offline p {
+  flex: 1;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.v3-offline .v3-action {
+  min-height: 44px;
+  flex: none;
+}
+.v3-offline-block {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) var(--v3-gutter) 24px;
+  background: var(--v3-paper);
+  color: var(--v3-ink);
+}
+.v3-offline-block h1 {
+  margin: 0;
+  font-size: 24px;
+}
+.v3-offline-block p {
+  margin: 0;
+  color: var(--v3-muted);
+  line-height: 1.5;
+}

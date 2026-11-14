@@ -4,6 +4,9 @@ const m = vi.hoisted(() => ({ appointment: vi.fn() }));
 vi.mock("../services/core", () => ({
   withDatabaseTransaction: async (fn: any) => fn(),
 }));
+vi.mock("../services/safety", () => ({
+  messagingBlocked: async () => false,
+}));
 vi.mock("../db", () => ({
   getConversationById: async () => ({ artistId: "artist", clientId: "client" }),
   getArtistSettings: async () => ({

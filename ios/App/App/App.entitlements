@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+		Push notifications (booking and message alerts).
+		"development" is the value kept in source. With automatic signing, Xcode
+		re-signs archives exported for TestFlight / App Store with the distribution
+		provisioning profile, which sets aps-environment to "production". Do not
+		change this value by hand.
+	-->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

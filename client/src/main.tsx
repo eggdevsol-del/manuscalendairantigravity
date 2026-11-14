@@ -1,7 +1,6 @@
 import { invalidateWorkspace } from "./lib/workspaceSync";
 import { WorkspaceSync } from "./components/WorkspaceSync";
 import { trpc } from "@/lib/trpc";
-import { Capacitor } from "@capacitor/core";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -9,7 +8,13 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { getLoginUrl, API_BASE_URL } from "./const";
+import {
+  API_BASE_URL,
+  NATIVE_API_BASE_MESSAGE,
+  NATIVE_API_BASE_MISSING,
+} from "./const";
+import { isNativeApp } from "./lib/platform";
+import { OfflineNotice } from "./app-v3/components/OfflineNotice";
 import "./index.css";
 import "./features/workspace/workspace.css";
 import "./app-v3/design/system.css";
@@ -120,7 +125,9 @@ const trpcClient = trpc.createClient({
 
         const response = await globalThis.fetch(input, {
           ...(init ?? {}),
-          credentials: "include",
+          // The native app's page origin is not the server's, so its session
+          // is the Bearer token alone; browsers keep sending the cookie too.
+          credentials: isNativeApp() ? "omit" : "include",
           headers,
         });
 
@@ -132,6 +139,7 @@ const trpcClient = trpc.createClient({
         const serverVersion = response.headers.get("X-App-Version");
         if (
           serverVersion &&
+          !isNativeApp() &&
           !versionMismatchNotified &&
           compareVersions(APP_VERSION, serverVersion) < 0
         ) {
@@ -156,29 +164,48 @@ const trpcClient = trpc.createClient({
 
 import { GoogleAuthWrapper } from "./lib/google-auth";
 
-createRoot(document.getElementById("root")!).render(
-  <GoogleAuthWrapper>
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <WorkspaceSync />
-        <App />
-      </QueryClientProvider>
-    </trpc.Provider>
-  </GoogleAuthWrapper>
-);
+const root = document.getElementById("root")!;
+if (NATIVE_API_BASE_MISSING) {
+  // A native build without a server address can do nothing useful. Say so
+  // instead of sending every request to the app's own bundled files.
+  console.error(`[App] ${NATIVE_API_BASE_MESSAGE}`);
+  createRoot(root).render(
+    <main className="v3-offline-block" role="alert">
+      <h1>Tattoi can’t start</h1>
+      <p>{NATIVE_API_BASE_MESSAGE}</p>
+    </main>
+  );
+} else {
+  createRoot(root).render(
+    <GoogleAuthWrapper>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <WorkspaceSync />
+          <OfflineNotice
+            onReconnect={() =>
+              void queryClient.refetchQueries({ type: "active" })
+            }
+          />
+          <App />
+        </QueryClientProvider>
+      </trpc.Provider>
+    </GoogleAuthWrapper>
+  );
+}
 
 // NOTE: APP_VERSION is now imported from ./lib/version (baked in at build time by Vite)
 console.log("[App] Starting version:", APP_VERSION);
 
-// Register service worker for PWA
-if (import.meta.env.PROD) {
+// Register service worker for the installable web app. The native app serves
+// its own bundled files and must not cache them a second time.
+if (import.meta.env.PROD && !isNativeApp()) {
   registerServiceWorker();
 }
 
 // OneSignal is initialized by App after its providers mount.
 
 // Match native foreground icons to the rendered theme, including theme changes.
-if (Capacitor.isNativePlatform()) {
+if (isNativeApp()) {
   const apply = () => {
     const dark = document.documentElement.classList.contains("dark");
     void StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(

@@ -11,6 +11,7 @@ import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import type { AppRouter } from "../../../server/routers";
 import { API_BASE_URL } from "../const";
+import { isNativeApp } from "./platform";
 
 export const trpcVanilla = createTRPCClient<AppRouter>({
     links: [
@@ -26,7 +27,8 @@ export const trpcVanilla = createTRPCClient<AppRouter>({
             fetch(input, init) {
                 return globalThis.fetch(input, {
                     ...(init ?? {}),
-                    credentials: "include",
+                    // The native app signs in by Bearer token only.
+                    credentials: isNativeApp() ? "omit" : "include",
                 });
             },
         }),

@@ -46,7 +46,7 @@ async function initializeOnce() {
       console.log("[OneSignal] Initializing Native SDK...");
       const NativeOneSignal = await waitForPlugin();
       if (NativeOneSignal) {
-        NativeOneSignal.Debug.setLogLevel(4);
+        if (import.meta.env.DEV) NativeOneSignal.Debug.setLogLevel(4);
         NativeOneSignal.initialize(ONESIGNAL_APP_ID);
         console.log("[OneSignal] Native SDK initialized successfully");
       } else {

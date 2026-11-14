@@ -1,4 +1,6 @@
 ext {
+    // Android application id + Java namespace. See README-APP-ID.md before changing.
+    appId = 'com.manus.calendair'
     minSdkVersion = 24
     compileSdkVersion = 36
     targetSdkVersion = 36

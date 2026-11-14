@@ -1,4 +1,5 @@
 import { usePractice } from "@/features/practice/PracticeContext";
+import { isNativeApp } from "@/lib/platform";
 import { useState } from "react";
 import { useLocation, useSearch, Redirect } from "wouter";
 import {
@@ -144,7 +145,11 @@ export default function Settings() {
               },
               {
                 title: "Your plan",
-                detail: values.plan ?? "Free, Pro and Studio",
+                detail:
+                  values.plan ??
+                  (isNativeApp()
+                    ? "Your current plan"
+                    : "Free, Pro and Studio"),
                 icon: CreditCard,
                 href: "/subscriptions",
               },

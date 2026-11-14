@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { APP_VERSION, compareVersions } from "./version";
 import { forceUpdate } from "./pwa";
+import { apiUrl } from "../const";
+import { isNativeApp } from "./platform";
 
 /**
  * Checks the client's bundled version against the server's deployed version.
@@ -21,12 +23,16 @@ export function useVersionCheck() {
   const notified = useRef(false);
 
   useEffect(() => {
+    // The native app carries its own web assets and updates through the app
+    // stores, so a newer server version is never a reason to reload it.
+    if (isNativeApp()) return;
+
     async function checkVersion() {
       if (checking.current || notified.current) return;
       checking.current = true;
 
       try {
-        const res = await fetch("/api/version", {
+        const res = await fetch(apiUrl("/api/version"), {
           cache: "no-store",
           headers: { "Cache-Control": "no-cache" },
         });

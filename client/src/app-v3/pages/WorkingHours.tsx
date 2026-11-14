@@ -4,6 +4,7 @@ import { DetailsSheet } from "../components/DetailsSheet";
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { isNativeApp } from "@/lib/platform";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { money } from "@/features/workspace/bookingPresentation";
 import {
@@ -916,8 +917,8 @@ function DepositSetting({
       />
       {locked ? (
         <p className="v3-muted">
-          Your plan takes a fixed {current}% deposit. Pro lets you choose your
-          own.
+          Your plan takes a fixed {current}% deposit.
+          {!isNativeApp() && " Pro lets you choose your own."}
         </p>
       ) : (
         <Action

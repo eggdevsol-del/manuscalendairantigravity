@@ -2,6 +2,7 @@ import { TOUR_CATALOGUE } from "@/components/tooltip-tour/tourCatalogue";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { isNativeApp } from "@/lib/platform";
 import { useTooltipTour } from "@/components/tooltip-tour";
 import {
   Action,
@@ -256,17 +257,33 @@ const clientGuides: Guide[] = [
   },
 ];
 
+/** The native app shows studio membership status only, so its guide says nothing about billing. */
+const NATIVE_STUDIO_STEPS = [
+  "Use Schedule to see active team members’ appointments. Open your own booking to manage it; other artists’ appointment details are read-only.",
+  "Team shows pending invitations and active members.",
+  "Membership shows whether the studio is active. The shared team schedule is separate from chair rental or commission accounting.",
+];
+
 export default function Guides() {
   const { user } = useAuth();
   const [, go] = useLocation();
   const tour = useTooltipTour();
   const [search, setSearch] = useState("");
-  const guides =
+  // The native app has no plan comparison or subscription checkout to walk through.
+  const native = isNativeApp();
+  const guides = (
     user?.role === "merchant"
       ? supplierGuides
       : user?.role === "client"
         ? clientGuides
-        : artistGuides;
+        : artistGuides
+  )
+    .filter(guide => !native || guide.route !== "/subscriptions")
+    .map(guide =>
+      native && guide.id === "studio"
+        ? { ...guide, steps: NATIVE_STUDIO_STEPS }
+        : guide
+    );
   return (
     <Screen
       title="Guided walkthroughs"
@@ -295,6 +312,7 @@ export default function Guides() {
       <Section title="Every page and feature">
         {TOUR_CATALOGUE.filter(
           item =>
+            !(native && item.route === "/subscriptions") &&
             item.roles.includes(user?.role || "client") &&
             (item.title + item.detail)
               .toLowerCase()
@@ -303,7 +321,11 @@ export default function Guides() {
           <Row
             key={item.route}
             title={item.title}
-            detail={item.detail}
+            detail={
+              native && item.route === "/studio"
+                ? "Schedule, team, invitations and membership."
+                : item.detail
+            }
             onClick={() =>
               go(
                 item.route +

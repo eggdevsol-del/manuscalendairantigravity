@@ -15,8 +15,93 @@ import {
 } from "../design/primitives";
 import { LiveStage, StageNumber, TouchSlider } from "../design/live";
 import { planKeep } from "../design/liveDisplays";
+import { isNativeApp } from "@/lib/platform";
+
+const PLANS = [
+  {
+    key: "free",
+    features: [
+      "Calendar, bookings and client messaging",
+      "Deposits and client records",
+      `${PAYMENT_TIERS.free.defaultDepositPercent}% deposit`,
+      `${PAYMENT_TIERS.free.artistFeeRate * 100}% Tattoi artist fee`,
+    ],
+  },
+  {
+    key: "pro",
+    features: [
+      "Everything in Free",
+      "No Tattoi artist fee on new payments",
+      "Choose your deposit percentage",
+      "Offer payment in full",
+    ],
+  },
+  {
+    key: "top",
+    features: [
+      "Pro benefits for up to 10 active artists",
+      "Shared studio schedule",
+      "Team invitations and access controls",
+      "Your clients stay yours",
+    ],
+  },
+] as const;
+
+/**
+ * The native app shows the plan the account already has and nothing else:
+ * no prices, no way to subscribe or change plan, and no billing controls.
+ */
+function NativePlan() {
+  const status = trpc.billing.subscriptionStatus.useQuery();
+  const included = PLANS.find(plan => plan.key === status.data?.tier);
+  return (
+    // Titled "Plan" so the plan-comparison page guide, which is written for
+    // the website's "Your plan" screen, does not attach to this one.
+    <Screen title="Plan" back="/settings">
+      <Feedback
+        loading={status.isLoading}
+        error={status.error}
+        onRetry={() => status.refetch()}
+      />
+      {status.data && (
+        <>
+          <Panel>
+            <div className="v3-inline">
+              <h2>{status.data.tierLabel}</h2>
+              <Status tone="success">Current plan</Status>
+            </div>
+            {status.data.renewalDate && (
+              <p>
+                {status.data.cancelAtPeriodEnd ? "Access ends" : "Renews"}{" "}
+                {new Date(status.data.renewalDate).toLocaleDateString("en-AU")}
+              </p>
+            )}
+            {status.data.tier === "top" && (
+              <ActionLink href="/studio">Open studio</ActionLink>
+            )}
+          </Panel>
+          {included && (
+            <Section title="Included in your plan">
+              <Panel>
+                <ul className="v3-feature-list">
+                  {included.features.map(feature => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </Panel>
+            </Section>
+          )}
+        </>
+      )}
+    </Screen>
+  );
+}
 
 export default function Plans() {
+  return isNativeApp() ? <NativePlan /> : <WebPlans />;
+}
+
+function WebPlans() {
   const practice = usePractice();
   const status = trpc.billing.subscriptionStatus.useQuery(undefined, {
     refetchInterval: 15000,
@@ -33,35 +118,6 @@ export default function Plans() {
         : window.location.assign(data.url),
   });
   const busy = checkout.isPending || portal.isPending;
-  const plans = [
-    {
-      key: "free",
-      features: [
-        "Calendar, bookings and client messaging",
-        "Deposits and client records",
-        `${PAYMENT_TIERS.free.defaultDepositPercent}% deposit`,
-        `${PAYMENT_TIERS.free.artistFeeRate * 100}% Tattoi artist fee`,
-      ],
-    },
-    {
-      key: "pro",
-      features: [
-        "Everything in Free",
-        "No Tattoi artist fee on new payments",
-        "Choose your deposit percentage",
-        "Offer payment in full",
-      ],
-    },
-    {
-      key: "top",
-      features: [
-        "Pro benefits for up to 10 active artists",
-        "Shared studio schedule",
-        "Team invitations and access controls",
-        "Your clients stay yours",
-      ],
-    },
-  ] as const;
   return (
     <Screen
       title="Your plan"
@@ -105,7 +161,7 @@ export default function Plans() {
           </Panel>
           <PlanCompare current={status.data.tier} />
           <div className="v3-plan-grid">
-            {plans.map(plan => (
+            {PLANS.map(plan => (
               <Panel
                 key={plan.key}
                 tone={plan.key === status.data.tier ? "attention" : "plain"}
@@ -223,13 +279,16 @@ function PlanCompare({ current }: { current: string }) {
   const [picked, setMonth] = useState<number | null>(null);
   const month = picked ?? actual;
   if (month === null) return null;
-  const top = Math.max(4000000, Math.ceil((actual ?? 0) * 2 / 50000) * 50000);
+  const top = Math.max(4000000, Math.ceil(((actual ?? 0) * 2) / 50000) * 50000);
   const { plans, best, proBreakEven } = planKeep(month);
   const tallest = Math.max(1, ...plans.map(p => p.keep));
   const bestLabel = plans.find(p => p.key === best)!.label;
   return (
     <>
-      <LiveStage className="iosm-plans" label={`${bestLabel} leaves you the most`}>
+      <LiveStage
+        className="iosm-plans"
+        label={`${bestLabel} leaves you the most`}
+      >
         <StageNumber
           over={
             picked === null || picked === actual
@@ -243,7 +302,11 @@ function PlanCompare({ current }: { current: string }) {
           {plans.map(p => (
             <span key={p.key} className={p.key === best ? "best" : ""}>
               <span>
-                <i style={{ height: `${Math.max(4, (Math.max(0, p.keep) / tallest) * 100)}%` }} />
+                <i
+                  style={{
+                    height: `${Math.max(4, (Math.max(0, p.keep) / tallest) * 100)}%`,
+                  }}
+                />
               </span>
               <b>{p.label}</b>
               <em>{whole(p.keep)}</em>

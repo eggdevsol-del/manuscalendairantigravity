@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { SheetShell } from "@/components/ui/overlays/sheet-shell";
 import { DotsCheckout } from "@/components/ui/ssot/DotsCheckout";
 import { Action, Panel, Status } from "../design/primitives";
+import { isNativeApp } from "@/lib/platform";
 
 export function SubscriptionCheckoutSheet({
   clientSecret,
@@ -30,6 +31,8 @@ export function SubscriptionCheckoutSheet({
     const timers = [600, 1500].map(delay => setTimeout(refresh, delay));
     return () => timers.forEach(clearTimeout);
   }, [submitted, active, utils]);
+  // Subscriptions are never sold inside the native app.
+  if (isNativeApp()) return null;
   return (
     <SheetShell isOpen title={`${name} subscription`} onClose={onClose}>
       <div className="v3-stack">

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { triggerSWUpdate, forceUpdate } from "@/lib/pwa";
 import { RefreshCw } from "lucide-react";
+import { isNativeApp } from "@/lib/platform";
 
 /**
  * PWA Update Banner
@@ -24,7 +25,11 @@ export function UpdateBanner() {
   const [updating, setUpdating] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
+  // The native app updates through the app stores, never by reloading.
+  const native = isNativeApp();
+
   useEffect(() => {
+    if (native) return;
     const onUpdate = () => {
       // Don't re-show if user already dismissed this session
       if (dismissed) return;
@@ -39,7 +44,7 @@ export function UpdateBanner() {
       })
       .catch(() => {});
     return () => window.removeEventListener("pwa-update-available", onUpdate);
-  }, [dismissed]);
+  }, [dismissed, native]);
 
   const handleUpdate = async () => {
     setUpdating(true);
@@ -54,6 +59,8 @@ export function UpdateBanner() {
     setVisible(false);
     setDismissed(true);
   };
+
+  if (native) return null;
 
   return createPortal(
     <AnimatePresence>

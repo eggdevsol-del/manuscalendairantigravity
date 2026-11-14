@@ -4,6 +4,13 @@ import path from "node:path";
 
 // Capacitor 8 cannot translate OneSignal's CocoaPods-only plugin.xml to SPM.
 // Regenerate a local SPM bridge from the installed plugin source after every sync.
+// Only OneSignalFramework (push) is linked. OneSignalLocation and
+// OneSignalInAppMessages are deliberately left out: the app uses neither, and
+// linking the location module would oblige a location purpose string in
+// Info.plist. The SDK looks both modules up by class name at runtime and falls
+// back to stubs when they are missing; the Cordova bridge still registers an
+// in-app-message listener on init, so expect one "module not found" log line
+// per launch. Push itself does not depend on either module.
 const sync = spawnSync(
   process.execPath,
   ["node_modules/@capacitor/cli/bin/capacitor", "sync", "ios"],
@@ -35,9 +42,7 @@ let package = Package(
   ],
   targets: [.target(name: "OnesignalCordovaPlugin", dependencies: [
     .product(name: "Cordova", package: "capacitor-swift-pm"),
-    .product(name: "OneSignalFramework", package: "OneSignal-iOS-SDK"),
-    .product(name: "OneSignalInAppMessages", package: "OneSignal-iOS-SDK"),
-    .product(name: "OneSignalLocation", package: "OneSignal-iOS-SDK")
+    .product(name: "OneSignalFramework", package: "OneSignal-iOS-SDK")
   ], path: "Sources", publicHeadersPath: "include")]
 )
 `
@@ -51,4 +56,11 @@ await writeFile(
     '.package(name: "CapacitorStatusBar", path: "../../../node_modules/@capacitor/status-bar")'
   )
 );
+// Keep MARKETING_VERSION in step with package.json.
+const version = spawnSync(
+  process.execPath,
+  ["scripts/native-version.mjs", "--ios"],
+  { stdio: "inherit" }
+);
+if (version.status !== 0) process.exit(version.status || 1);
 console.log("iOS dependencies prepared. Open ios/App/App.xcodeproj in Xcode.");
